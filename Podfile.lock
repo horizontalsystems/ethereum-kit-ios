@@ -1,0 +1,48 @@
+PODS:
+  - CryptoEthereumSwift (2.0.0):
+    - CryptoSwift
+  - CryptoSwift (0.12.0)
+  - Realm (3.11.0):
+    - Realm/Headers (= 3.11.0)
+  - Realm/Headers (3.11.0)
+  - RealmSwift (3.11.0):
+    - Realm (= 3.11.0)
+  - RxRealm (0.7.5):
+    - RealmSwift (~> 3.0)
+    - RxSwift (~> 4.0)
+  - RxSwift (4.3.1)
+
+DEPENDENCIES:
+  - CryptoEthereumSwift (from `https://github.com/horizontalsystems/CryptoEthereumSwift`)
+  - RealmSwift
+  - RxRealm
+  - RxSwift
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - CryptoSwift
+    - Realm
+    - RealmSwift
+    - RxRealm
+    - RxSwift
+
+EXTERNAL SOURCES:
+  CryptoEthereumSwift:
+    :git: https://github.com/horizontalsystems/CryptoEthereumSwift
+
+CHECKOUT OPTIONS:
+  CryptoEthereumSwift:
+    :commit: 51f81385165176ac347d69f8dbac7bf5a306ba77
+    :git: https://github.com/horizontalsystems/CryptoEthereumSwift
+
+SPEC CHECKSUMS:
+  CryptoEthereumSwift: c2b18c52962d5e3589ee50b3f418cf103407136e
+  CryptoSwift: 1c07ca50843dd48bc54e6ea53d7a4dba3b645716
+  Realm: 92f09a102692b96a9a10e9617f214f15c5ab85fc
+  RealmSwift: 5f0481cd658bb751c509314b964a35eaa264d2cf
+  RxRealm: a6c6c0a07cb61f34209969ca6657734edfdfff30
+  RxSwift: fe0fd770a43acdb7d0a53da411c9b892e69bb6e4
+
+PODFILE CHECKSUM: 92d21f3822ee1c0decda3fd32afba853f68ad26b
+
+COCOAPODS: 1.5.3
