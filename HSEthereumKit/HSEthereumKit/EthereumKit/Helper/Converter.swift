@@ -6,7 +6,8 @@ public final class Converter {
     
     // NOTE: calculate wei by 10^18
     private static let etherInWei = pow(Decimal(10), 18)
-    
+    private static let gWeiInWei: Int = 1_000_000_000
+
     /// Convert Wei(BInt) unit to Ether(Decimal) unit
     public static func toEther(wei: Wei) throws -> Ether {
         guard let decimalWei = Decimal(string: wei.description) else {
@@ -33,6 +34,15 @@ public final class Converter {
     
     // Only used for calcurating gas price and gas limit.
     public static func toWei(GWei: Int) -> Int {
-        return GWei * 1000000000
+        return GWei * Converter.gWeiInWei
     }
+
+    public static func toGWei(wei: Wei) -> Int? {
+        let result = wei / Converter.gWeiInWei
+        if let intWei = result.toInt() {
+            return intWei
+        }
+        return nil
+    }
+
 }

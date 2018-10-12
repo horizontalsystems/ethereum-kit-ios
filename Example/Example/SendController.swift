@@ -23,27 +23,32 @@ class SendController: UIViewController {
             return
         }
 
-        guard let amountString = amountTextField?.text, let amount = Double(amountString) else {
+        guard let amountString = amountTextField?.text, let amount = Decimal(string: amountString) else {
             show(error: "Empty or Non Integer Amount")
             return
         }
 
-        do {
-//            try Manager.shared.walletKit.send(to: address, value: Int(amount * 100000000))
-
-            addressTextField?.text = ""
-            amountTextField?.text = ""
-
-            let alert = UIAlertController(title: "Success", message: "\(amount) sent to \(address)", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .cancel))
-            present(alert, animated: true)
-        } catch {
-            show(error: "\(error)")
+        Manager.shared.walletKit.send(to: address, value: amount) { [weak self] error in
+            if error != nil {
+                self?.show(error: "Something conversion wrong")
+            } else {
+                self?.showSuccess(address: address, amount: amount)
+            }
         }
+
     }
 
     private func show(error: String) {
         let alert = UIAlertController(title: "Send Error", message: error, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .cancel))
+        present(alert, animated: true)
+    }
+
+    private func showSuccess(address: String, amount: Decimal) {
+        addressTextField?.text = ""
+        amountTextField?.text = ""
+
+        let alert = UIAlertController(title: "Success", message: "\(amount) sent to \(address)", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .cancel))
         present(alert, animated: true)
     }

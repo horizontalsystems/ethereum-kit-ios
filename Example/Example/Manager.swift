@@ -12,6 +12,9 @@ class Manager {
 
     var walletKit: EthereumKit!
 
+    let balanceSubject = PublishSubject<BInt>()
+    let transactionsSubject = PublishSubject<Void>()
+
     init() {
         if let words = savedWords {
             initWalletKit(words: words)
@@ -35,7 +38,8 @@ class Manager {
     }
 
     private func initWalletKit(words: [String]) {
-        walletKit = EthereumKit(withWords: words, network: networkType)
+        walletKit = EthereumKit(withWords: words, network: networkType, debugPrints: false)
+        walletKit.delegate = self
     }
 
     private var savedWords: [String]? {
@@ -57,15 +61,15 @@ class Manager {
 
 }
 
-//extension Manager: BitcoinKitDelegate {
-//
-//    public func transactionsUpdated(walletKit: WalletKit, inserted: [TransactionInfo], updated: [TransactionInfo], deleted: [Int]) {
-//        transactionsSubject.onNext(())
-//    }
-//
-//    public func balanceUpdated(walletKit: WalletKit, balance: Int) {
-//        balanceSubject.onNext(balance)
-//    }
+extension Manager: EthereumKitDelegate {
+
+    public func transactionsUpdated(walletKit: EthereumKit, inserted: [EthereumTransaction], updated: [EthereumTransaction], deleted: [Int]) {
+        transactionsSubject.onNext(())
+    }
+
+    public func balanceUpdated(walletKit: EthereumKit, balance: BInt) {
+        balanceSubject.onNext(balance)
+    }
 //
 //    public func lastBlockInfoUpdated(walletKit: WalletKit, lastBlockInfo: BlockInfo) {
 //        lastBlockInfoSubject.onNext(lastBlockInfo)
@@ -75,4 +79,4 @@ class Manager {
 //        progressSubject.onNext(progress)
 //    }
 //
-//}
+}

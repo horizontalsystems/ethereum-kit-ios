@@ -87,6 +87,19 @@ public enum Network {
             return chainID
         }
     }
+
+    public var infura: String {
+        switch self {
+        case .mainnet:
+            return "https://mainnet.infura.io/"
+        case .ropsten:
+            return "https://ropsten.infura.io/"
+        case .kovan:
+            return "https://kovan.infura.io/"
+        case .private(_, _):
+            return "_"
+        }
+    }
 }
 
 extension Network: Equatable {

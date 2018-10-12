@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3A19DECF216F4422009109F2 /* HSEthereumKitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A19DECE216F4422009109F2 /* HSEthereumKitTests.swift */; };
+		3A19DED1216F4422009109F2 /* HSEthereumKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A3B59A4216B1B13001C5E99 /* HSEthereumKit.framework */; };
 		3A38F9DF216B78EE00A764EB /* Base58Encode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9A5216B78EE00A764EB /* Base58Encode.swift */; };
 		3A38F9E0216B78EE00A764EB /* RLP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9A6216B78EE00A764EB /* RLP.swift */; };
 		3A38F9E1216B78EE00A764EB /* Result.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9A7216B78EE00A764EB /* Result.swift */; };
@@ -56,12 +58,32 @@
 		3A38FA0D216B78EE00A764EB /* JSONRPC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9DD216B78EE00A764EB /* JSONRPC.swift */; };
 		3A38FA0E216B78EE00A764EB /* Geth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9DE216B78EE00A764EB /* Geth.swift */; };
 		3A3B59A9216B1B13001C5E99 /* HSEthereumKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A3B59A7216B1B13001C5E99 /* HSEthereumKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		58AAA081A68345A707A45794 /* EthereumGas.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAF8EF6D1122AD52C8BD6 /* EthereumGas.swift */; };
 		58AAA1A0931ADF95231D4F87 /* EthereumKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA6BB2DA999645A4E41EA /* EthereumKit.swift */; };
+		58AAA7C99F4D8FD7DF51C749 /* AddressValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA4CC1551836BE97FA9EA /* AddressValidatorTests.swift */; };
+		58AAA80F6F0B000F0D11C5A8 /* EthereumTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA1E3FA19355458A8B417 /* EthereumTransaction.swift */; };
+		58AAA9112849585C4F820AE8 /* AddressValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAA0DB1559A80BD16982E /* AddressValidator.swift */; };
+		58AAAA05184221C7EDAF630A /* RealmFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAACCC8AD8A2CC08E4A5EC /* RealmFactory.swift */; };
+		58AAAC79C7CF8ECC33A8E8FE /* EthereumBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAFB6CCA44D8BFD8F4F39 /* EthereumBalance.swift */; };
 		7F933535324C95EED98EB7E3 /* Pods_HSEthereumKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DB2DFC95631D62377495C0D8 /* Pods_HSEthereumKit.framework */; };
+		CF113F32D42C1F8ED834F4C4 /* Pods_HSEthereumKitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 76F074BC2886A32B1444D8D7 /* Pods_HSEthereumKitTests.framework */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		3A19DED2216F4422009109F2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3A3B599B216B1B13001C5E99 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3A3B59A3216B1B13001C5E99;
+			remoteInfo = HSEthereumKit;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		31624145EC1315E9F40EAFF4 /* Pods-HSEthereumKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HSEthereumKit.release.xcconfig"; path = "../Pods/Target Support Files/Pods-HSEthereumKit/Pods-HSEthereumKit.release.xcconfig"; sourceTree = "<group>"; };
+		3A19DECC216F4422009109F2 /* HSEthereumKitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HSEthereumKitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3A19DECE216F4422009109F2 /* HSEthereumKitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HSEthereumKitTests.swift; sourceTree = "<group>"; };
+		3A19DED0216F4422009109F2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3A38F9A5216B78EE00A764EB /* Base58Encode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Base58Encode.swift; sourceTree = "<group>"; };
 		3A38F9A6216B78EE00A764EB /* RLP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RLP.swift; sourceTree = "<group>"; };
 		3A38F9A7216B78EE00A764EB /* Result.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Result.swift; sourceTree = "<group>"; };
@@ -114,12 +136,30 @@
 		3A3B59A7216B1B13001C5E99 /* HSEthereumKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HSEthereumKit.h; sourceTree = "<group>"; };
 		3A3B59A8216B1B13001C5E99 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3A3B5B68216B5964001C5E99 /* HSCryptoKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = HSCryptoKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		41EC06F820EABFC17FE63A16 /* Pods-HSEthereumKitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HSEthereumKitTests.release.xcconfig"; path = "../Pods/Target Support Files/Pods-HSEthereumKitTests/Pods-HSEthereumKitTests.release.xcconfig"; sourceTree = "<group>"; };
+		58AAA1E3FA19355458A8B417 /* EthereumTransaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumTransaction.swift; sourceTree = "<group>"; };
+		58AAA4CC1551836BE97FA9EA /* AddressValidatorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddressValidatorTests.swift; sourceTree = "<group>"; };
 		58AAA6BB2DA999645A4E41EA /* EthereumKit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumKit.swift; sourceTree = "<group>"; };
+		58AAAA0DB1559A80BD16982E /* AddressValidator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddressValidator.swift; sourceTree = "<group>"; };
+		58AAACCC8AD8A2CC08E4A5EC /* RealmFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealmFactory.swift; sourceTree = "<group>"; };
+		58AAAF8EF6D1122AD52C8BD6 /* EthereumGas.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumGas.swift; sourceTree = "<group>"; };
+		58AAAFB6CCA44D8BFD8F4F39 /* EthereumBalance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumBalance.swift; sourceTree = "<group>"; };
+		6B6E64E8170B11AD1C5AD461 /* Pods-HSEthereumKitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HSEthereumKitTests.debug.xcconfig"; path = "../Pods/Target Support Files/Pods-HSEthereumKitTests/Pods-HSEthereumKitTests.debug.xcconfig"; sourceTree = "<group>"; };
+		76F074BC2886A32B1444D8D7 /* Pods_HSEthereumKitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HSEthereumKitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A7A1910508AEEE2D89293A0A /* Pods-HSEthereumKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HSEthereumKit.debug.xcconfig"; path = "../Pods/Target Support Files/Pods-HSEthereumKit/Pods-HSEthereumKit.debug.xcconfig"; sourceTree = "<group>"; };
 		DB2DFC95631D62377495C0D8 /* Pods_HSEthereumKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HSEthereumKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		3A19DEC9216F4422009109F2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3A19DED1216F4422009109F2 /* HSEthereumKit.framework in Frameworks */,
+				CF113F32D42C1F8ED834F4C4 /* Pods_HSEthereumKitTests.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3A3B59A1216B1B13001C5E99 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -131,6 +171,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3A19DECD216F4422009109F2 /* HSEthereumKitTests */ = {
+			isa = PBXGroup;
+			children = (
+				3A19DED8216F455A009109F2 /* Helpers */,
+				3A19DECE216F4422009109F2 /* HSEthereumKitTests.swift */,
+				3A19DED0216F4422009109F2 /* Info.plist */,
+			);
+			path = HSEthereumKitTests;
+			sourceTree = "<group>";
+		};
+		3A19DED8216F455A009109F2 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				58AAA4CC1551836BE97FA9EA /* AddressValidatorTests.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
 		3A38F9A3216B78A800A764EB /* EthereumKit */ = {
 			isa = PBXGroup;
 			children = (
@@ -278,6 +336,7 @@
 			isa = PBXGroup;
 			children = (
 				3A3B59A6216B1B13001C5E99 /* HSEthereumKit */,
+				3A19DECD216F4422009109F2 /* HSEthereumKitTests */,
 				3A3B59A5216B1B13001C5E99 /* Products */,
 				FEB70F892491AA1E98BF0B33 /* Pods */,
 				771194D7AFB450EC1E50D267 /* Frameworks */,
@@ -288,6 +347,7 @@
 			isa = PBXGroup;
 			children = (
 				3A3B59A4216B1B13001C5E99 /* HSEthereumKit.framework */,
+				3A19DECC216F4422009109F2 /* HSEthereumKitTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -299,14 +359,35 @@
 				3A3B59A7216B1B13001C5E99 /* HSEthereumKit.h */,
 				3A3B59A8216B1B13001C5E99 /* Info.plist */,
 				58AAAD1D445002A6D96D90DA /* Core */,
+				58AAA241F1242A106F230969 /* Helpers */,
+				58AAAD0293AB2F9E1C035A26 /* Models */,
 			);
 			path = HSEthereumKit;
+			sourceTree = "<group>";
+		};
+		58AAA241F1242A106F230969 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				58AAAA0DB1559A80BD16982E /* AddressValidator.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
+		58AAAD0293AB2F9E1C035A26 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				58AAA1E3FA19355458A8B417 /* EthereumTransaction.swift */,
+				58AAAFB6CCA44D8BFD8F4F39 /* EthereumBalance.swift */,
+				58AAAF8EF6D1122AD52C8BD6 /* EthereumGas.swift */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 		58AAAD1D445002A6D96D90DA /* Core */ = {
 			isa = PBXGroup;
 			children = (
 				58AAA6BB2DA999645A4E41EA /* EthereumKit.swift */,
+				58AAACCC8AD8A2CC08E4A5EC /* RealmFactory.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -316,6 +397,7 @@
 			children = (
 				3A3B5B68216B5964001C5E99 /* HSCryptoKit.framework */,
 				DB2DFC95631D62377495C0D8 /* Pods_HSEthereumKit.framework */,
+				76F074BC2886A32B1444D8D7 /* Pods_HSEthereumKitTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -325,6 +407,8 @@
 			children = (
 				A7A1910508AEEE2D89293A0A /* Pods-HSEthereumKit.debug.xcconfig */,
 				31624145EC1315E9F40EAFF4 /* Pods-HSEthereumKit.release.xcconfig */,
+				6B6E64E8170B11AD1C5AD461 /* Pods-HSEthereumKitTests.debug.xcconfig */,
+				41EC06F820EABFC17FE63A16 /* Pods-HSEthereumKitTests.release.xcconfig */,
 			);
 			name = Pods;
 			sourceTree = "<group>";
@@ -343,6 +427,27 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		3A19DECB216F4422009109F2 /* HSEthereumKitTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3A19DED6216F4422009109F2 /* Build configuration list for PBXNativeTarget "HSEthereumKitTests" */;
+			buildPhases = (
+				79435914D715B85B459A2665 /* [CP] Check Pods Manifest.lock */,
+				3A19DED7216F44C5009109F2 /* Cuckoo */,
+				3A19DEC8216F4422009109F2 /* Sources */,
+				3A19DEC9216F4422009109F2 /* Frameworks */,
+				3A19DECA216F4422009109F2 /* Resources */,
+				D184AD83B1211C8756F436D2 /* [CP] Embed Pods Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3A19DED3216F4422009109F2 /* PBXTargetDependency */,
+			);
+			name = HSEthereumKitTests;
+			productName = HSEthereumKitTests;
+			productReference = 3A19DECC216F4422009109F2 /* HSEthereumKitTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		3A3B59A3216B1B13001C5E99 /* HSEthereumKit */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3A3B59AC216B1B13001C5E99 /* Build configuration list for PBXNativeTarget "HSEthereumKit" */;
@@ -368,9 +473,13 @@
 		3A3B599B216B1B13001C5E99 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 1000;
 				LastUpgradeCheck = 1000;
 				ORGANIZATIONNAME = "Horizontal Systems";
 				TargetAttributes = {
+					3A19DECB216F4422009109F2 = {
+						CreatedOnToolsVersion = 10.0;
+					};
 					3A3B59A3216B1B13001C5E99 = {
 						CreatedOnToolsVersion = 10.0;
 					};
@@ -389,11 +498,19 @@
 			projectRoot = "";
 			targets = (
 				3A3B59A3216B1B13001C5E99 /* HSEthereumKit */,
+				3A19DECB216F4422009109F2 /* HSEthereumKitTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		3A19DECA216F4422009109F2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3A3B59A2216B1B13001C5E99 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -404,6 +521,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		3A19DED7216F44C5009109F2 /* Cuckoo */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/HSEthereumKit/Helpers/AddressValidator.swift",
+			);
+			name = Cuckoo;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Define output file. Change \"$PROJECT_DIR/${PROJECT_NAME}Tests\" to your test's root source folder, if it's not the default name.\nOUTPUT_FILE=\"$PROJECT_DIR/${PROJECT_NAME}Tests/GeneratedMocks.swift\"\necho \"Generated Mocks File = $OUTPUT_FILE\"\n\n# Define input directory. Change \"${PROJECT_DIR}/${PROJECT_NAME}\" to your project's root source folder, if it's not the default name.\nINPUT_DIR=\"${PROJECT_DIR}/${PROJECT_NAME}\"\necho \"Mocks Input Directory = $INPUT_DIR\"\n\n# Generate mock files, include as many input files as you'd like to create mocks for.\n\"${PODS_ROOT}/Cuckoo/run\" generate --testable \"$PROJECT_NAME\" \\\n--output \"${OUTPUT_FILE}\"\n";
+		};
 		73D2036AF7203B8C343FFCFB /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -422,9 +558,66 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		79435914D715B85B459A2665 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-HSEthereumKitTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D184AD83B1211C8756F436D2 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${SRCROOT}/../Pods/Target Support Files/Pods-HSEthereumKitTests/Pods-HSEthereumKitTests-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/CryptoEthereumSwift/CryptoEthereumSwift.framework",
+				"${BUILT_PRODUCTS_DIR}/CryptoSwift/CryptoSwift.framework",
+				"${BUILT_PRODUCTS_DIR}/Realm/Realm.framework",
+				"${BUILT_PRODUCTS_DIR}/RealmSwift/RealmSwift.framework",
+				"${BUILT_PRODUCTS_DIR}/RxRealm/RxRealm.framework",
+				"${BUILT_PRODUCTS_DIR}/RxSwift/RxSwift.framework",
+				"${BUILT_PRODUCTS_DIR}/Cuckoo/Cuckoo.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CryptoEthereumSwift.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CryptoSwift.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Realm.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RealmSwift.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxRealm.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxSwift.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Cuckoo.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/../Pods/Target Support Files/Pods-HSEthereumKitTests/Pods-HSEthereumKitTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		3A19DEC8216F4422009109F2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3A19DECF216F4422009109F2 /* HSEthereumKitTests.swift in Sources */,
+				58AAA7C99F4D8FD7DF51C749 /* AddressValidatorTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3A3B59A0216B1B13001C5E99 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -478,12 +671,65 @@
 				3A38F9F8216B78EE00A764EB /* PrivateKey.swift in Sources */,
 				3A38FA0A216B78EE00A764EB /* BatchFactory.swift in Sources */,
 				58AAA1A0931ADF95231D4F87 /* EthereumKit.swift in Sources */,
+				58AAAA05184221C7EDAF630A /* RealmFactory.swift in Sources */,
+				58AAA80F6F0B000F0D11C5A8 /* EthereumTransaction.swift in Sources */,
+				58AAAC79C7CF8ECC33A8E8FE /* EthereumBalance.swift in Sources */,
+				58AAA9112849585C4F820AE8 /* AddressValidator.swift in Sources */,
+				58AAA081A68345A707A45794 /* EthereumGas.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		3A19DED3216F4422009109F2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3A3B59A3216B1B13001C5E99 /* HSEthereumKit */;
+			targetProxy = 3A19DED2216F4422009109F2 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		3A19DED4216F4422009109F2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6B6E64E8170B11AD1C5AD461 /* Pods-HSEthereumKitTests.debug.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 72234W6E3D;
+				INFOPLIST_FILE = HSEthereumKitTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.horizontalsystems.HSEthereumKitTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3A19DED5216F4422009109F2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 41EC06F820EABFC17FE63A16 /* Pods-HSEthereumKitTests.release.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 72234W6E3D;
+				INFOPLIST_FILE = HSEthereumKitTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.horizontalsystems.HSEthereumKitTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		3A3B59AA216B1B13001C5E99 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -663,6 +909,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		3A19DED6216F4422009109F2 /* Build configuration list for PBXNativeTarget "HSEthereumKitTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3A19DED4216F4422009109F2 /* Debug */,
+				3A19DED5216F4422009109F2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		3A3B599E216B1B13001C5E99 /* Build configuration list for PBXProject "HSEthereumKit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

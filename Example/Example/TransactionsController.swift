@@ -1,11 +1,12 @@
 import UIKit
 import RealmSwift
 import RxSwift
+import HSEthereumKit
 
 class TransactionsController: UITableViewController {
     let disposeBag = DisposeBag()
 
-//    var transactions = [TransactionInfo]()
+    var transactions = [EthereumTransaction]()
 //    var lastBlockInfo: BlockInfo?
 
     override func viewDidLoad() {
@@ -18,9 +19,9 @@ class TransactionsController: UITableViewController {
         update()
 //        lastBlockInfo = Manager.shared.walletKit.lastBlockInfo
 
-//        Manager.shared.transactionsSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
-//            self?.update()
-//        }).disposed(by: disposeBag)
+        Manager.shared.transactionsSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
+            self?.update()
+        }).disposed(by: disposeBag)
 
 //        Manager.shared.lastBlockInfoSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] info in
 //            self?.lastBlockInfo = info
@@ -29,12 +30,12 @@ class TransactionsController: UITableViewController {
     }
 
     private func update() {
-//        transactions = Manager.shared.walletKit.transactions
+        transactions = Manager.shared.walletKit.transactions
         tableView.reloadData()
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 0 //transactions.count
+        return transactions.count
     }
 
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -47,7 +48,7 @@ class TransactionsController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         if let cell = cell as? TransactionCell {
-            // cell.bind(transaction: transactions[indexPath.row], lastBlockHeight: lastBlockInfo?.height ?? 0)
+            cell.bind(transaction: transactions[indexPath.row], lastBlockHeight: 0)
         }
     }
 

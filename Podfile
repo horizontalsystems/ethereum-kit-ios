@@ -26,3 +26,10 @@ target :HSEthereumKit do
   project 'HSEthereumKit/HSEthereumKit'
   kit_pods
 end
+
+target :HSEthereumKitTests do
+  project 'HSEthereumKit/HSEthereumKit'
+
+  kit_pods
+  pod "Cuckoo"
+end
