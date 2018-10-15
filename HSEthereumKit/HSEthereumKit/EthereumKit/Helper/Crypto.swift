@@ -1,4 +1,3 @@
-import CryptoSwift
 import CryptoEthereumSwift
 
 /// Helper class for cryptographic algorithms.
