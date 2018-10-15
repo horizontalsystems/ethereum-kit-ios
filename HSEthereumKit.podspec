@@ -20,7 +20,7 @@ Pod::Spec.new do |spec|
   spec.pod_target_xcconfig = { 'SWIFT_WHOLE_MODULE_OPTIMIZATION' => 'YES',
                                'APPLICATION_EXTENSION_API_ONLY' => 'YES' }
 
-  spec.dependency 'CryptoSwift'
+  spec.dependency 'CryptoEthereumSwift'
   spec.dependency 'RxSwift'
   spec.dependency 'RealmSwift'
   spec.dependency 'RxRealm'
