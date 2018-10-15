@@ -15,6 +15,7 @@ def kit_pods
   pod "RxRealm"
 
   pod "CryptoEthereumSwift", git: "https://github.com/horizontalsystems/CryptoEthereumSwift"
+  pod "CryptoSwift"
 end
 
 target :Example do

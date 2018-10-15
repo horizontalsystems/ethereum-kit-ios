@@ -2,7 +2,7 @@ PODS:
   - CryptoEthereumSwift (2.0.0):
     - CryptoSwift
   - CryptoSwift (0.12.0)
-  - Cuckoo (0.11.3)
+  - Cuckoo (0.12.0)
   - Realm (3.11.0):
     - Realm/Headers (= 3.11.0)
   - Realm/Headers (3.11.0)
@@ -15,6 +15,7 @@ PODS:
 
 DEPENDENCIES:
   - CryptoEthereumSwift (from `https://github.com/horizontalsystems/CryptoEthereumSwift`)
+  - CryptoSwift
   - Cuckoo
   - RealmSwift
   - RxRealm
@@ -41,12 +42,12 @@ CHECKOUT OPTIONS:
 SPEC CHECKSUMS:
   CryptoEthereumSwift: c2b18c52962d5e3589ee50b3f418cf103407136e
   CryptoSwift: 1c07ca50843dd48bc54e6ea53d7a4dba3b645716
-  Cuckoo: 97522dd7ac6f18adba6022bdc74aa69e82ca691a
+  Cuckoo: d30b6c149e52ffbcfe6b4a9543e4627d08947274
   Realm: 92f09a102692b96a9a10e9617f214f15c5ab85fc
   RealmSwift: 5f0481cd658bb751c509314b964a35eaa264d2cf
   RxRealm: a6c6c0a07cb61f34209969ca6657734edfdfff30
   RxSwift: fe0fd770a43acdb7d0a53da411c9b892e69bb6e4
 
-PODFILE CHECKSUM: ffa45ddd172d032aab683d19c4a4ddc4ebd6df92
+PODFILE CHECKSUM: 687f4a13ed60b0d2739ae2e334adb1513e500faa
 
 COCOAPODS: 1.5.3
