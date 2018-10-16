@@ -39,7 +39,7 @@ public class EthereumKit {
         }
 
         let configuration = Configuration(
-                network: .ropsten,
+                network: network,
                 nodeEndpoint: network.infura + EthereumKit.infuraKey,
                 etherscanAPIKey: EthereumKit.etherscanKey,
                 debugPrints: debugPrints

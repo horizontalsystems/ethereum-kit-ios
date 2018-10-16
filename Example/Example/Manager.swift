@@ -70,13 +70,5 @@ extension Manager: EthereumKitDelegate {
     public func balanceUpdated(walletKit: EthereumKit, balance: BInt) {
         balanceSubject.onNext(balance)
     }
-//
-//    public func lastBlockInfoUpdated(walletKit: WalletKit, lastBlockInfo: BlockInfo) {
-//        lastBlockInfoSubject.onNext(lastBlockInfo)
-//    }
-//
-//    public func progressUpdated(walletKit: WalletKit, progress: Double) {
-//        progressSubject.onNext(progress)
-//    }
-//
+
 }
