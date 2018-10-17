@@ -268,7 +268,7 @@ public class EthereumKit {
     private func handleTransactions(changeset: RealmCollectionChange<Results<EthereumTransaction>>) {
         if case let .update(collection, deletions, insertions, modifications) = changeset {
             delegate?.transactionsUpdated(
-                    walletKit: self,
+                    ethereumKit: self,
                     inserted: insertions.map { collection[$0] },
                     updated: modifications.map { collection[$0] },
                     deleted: deletions
@@ -278,13 +278,13 @@ public class EthereumKit {
 
     private func handleBalance(changeset: RealmCollectionChange<Results<EthereumBalance>>) {
         if case .update = changeset {
-            delegate?.balanceUpdated(walletKit: self, balance: balance)
+            delegate?.balanceUpdated(ethereumKit: self, balance: balance)
         }
     }
 
 }
 
 public protocol EthereumKitDelegate: class {
-    func transactionsUpdated(walletKit: EthereumKit, inserted: [EthereumTransaction], updated: [EthereumTransaction], deleted: [Int])
-    func balanceUpdated(walletKit: EthereumKit, balance: BInt)
+    func transactionsUpdated(ethereumKit: EthereumKit, inserted: [EthereumTransaction], updated: [EthereumTransaction], deleted: [Int])
+    func balanceUpdated(ethereumKit: EthereumKit, balance: BInt)
 }

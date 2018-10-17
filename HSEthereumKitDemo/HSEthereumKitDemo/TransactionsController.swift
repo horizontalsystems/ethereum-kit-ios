@@ -7,7 +7,6 @@ class TransactionsController: UITableViewController {
     let disposeBag = DisposeBag()
 
     var transactions = [EthereumTransaction]()
-//    var lastBlockInfo: BlockInfo?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -17,20 +16,15 @@ class TransactionsController: UITableViewController {
         tableView.register(UINib(nibName: String(describing: TransactionCell.self), bundle: Bundle(for: TransactionCell.self)), forCellReuseIdentifier: String(describing: TransactionCell.self))
 
         update()
-//        lastBlockInfo = Manager.shared.walletKit.lastBlockInfo
 
         Manager.shared.transactionsSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
             self?.update()
         }).disposed(by: disposeBag)
 
-//        Manager.shared.lastBlockInfoSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] info in
-//            self?.lastBlockInfo = info
-//            self?.update()
-//        }).disposed(by: disposeBag)
     }
 
     private func update() {
-        transactions = Manager.shared.walletKit.transactions
+        transactions = Manager.shared.ethereumKit.transactions
         tableView.reloadData()
     }
 

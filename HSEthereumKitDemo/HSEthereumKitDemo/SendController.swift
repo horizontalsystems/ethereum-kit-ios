@@ -28,7 +28,7 @@ class SendController: UIViewController {
             return
         }
 
-        Manager.shared.walletKit.send(to: address, value: amount) { [weak self] error in
+        Manager.shared.ethereumKit.send(to: address, value: amount) { [weak self] error in
             if error != nil {
                 self?.show(error: "Something conversion wrong")
             } else {

@@ -10,36 +10,36 @@ class Manager {
 
     let networkType: Network = .ropsten
 
-    var walletKit: EthereumKit!
+    var ethereumKit: EthereumKit!
 
     let balanceSubject = PublishSubject<BInt>()
     let transactionsSubject = PublishSubject<Void>()
 
     init() {
         if let words = savedWords {
-            initWalletKit(words: words)
+            initEthereumKit(words: words)
         }
     }
 
     func login(words: [String]) {
         save(words: words)
-        initWalletKit(words: words)
+        initEthereumKit(words: words)
     }
 
     func logout() {
         do {
-            try walletKit.clear()
+            try ethereumKit.clear()
         } catch {
-            print("WalletKit Clear Error: \(error)")
+            print("EthereumKit Clear Error: \(error)")
         }
 
         clearWords()
-        walletKit = nil
+        ethereumKit = nil
     }
 
-    private func initWalletKit(words: [String]) {
-        walletKit = EthereumKit(withWords: words, network: networkType, debugPrints: false)
-        walletKit.delegate = self
+    private func initEthereumKit(words: [String]) {
+        ethereumKit = EthereumKit(withWords: words, network: networkType, debugPrints: false)
+        ethereumKit.delegate = self
     }
 
     private var savedWords: [String]? {
@@ -63,11 +63,11 @@ class Manager {
 
 extension Manager: EthereumKitDelegate {
 
-    public func transactionsUpdated(walletKit: EthereumKit, inserted: [EthereumTransaction], updated: [EthereumTransaction], deleted: [Int]) {
+    public func transactionsUpdated(ethereumKit: EthereumKit, inserted: [EthereumTransaction], updated: [EthereumTransaction], deleted: [Int]) {
         transactionsSubject.onNext(())
     }
 
-    public func balanceUpdated(walletKit: EthereumKit, balance: BInt) {
+    public func balanceUpdated(ethereumKit: EthereumKit, balance: BInt) {
         balanceSubject.onNext(balance)
     }
 

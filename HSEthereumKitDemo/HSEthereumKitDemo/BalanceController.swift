@@ -26,10 +26,10 @@ class BalanceController: UIViewController {
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Logout", style: .plain, target: self, action: #selector(logout))
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Refresh", style: .plain, target: self, action: #selector(start))
 
-        let walletKit = Manager.shared.walletKit!
+        let ethereumKit = Manager.shared.ethereumKit!
 
-        update(balance: walletKit.balance)
-        update(progress: walletKit.progress)
+        update(balance: ethereumKit.balance)
+        update(progress: ethereumKit.progress)
 
         Manager.shared.balanceSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] balance in
             self?.update(balance: balance)
@@ -47,11 +47,11 @@ class BalanceController: UIViewController {
     }
 
     @objc func start() {
-        Manager.shared.walletKit.start()
+        Manager.shared.ethereumKit.start()
     }
 
     @IBAction func showRealmInfo() {
-        Manager.shared.walletKit.showRealmInfo()
+        Manager.shared.ethereumKit.showRealmInfo()
     }
 
     private func update(balance: BInt) {

@@ -8,9 +8,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "3A3B59D5216B1D81001C5E99"
-               BuildableName = "Example.app"
-               BlueprintName = "Example"
-               ReferencedContainer = "container:../Example/Example.xcodeproj">
+               BuildableName = "HSEthereumKitDemo.app"
+               BlueprintName = "HSEthereumKitDemo"
+               ReferencedContainer = "container:../HSEthereumKitDemo/HSEthereumKitDemo.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -23,9 +23,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "3A3B59D5216B1D81001C5E99"
-            BuildableName = "Example.app"
-            BlueprintName = "Example"
-            ReferencedContainer = "container:../Example/Example.xcodeproj">
+            BuildableName = "HSEthereumKitDemo.app"
+            BlueprintName = "HSEthereumKitDemo"
+            ReferencedContainer = "container:../HSEthereumKitDemo/HSEthereumKitDemo.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <LocationScenarioReference
