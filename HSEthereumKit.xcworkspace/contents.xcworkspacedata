@@ -5,7 +5,7 @@
       location = "group:HSEthereumKit/HSEthereumKit.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:Example/Example.xcodeproj">
+      location = "group:HSEthereumKitDemo/HSEthereumKitDemo.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:Pods/Pods.xcodeproj">

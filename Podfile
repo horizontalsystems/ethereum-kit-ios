@@ -3,9 +3,9 @@ use_frameworks!
 
 inhibit_all_warnings!
 
-workspace 'Example'
+workspace 'HSEthereumKit'
 
-project 'Example/Example'
+project 'HSEthereumKitDemo/HSEthereumKitDemo'
 project 'HSEthereumKit/HSEthereumKit'
 
 def kit_pods
@@ -18,8 +18,8 @@ def kit_pods
   pod "CryptoSwift"
 end
 
-target :Example do
- project 'Example/Example'
+target :HSEthereumKitDemo do
+ project 'HSEthereumKitDemo/HSEthereumKitDemo'
  kit_pods
 end
 
