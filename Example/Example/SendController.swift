@@ -23,7 +23,7 @@ class SendController: UIViewController {
             return
         }
 
-        guard let amountString = amountTextField?.text, let amount = Decimal(string: amountString) else {
+        guard let amountString = amountTextField?.text, let amount = Double(amountString) else {
             show(error: "Empty or Non Integer Amount")
             return
         }
@@ -44,7 +44,7 @@ class SendController: UIViewController {
         present(alert, animated: true)
     }
 
-    private func showSuccess(address: String, amount: Decimal) {
+    private func showSuccess(address: String, amount: Double) {
         addressTextField?.text = ""
         amountTextField?.text = ""
 

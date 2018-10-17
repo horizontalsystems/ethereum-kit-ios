@@ -58,7 +58,7 @@
 		3A3B59F7216B2693001C5E99 /* WordsController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = WordsController.xib; sourceTree = "<group>"; };
 		3A3B59F8216B2693001C5E99 /* ReceiveController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ReceiveController.xib; sourceTree = "<group>"; };
 		3A3B59F9216B2693001C5E99 /* TransactionsController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionsController.swift; sourceTree = "<group>"; };
-		3A3B59FA216B2694001C5E99 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = "../../../WalletKit-iOS/Example/Example/AppDelegate.swift"; sourceTree = "<group>"; };
+		3A3B59FA216B2694001C5E99 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		3A3B59FB216B2694001C5E99 /* TransactionCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TransactionCell.xib; sourceTree = "<group>"; };
 		3A3B59FC216B2694001C5E99 /* SendController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SendController.xib; sourceTree = "<group>"; };
 		3A3B5A0D216B444D001C5E99 /* HSEthereumKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = HSEthereumKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
