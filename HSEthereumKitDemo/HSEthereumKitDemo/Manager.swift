@@ -8,7 +8,7 @@ class Manager {
 
     private let keyWords = "mnemonic_words"
 
-    let networkType: Network = .ropsten
+    let coin: EthereumKit.Coin = .ethereum(network: .testNet)
 
     var ethereumKit: EthereumKit!
 
@@ -38,7 +38,7 @@ class Manager {
     }
 
     private func initEthereumKit(words: [String]) {
-        ethereumKit = EthereumKit(withWords: words, network: networkType, debugPrints: false)
+        ethereumKit = EthereumKit(withWords: words, coin: coin, debugPrints: false)
         ethereumKit.delegate = self
     }
 

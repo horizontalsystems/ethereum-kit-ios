@@ -51,7 +51,7 @@ class BalanceController: UIViewController {
     }
 
     @IBAction func showRealmInfo() {
-        Manager.shared.ethereumKit.showRealmInfo()
+        print(Manager.shared.ethereumKit.debugInfo)
     }
 
     private func update(balance: BInt) {

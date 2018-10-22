@@ -1,6 +1,7 @@
 import Foundation
 import RealmSwift
 import RxSwift
+import CryptoSwift
 
 public class EthereumKit {
     private static let infuraKey = "2a1306f1d12f4c109a4d4fb9be46b02e"
@@ -10,7 +11,6 @@ public class EthereumKit {
 
     public weak var delegate: EthereumKitDelegate?
 
-    let network: Network
     let wallet: Wallet
 
     let realmFactory: RealmFactory
@@ -20,17 +20,28 @@ public class EthereumKit {
     private var balanceNotificationToken: NotificationToken?
     private var transactionsNotificationToken: NotificationToken?
 
-    public init(withWords words: [String], network: Network, debugPrints: Bool = false) {
-        self.network = network
+    public init(withWords words: [String], coin: Coin, debugPrints: Bool = false) {
+        let wordsHash = words.joined().data(using: .utf8).map { Crypto.doubleSHA256($0).toHexString() } ?? words[0]
 
-        let wordsHash = words.joined()
-        let realmFileName = "\(wordsHash)-\(network).realm"
+        let realmFileName = "\(wordsHash)-\(coin.rawValue).realm"
 
         let documentsUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
         let realmConfiguration = Realm.Configuration(fileURL: documentsUrl?.appendingPathComponent(realmFileName))
 
         realmFactory = RealmFactory(configuration: realmConfiguration)
         addressValidator = AddressValidator()
+
+        let network: Network
+
+        switch coin {
+        case .ethereum(let networkType):
+            switch networkType {
+            case .mainNet:
+                network = .mainnet
+            case .testNet:
+                network = .ropsten
+            }
+        }
 
         do {
             wallet = try Wallet(seed: try Mnemonic.createSeed(mnemonic: words), network: network, debugPrints: debugPrints)
@@ -56,9 +67,13 @@ public class EthereumKit {
 
     }
 
-    public func showRealmInfo() {
-        print("PUBLIC KEY: \(wallet.publicKey()) ADDRESS: \(wallet.address())")
-        print("TRANSACTION COUNT: \(transactions.count)")
+    public var debugInfo: String {
+        var lines = [String]()
+
+        lines.append("PUBLIC KEY: \(wallet.publicKey()) ADDRESS: \(wallet.address())")
+        lines.append("TRANSACTION COUNT: \(transactions.count)")
+
+        return lines.joined(separator: "\n")
     }
 
     // Manage Kit methods
@@ -287,4 +302,24 @@ public class EthereumKit {
 public protocol EthereumKitDelegate: class {
     func transactionsUpdated(ethereumKit: EthereumKit, inserted: [EthereumTransaction], updated: [EthereumTransaction], deleted: [Int])
     func balanceUpdated(ethereumKit: EthereumKit, balance: BInt)
+}
+
+extension EthereumKit {
+
+    public enum Coin {
+        case ethereum(network: NetworkType)
+
+        var rawValue: String {
+            switch self {
+            case .ethereum(let network):
+                return "eth-\(network)"
+            }
+        }
+    }
+
+    public enum NetworkType {
+        case mainNet
+        case testNet
+    }
+
 }
