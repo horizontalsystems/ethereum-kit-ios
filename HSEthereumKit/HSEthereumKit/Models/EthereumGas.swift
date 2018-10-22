@@ -2,7 +2,7 @@ import Foundation
 import RealmSwift
 
 public class EthereumGas: Object {
-    public static let normalGasPriceInGWei = 41
+    public static let normalGasPriceInGWei = 10
     public static let normalGasLimit = 21000
 
     @objc public dynamic var address: String = ""

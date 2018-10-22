@@ -208,12 +208,12 @@ public class EthereumKit {
         return wallet.address()
     }
 
-    public func send(to address: String, value: Double, gasPrice: Int = Converter.toWei(GWei: EthereumGas.normalGasPriceInGWei), gasLimit: Int = EthereumGas.normalGasLimit, completion: ((Error?) -> ())? = nil) {
-
+    public func send(to address: String, value: Double, gasPrice: Int? = nil, completion: ((Error?) -> ())? = nil) {
+        let price = gasPrice ?? ethereumGas.gasPriceGWei
         geth.getTransactionCount(of: wallet.address(), blockParameter: .pending) { result in
             switch result {
             case .success(let nonce):
-                self.send(nonce: nonce, address: address, value: value, gasPrice: gasPrice, gasLimit: gasLimit, completion: completion)
+                self.send(nonce: nonce, address: address, value: value, gasPrice: price, gasLimit: EthereumGas.normalGasLimit, completion: completion)
             case .failure(let error):
                 completion?(error)
             }
@@ -230,7 +230,7 @@ public class EthereumKit {
         return nil
     }
 
-    private func send(nonce: Int, address: String, value: Double, gasPrice: Int = Converter.toWei(GWei: EthereumGas.normalGasPriceInGWei), gasLimit: Int = EthereumGas.normalGasLimit, completion: ((Error?) -> ())? = nil) {
+    private func send(nonce: Int, address: String, value: Double, gasPrice: Int, gasLimit: Int, completion: ((Error?) -> ())? = nil) {
         let selfAddress = wallet.address()
         guard let wei: BInt = convert(ether: value, completion: completion) else {
             return
