@@ -1,5 +1,3 @@
-import CryptoSwift
-
 /// ERC20 contains necessary method to support ERC20 tokens
 public struct ERC20 {
     

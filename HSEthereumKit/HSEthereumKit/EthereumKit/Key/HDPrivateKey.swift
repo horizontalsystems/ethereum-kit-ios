@@ -1,4 +1,4 @@
-import CryptoEthereumSwift
+import HSCryptoKit
 
 public struct HDPrivateKey {
     public let raw: Data
@@ -47,25 +47,26 @@ public struct HDPrivateKey {
         let checksum = Crypto.doubleSHA256(extendedPrivateKeyData).prefix(4)
         return Base58.encode(extendedPrivateKeyData + checksum)
     }
-    
+
     internal func derived(at index: UInt32, hardens: Bool = false) throws -> HDPrivateKey {
         guard (0x80000000 & index) == 0 else {
             fatalError("Invalid index \(index)")
         }
-        
-        let keyDeriver = KeyDerivation(
-            privateKey: raw,
-            publicKey: hdPublicKey().raw,
-            chainCode: chainCode,
-            depth: depth,
-            fingerprint: fingerprint,
-            childIndex: childIndex
-        )
-        
-        guard let derivedKey = keyDeriver.derived(at: index, hardened: hardens) else {
+
+        guard let derivedKey = CryptoKit.derivedHDKey(
+                hdKey: HDKey(
+                        privateKey: raw,
+                        publicKey: hdPublicKey().raw,
+                        chainCode: chainCode,
+                        depth: depth,
+                        fingerprint: fingerprint,
+                        childIndex: childIndex),
+                at: index,
+                hardened: hardens
+        ) else {
             throw EthereumKitError.cryptoError(.keyDerivateionFailed)
         }
-        
+
         return HDPrivateKey(
             hdPrivateKey: derivedKey.privateKey!,
             chainCode: derivedKey.chainCode,

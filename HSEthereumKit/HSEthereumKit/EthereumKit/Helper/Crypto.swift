@@ -1,4 +1,5 @@
-import CryptoEthereumSwift
+import HSCryptoKit
+import CryptoSwift
 
 /// Helper class for cryptographic algorithms.
 public final class Crypto {
@@ -11,7 +12,7 @@ public final class Crypto {
     ///   - data: message to sign
     /// - Returns: 512-bit hash-based message authentication code
     public static func HMACSHA512(key: Data, data: Data) -> Data {
-        return CryptoEthereumSwift.Crypto.HMACSHA512(key: key, data: data)
+        return CryptoKit.hmacsha512(data: data, key: key)
     }
     
     /// Derives 512-bit (64-byte) private key from a password using PBKDF2 algorithm
@@ -21,7 +22,7 @@ public final class Crypto {
     ///   - salt: random data (entropy)
     /// - Returns: private key derived from password
     public static func PBKDF2SHA512(_ password: Data, salt: Data) -> Data {
-        return CryptoEthereumSwift.Crypto.PBKDF2SHA512(password, salt: salt)
+        return CryptoKit.deriveKey(password: password, salt: salt, iterations: 2048, keyLength: 64)
     }
     
     /// Returns 160-bit hash of the data
@@ -29,7 +30,7 @@ public final class Crypto {
     /// - Parameter data: data to be hashed
     /// - Returns: hash
     public static func hash160(_ data: Data) -> Data {
-        return CryptoEthereumSwift.Crypto.hash160(data)
+        return CryptoKit.sha256ripemd160(data)
     }
     
     /// Hashes data with SHA256 twice
@@ -37,7 +38,7 @@ public final class Crypto {
     /// - Parameter data: data to be hashed
     /// - Returns: hash
     public static func doubleSHA256(_ data: Data) -> Data {
-        return CryptoEthereumSwift.Crypto.doubleSHA256(data)
+        return CryptoKit.sha256sha256(data)
     }
 
     /// Returns SHA3 256-bit (32-byte) hash of the data
@@ -45,7 +46,7 @@ public final class Crypto {
     /// - Parameter data: data to be hashed
     /// - Returns: 256-bit (32-byte) hash
     public static func hashSHA3_256(_ data: Data) -> Data {
-        return CryptoEthereumSwift.Crypto.hashSHA3_256(data)
+        return data.sha3(.keccak256)
     }
     
     /// Generates public key from private key using secp256k1 elliptic curve math
@@ -55,7 +56,7 @@ public final class Crypto {
     ///   - compressed: whether public key should be compressed
     /// - Returns: 65-byte key if not compressed, otherwise 33-byte public key.
     public static func generatePublicKey(data: Data, compressed: Bool) -> Data {
-        return CryptoEthereumSwift.Crypto.generatePublicKey(data: data, compressed: compressed)
+        return CryptoKit.createPublicKey(fromPrivateKeyData: data, compressed: compressed)
     }
     
     /// Signs hash with private key
@@ -66,7 +67,7 @@ public final class Crypto {
     /// - Returns: 65-byte signature of the hash data
     /// - Throws: EthereumKitError.failedToSign in case private key was invalid
     public static func sign(_ hash: Data, privateKey: Data) throws -> Data {
-        return try CryptoEthereumSwift.Crypto.sign(hash, privateKey: privateKey)
+        return try CryptoKit.ellipticSign(hash, privateKey: privateKey)
     }
 
     /// Validates a signature of a hash with publicKey. If valid, it guarantees that the hash was signed by the
@@ -79,7 +80,7 @@ public final class Crypto {
     ///   - compressed: whether public key is compressed
     /// - Returns: True, if signature is valid for the hash and public key, false otherwise.
     public static func isValid(signature: Data, of hash: Data, publicKey: Data, compressed: Bool) -> Bool {
-        return CryptoEthereumSwift.Crypto.isValid(signature: signature, of: hash, publicKey: publicKey, compressed: compressed)
+        return CryptoKit.ellipticIsValid(signature: signature, of: hash, publicKey: publicKey, compressed: compressed)
     }
 
     /// Calculates public key by a signature of a hash.
@@ -90,7 +91,7 @@ public final class Crypto {
     ///   - compressed: whether public key is compressed
     /// - Returns: 65-byte key if not compressed, otherwise 33-byte public key.
     public static func publicKey(signature: Data, of hash: Data, compressed: Bool) -> Data? {
-        return CryptoEthereumSwift.Crypto.publicKey(signature: signature, of: hash, compressed: compressed)
+        return CryptoKit.ellipticPublicKey(signature: signature, of: hash, compressed: compressed)
     }
 
 }

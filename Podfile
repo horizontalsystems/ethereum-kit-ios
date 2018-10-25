@@ -9,13 +9,13 @@ project 'HSEthereumKitDemo/HSEthereumKitDemo'
 project 'HSEthereumKit/HSEthereumKit'
 
 def kit_pods
+  pod 'HSCryptoKit'
+  pod 'CryptoSwift'
+
   pod 'RxSwift'
 
   pod 'RealmSwift'
   pod "RxRealm"
-
-  pod "CryptoEthereumSwift", git: "https://github.com/horizontalsystems/CryptoEthereumSwift"
-  pod "CryptoSwift"
 end
 
 target :HSEthereumKitDemo do
