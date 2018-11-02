@@ -61,6 +61,7 @@
 		58AAA081A68345A707A45794 /* EthereumGas.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAF8EF6D1122AD52C8BD6 /* EthereumGas.swift */; };
 		58AAA1A0931ADF95231D4F87 /* EthereumKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA6BB2DA999645A4E41EA /* EthereumKit.swift */; };
 		58AAA7C99F4D8FD7DF51C749 /* AddressValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA4CC1551836BE97FA9EA /* AddressValidatorTests.swift */; };
+		58AAA804F98AA25053BD7D25 /* EthereumBlockHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA779492ED6F8A1606DF3 /* EthereumBlockHeight.swift */; };
 		58AAA80F6F0B000F0D11C5A8 /* EthereumTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA1E3FA19355458A8B417 /* EthereumTransaction.swift */; };
 		58AAA9112849585C4F820AE8 /* AddressValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAA0DB1559A80BD16982E /* AddressValidator.swift */; };
 		58AAAA05184221C7EDAF630A /* RealmFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAACCC8AD8A2CC08E4A5EC /* RealmFactory.swift */; };
@@ -140,6 +141,7 @@
 		58AAA1E3FA19355458A8B417 /* EthereumTransaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumTransaction.swift; sourceTree = "<group>"; };
 		58AAA4CC1551836BE97FA9EA /* AddressValidatorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddressValidatorTests.swift; sourceTree = "<group>"; };
 		58AAA6BB2DA999645A4E41EA /* EthereumKit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumKit.swift; sourceTree = "<group>"; };
+		58AAA779492ED6F8A1606DF3 /* EthereumBlockHeight.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumBlockHeight.swift; sourceTree = "<group>"; };
 		58AAAA0DB1559A80BD16982E /* AddressValidator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddressValidator.swift; sourceTree = "<group>"; };
 		58AAACCC8AD8A2CC08E4A5EC /* RealmFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealmFactory.swift; sourceTree = "<group>"; };
 		58AAAF8EF6D1122AD52C8BD6 /* EthereumGas.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumGas.swift; sourceTree = "<group>"; };
@@ -379,6 +381,7 @@
 				58AAA1E3FA19355458A8B417 /* EthereumTransaction.swift */,
 				58AAAFB6CCA44D8BFD8F4F39 /* EthereumBalance.swift */,
 				58AAAF8EF6D1122AD52C8BD6 /* EthereumGas.swift */,
+				58AAA779492ED6F8A1606DF3 /* EthereumBlockHeight.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -676,6 +679,7 @@
 				58AAAC79C7CF8ECC33A8E8FE /* EthereumBalance.swift in Sources */,
 				58AAA9112849585C4F820AE8 /* AddressValidator.swift in Sources */,
 				58AAA081A68345A707A45794 /* EthereumGas.swift in Sources */,
+				58AAA804F98AA25053BD7D25 /* EthereumBlockHeight.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
