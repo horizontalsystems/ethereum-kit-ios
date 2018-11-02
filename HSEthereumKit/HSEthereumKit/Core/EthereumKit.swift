@@ -89,6 +89,7 @@ public class EthereumKit {
             }
         }
         updateBalance(completion: completion)
+        updateBlockHeight(completion: completion)
         updateTransactions(completion: completion)
         updateGasPrice()
     }
@@ -114,6 +115,10 @@ public class EthereumKit {
         let balanceString = realmFactory.realm.objects(EthereumBalance.self).filter("address = %@", wallet.address()).first?.value ?? "0"
 
         return BInt(balanceString) ?? BInt(0)
+    }
+
+    public var lastBlockHeight: Int {
+        return realmFactory.realm.objects(EthereumBlockHeight.self).filter("blockKey = %@", EthereumBlockHeight.key).first?.blockHeight ?? 0
     }
 
     public var transactions: [EthereumTransaction] {
@@ -163,6 +168,28 @@ public class EthereumKit {
                     }
                 } else {
                     let ethereumBalance = EthereumBalance(address: address, balance: balance)
+                    try? realm.write {
+                        realm.add(ethereumBalance, update: true)
+                    }
+                }
+                completion?(nil)
+            case .failure(let error): completion?(error)
+            }
+        }
+    }
+
+    private func updateBlockHeight(completion: ((Error?) -> ())? = nil) {
+        let realm = realmFactory.realm
+
+        geth.getBlockNumber() { result in
+            switch result {
+            case .success(let blockNumber):
+                if let ethereumBlockNumber = realm.objects(EthereumBlockHeight.self).filter("blockKey = %@", EthereumBlockHeight.key).first {
+                    try? realm.write {
+                        ethereumBlockNumber.blockHeight = blockNumber
+                    }
+                } else {
+                    let ethereumBalance = EthereumBlockHeight(blockHeight: blockNumber)
                     try? realm.write {
                         realm.add(ethereumBalance, update: true)
                     }
