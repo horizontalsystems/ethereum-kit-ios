@@ -117,8 +117,8 @@ public class EthereumKit {
         return BInt(balanceString) ?? BInt(0)
     }
 
-    public var lastBlockHeight: Int {
-        return realmFactory.realm.objects(EthereumBlockHeight.self).filter("blockKey = %@", EthereumBlockHeight.key).first?.blockHeight ?? 0
+    public var lastBlockHeight: Int? {
+        return realmFactory.realm.objects(EthereumBlockHeight.self).filter("blockKey = %@", EthereumBlockHeight.key).first?.blockHeight
     }
 
     public var transactions: [EthereumTransaction] {
