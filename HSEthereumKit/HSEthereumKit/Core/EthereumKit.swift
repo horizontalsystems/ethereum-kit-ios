@@ -230,14 +230,11 @@ public class EthereumKit {
         geth.getTransactions(address: wallet.address(), startBlock: Int64((lastBlockHeight ?? 0) + 1)) { result in
             switch result {
             case .success(let transactions):
-                transactions.elements.forEach { transaction in
-                    try? realm.write {
-                        transactions.elements.map({ EthereumTransaction(transaction: $0) }).forEach {
-                            realm.add($0, update: true)
-                        }
+                try? realm.write {
+                    transactions.elements.map({ EthereumTransaction(transaction: $0) }).forEach {
+                        realm.add($0, update: true)
                     }
                 }
-
                 completion?(nil)
             case .failure(let error): completion?(error)
             }
