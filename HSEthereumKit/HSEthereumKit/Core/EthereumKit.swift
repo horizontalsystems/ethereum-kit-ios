@@ -227,7 +227,7 @@ public class EthereumKit {
     private func updateTransactions(completion: ((Error?) -> ())? = nil) {
         let realm = realmFactory.realm
 
-        geth.getTransactions(address: wallet.address()) { result in
+        geth.getTransactions(address: wallet.address(), startBlock: Int64((lastBlockHeight ?? 0) + 1)) { result in
             switch result {
             case .success(let transactions):
                 transactions.elements.forEach { transaction in
@@ -251,7 +251,7 @@ public class EthereumKit {
     }
 
     public func send(to address: String, value: Double, gasPrice: Int? = nil, completion: ((Error?) -> ())? = nil) {
-        let price = gasPrice ?? ethereumGas.gasPriceGWei
+        let price = Converter.toWei(GWei: gasPrice ?? ethereumGas.gasPriceGWei)
         geth.getTransactionCount(of: wallet.address(), blockParameter: .pending) { result in
             switch result {
             case .success(let nonce):
