@@ -23,12 +23,7 @@ public class EthereumKit {
     public init(withWords words: [String], coin: Coin, debugPrints: Bool = false) {
         let wordsHash = words.joined().data(using: .utf8).map { Crypto.doubleSHA256($0).toHexString() } ?? words[0]
 
-        let realmFileName = "\(wordsHash)-\(coin.rawValue).realm"
-
-        let documentsUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-        let realmConfiguration = Realm.Configuration(fileURL: documentsUrl?.appendingPathComponent(realmFileName))
-
-        realmFactory = RealmFactory(configuration: realmConfiguration)
+        realmFactory = RealmFactory(realmFileName: "\(wordsHash)-\(coin.rawValue).realm")
         addressValidator = AddressValidator()
 
         let network: Network
