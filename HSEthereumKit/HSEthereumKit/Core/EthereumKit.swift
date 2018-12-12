@@ -222,7 +222,8 @@ public class EthereumKit {
     private func updateTransactions(completion: ((Error?) -> ())? = nil) {
         let realm = realmFactory.realm
 
-        geth.getTransactions(address: wallet.address(), startBlock: Int64((lastBlockHeight ?? 0) + 1)) { result in
+        let lastBlockHeight = realm.objects(EthereumTransaction.self).sorted(byKeyPath: "blockNumber", ascending: false).first?.blockNumber ?? 0
+        geth.getTransactions(address: wallet.address(), startBlock: Int64(lastBlockHeight + 1)) { result in
             switch result {
             case .success(let transactions):
                 try? realm.write {
@@ -274,12 +275,14 @@ public class EthereumKit {
             let tx = try self.wallet.sign(rawTransaction: rawTransaction)
 
             // It returns the transaction ID.
-            self.geth.sendRawTransaction(rawTransaction: tx) { result in
+            geth.sendRawTransaction(rawTransaction: tx) { [weak self] result in
                 switch result {
                 case .success(let sentTransaction):
                     let transaction = EthereumTransaction(txHash: sentTransaction.id, from: selfAddress, to: address, gas: gasLimit, gasPrice: gasPrice, value: wei.asString(withBase: 10), timestamp: Int(Date().timeIntervalSince1970))
-                    self.addSentTransaction(transaction: transaction)
-                case .failure(let error): completion?(error)
+                    self?.addSentTransaction(transaction: transaction)
+                    completion?(nil)
+                case .failure(let error):
+                    completion?(error)
                 }
             }
         } catch {
