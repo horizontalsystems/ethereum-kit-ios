@@ -18,6 +18,8 @@ class RefreshManager {
                 .subscribe(onNext: { [weak self] connected in
                     if connected {
                         self?.refresh()
+                    } else {
+                        self?.disconnect()
                     }
                 })
                 .disposed(by: disposeBag)
@@ -25,6 +27,11 @@ class RefreshManager {
 
     private func refresh() {
         delegate?.onRefresh()
+    }
+
+    private func disconnect() {
+        delegate?.onDisconnect()
+        timer.invalidate()
     }
 
 }

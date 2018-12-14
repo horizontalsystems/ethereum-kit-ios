@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name = 'HSEthereumKit'
-  spec.version = '0.1.2'
+  spec.version = '0.2.1'
   spec.summary = 'Ethereum wallet library for Swift'
   spec.description = <<-DESC
                        HSEthereumKit implements Ethereum protocol in Swift. Uses EthereumKit library.
@@ -17,10 +17,9 @@ Pod::Spec.new do |spec|
   spec.ios.deployment_target = '11.0'
   spec.swift_version = '4.1'
 
-  spec.dependency 'HSCryptoKit', '1.0.1'
-  spec.dependency 'CryptoSwift'
-  spec.dependency 'RxSwift'
-  spec.dependency 'RealmSwift'
-  spec.dependency 'RxRealm'
-  spec.dependency 'Alamofire'
+  spec.dependency 'HSCryptoKit', '~> 1.0.1'
+  spec.dependency 'CryptoSwift', '~> 0.13.1'
+  spec.dependency 'RxSwift', '~> 4.3.1'
+  spec.dependency 'RealmSwift', '~> 3.11.1'
+  spec.dependency 'RxRealm', '~> 0.7.5'
 end

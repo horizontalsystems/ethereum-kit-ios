@@ -27,4 +27,8 @@ extension PeriodicTimer: IPeriodicTimer {
 
     }
 
+    func invalidate() {
+        timer?.invalidate()
+    }
+
 }
