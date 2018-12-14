@@ -8,19 +8,21 @@ PODS:
   - Realm/Headers (3.11.2)
   - RealmSwift (3.11.2):
     - Realm (= 3.11.2)
+  - RxAtomic (4.4.0)
   - RxRealm (0.7.6):
     - RealmSwift (~> 3.0)
     - RxSwift (~> 4.0)
-  - RxSwift (4.3.1)
+  - RxSwift (4.4.0):
+    - RxAtomic (~> 4.4)
 
 DEPENDENCIES:
   - Alamofire (~> 4.8.0)
   - CryptoSwift (~> 0.13.1)
   - Cuckoo (~> 0.12.0)
   - HSCryptoKit (~> 1.0.1)
-  - RealmSwift (~> 3.11.1)
-  - RxRealm (~> 0.7.5)
-  - RxSwift (~> 4.3.1)
+  - RealmSwift (~> 3.11.0)
+  - RxRealm (~> 0.7.0)
+  - RxSwift (~> 4.0)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
@@ -30,6 +32,7 @@ SPEC REPOS:
     - HSCryptoKit
     - Realm
     - RealmSwift
+    - RxAtomic
     - RxRealm
     - RxSwift
 
@@ -40,9 +43,10 @@ SPEC CHECKSUMS:
   HSCryptoKit: b5b7080a6571df88e25e68ec7dcc1c02a56f02ee
   Realm: 864477d028db77f7c5a0cba64a4892ad53db128a
   RealmSwift: 12b8262fc08020b47de4fd88eb3d5c9425b34ec7
+  RxAtomic: eacf60db868c96bfd63320e28619fe29c179656f
   RxRealm: 5379eddd74f8d617ca7681d1f8d144af25b432b0
-  RxSwift: fe0fd770a43acdb7d0a53da411c9b892e69bb6e4
+  RxSwift: 5976ecd04fc2fefd648827c23de5e11157faa973
 
-PODFILE CHECKSUM: 1ad074faa51c6c3701eda5ba05768d5c4ca53007
+PODFILE CHECKSUM: f0d6e475bc7ae3bd2d49dc70a4b7f20876660184
 
 COCOAPODS: 1.5.3

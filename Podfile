@@ -12,10 +12,10 @@ def kit_pods
   pod 'HSCryptoKit', '~> 1.0.1'
   pod 'CryptoSwift', '~> 0.13.1'
 
-  pod 'RxSwift', '~> 4.3.1'
+  pod 'RxSwift', '~> 4.0'
 
-  pod 'RealmSwift', '~> 3.11.1'
-  pod "RxRealm", '~> 0.7.5'
+  pod 'RealmSwift', '~> 3.11.0'
+  pod "RxRealm", '~> 0.7.0'
 
   pod 'Alamofire', '~> 4.8.0'
 end
