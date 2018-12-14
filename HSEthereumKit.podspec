@@ -22,4 +22,5 @@ Pod::Spec.new do |spec|
   spec.dependency 'RxSwift', '~> 4.3.1'
   spec.dependency 'RealmSwift', '~> 3.11.1'
   spec.dependency 'RxRealm', '~> 0.7.5'
+  spec.dependency 'Alamofire', '~> 4.8.0'
 end
