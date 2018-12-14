@@ -7,16 +7,20 @@ public class EthereumKit {
     private static let infuraKey = "2a1306f1d12f4c109a4d4fb9be46b02e"
     private static let etherscanKey = "GKNHXT22ED7PRVCKZATFZQD1YI7FK9AAYE"
 
-    let disposeBag = DisposeBag()
+    private let disposeBag = DisposeBag()
 
     public weak var delegate: EthereumKitDelegate?
 
-    let wallet: Wallet
+    private let wallet: Wallet
 
-    let realmFactory: RealmFactory
-    let addressValidator: AddressValidator
-    let geth: Geth
+    private let realmFactory: RealmFactory
+    private let addressValidator: AddressValidator
+    private let geth: Geth
+    private let gethProvider: IGethProviderProtocol
 
+    private let refreshTimer: IPeriodicTimer
+    private let reachabilityManager: ReachabilityManager
+    private let refreshManager: RefreshManager
     private var balanceNotificationToken: NotificationToken?
     private var transactionsNotificationToken: NotificationToken?
 
@@ -51,6 +55,11 @@ public class EthereumKit {
                 debugPrints: debugPrints
         )
         geth = Geth(configuration: configuration)
+        gethProvider = GethProvider(geth: geth)
+
+        reachabilityManager = ReachabilityManager()
+        refreshTimer = PeriodicTimer(interval: 30)
+        refreshManager = RefreshManager(reachabilityManager: reachabilityManager, timer: refreshTimer)
 
         balanceNotificationToken = balanceResults.observe { [weak self] changeset in
             self?.handleBalance(changeset: changeset)
@@ -60,6 +69,7 @@ public class EthereumKit {
             self?.handleTransactions(changeset: changeset)
         }
 
+        refreshManager.delegate = self
     }
 
     public var debugInfo: String {
@@ -78,15 +88,14 @@ public class EthereumKit {
     }
 
     public func refresh() {
-        let completion: ((Error?) -> ()) = { error in
-            if let error = error {
-                print("Error \(error.localizedDescription)")
-            }
-        }
-        updateBalance(completion: completion)
-        updateBlockHeight(completion: completion)
-        updateTransactions(completion: completion)
-        updateGasPrice()
+        delegate?.kitStateUpdated(state: .syncing)
+        Single.zip(updateBalance, updateBlockHeight, updateTransactions, updateGasPrice).subscribe(onSuccess: { [weak self] (_, _, _, _) in
+            self?.delegate?.kitStateUpdated(state: .synced)
+            self?.refreshManager.didRefresh()
+        }, onError: { error in
+            self.delegate?.kitStateUpdated(state: .notSynced)
+            print(error)
+        }).disposed(by: disposeBag)
     }
 
     public func clear() throws {
@@ -150,93 +159,77 @@ public class EthereumKit {
     }
 
     // Database Update methods
-    private func updateBalance(completion: ((Error?) -> ())? = nil) {
+    private var updateBalance: Single<Balance> {
         let realm = realmFactory.realm
         let address = wallet.address()
 
-        geth.getBalance(of: address) { result in
-            switch result {
-            case .success(let balance):
-                if let ethereumBalance = realm.objects(EthereumBalance.self).filter("address = %@", address).first {
-                    try? realm.write {
-                        ethereumBalance.value = balance.wei.asString(withBase: 10)
-                    }
-                } else {
-                    let ethereumBalance = EthereumBalance(address: address, balance: balance)
-                    try? realm.write {
-                        realm.add(ethereumBalance, update: true)
-                    }
+        return gethProvider.getBalance(address: address, blockParameter: .latest).map { balance in
+            if let ethereumBalance = realm.objects(EthereumBalance.self).filter("address = %@", address).first {
+                try? realm.write {
+                    ethereumBalance.value = balance.wei.asString(withBase: 10)
                 }
-                completion?(nil)
-            case .failure(let error): completion?(error)
+            } else {
+                let ethereumBalance = EthereumBalance(address: address, balance: balance)
+                try? realm.write {
+                    realm.add(ethereumBalance, update: true)
+                }
             }
+            return balance
         }
     }
 
-    private func updateBlockHeight(completion: ((Error?) -> ())? = nil) {
+    private var updateBlockHeight: Single<Int> {
         let realm = realmFactory.realm
 
-        geth.getBlockNumber() { result in
-            switch result {
-            case .success(let blockNumber):
-                if let ethereumBlockNumber = realm.objects(EthereumBlockHeight.self).filter("blockKey = %@", EthereumBlockHeight.key).first {
-                    try? realm.write {
-                        ethereumBlockNumber.blockHeight = blockNumber
-                    }
-                } else {
-                    let ethereumBalance = EthereumBlockHeight(blockHeight: blockNumber)
-                    try? realm.write {
-                        realm.add(ethereumBalance, update: true)
-                    }
+        return gethProvider.getBlockNumber().map { blockNumber in
+            if let ethereumBlockNumber = realm.objects(EthereumBlockHeight.self).filter("blockKey = %@", EthereumBlockHeight.key).first {
+                try? realm.write {
+                    ethereumBlockNumber.blockHeight = blockNumber
                 }
-                completion?(nil)
-            case .failure(let error): completion?(error)
+            } else {
+                let ethereumBalance = EthereumBlockHeight(blockHeight: blockNumber)
+                try? realm.write {
+                    realm.add(ethereumBalance, update: true)
+                }
             }
+            return blockNumber
         }
     }
 
-    private func updateGasPrice(completion: ((Error?) -> ())? = nil) {
+    private var updateGasPrice: Single<Wei> {
         let realm = realmFactory.realm
         let address = wallet.address()
 
-        geth.getGasPrice() { result in
-            switch result {
-            case .success(let wei):
-                let price = Converter.toGWei(wei: wei) ?? EthereumGas.normalGasPriceInGWei
-                if let ethereumGas = realm.objects(EthereumGas.self).filter("address = %@", address).first {
-                    try? realm.write {
-                        ethereumGas.gasPriceGWei = price
-                    }
-                } else {
-                    let ethereumGas = EthereumGas(address: address, priceInGWei: price)
-                    try? realm.write {
-                        realm.add(ethereumGas, update: true)
-                    }
+        return gethProvider.getGasPrice().map { wei in
+            let price = Converter.toGWei(wei: wei) ?? EthereumGas.normalGasPriceInGWei
+            if let ethereumGas = realm.objects(EthereumGas.self).filter("address = %@", address).first {
+                try? realm.write {
+                    ethereumGas.gasPriceGWei = price
                 }
-                completion?(nil)
-            case .failure(let error): completion?(error)
+            } else {
+                let ethereumGas = EthereumGas(address: address, priceInGWei: price)
+                try? realm.write {
+                    realm.add(ethereumGas, update: true)
+                }
             }
+            return wei
         }
     }
 
-    private func updateTransactions(completion: ((Error?) -> ())? = nil) {
+    private var updateTransactions: Single<Transactions> {
         let realm = realmFactory.realm
 
         let lastBlockHeight = realm.objects(EthereumTransaction.self).sorted(byKeyPath: "blockNumber", ascending: false).first?.blockNumber ?? 0
-        geth.getTransactions(address: wallet.address(), startBlock: Int64(lastBlockHeight + 1)) { result in
-            switch result {
-            case .success(let transactions):
-                try? realm.write {
-                    transactions.elements.map({ EthereumTransaction(transaction: $0) }).forEach {
-                        realm.add($0, update: true)
-                    }
+
+        return gethProvider.getTransactions(address: wallet.address(), startBlock: Int64(lastBlockHeight + 1)).map { transactions in
+            try? realm.write {
+                transactions.elements.map({ EthereumTransaction(transaction: $0) }).forEach {
+                    realm.add($0, update: true)
                 }
-                completion?(nil)
-            case .failure(let error): completion?(error)
             }
+            return transactions
         }
     }
-
 
     // Send transaction methods
     public var receiveAddress: String {
@@ -324,6 +317,7 @@ public class EthereumKit {
 public protocol EthereumKitDelegate: class {
     func transactionsUpdated(ethereumKit: EthereumKit, inserted: [EthereumTransaction], updated: [EthereumTransaction], deleted: [Int])
     func balanceUpdated(ethereumKit: EthereumKit, balance: BInt)
+    func kitStateUpdated(state: EthereumKit.KitState)
 }
 
 extension EthereumKit {
@@ -342,6 +336,20 @@ extension EthereumKit {
     public enum NetworkType {
         case mainNet
         case testNet
+    }
+
+    public enum KitState {
+        case synced
+        case syncing
+        case notSynced
+    }
+
+}
+
+extension EthereumKit: IRefreshKitDelegate {
+
+    func onRefresh() {
+        refresh()
     }
 
 }
