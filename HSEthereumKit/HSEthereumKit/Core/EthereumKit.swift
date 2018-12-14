@@ -88,7 +88,7 @@ public class EthereumKit {
     }
 
     public func refresh() {
-        delegate?.kitStateUpdated(state: .syncing(progress: 0))
+        delegate?.kitStateUpdated(state: .syncing)
         Single.zip(updateBalance, updateBlockHeight, updateTransactions, updateGasPrice).subscribe(onSuccess: { [weak self] (_, _, _, _) in
             self?.delegate?.kitStateUpdated(state: .synced)
             self?.refreshManager.didRefresh()
@@ -340,7 +340,7 @@ extension EthereumKit {
 
     public enum KitState {
         case synced
-        case syncing(progress: Double)
+        case syncing
         case notSynced
     }
 
