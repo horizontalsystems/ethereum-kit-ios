@@ -9,15 +9,15 @@ project 'HSEthereumKitDemo/HSEthereumKitDemo'
 project 'HSEthereumKit/HSEthereumKit'
 
 def kit_pods
-  pod 'HSCryptoKit'
-  pod 'CryptoSwift'
+  pod 'HSCryptoKit', '~> 1.0.1'
+  pod 'CryptoSwift', '~> 0.13.1'
 
-  pod 'RxSwift'
+  pod 'RxSwift', '~> 4.3.1'
 
-  pod 'RealmSwift'
-  pod "RxRealm"
+  pod 'RealmSwift', '~> 3.11.1'
+  pod "RxRealm", '~> 0.7.5'
 
-  pod 'Alamofire'
+  pod 'Alamofire', '~> 4.8.0'
 end
 
 target :HSEthereumKitDemo do
@@ -34,5 +34,5 @@ target :HSEthereumKitTests do
   project 'HSEthereumKit/HSEthereumKit'
 
   kit_pods
-  pod "Cuckoo"
+  pod "Cuckoo", '~> 0.12.0'
 end

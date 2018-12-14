@@ -4,9 +4,6 @@ import RxSwift
 import CryptoSwift
 
 public class EthereumKit {
-    private static let infuraKey = "2a1306f1d12f4c109a4d4fb9be46b02e"
-    private static let etherscanKey = "GKNHXT22ED7PRVCKZATFZQD1YI7FK9AAYE"
-
     private let disposeBag = DisposeBag()
 
     public weak var delegate: EthereumKitDelegate?
@@ -24,7 +21,7 @@ public class EthereumKit {
     private var balanceNotificationToken: NotificationToken?
     private var transactionsNotificationToken: NotificationToken?
 
-    public init(withWords words: [String], coin: Coin, debugPrints: Bool = false) {
+    public init(withWords words: [String], coin: Coin, infuraKey: String, etherscanKey: String, debugPrints: Bool = false) {
         let wordsHash = words.joined().data(using: .utf8).map { Crypto.doubleSHA256($0).toHexString() } ?? words[0]
 
         realmFactory = RealmFactory(realmFileName: "\(wordsHash)-\(coin.rawValue).realm")
@@ -50,8 +47,8 @@ public class EthereumKit {
 
         let configuration = Configuration(
                 network: network,
-                nodeEndpoint: network.infura + EthereumKit.infuraKey,
-                etherscanAPIKey: EthereumKit.etherscanKey,
+                nodeEndpoint: network.infura + infuraKey,
+                etherscanAPIKey: etherscanKey,
                 debugPrints: debugPrints
         )
         geth = Geth(configuration: configuration)
@@ -350,6 +347,10 @@ extension EthereumKit: IRefreshKitDelegate {
 
     func onRefresh() {
         refresh()
+    }
+
+    func onDisconnect() {
+        delegate?.kitStateUpdated(state: .notSynced)
     }
 
 }

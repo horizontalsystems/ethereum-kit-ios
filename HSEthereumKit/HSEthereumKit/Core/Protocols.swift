@@ -23,6 +23,7 @@ protocol IGethProviderProtocol {
 protocol IPeriodicTimer {
     var delegate: IPeriodicTimerDelegate? { get set }
     func schedule()
+    func invalidate()
 }
 
 protocol IPeriodicTimerDelegate: class {
@@ -31,6 +32,7 @@ protocol IPeriodicTimerDelegate: class {
 
 protocol IRefreshKitDelegate: class {
     func onRefresh()
+    func onDisconnect()
 }
 
 protocol IRefreshManager {

@@ -4,6 +4,9 @@ import RxSwift
 import HSEthereumKit
 
 class Manager {
+    private static let infuraKey = "2a1306f1d12f4c109a4d4fb9be46b02e"
+    private static let etherscanKey = "GKNHXT22ED7PRVCKZATFZQD1YI7FK9AAYE"
+
     static let shared = Manager()
 
     private let keyWords = "mnemonic_words"
@@ -39,7 +42,7 @@ class Manager {
     }
 
     private func initEthereumKit(words: [String]) {
-        ethereumKit = EthereumKit(withWords: words, coin: coin, debugPrints: false)
+        ethereumKit = EthereumKit(withWords: words, coin: coin, infuraKey: Manager.infuraKey, etherscanKey: Manager.etherscanKey, debugPrints: false)
         ethereumKit.delegate = self
     }
 
