@@ -14,6 +14,7 @@ class Manager {
 
     let balanceSubject = PublishSubject<BInt>()
     let transactionsSubject = PublishSubject<Void>()
+    let progressSubject = PublishSubject<EthereumKit.KitState>()
 
     init() {
         if let words = savedWords {
@@ -69,6 +70,10 @@ extension Manager: EthereumKitDelegate {
 
     public func balanceUpdated(ethereumKit: EthereumKit, balance: BInt) {
         balanceSubject.onNext(balance)
+    }
+
+    public func kitStateUpdated(state: EthereumKit.KitState) {
+        progressSubject.onNext(state)
     }
 
 }

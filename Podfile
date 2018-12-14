@@ -16,6 +16,8 @@ def kit_pods
 
   pod 'RealmSwift'
   pod "RxRealm"
+
+  pod 'Alamofire'
 end
 
 target :HSEthereumKitDemo do
