@@ -1,5 +1,4 @@
 import HSCryptoKit
-import CryptoSwift
 
 /// Helper class for cryptographic algorithms.
 public final class Crypto {
@@ -46,7 +45,7 @@ public final class Crypto {
     /// - Parameter data: data to be hashed
     /// - Returns: 256-bit (32-byte) hash
     public static func hashSHA3_256(_ data: Data) -> Data {
-        return data.sha3(.keccak256)
+        return CryptoKit.sha3(data)
     }
     
     /// Generates public key from private key using secp256k1 elliptic curve math

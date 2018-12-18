@@ -1,4 +1,5 @@
 import Foundation
+import HSCryptoKit
 
 // https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 public final class Mnemonic {
@@ -16,7 +17,7 @@ public final class Mnemonic {
     
     public static func create(entropy: Data, language: WordList = .english) -> [String] {
         let entropybits = String(entropy.flatMap { ("00000000" + String($0, radix: 2)).suffix(8) })
-        let hashBits = String(entropy.sha256().flatMap { ("00000000" + String($0, radix: 2)).suffix(8) })
+        let hashBits = String(CryptoKit.sha256(entropy).flatMap { ("00000000" + String($0, radix: 2)).suffix(8) })
         let checkSum = String(hashBits.prefix((entropy.count * 8) / 32))
         
         let words = language.words

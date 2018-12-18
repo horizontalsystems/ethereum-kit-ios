@@ -1,7 +1,6 @@
 import Foundation
 import RealmSwift
 import RxSwift
-import CryptoSwift
 
 public class EthereumKit {
     private let disposeBag = DisposeBag()
