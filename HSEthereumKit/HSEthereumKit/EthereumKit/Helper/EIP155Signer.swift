@@ -1,4 +1,4 @@
-import CryptoSwift
+import HSCryptoKit
 
 public struct EIP155Signer {
     
@@ -25,7 +25,7 @@ public struct EIP155Signer {
     }
     
     public func hash(rawTransaction: RawTransaction) throws -> Data {
-        return Crypto.hashSHA3_256(try encode(rawTransaction: rawTransaction))
+        return CryptoKit.sha3(try encode(rawTransaction: rawTransaction))
     }
     
     public func encode(rawTransaction: RawTransaction) throws -> Data {

@@ -62,6 +62,7 @@
 		58AAA081A68345A707A45794 /* EthereumGas.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAF8EF6D1122AD52C8BD6 /* EthereumGas.swift */; };
 		58AAA1A0931ADF95231D4F87 /* EthereumKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA6BB2DA999645A4E41EA /* EthereumKit.swift */; };
 		58AAA23BCF9E3C06AD96C8B6 /* RefreshManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAE7D03FDF272C10519E1 /* RefreshManager.swift */; };
+		58AAA52235D840702E55CAF4 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAE7DC330A2628E515477 /* Extensions.swift */; };
 		58AAA609C234AA48E23F4AE9 /* ReachabilityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA0F77F10D6C404DFCD55 /* ReachabilityManager.swift */; };
 		58AAA7C99F4D8FD7DF51C749 /* AddressValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA4CC1551836BE97FA9EA /* AddressValidatorTests.swift */; };
 		58AAA804F98AA25053BD7D25 /* EthereumBlockHeight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA779492ED6F8A1606DF3 /* EthereumBlockHeight.swift */; };
@@ -154,6 +155,7 @@
 		58AAAC4EEC58644B3BF08550 /* PeriodicTimer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeriodicTimer.swift; sourceTree = "<group>"; };
 		58AAACCC8AD8A2CC08E4A5EC /* RealmFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealmFactory.swift; sourceTree = "<group>"; };
 		58AAAE7D03FDF272C10519E1 /* RefreshManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RefreshManager.swift; sourceTree = "<group>"; };
+		58AAAE7DC330A2628E515477 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		58AAAF8EF6D1122AD52C8BD6 /* EthereumGas.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumGas.swift; sourceTree = "<group>"; };
 		58AAAFB6CCA44D8BFD8F4F39 /* EthereumBalance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumBalance.swift; sourceTree = "<group>"; };
 		6B6E64E8170B11AD1C5AD461 /* Pods-HSEthereumKitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HSEthereumKitTests.debug.xcconfig"; path = "../Pods/Target Support Files/Pods-HSEthereumKitTests/Pods-HSEthereumKitTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -414,6 +416,7 @@
 				58AAACCC8AD8A2CC08E4A5EC /* RealmFactory.swift */,
 				58AAA61E60AF6E31E1822ADE /* GethProvider.swift */,
 				58AAA69FB6E04728EDC5A525 /* Protocols.swift */,
+				58AAAE7DC330A2628E515477 /* Extensions.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -606,7 +609,6 @@
 			inputPaths = (
 				"${SRCROOT}/../Pods/Target Support Files/Pods-HSEthereumKitTests/Pods-HSEthereumKitTests-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Alamofire/Alamofire.framework",
-				"${BUILT_PRODUCTS_DIR}/CryptoSwift/CryptoSwift.framework",
 				"${BUILT_PRODUCTS_DIR}/HSCryptoKit/HSCryptoKit.framework",
 				"${BUILT_PRODUCTS_DIR}/Realm/Realm.framework",
 				"${BUILT_PRODUCTS_DIR}/RealmSwift/RealmSwift.framework",
@@ -617,7 +619,6 @@
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Alamofire.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CryptoSwift.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/HSCryptoKit.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Realm.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RealmSwift.framework",
@@ -706,6 +707,7 @@
 				58AAAF70BEF433B84C1AC0CD /* Protocols.swift in Sources */,
 				58AAA908570CA831788F90D4 /* PeriodicTimer.swift in Sources */,
 				58AAA23BCF9E3C06AD96C8B6 /* RefreshManager.swift in Sources */,
+				58AAA52235D840702E55CAF4 /* Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
