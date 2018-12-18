@@ -1,3 +1,5 @@
+import HSCryptoKit
+
 public struct HDPublicKey {
     public let raw: Data
     public let chainCode: Data
