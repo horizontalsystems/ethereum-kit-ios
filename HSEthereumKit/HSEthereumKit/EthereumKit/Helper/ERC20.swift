@@ -1,3 +1,5 @@
+import HSCryptoKit
+
 /// ERC20 contains necessary method to support ERC20 tokens
 public struct ERC20 {
     
@@ -26,7 +28,7 @@ public struct ERC20 {
     /// function transfer(address _to, uint256 _value) returns (bool success)
     private var transferSigniture: Data {
         let method = "transfer(address,uint256)"
-        return method.data(using: .ascii)!.sha3(.keccak256)[0...3]
+        return CryptoKit.sha3(method.data(using: .ascii)!)[0...3]
     }
     
     /// Length of 256 bits
