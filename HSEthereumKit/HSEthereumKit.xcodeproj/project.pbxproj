@@ -36,7 +36,6 @@
 		3A38F9F8216B78EE00A764EB /* PrivateKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9C1216B78EE00A764EB /* PrivateKey.swift */; };
 		3A38F9F9216B78EE00A764EB /* SMP+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9C3216B78EE00A764EB /* SMP+Extensions.swift */; };
 		3A38F9FA216B78EE00A764EB /* String+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9C4216B78EE00A764EB /* String+Extension.swift */; };
-		3A38F9FB216B78EE00A764EB /* HDWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9C6216B78EE00A764EB /* HDWallet.swift */; };
 		3A38F9FC216B78EE00A764EB /* Wallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9C7216B78EE00A764EB /* Wallet.swift */; };
 		3A38F9FD216B78EE00A764EB /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9CA216B78EE00A764EB /* HTTPClient.swift */; };
 		3A38F9FE216B78EE00A764EB /* Method.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9CB216B78EE00A764EB /* Method.swift */; };
@@ -117,7 +116,6 @@
 		3A38F9C1216B78EE00A764EB /* PrivateKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PrivateKey.swift; sourceTree = "<group>"; };
 		3A38F9C3216B78EE00A764EB /* SMP+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SMP+Extensions.swift"; sourceTree = "<group>"; };
 		3A38F9C4216B78EE00A764EB /* String+Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "String+Extension.swift"; sourceTree = "<group>"; };
-		3A38F9C6216B78EE00A764EB /* HDWallet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HDWallet.swift; sourceTree = "<group>"; };
 		3A38F9C7216B78EE00A764EB /* Wallet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Wallet.swift; sourceTree = "<group>"; };
 		3A38F9CA216B78EE00A764EB /* HTTPClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPClient.swift; sourceTree = "<group>"; };
 		3A38F9CB216B78EE00A764EB /* Method.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Method.swift; sourceTree = "<group>"; };
@@ -280,7 +278,6 @@
 		3A38F9C5216B78EE00A764EB /* Wallet */ = {
 			isa = PBXGroup;
 			children = (
-				3A38F9C6216B78EE00A764EB /* HDWallet.swift */,
 				3A38F9C7216B78EE00A764EB /* Wallet.swift */,
 			);
 			path = Wallet;
@@ -607,6 +604,7 @@
 				"${SRCROOT}/../Pods/Target Support Files/Pods-HSEthereumKitTests/Pods-HSEthereumKitTests-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Alamofire/Alamofire.framework",
 				"${BUILT_PRODUCTS_DIR}/HSCryptoKit/HSCryptoKit.framework",
+				"${BUILT_PRODUCTS_DIR}/HSHDWalletKit/HSHDWalletKit.framework",
 				"${BUILT_PRODUCTS_DIR}/Realm/Realm.framework",
 				"${BUILT_PRODUCTS_DIR}/RealmSwift/RealmSwift.framework",
 				"${BUILT_PRODUCTS_DIR}/RxAtomic/RxAtomic.framework",
@@ -618,6 +616,7 @@
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Alamofire.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/HSCryptoKit.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/HSHDWalletKit.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Realm.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RealmSwift.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxAtomic.framework",
@@ -669,7 +668,6 @@
 				3A38FA08216B78EE00A764EB /* HTTPJSONRPCRequest.swift in Sources */,
 				3A38F9E1216B78EE00A764EB /* Result.swift in Sources */,
 				3A38F9F2216B78EE00A764EB /* Japanese.swift in Sources */,
-				3A38F9FB216B78EE00A764EB /* HDWallet.swift in Sources */,
 				3A38F9FF216B78EE00A764EB /* Cancellable.swift in Sources */,
 				3A38F9EC216B78EE00A764EB /* Address.swift in Sources */,
 				3A38FA06216B78EE00A764EB /* JSONRPCError.swift in Sources */,
