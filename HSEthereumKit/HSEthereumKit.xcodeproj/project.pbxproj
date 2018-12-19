@@ -7,14 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2FA5DC6FA74CBC6B30E91678 /* EIP155Signer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D35C66049BB927E23808 /* EIP155Signer.swift */; };
 		3A19DECF216F4422009109F2 /* HSEthereumKitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A19DECE216F4422009109F2 /* HSEthereumKitTests.swift */; };
 		3A19DED1216F4422009109F2 /* HSEthereumKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A3B59A4216B1B13001C5E99 /* HSEthereumKit.framework */; };
 		3A38F9E0216B78EE00A764EB /* RLP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9A6216B78EE00A764EB /* RLP.swift */; };
 		3A38F9E1216B78EE00A764EB /* Result.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9A7216B78EE00A764EB /* Result.swift */; };
 		3A38F9E2216B78EE00A764EB /* Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9A8216B78EE00A764EB /* Network.swift */; };
 		3A38F9E3216B78EE00A764EB /* ERC20.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9A9216B78EE00A764EB /* ERC20.swift */; };
-		3A38F9E4216B78EE00A764EB /* Crypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9AA216B78EE00A764EB /* Crypto.swift */; };
-		3A38F9E5216B78EE00A764EB /* EIP155Signer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9AB216B78EE00A764EB /* EIP155Signer.swift */; };
 		3A38F9E6216B78EE00A764EB /* DataConvertable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9AC216B78EE00A764EB /* DataConvertable.swift */; };
 		3A38F9E7216B78EE00A764EB /* EIP55.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9AD216B78EE00A764EB /* EIP55.swift */; };
 		3A38F9E8216B78EE00A764EB /* SMP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9AE216B78EE00A764EB /* SMP.swift */; };
@@ -26,14 +25,6 @@
 		3A38F9EE216B78EE00A764EB /* Balance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9B5216B78EE00A764EB /* Balance.swift */; };
 		3A38F9EF216B78EE00A764EB /* RawTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9B6216B78EE00A764EB /* RawTransaction.swift */; };
 		3A38F9F0216B78EE00A764EB /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9B7216B78EE00A764EB /* Transaction.swift */; };
-		3A38F9F1216B78EE00A764EB /* WordList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9B9216B78EE00A764EB /* WordList.swift */; };
-		3A38F9F2216B78EE00A764EB /* Japanese.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9BA216B78EE00A764EB /* Japanese.swift */; };
-		3A38F9F3216B78EE00A764EB /* Mnemonic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9BB216B78EE00A764EB /* Mnemonic.swift */; };
-		3A38F9F4216B78EE00A764EB /* English.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9BC216B78EE00A764EB /* English.swift */; };
-		3A38F9F5216B78EE00A764EB /* PublicKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9BE216B78EE00A764EB /* PublicKey.swift */; };
-		3A38F9F6216B78EE00A764EB /* HDPrivateKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9BF216B78EE00A764EB /* HDPrivateKey.swift */; };
-		3A38F9F7216B78EE00A764EB /* HDPublicKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9C0216B78EE00A764EB /* HDPublicKey.swift */; };
-		3A38F9F8216B78EE00A764EB /* PrivateKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9C1216B78EE00A764EB /* PrivateKey.swift */; };
 		3A38F9F9216B78EE00A764EB /* SMP+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9C3216B78EE00A764EB /* SMP+Extensions.swift */; };
 		3A38F9FA216B78EE00A764EB /* String+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9C4216B78EE00A764EB /* String+Extension.swift */; };
 		3A38F9FC216B78EE00A764EB /* Wallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9C7216B78EE00A764EB /* Wallet.swift */; };
@@ -85,6 +76,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2FA5D35C66049BB927E23808 /* EIP155Signer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EIP155Signer.swift; sourceTree = "<group>"; };
 		31624145EC1315E9F40EAFF4 /* Pods-HSEthereumKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HSEthereumKit.release.xcconfig"; path = "../Pods/Target Support Files/Pods-HSEthereumKit/Pods-HSEthereumKit.release.xcconfig"; sourceTree = "<group>"; };
 		3A19DECC216F4422009109F2 /* HSEthereumKitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HSEthereumKitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3A19DECE216F4422009109F2 /* HSEthereumKitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HSEthereumKitTests.swift; sourceTree = "<group>"; };
@@ -93,8 +85,6 @@
 		3A38F9A7216B78EE00A764EB /* Result.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Result.swift; sourceTree = "<group>"; };
 		3A38F9A8216B78EE00A764EB /* Network.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Network.swift; sourceTree = "<group>"; };
 		3A38F9A9216B78EE00A764EB /* ERC20.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ERC20.swift; sourceTree = "<group>"; };
-		3A38F9AA216B78EE00A764EB /* Crypto.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Crypto.swift; sourceTree = "<group>"; };
-		3A38F9AB216B78EE00A764EB /* EIP155Signer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EIP155Signer.swift; sourceTree = "<group>"; };
 		3A38F9AC216B78EE00A764EB /* DataConvertable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataConvertable.swift; sourceTree = "<group>"; };
 		3A38F9AD216B78EE00A764EB /* EIP55.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EIP55.swift; sourceTree = "<group>"; };
 		3A38F9AE216B78EE00A764EB /* SMP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SMP.swift; sourceTree = "<group>"; };
@@ -106,14 +96,6 @@
 		3A38F9B5216B78EE00A764EB /* Balance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Balance.swift; sourceTree = "<group>"; };
 		3A38F9B6216B78EE00A764EB /* RawTransaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RawTransaction.swift; sourceTree = "<group>"; };
 		3A38F9B7216B78EE00A764EB /* Transaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
-		3A38F9B9216B78EE00A764EB /* WordList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WordList.swift; sourceTree = "<group>"; };
-		3A38F9BA216B78EE00A764EB /* Japanese.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Japanese.swift; sourceTree = "<group>"; };
-		3A38F9BB216B78EE00A764EB /* Mnemonic.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Mnemonic.swift; sourceTree = "<group>"; };
-		3A38F9BC216B78EE00A764EB /* English.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = English.swift; sourceTree = "<group>"; };
-		3A38F9BE216B78EE00A764EB /* PublicKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PublicKey.swift; sourceTree = "<group>"; };
-		3A38F9BF216B78EE00A764EB /* HDPrivateKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HDPrivateKey.swift; sourceTree = "<group>"; };
-		3A38F9C0216B78EE00A764EB /* HDPublicKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HDPublicKey.swift; sourceTree = "<group>"; };
-		3A38F9C1216B78EE00A764EB /* PrivateKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PrivateKey.swift; sourceTree = "<group>"; };
 		3A38F9C3216B78EE00A764EB /* SMP+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SMP+Extensions.swift"; sourceTree = "<group>"; };
 		3A38F9C4216B78EE00A764EB /* String+Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "String+Extension.swift"; sourceTree = "<group>"; };
 		3A38F9C7216B78EE00A764EB /* Wallet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Wallet.swift; sourceTree = "<group>"; };
@@ -204,8 +186,6 @@
 			children = (
 				3A38F9C2216B78EE00A764EB /* Extension */,
 				3A38F9A4216B78EE00A764EB /* Helper */,
-				3A38F9BD216B78EE00A764EB /* Key */,
-				3A38F9B8216B78EE00A764EB /* Mnemonic */,
 				3A38F9B1216B78EE00A764EB /* Model */,
 				3A38F9C8216B78EE00A764EB /* Networking */,
 				3A38F9C5216B78EE00A764EB /* Wallet */,
@@ -220,8 +200,6 @@
 				3A38F9A7216B78EE00A764EB /* Result.swift */,
 				3A38F9A8216B78EE00A764EB /* Network.swift */,
 				3A38F9A9216B78EE00A764EB /* ERC20.swift */,
-				3A38F9AA216B78EE00A764EB /* Crypto.swift */,
-				3A38F9AB216B78EE00A764EB /* EIP155Signer.swift */,
 				3A38F9AC216B78EE00A764EB /* DataConvertable.swift */,
 				3A38F9AD216B78EE00A764EB /* EIP55.swift */,
 				3A38F9AE216B78EE00A764EB /* SMP.swift */,
@@ -247,10 +225,6 @@
 		3A38F9B8216B78EE00A764EB /* Mnemonic */ = {
 			isa = PBXGroup;
 			children = (
-				3A38F9B9216B78EE00A764EB /* WordList.swift */,
-				3A38F9BA216B78EE00A764EB /* Japanese.swift */,
-				3A38F9BB216B78EE00A764EB /* Mnemonic.swift */,
-				3A38F9BC216B78EE00A764EB /* English.swift */,
 			);
 			path = Mnemonic;
 			sourceTree = "<group>";
@@ -258,10 +232,6 @@
 		3A38F9BD216B78EE00A764EB /* Key */ = {
 			isa = PBXGroup;
 			children = (
-				3A38F9BE216B78EE00A764EB /* PublicKey.swift */,
-				3A38F9BF216B78EE00A764EB /* HDPrivateKey.swift */,
-				3A38F9C0216B78EE00A764EB /* HDPublicKey.swift */,
-				3A38F9C1216B78EE00A764EB /* PrivateKey.swift */,
 			);
 			path = Key;
 			sourceTree = "<group>";
@@ -367,6 +337,7 @@
 				3A3B59A7216B1B13001C5E99 /* HSEthereumKit.h */,
 				3A3B59A8216B1B13001C5E99 /* Info.plist */,
 				58AAAD1D445002A6D96D90DA /* Core */,
+				D0BE8B6F21C9173B0090D264 /* Crypto */,
 				58AAA241F1242A106F230969 /* Helpers */,
 				58AAAD0293AB2F9E1C035A26 /* Models */,
 				58AAAAEDBCD0E5DDE0F7E9D4 /* Managers */,
@@ -407,10 +378,10 @@
 			isa = PBXGroup;
 			children = (
 				58AAA6BB2DA999645A4E41EA /* EthereumKit.swift */,
+				58AAAE7DC330A2628E515477 /* Extensions.swift */,
 				58AAACCC8AD8A2CC08E4A5EC /* RealmFactory.swift */,
 				58AAA61E60AF6E31E1822ADE /* GethProvider.swift */,
 				58AAA69FB6E04728EDC5A525 /* Protocols.swift */,
-				58AAAE7DC330A2628E515477 /* Extensions.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -423,6 +394,14 @@
 				76F074BC2886A32B1444D8D7 /* Pods_HSEthereumKitTests.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		D0BE8B6F21C9173B0090D264 /* Crypto */ = {
+			isa = PBXGroup;
+			children = (
+				2FA5D35C66049BB927E23808 /* EIP155Signer.swift */,
+			);
+			path = Crypto;
 			sourceTree = "<group>";
 		};
 		FEB70F892491AA1E98BF0B33 /* Pods */ = {
@@ -651,23 +630,17 @@
 				3A38F9E7216B78EE00A764EB /* EIP55.swift in Sources */,
 				3A38FA09216B78EE00A764EB /* JSONRPCRequest.swift in Sources */,
 				3A38F9ED216B78EE00A764EB /* BlockParameter.swift in Sources */,
-				3A38F9F5216B78EE00A764EB /* PublicKey.swift in Sources */,
 				3A38F9FD216B78EE00A764EB /* HTTPClient.swift in Sources */,
-				3A38F9F7216B78EE00A764EB /* HDPublicKey.swift in Sources */,
 				3A38FA01216B78EE00A764EB /* HTTPClientType.swift in Sources */,
-				3A38F9F1216B78EE00A764EB /* WordList.swift in Sources */,
 				3A38F9E9216B78EE00A764EB /* Converter.swift in Sources */,
 				3A38F9FE216B78EE00A764EB /* Method.swift in Sources */,
 				3A38FA0E216B78EE00A764EB /* Geth.swift in Sources */,
-				3A38F9F4216B78EE00A764EB /* English.swift in Sources */,
 				3A38F9F9216B78EE00A764EB /* SMP+Extensions.swift in Sources */,
 				3A38F9FA216B78EE00A764EB /* String+Extension.swift in Sources */,
 				3A38F9EA216B78EE00A764EB /* EthereumKitError.swift in Sources */,
-				3A38F9E4216B78EE00A764EB /* Crypto.swift in Sources */,
 				3A38F9E3216B78EE00A764EB /* ERC20.swift in Sources */,
 				3A38FA08216B78EE00A764EB /* HTTPJSONRPCRequest.swift in Sources */,
 				3A38F9E1216B78EE00A764EB /* Result.swift in Sources */,
-				3A38F9F2216B78EE00A764EB /* Japanese.swift in Sources */,
 				3A38F9FF216B78EE00A764EB /* Cancellable.swift in Sources */,
 				3A38F9EC216B78EE00A764EB /* Address.swift in Sources */,
 				3A38FA06216B78EE00A764EB /* JSONRPCError.swift in Sources */,
@@ -676,7 +649,6 @@
 				3A38FA0C216B78EE00A764EB /* Etherscan.swift in Sources */,
 				3A38FA04216B78EE00A764EB /* URLEncodedSerialization.swift in Sources */,
 				3A38FA03216B78EE00A764EB /* JSONBodySerialization.swift in Sources */,
-				3A38F9E5216B78EE00A764EB /* EIP155Signer.swift in Sources */,
 				3A38F9E0216B78EE00A764EB /* RLP.swift in Sources */,
 				3A38F9E8216B78EE00A764EB /* SMP.swift in Sources */,
 				3A38F9EF216B78EE00A764EB /* RawTransaction.swift in Sources */,
@@ -685,11 +657,8 @@
 				3A38FA0B216B78EE00A764EB /* Batch.swift in Sources */,
 				3A38FA07216B78EE00A764EB /* BatchElement.swift in Sources */,
 				3A38FA02216B78EE00A764EB /* Configuration.swift in Sources */,
-				3A38F9F3216B78EE00A764EB /* Mnemonic.swift in Sources */,
-				3A38F9F6216B78EE00A764EB /* HDPrivateKey.swift in Sources */,
 				3A38F9EE216B78EE00A764EB /* Balance.swift in Sources */,
 				3A38F9E6216B78EE00A764EB /* DataConvertable.swift in Sources */,
-				3A38F9F8216B78EE00A764EB /* PrivateKey.swift in Sources */,
 				3A38FA0A216B78EE00A764EB /* BatchFactory.swift in Sources */,
 				58AAA1A0931ADF95231D4F87 /* EthereumKit.swift in Sources */,
 				58AAAA05184221C7EDAF630A /* RealmFactory.swift in Sources */,
@@ -704,6 +673,7 @@
 				58AAA908570CA831788F90D4 /* PeriodicTimer.swift in Sources */,
 				58AAA23BCF9E3C06AD96C8B6 /* RefreshManager.swift in Sources */,
 				58AAA52235D840702E55CAF4 /* Extensions.swift in Sources */,
+				2FA5DC6FA74CBC6B30E91678 /* EIP155Signer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

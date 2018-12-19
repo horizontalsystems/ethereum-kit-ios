@@ -10,7 +10,7 @@ project 'HSEthereumKit/HSEthereumKit'
 
 def kit_pods
   pod 'HSCryptoKit', '~> 1.1.0'
-  pod 'HSHDWalletKit', '~> 1.0.2'
+  pod 'HSHDWalletKit', '~> 1.0.3'
 
   pod 'RxSwift', '~> 4.0'
 

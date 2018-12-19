@@ -1,6 +1,6 @@
 extension Data {
 
-    public init(hex: String) {
+    init(hex: String) {
         let len = hex.count / 2
         var data = Data(capacity: len)
         for i in 0..<len {
@@ -17,11 +17,11 @@ extension Data {
         self = data
     }
 
-    public var bytes: Array<UInt8> {
+    var bytes: Array<UInt8> {
         return Array(self)
     }
 
-    public func toHexString() -> String {
+    func toHexString() -> String {
         return reduce("") { $0 + String(format: "%02x", $1) }
     }
 
