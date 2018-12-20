@@ -8,11 +8,11 @@ public struct EIP155Signer {
         self.chainID = chainID
     }
     
-    public func sign(_ rawTransaction: RawTransaction, privateKey: PrivateKey) throws -> Data {
+    public func sign(_ rawTransaction: RawTransaction, privateKey: Data) throws -> Data {
         let transactionHash = try hash(rawTransaction: rawTransaction)
-        let signiture = try privateKey.sign(hash: transactionHash)
+        let signature = try CryptoKit.ellipticSign(transactionHash, privateKey: privateKey)
         
-        let (r, s, v) = calculateRSV(signature: signiture)
+        let (r, s, v) = calculateRSV(signature: signature)
         return try RLP.encode([
             rawTransaction.nonce,
             rawTransaction.gasPrice,

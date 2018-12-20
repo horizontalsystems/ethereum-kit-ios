@@ -1,6 +1,8 @@
 import Foundation
 import RealmSwift
 import RxSwift
+import HSCryptoKit
+import HSHDWalletKit
 
 public class EthereumKit {
     private let disposeBag = DisposeBag()
@@ -21,7 +23,7 @@ public class EthereumKit {
     private var transactionsNotificationToken: NotificationToken?
 
     public init(withWords words: [String], coin: Coin, infuraKey: String, etherscanKey: String, debugPrints: Bool = false) {
-        let wordsHash = words.joined().data(using: .utf8).map { Crypto.doubleSHA256($0).toHexString() } ?? words[0]
+        let wordsHash = words.joined().data(using: .utf8).map { CryptoKit.sha256sha256($0).toHexString() } ?? words[0]
 
         realmFactory = RealmFactory(realmFileName: "\(wordsHash)-\(coin.rawValue).realm")
         addressValidator = AddressValidator()
@@ -39,7 +41,7 @@ public class EthereumKit {
         }
 
         do {
-            wallet = try Wallet(seed: try Mnemonic.createSeed(mnemonic: words), network: network, debugPrints: debugPrints)
+            wallet = try Wallet(seed: Mnemonic.seed(mnemonic: words), network: network, debugPrints: debugPrints)
         } catch {
             fatalError("Can't create hdWallet")
         }

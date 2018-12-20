@@ -1,4 +1,5 @@
 import Foundation
+import HSCryptoKit
 
 class AddressValidator {
     enum ValidationError: Error {
@@ -32,7 +33,7 @@ class AddressValidator {
 
 
     func isCheckSumAddress(hex: String) throws {
-        let addressHash: String = Crypto.hashSHA3_256(hex.lowercased().data(using: .ascii)!).toHexString()
+        let addressHash: String = CryptoKit.sha3(hex.lowercased().data(using: .ascii)!).toHexString()
         for i in 0..<40 {
             let hashSymbol = character(addressHash, i)
 

@@ -1,5 +1,6 @@
 import UIKit
 import HSEthereumKit
+import HSHDWalletKit
 
 class WordsController: UIViewController {
 
@@ -18,16 +19,16 @@ class WordsController: UIViewController {
     }
 
     @IBAction func generateNewWords() {
-        let generatedWords = Mnemonic.create()
-        textView?.text = generatedWords.joined(separator: " ")
+        if let generatedWords = try? Mnemonic.generate() {
+            textView?.text = generatedWords.joined(separator: " ")
+        }
     }
 
     @IBAction func login() {
         let words = textView?.text.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty } ?? []
 
         do {
-            _ = try Mnemonic.createSeed(mnemonic: words)
-
+            try Mnemonic.validate(words: words)
             Manager.shared.login(words: words)
 
             if let window = UIApplication.shared.keyWindow {

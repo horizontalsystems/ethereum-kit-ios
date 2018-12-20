@@ -17,8 +17,8 @@ Pod::Spec.new do |spec|
   spec.ios.deployment_target = '11.0'
   spec.swift_version = '4.1'
 
-  spec.dependency 'HSCryptoKit', '~> 1.0.1'
-  spec.dependency 'CryptoSwift', '~> 0.13.1'
+  spec.dependency 'HSCryptoKit', '~> 1.1.0'
+  spec.dependency 'HSHDWalletKit', '~> 1.0.3'
   spec.dependency 'RxSwift', '~> 4.0'
   spec.dependency 'RealmSwift', '~> 3.11.0'
   spec.dependency 'RxRealm', '~> 0.7.0'
