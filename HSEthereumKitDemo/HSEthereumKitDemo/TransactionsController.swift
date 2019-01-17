@@ -24,8 +24,10 @@ class TransactionsController: UITableViewController {
     }
 
     private func update() {
-        transactions = Manager.shared.ethereumKit.transactions
-        tableView.reloadData()
+        Manager.shared.ethereumKit.transactions().subscribe(onSuccess: { transactions in
+            self.transactions = transactions
+            self.tableView.reloadData()
+        })
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {

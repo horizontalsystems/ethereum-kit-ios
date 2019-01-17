@@ -28,11 +28,14 @@ class BalanceController: UIViewController {
 
         let ethereumKit = Manager.shared.ethereumKit!
 
-        update(balance: ethereumKit.balance)
-        update(progress: ethereumKit.progress)
-
         Manager.shared.balanceSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] balance in
             self?.update(balance: balance)
+        }).disposed(by: disposeBag)
+
+        Manager.shared.progressSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] progress in
+            self?.update(kitState: progress)
+            self?.update(balance: ethereumKit.balance)
+            self?.update(lastBlockHeight: ethereumKit.lastBlockHeight)
         }).disposed(by: disposeBag)
     }
 
@@ -59,8 +62,24 @@ class BalanceController: UIViewController {
         balanceLabel?.text = "Balance: \(eth)"
     }
 
-    private func update(progress: Double) {
-        progressLabel?.text = "Sync Progress: \(Int(progress * 100))%"
+    private func update(kitState: EthereumKit.KitState) {
+        let kitStateString: String!
+
+        switch kitState {
+        case .synced: kitStateString = "Synced!"
+        case .syncing: kitStateString = "Syncing"
+        case .notSynced: kitStateString = "Not Synced"
+        }
+
+        progressLabel?.text = "Sync State: \(kitStateString!)"
+    }
+
+    private func update(lastBlockHeight: Int?) {
+        if let lastBlockHeight = lastBlockHeight {
+            lastBlockLabel?.text = "Last Block: \(Int(lastBlockHeight * 100))"
+        } else {
+            lastBlockLabel?.text = "Last Block: n/a"
+        }
     }
 
 }

@@ -22,6 +22,9 @@ public class EthereumKit {
     private var balanceNotificationToken: NotificationToken?
     private var transactionsNotificationToken: NotificationToken?
 
+    public var balance: BInt = BInt(0)
+    public var lastBlockHeight: Int? = nil
+
     public init(withWords words: [String], coin: Coin, infuraKey: String, etherscanKey: String, debugPrints: Bool = false) {
         let wordsHash = words.joined().data(using: .utf8).map { CryptoKit.sha256sha256($0).toHexString() } ?? words[0]
 
@@ -74,7 +77,7 @@ public class EthereumKit {
         var lines = [String]()
 
         lines.append("PUBLIC KEY: \(wallet.publicKey()) ADDRESS: \(wallet.address())")
-        lines.append("TRANSACTION COUNT: \(transactions.count)")
+        lines.append("TRANSACTION COUNT: \(transactionRealmResults.count)")
 
         return lines.joined(separator: "\n")
     }
@@ -87,13 +90,19 @@ public class EthereumKit {
 
     public func refresh() {
         delegate?.kitStateUpdated(state: .syncing)
-        Single.zip(updateBalance, updateBlockHeight, updateTransactions, updateGasPrice).subscribe(onSuccess: { [weak self] (_, _, _, _) in
-            self?.delegate?.kitStateUpdated(state: .synced)
-            self?.refreshManager.didRefresh()
-        }, onError: { error in
-            self.delegate?.kitStateUpdated(state: .notSynced)
-            print(error)
-        }).disposed(by: disposeBag)
+        Single.zip(updateBalance, updateBlockHeight, updateTransactions, updateGasPrice).subscribe(
+                onSuccess: { [weak self] (balance, blockNumber, _, _) in
+                    self?.balance = BInt(balance.wei.asString(withBase: 10)) ?? BInt(0)
+                    self?.lastBlockHeight = blockNumber
+
+                    self?.delegate?.kitStateUpdated(state: .synced)
+                    self?.refreshManager.didRefresh()
+                },
+                onError: { error in
+                    self.delegate?.kitStateUpdated(state: .notSynced)
+                    print(error)
+                }
+        ).disposed(by: disposeBag)
     }
 
     public func clear() throws {
@@ -104,27 +113,27 @@ public class EthereumKit {
         }
     }
 
-    // Wallet data getters
-    public var progress: Double {
-        return 1
-    }
-
     public func validate(address: String) throws {
         try addressValidator.validate(address: address)
     }
 
-    public var balance: BInt {
-        let balanceString = realmFactory.realm.objects(EthereumBalance.self).filter("address = %@", wallet.address()).first?.value ?? "0"
+    public func transactions(fromHash: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {
+        return Single.create { observer in
+            let realm = self.realmFactory.realm
+            var transactions = realm.objects(EthereumTransaction.self).sorted(byKeyPath: "timestamp", ascending: false)
 
-        return BInt(balanceString) ?? BInt(0)
-    }
+            if let fromHash = fromHash, let fromTransaction = realm.objects(EthereumTransaction.self).filter("txHash = %@", fromHash).first {
+                transactions = transactions.filter("timestamp < %@", fromTransaction.timestamp)
+            }
 
-    public var lastBlockHeight: Int? {
-        return realmFactory.realm.objects(EthereumBlockHeight.self).filter("blockKey = %@", EthereumBlockHeight.key).first?.blockHeight
-    }
+            var results = Array(transactions)
+            if let limit = limit {
+                results = Array(transactions.prefix(limit))
+            }
 
-    public var transactions: [EthereumTransaction] {
-        return transactionRealmResults.map { $0 }
+            observer(.success(results))
+            return Disposables.create()
+        }
     }
 
     public var fee: Int {
