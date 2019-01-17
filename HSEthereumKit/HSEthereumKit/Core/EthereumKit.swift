@@ -126,9 +126,11 @@ public class EthereumKit {
                 transactions = transactions.filter("timestamp < %@", fromTransaction.timestamp)
             }
 
-            var results = Array(transactions)
+            let results: [EthereumTransaction]
             if let limit = limit {
                 results = Array(transactions.prefix(limit))
+            } else {
+                results = Array(transactions)
             }
 
             observer(.success(results))

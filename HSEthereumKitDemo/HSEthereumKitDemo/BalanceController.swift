@@ -63,7 +63,7 @@ class BalanceController: UIViewController {
     }
 
     private func update(kitState: EthereumKit.KitState) {
-        let kitStateString: String!
+        let kitStateString: String
 
         switch kitState {
         case .synced: kitStateString = "Synced!"
@@ -71,7 +71,7 @@ class BalanceController: UIViewController {
         case .notSynced: kitStateString = "Not Synced"
         }
 
-        progressLabel?.text = "Sync State: \(kitStateString!)"
+        progressLabel?.text = "Sync State: \(kitStateString)"
     }
 
     private func update(lastBlockHeight: Int?) {
