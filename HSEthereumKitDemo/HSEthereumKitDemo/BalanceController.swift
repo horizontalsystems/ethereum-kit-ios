@@ -28,6 +28,9 @@ class BalanceController: UIViewController {
 
         let ethereumKit = Manager.shared.ethereumKit!
 
+        update(balance: ethereumKit.balance)
+        update(lastBlockHeight: ethereumKit.lastBlockHeight)
+
         Manager.shared.balanceSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] balance in
             self?.update(balance: balance)
         }).disposed(by: disposeBag)

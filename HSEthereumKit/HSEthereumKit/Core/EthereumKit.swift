@@ -62,6 +62,12 @@ public class EthereumKit {
         refreshTimer = PeriodicTimer(interval: 30)
         refreshManager = RefreshManager(reachabilityManager: reachabilityManager, timer: refreshTimer)
 
+        if let balanceString = realmFactory.realm.objects(EthereumBalance.self).filter("address = %@", wallet.address()).first?.value,
+           let balanceBInt = BInt(balanceString) {
+            balance = balanceBInt
+        }
+        lastBlockHeight = realmFactory.realm.objects(EthereumBlockHeight.self).filter("blockKey = %@", EthereumBlockHeight.key).first?.blockHeight
+
         balanceNotificationToken = balanceResults.observe { [weak self] changeset in
             self?.handleBalance(changeset: changeset)
         }
