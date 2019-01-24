@@ -37,7 +37,6 @@ class BalanceController: UIViewController {
 
         Manager.shared.progressSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] progress in
             self?.update(kitState: progress)
-            self?.update(balance: ethereumKit.balance)
             self?.update(lastBlockHeight: ethereumKit.lastBlockHeight)
         }).disposed(by: disposeBag)
     }

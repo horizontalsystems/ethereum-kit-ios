@@ -10,9 +10,10 @@ class EthereumBalance: Object {
         return "address"
     }
 
-    convenience init(address: String, balance: Balance) {
+    convenience init(address: String, decimal: Int, balance: Balance) {
         self.init()
         self.address = address
+        self.decimal = decimal
         value = balance.wei.asString(withBase: 10)
     }
 

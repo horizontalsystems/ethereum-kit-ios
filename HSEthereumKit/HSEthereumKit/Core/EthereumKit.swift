@@ -49,6 +49,7 @@ public class EthereumKit {
             fatalError("Can't create hdWallet")
         }
 
+        receiveAddress = wallet.address()
         let configuration = Configuration(
                 network: network,
                 nodeEndpoint: network.infura + infuraKey,
@@ -62,11 +63,17 @@ public class EthereumKit {
         refreshTimer = PeriodicTimer(interval: 30)
         refreshManager = RefreshManager(reachabilityManager: reachabilityManager, timer: refreshTimer)
 
+        commonRefreshTimer = PeriodicTimer(interval: 30)
+        commonRefreshManager = RefreshManager(reachabilityManager: reachabilityManager, timer: commonRefreshTimer)
+
         if let balanceString = realmFactory.realm.objects(EthereumBalance.self).filter("address = %@", wallet.address()).first?.value,
-           let balanceBInt = BInt(balanceString) {
-            balance = balanceBInt
+           let balanceDecimal = Decimal(string: balanceString) {
+            balance = balanceDecimal
         }
-        lastBlockHeight = realmFactory.realm.objects(EthereumBlockHeight.self).filter("blockKey = %@", EthereumBlockHeight.key).first?.blockHeight
+        realmFactory.realm.objects(EthereumBalance.self).forEach { ethereumBalance in
+            update(ethereumBalance: ethereumBalance)
+        }
+        lastBlockHeight = realmFactory.realm.objects(EthereumBlockHeight.self).first?.blockHeight
 
         balanceNotificationToken = balanceResults.observe { [weak self] changeset in
             self?.handleBalance(changeset: changeset)
@@ -126,7 +133,7 @@ public class EthereumKit {
     public func transactions(fromHash: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {
         return Single.create { observer in
             let realm = self.realmFactory.realm
-            var transactions = realm.objects(EthereumTransaction.self).sorted(byKeyPath: "timestamp", ascending: false)
+            var transactions = realm.objects(EthereumTransaction.self).filter("contractAddress = %@", "").sorted(byKeyPath: "timestamp", ascending: false)
 
             if let fromHash = fromHash, let fromTransaction = realm.objects(EthereumTransaction.self).filter("txHash = %@", fromHash).first {
                 transactions = transactions.filter("timestamp < %@", fromTransaction.timestamp)
@@ -183,11 +190,13 @@ public class EthereumKit {
                 try? realm.write {
                     ethereumBalance.value = balance.wei.asString(withBase: 10)
                 }
+                self?.update(ethereumBalance: ethereumBalance)
             } else {
-                let ethereumBalance = EthereumBalance(address: address, balance: balance)
+                let ethereumBalance = EthereumBalance(address: address, decimal: decimal, balance: balance)
                 try? realm.write {
                     realm.add(ethereumBalance, update: true)
                 }
+                self?.update(ethereumBalance: ethereumBalance)
             }
             return balance
         }
