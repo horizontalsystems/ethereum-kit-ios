@@ -28,6 +28,9 @@ class TransactionsController: UITableViewController {
             self.transactions = transactions
             self.tableView.reloadData()
         })
+//TODO
+//        transactions = Manager.shared.ethereumKit.erc20Transactions(contractAddress: "0x583cbBb8a8443B38aBcC0c956beCe47340ea1367")
+//        tableView.reloadData()
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {

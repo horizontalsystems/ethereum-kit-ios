@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14313.18" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
-        <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14283.14"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
-        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="BalanceController" customModule="Example" customModuleProvider="target">
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="BalanceController" customModule="HSEthereumKitDemo" customModuleProvider="target">
             <connections>
+                <outlet property="balanceCoinLabel" destination="4R3-0M-qsf" id="86N-nc-hM3"/>
                 <outlet property="balanceLabel" destination="lGE-w6-tlj" id="bQu-Wh-hoe"/>
+                <outlet property="lastBlockCoinLabel" destination="0Nl-eq-DVc" id="t0F-HF-sHg"/>
                 <outlet property="lastBlockLabel" destination="OO3-Pv-oyv" id="1kW-Bw-heh"/>
                 <outlet property="progressLabel" destination="gaY-fU-Lj3" id="ayH-Ak-djH"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
@@ -48,6 +49,18 @@
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                 </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Last Block Coin: n/a" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0Nl-eq-DVc" userLabel="Last Block Coin Label">
+                    <rect key="frame" x="20" y="203.5" width="335" height="20.5"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Balance Coin: n/a" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4R3-0M-qsf" userLabel="Balance Coin Label">
+                    <rect key="frame" x="20" y="162.5" width="335" height="21"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
             </subviews>
             <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
             <constraints>
@@ -57,11 +70,17 @@
                 <constraint firstItem="fnl-2z-Ty3" firstAttribute="bottom" secondItem="oEu-Qf-bsR" secondAttribute="bottom" constant="50" id="BYn-Fw-3hH"/>
                 <constraint firstItem="fnl-2z-Ty3" firstAttribute="trailing" secondItem="gaY-fU-Lj3" secondAttribute="trailing" constant="20" id="CCT-UW-a4d"/>
                 <constraint firstItem="fnl-2z-Ty3" firstAttribute="trailing" secondItem="lGE-w6-tlj" secondAttribute="trailing" constant="20" id="EVU-Gq-EMP"/>
+                <constraint firstItem="fnl-2z-Ty3" firstAttribute="trailing" secondItem="4R3-0M-qsf" secondAttribute="trailing" constant="20" id="NTG-42-RFI"/>
                 <constraint firstItem="lGE-w6-tlj" firstAttribute="leading" secondItem="fnl-2z-Ty3" secondAttribute="leading" constant="20" id="PcQ-mW-IK0"/>
                 <constraint firstItem="OO3-Pv-oyv" firstAttribute="top" secondItem="gaY-fU-Lj3" secondAttribute="bottom" constant="20" id="RLe-xO-UBJ"/>
                 <constraint firstItem="lGE-w6-tlj" firstAttribute="top" secondItem="fnl-2z-Ty3" secondAttribute="top" constant="20" id="TyD-CB-sWZ"/>
+                <constraint firstItem="4R3-0M-qsf" firstAttribute="leading" secondItem="fnl-2z-Ty3" secondAttribute="leading" constant="20" id="bA1-0v-Kgl"/>
+                <constraint firstItem="0Nl-eq-DVc" firstAttribute="top" secondItem="4R3-0M-qsf" secondAttribute="bottom" constant="20" id="fdf-79-2d0"/>
+                <constraint firstItem="0Nl-eq-DVc" firstAttribute="leading" secondItem="fnl-2z-Ty3" secondAttribute="leading" constant="20" id="juL-ev-rnt"/>
                 <constraint firstItem="gaY-fU-Lj3" firstAttribute="top" secondItem="lGE-w6-tlj" secondAttribute="bottom" constant="20" id="uJl-lF-fNi"/>
+                <constraint firstItem="4R3-0M-qsf" firstAttribute="top" secondItem="OO3-Pv-oyv" secondAttribute="bottom" constant="20" id="voD-dp-SA5"/>
                 <constraint firstItem="gaY-fU-Lj3" firstAttribute="leading" secondItem="fnl-2z-Ty3" secondAttribute="leading" constant="20" id="wwD-hF-BEv"/>
+                <constraint firstItem="fnl-2z-Ty3" firstAttribute="trailing" secondItem="0Nl-eq-DVc" secondAttribute="trailing" constant="20" id="xF7-bX-qaQ"/>
             </constraints>
             <viewLayoutGuide key="safeArea" id="fnl-2z-Ty3"/>
         </view>

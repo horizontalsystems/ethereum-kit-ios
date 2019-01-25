@@ -28,7 +28,12 @@ class SendController: UIViewController {
             return
         }
 
-        Manager.shared.ethereumKit.send(to: address, value: amount) { [weak self] error in
+        guard let ethereumKit = Manager.shared.ethereumKit else {
+            return
+        }
+        let erc20 = ethereumKit.erc20[0]
+
+        ethereumKit.erc20Send(to: address, contractAddress: erc20.contractAddress, decimal: erc20.decimal, value: Decimal(amount)) { [weak self] error in
             if error != nil {
                 self?.show(error: "Something conversion wrong")
             } else {

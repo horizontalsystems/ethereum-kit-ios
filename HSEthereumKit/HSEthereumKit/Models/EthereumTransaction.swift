@@ -25,12 +25,15 @@ public class EthereumTransaction: Object {
         return "txHash"
     }
 
-    public convenience init(txHash: String, from: String, to: String, gas: Int, gasPrice: Int, value: String, timestamp: Int) {
+    public convenience init(txHash: String, from: String, to: String, contractAddress: String? = nil, gas: Int, gasPrice: Int, value: String, timestamp: Int) {
         self.init()
         self.txHash = txHash
 
         self.from = from
         self.to = to
+        if let contractAddress = contractAddress {
+            self.contractAddress = contractAddress
+        }
         self.gas = gas
         self.gasPrice = gasPrice
         self.value = value
@@ -57,7 +60,7 @@ public class EthereumTransaction: Object {
         self.gasPrice = Int(transaction.gasPrice) ?? 0
         self.gasUsed = transaction.gasUsed
         self.cumulativeGasUsed = transaction.cumulativeGasUsed
-        self.isError = transaction.isError
+        self.isError = transaction.isError ?? ""
         self.transactionIndex = transaction.transactionIndex
         self.txReceiptStatus = transaction.txReceiptStatus
         self.value = transaction.value

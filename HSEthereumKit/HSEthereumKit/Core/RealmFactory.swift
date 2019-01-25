@@ -8,10 +8,11 @@ class RealmFactory {
 
         configuration = Realm.Configuration(
                 fileURL: documentsUrl?.appendingPathComponent(realmFileName),
+                deleteRealmIfMigrationNeeded: true,
                 objectTypes: [
                     EthereumTransaction.self,
                     EthereumBalance.self,
-                    EthereumGas.self,
+                    EthereumGasPrice.self,
                     EthereumBlockHeight.self
                 ]
         )

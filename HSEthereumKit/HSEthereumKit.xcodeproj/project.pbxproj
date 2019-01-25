@@ -48,9 +48,11 @@
 		3A38FA0E216B78EE00A764EB /* Geth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9DE216B78EE00A764EB /* Geth.swift */; };
 		3A3B59A9216B1B13001C5E99 /* HSEthereumKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A3B59A7216B1B13001C5E99 /* HSEthereumKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		58AAA05BE3573AABBCBC6018 /* GethProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA61E60AF6E31E1822ADE /* GethProvider.swift */; };
-		58AAA081A68345A707A45794 /* EthereumGas.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAF8EF6D1122AD52C8BD6 /* EthereumGas.swift */; };
+		58AAA077832821FB1126AE0E /* Geth+Contract.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA6C0F26816F015408077 /* Geth+Contract.swift */; };
+		58AAA081A68345A707A45794 /* EthereumGasPrice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAF8EF6D1122AD52C8BD6 /* EthereumGasPrice.swift */; };
 		58AAA1A0931ADF95231D4F87 /* EthereumKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA6BB2DA999645A4E41EA /* EthereumKit.swift */; };
 		58AAA23BCF9E3C06AD96C8B6 /* RefreshManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAE7D03FDF272C10519E1 /* RefreshManager.swift */; };
+		58AAA2AFBB0016E4653C1CEF /* ERC20+Contract.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA94E21A22CE2BAB70EE2 /* ERC20+Contract.swift */; };
 		58AAA52235D840702E55CAF4 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAE7DC330A2628E515477 /* Extensions.swift */; };
 		58AAA609C234AA48E23F4AE9 /* ReachabilityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA0F77F10D6C404DFCD55 /* ReachabilityManager.swift */; };
 		58AAA7C99F4D8FD7DF51C749 /* AddressValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA4CC1551836BE97FA9EA /* AddressValidatorTests.swift */; };
@@ -128,13 +130,15 @@
 		58AAA61E60AF6E31E1822ADE /* GethProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GethProvider.swift; sourceTree = "<group>"; };
 		58AAA69FB6E04728EDC5A525 /* Protocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Protocols.swift; sourceTree = "<group>"; };
 		58AAA6BB2DA999645A4E41EA /* EthereumKit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumKit.swift; sourceTree = "<group>"; };
+		58AAA6C0F26816F015408077 /* Geth+Contract.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Geth+Contract.swift"; sourceTree = "<group>"; };
 		58AAA779492ED6F8A1606DF3 /* EthereumBlockHeight.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumBlockHeight.swift; sourceTree = "<group>"; };
+		58AAA94E21A22CE2BAB70EE2 /* ERC20+Contract.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ERC20+Contract.swift"; sourceTree = "<group>"; };
 		58AAAA0DB1559A80BD16982E /* AddressValidator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddressValidator.swift; sourceTree = "<group>"; };
 		58AAAC4EEC58644B3BF08550 /* PeriodicTimer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeriodicTimer.swift; sourceTree = "<group>"; };
 		58AAACCC8AD8A2CC08E4A5EC /* RealmFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealmFactory.swift; sourceTree = "<group>"; };
 		58AAAE7D03FDF272C10519E1 /* RefreshManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RefreshManager.swift; sourceTree = "<group>"; };
 		58AAAE7DC330A2628E515477 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
-		58AAAF8EF6D1122AD52C8BD6 /* EthereumGas.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumGas.swift; sourceTree = "<group>"; };
+		58AAAF8EF6D1122AD52C8BD6 /* EthereumGasPrice.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumGasPrice.swift; sourceTree = "<group>"; };
 		58AAAFB6CCA44D8BFD8F4F39 /* EthereumBalance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumBalance.swift; sourceTree = "<group>"; };
 		6B6E64E8170B11AD1C5AD461 /* Pods-HSEthereumKitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HSEthereumKitTests.debug.xcconfig"; path = "../Pods/Target Support Files/Pods-HSEthereumKitTests/Pods-HSEthereumKitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		76F074BC2886A32B1444D8D7 /* Pods_HSEthereumKitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HSEthereumKitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -205,6 +209,7 @@
 				3A38F9AE216B78EE00A764EB /* SMP.swift */,
 				3A38F9AF216B78EE00A764EB /* Converter.swift */,
 				3A38F9B0216B78EE00A764EB /* EthereumKitError.swift */,
+				58AAA94E21A22CE2BAB70EE2 /* ERC20+Contract.swift */,
 			);
 			path = Helper;
 			sourceTree = "<group>";
@@ -261,6 +266,7 @@
 				3A38F9D3216B78EE00A764EB /* JSONRPC */,
 				3A38F9DB216B78EE00A764EB /* Request */,
 				3A38F9DE216B78EE00A764EB /* Geth.swift */,
+				58AAA6C0F26816F015408077 /* Geth+Contract.swift */,
 			);
 			path = Networking;
 			sourceTree = "<group>";
@@ -368,7 +374,7 @@
 			children = (
 				58AAA1E3FA19355458A8B417 /* EthereumTransaction.swift */,
 				58AAAFB6CCA44D8BFD8F4F39 /* EthereumBalance.swift */,
-				58AAAF8EF6D1122AD52C8BD6 /* EthereumGas.swift */,
+				58AAAF8EF6D1122AD52C8BD6 /* EthereumGasPrice.swift */,
 				58AAA779492ED6F8A1606DF3 /* EthereumBlockHeight.swift */,
 			);
 			path = Models;
@@ -665,7 +671,7 @@
 				58AAA80F6F0B000F0D11C5A8 /* EthereumTransaction.swift in Sources */,
 				58AAAC79C7CF8ECC33A8E8FE /* EthereumBalance.swift in Sources */,
 				58AAA9112849585C4F820AE8 /* AddressValidator.swift in Sources */,
-				58AAA081A68345A707A45794 /* EthereumGas.swift in Sources */,
+				58AAA081A68345A707A45794 /* EthereumGasPrice.swift in Sources */,
 				58AAA804F98AA25053BD7D25 /* EthereumBlockHeight.swift in Sources */,
 				58AAA05BE3573AABBCBC6018 /* GethProvider.swift in Sources */,
 				58AAA609C234AA48E23F4AE9 /* ReachabilityManager.swift in Sources */,
@@ -674,6 +680,8 @@
 				58AAA23BCF9E3C06AD96C8B6 /* RefreshManager.swift in Sources */,
 				58AAA52235D840702E55CAF4 /* Extensions.swift in Sources */,
 				2FA5DC6FA74CBC6B30E91678 /* EIP155Signer.swift in Sources */,
+				58AAA077832821FB1126AE0E /* Geth+Contract.swift in Sources */,
+				58AAA2AFBB0016E4653C1CEF /* ERC20+Contract.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

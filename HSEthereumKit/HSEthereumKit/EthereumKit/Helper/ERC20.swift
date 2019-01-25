@@ -8,20 +8,16 @@ public struct ERC20 {
     
     /// Represents a decimal specified in a contract / erc20 token
     public let decimal: Int
-    
-    /// Represents a symbol of this erc20 token
-    public let symbol: String
-    
+
     /// Initializer
     ///
     /// - Parameters:
     ///   - contractAddress: contract address of this erc20 token
     ///   - decimal: decimal specified in a contract
     ///   - symbol: symbol of this erc20 token
-    public init(contractAddress: String, decimal: Int, symbol: String) {
+    public init(contractAddress: String, decimal: Int) {
         self.contractAddress = contractAddress
         self.decimal = decimal
-        self.symbol = symbol
     }
     
     /// Transfer method signiture
@@ -32,7 +28,7 @@ public struct ERC20 {
     }
     
     /// Length of 256 bits
-    private var lengthOf256bits: Int {
+    private static var lengthOf256bits: Int {
         return 256 / 4
     }
     
@@ -44,10 +40,10 @@ public struct ERC20 {
     /// - Returns: transaction data
     public func generateDataParameter(toAddress: String, amount: String) throws -> Data {
         let method = transferSigniture.toHexString()
-        let address = pad(string: toAddress.stripHexPrefix())
+        let address = ERC20.pad(string: toAddress.stripHexPrefix())
         
         let poweredAmount = try power(amount: amount)
-        let amount = pad(string: poweredAmount.serialize().toHexString())
+        let amount = ERC20.pad(string: poweredAmount.serialize().toHexString())
         
         return Data(hex: method + address + amount)
     }
@@ -91,7 +87,7 @@ public struct ERC20 {
     }
     
     /// Pad left spaces out of 256bits with 0
-    private func pad(string: String) -> String {
+    public static func pad(string: String) -> String {
         var string = string
         while string.count != lengthOf256bits {
             string = "0" + string
