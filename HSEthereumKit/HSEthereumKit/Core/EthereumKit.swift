@@ -35,22 +35,19 @@ public class EthereumKit {
 
     public var lastBlockHeight: Int? = nil
 
-    public init(withWords words: [String], coin: Coin, infuraKey: String, etherscanKey: String, debugPrints: Bool = false) {
+    public init(withWords words: [String], networkType: NetworkType, infuraKey: String, etherscanKey: String, debugPrints: Bool = false) {
         let wordsHash = words.joined().data(using: .utf8).map { CryptoKit.sha256sha256($0).toHexString() } ?? words[0]
 
-        realmFactory = RealmFactory(realmFileName: "\(wordsHash)-\(coin.rawValue).realm")
+        realmFactory = RealmFactory(realmFileName: "\(wordsHash)-\(networkType.rawValue).realm")
         addressValidator = AddressValidator()
 
         let network: Network
 
-        switch coin {
-        case .ethereum(let networkType):
-            switch networkType {
-            case .mainNet:
-                network = .mainnet
-            case .testNet:
-                network = .ropsten
-            }
+        switch networkType {
+        case .mainNet:
+            network = .mainnet
+        case .testNet:
+            network = .ropsten
         }
 
         do {
@@ -141,12 +138,11 @@ public class EthereumKit {
         let address = receiveAddress
         delegate?.kitStateUpdated(address: address, state: .syncing)
         Single.zip(updateBlockHeight, updateGasPrice, updateBalance(), updateTransactions()).subscribe(onSuccess: { [weak self] (blockHeight, _, _, _) in
-            self?.delegate?.kitStateUpdated(address: address, state: .synced)
             self?.lastBlockHeight = blockHeight
+            self?.delegate?.kitStateUpdated(address: address, state: .synced)
             self?.refreshManager.didRefresh()
         }, onError: { error in
             self.delegate?.kitStateUpdated(address: address, state: .notSynced)
-            print(error)
         }).disposed(by: disposeBag)
     }
 
@@ -391,7 +387,6 @@ public extension EthereumKit {
             holder.didRefresh()
         }, onError: { error in
             self.delegate?.kitStateUpdated(address: contractAddress, state: .notSynced)
-            print(error)
         }).disposed(by: disposeBag)
     }
 
@@ -503,20 +498,13 @@ public protocol EthereumKitDelegate: class {
 
 extension EthereumKit {
 
-    public enum Coin {
-        case ethereum(network: NetworkType)
-
-        var rawValue: String {
-            switch self {
-            case .ethereum(let network):
-                return "eth-\(network)"
-            }
-        }
-    }
-
     public enum NetworkType {
         case mainNet
         case testNet
+
+        var rawValue: String {
+            return "eth-\(self)"
+        }
     }
 
     public enum KitState {
