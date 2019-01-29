@@ -161,7 +161,7 @@ public class EthereumKit {
     public func transactions(fromHash: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {
         return Single.create { observer in
             let realm = self.realmFactory.realm
-            var transactions = realm.objects(EthereumTransaction.self).filter("contractAddress = '' AND input = '0x'").sorted(byKeyPath: "timestamp", ascending: false)
+            var transactions = realm.objects(EthereumTransaction.self).filter("contractAddress = '' AND invalidTx = false").sorted(byKeyPath: "timestamp", ascending: false)
 
             if let fromHash = fromHash, let fromTransaction = transactions.filter("txHash = %@", fromHash).first {
                 transactions = transactions.filter("timestamp < %@", fromTransaction.timestamp)
@@ -351,8 +351,8 @@ public class EthereumKit {
         if case let .update(collection, deletions, insertions, modifications) = changeset {
             delegate?.transactionsUpdated(
                     ethereumKit: self,
-                    inserted: insertions.map { collection[$0] },
-                    updated: modifications.map { collection[$0] },
+                    inserted: insertions.map { collection[$0] }.filter { !$0.invalidTx },
+                    updated: modifications.map { collection[$0] }.filter { !$0.invalidTx },
                     deleted: deletions
             )
         }

@@ -22,6 +22,7 @@ public class EthereumTransaction: Object {
     @objc public dynamic var value: String = ""
 
     @objc public dynamic var primary: String = ""
+    @objc public dynamic var invalidTx: Bool = false
 
     override public class func primaryKey() -> String? {
         return "primary"
@@ -43,6 +44,7 @@ public class EthereumTransaction: Object {
         self.input = input
 
         self.primary = txHash + "_" + self.contractAddress
+        self.invalidTx = contractAddress == "" && input != "0x"
     }
 
     public convenience init(transaction: Transaction) {
@@ -69,7 +71,9 @@ public class EthereumTransaction: Object {
         self.transactionIndex = transaction.transactionIndex
         self.txReceiptStatus = transaction.txReceiptStatus
         self.value = transaction.value
+
         self.primary = txHash + "_" + self.contractAddress
+        self.invalidTx = contractAddress == "" && input != "0x"
     }
 
 }
