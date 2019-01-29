@@ -11,8 +11,7 @@ class BalanceController: UIViewController {
     @IBOutlet weak var lastBlockLabel: UILabel?
 
     @IBOutlet weak var balanceCoinLabel: UILabel?
-    @IBOutlet weak var lastBlockCoinLabel: UILabel?
-    
+
     private lazy var dateFormatter: DateFormatter = {
         var formatter = DateFormatter()
         formatter.timeZone = TimeZone.autoupdatingCurrent
@@ -32,6 +31,8 @@ class BalanceController: UIViewController {
         let ethereumKit = Manager.shared.ethereumKit!
 
         update(address: ethereumKit.receiveAddress, balance: ethereumKit.balance)
+        update(address: Manager.contractAddress, balance: ethereumKit.erc20Balance(address: Manager.contractAddress))
+
         update(lastBlockHeight: ethereumKit.lastBlockHeight)
 
         Manager.shared.balanceSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] address, balance in
@@ -86,7 +87,7 @@ class BalanceController: UIViewController {
 
     private func update(lastBlockHeight: Int?) {
         if let lastBlockHeight = lastBlockHeight {
-            lastBlockLabel?.text = "Last Block: \(Int(lastBlockHeight * 100))"
+            lastBlockLabel?.text = "Last Block: \(Int(lastBlockHeight))"
         } else {
             lastBlockLabel?.text = "Last Block: n/a"
         }

@@ -21,6 +21,7 @@ public enum EthereumKitError: Error {
     }
     
     public enum ContractError: Error {
+        case contractNotExist(Any)
         case containsInvalidCharactor(Any)
         case invalidDecimalValue(Any)
     }

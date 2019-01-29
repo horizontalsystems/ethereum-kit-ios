@@ -13,7 +13,6 @@
             <connections>
                 <outlet property="balanceCoinLabel" destination="4R3-0M-qsf" id="86N-nc-hM3"/>
                 <outlet property="balanceLabel" destination="lGE-w6-tlj" id="bQu-Wh-hoe"/>
-                <outlet property="lastBlockCoinLabel" destination="0Nl-eq-DVc" id="t0F-HF-sHg"/>
                 <outlet property="lastBlockLabel" destination="OO3-Pv-oyv" id="1kW-Bw-heh"/>
                 <outlet property="progressLabel" destination="gaY-fU-Lj3" id="ayH-Ak-djH"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
@@ -49,12 +48,6 @@
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                 </label>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Last Block Coin: n/a" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0Nl-eq-DVc" userLabel="Last Block Coin Label">
-                    <rect key="frame" x="20" y="203.5" width="335" height="20.5"/>
-                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                    <nil key="textColor"/>
-                    <nil key="highlightedColor"/>
-                </label>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Balance Coin: n/a" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4R3-0M-qsf" userLabel="Balance Coin Label">
                     <rect key="frame" x="20" y="162.5" width="335" height="21"/>
                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
@@ -75,12 +68,9 @@
                 <constraint firstItem="OO3-Pv-oyv" firstAttribute="top" secondItem="gaY-fU-Lj3" secondAttribute="bottom" constant="20" id="RLe-xO-UBJ"/>
                 <constraint firstItem="lGE-w6-tlj" firstAttribute="top" secondItem="fnl-2z-Ty3" secondAttribute="top" constant="20" id="TyD-CB-sWZ"/>
                 <constraint firstItem="4R3-0M-qsf" firstAttribute="leading" secondItem="fnl-2z-Ty3" secondAttribute="leading" constant="20" id="bA1-0v-Kgl"/>
-                <constraint firstItem="0Nl-eq-DVc" firstAttribute="top" secondItem="4R3-0M-qsf" secondAttribute="bottom" constant="20" id="fdf-79-2d0"/>
-                <constraint firstItem="0Nl-eq-DVc" firstAttribute="leading" secondItem="fnl-2z-Ty3" secondAttribute="leading" constant="20" id="juL-ev-rnt"/>
                 <constraint firstItem="gaY-fU-Lj3" firstAttribute="top" secondItem="lGE-w6-tlj" secondAttribute="bottom" constant="20" id="uJl-lF-fNi"/>
                 <constraint firstItem="4R3-0M-qsf" firstAttribute="top" secondItem="OO3-Pv-oyv" secondAttribute="bottom" constant="20" id="voD-dp-SA5"/>
                 <constraint firstItem="gaY-fU-Lj3" firstAttribute="leading" secondItem="fnl-2z-Ty3" secondAttribute="leading" constant="20" id="wwD-hF-BEv"/>
-                <constraint firstItem="fnl-2z-Ty3" firstAttribute="trailing" secondItem="0Nl-eq-DVc" secondAttribute="trailing" constant="20" id="xF7-bX-qaQ"/>
             </constraints>
             <viewLayoutGuide key="safeArea" id="fnl-2z-Ty3"/>
         </view>

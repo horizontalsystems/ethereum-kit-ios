@@ -21,11 +21,13 @@ public class EthereumTransaction: Object {
     @objc public dynamic var txReceiptStatus: String = ""
     @objc public dynamic var value: String = ""
 
+    @objc public dynamic var primary: String = ""
+
     override public class func primaryKey() -> String? {
-        return "txHash"
+        return "primary"
     }
 
-    public convenience init(txHash: String, from: String, to: String, contractAddress: String? = nil, gas: Int, gasPrice: Int, value: String, timestamp: Int) {
+    public convenience init(txHash: String, from: String, to: String, contractAddress: String? = nil, gas: Int, gasPrice: Int, value: String, timestamp: Int, input: String = "0x") {
         self.init()
         self.txHash = txHash
 
@@ -38,6 +40,9 @@ public class EthereumTransaction: Object {
         self.gasPrice = gasPrice
         self.value = value
         self.timestamp = timestamp
+        self.input = input
+
+        self.primary = txHash + "_" + self.contractAddress
     }
 
     public convenience init(transaction: Transaction) {
@@ -53,9 +58,9 @@ public class EthereumTransaction: Object {
         self.confirmations = Int(transaction.confirmations) ?? 0
         self.nonce = Int(transaction.nonce) ?? 0
         self.timestamp = Int(transaction.timeStamp) ?? 0
-        self.contractAddress = transaction.contractAddress
-        self.from = transaction.from
-        self.to = transaction.to
+        self.contractAddress = EIP55.format(transaction.contractAddress)
+        self.from = EIP55.format(transaction.from)
+        self.to = EIP55.format(transaction.to)
         self.gas = Int(transaction.gas) ?? 0
         self.gasPrice = Int(transaction.gasPrice) ?? 0
         self.gasUsed = transaction.gasUsed
@@ -64,6 +69,7 @@ public class EthereumTransaction: Object {
         self.transactionIndex = transaction.transactionIndex
         self.txReceiptStatus = transaction.txReceiptStatus
         self.value = transaction.value
+        self.primary = txHash + "_" + self.contractAddress
     }
 
 }

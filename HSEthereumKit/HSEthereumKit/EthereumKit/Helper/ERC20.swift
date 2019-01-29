@@ -53,7 +53,7 @@ public struct ERC20 {
     /// - Parameter:
     ///    - amount: amount in string format
     /// - Returns: BigInt value powered by (10 * decimal)
-    private func power(amount: String) throws -> BInt {
+    public func power(amount: String) throws -> BInt {
         let components = amount.split(separator: ".")
         
         // components.count must be 1 or 2. this method accepts only integer or decimal value

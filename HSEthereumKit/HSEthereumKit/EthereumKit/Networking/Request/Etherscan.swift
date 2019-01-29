@@ -87,6 +87,7 @@ public final class Etherscan {
                 "module": "account",
                 "action": "tokentx",
                 "address": address,
+                "contractaddress": contractAddress,
                 "startblock": NSNumber(value: startBlock),
                 "endblock": NSNumber(value: endBlock),
                 "sort": sort.rawValue,

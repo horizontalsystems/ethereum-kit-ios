@@ -21,18 +21,17 @@ public class EthereumKit {
     private let gethProvider: IGethProviderProtocol
 
     private let reachabilityManager: ReachabilityManager
+
     private let refreshTimer: IPeriodicTimer
     private let refreshManager: RefreshManager
-    private let commonRefreshTimer: IPeriodicTimer
-    private let commonRefreshManager: RefreshManager
+
     private var balanceNotificationToken: NotificationToken?
     private var transactionsNotificationToken: NotificationToken?
 
-    public var erc20 = [ERC20]()
+    private var erc20Manager: Erc20Manager
 
     public var receiveAddress: String
     public var balance: Decimal = 0
-    public var erc20Balance = [String: Decimal]()
 
     public var lastBlockHeight: Int? = nil
 
@@ -71,18 +70,14 @@ public class EthereumKit {
         gethProvider = GethProvider(geth: geth)
 
         reachabilityManager = ReachabilityManager()
+        erc20Manager = Erc20Manager(reachabilityManager: reachabilityManager)
+
         refreshTimer = PeriodicTimer(interval: 30)
         refreshManager = RefreshManager(reachabilityManager: reachabilityManager, timer: refreshTimer)
 
-        commonRefreshTimer = PeriodicTimer(interval: 30)
-        commonRefreshManager = RefreshManager(reachabilityManager: reachabilityManager, timer: commonRefreshTimer)
-
         if let balanceString = realmFactory.realm.objects(EthereumBalance.self).filter("address = %@", wallet.address()).first?.value,
            let balanceDecimal = Decimal(string: balanceString) {
-            balance = balanceDecimal
-        }
-        realmFactory.realm.objects(EthereumBalance.self).forEach { ethereumBalance in
-            update(ethereumBalance: ethereumBalance)
+            balance = balanceDecimal / EthereumKit.ethRate
         }
         lastBlockHeight = realmFactory.realm.objects(EthereumBlockHeight.self).first?.blockHeight
 
@@ -94,6 +89,7 @@ public class EthereumKit {
             self?.handleTransactions(changeset: changeset)
         }
 
+        erc20Manager.delegate = self
         refreshManager.delegate = self
     }
 
@@ -107,16 +103,14 @@ public class EthereumKit {
     }
 
     public func enable(contractAddress: String, decimal: Int) {
-        guard erc20.firstIndex(where: { erc20 in contractAddress == erc20.contractAddress }) == nil else {
-            return
+        erc20Manager.enable(contractAddress: contractAddress, decimal: decimal)
+        realmFactory.realm.objects(EthereumBalance.self).filter("address = %@", contractAddress).forEach { ethereumBalance in
+            update(ethereumBalance: ethereumBalance)
         }
-        erc20.append(ERC20(contractAddress: contractAddress, decimal: decimal))
     }
 
-    public func disable(contractAddress: String, decimal: Int) {
-        if let index = erc20.firstIndex(where: { erc20 in contractAddress == erc20.contractAddress }) {
-            erc20.remove(at: index)
-        }
+    public func disable(contractAddress: String) {
+        erc20Manager.disable(contractAddress: contractAddress)
     }
 
     private func update(ethereumBalance: EthereumBalance) {
@@ -125,35 +119,33 @@ public class EthereumKit {
             if ethereumBalance.address == receiveAddress {
                 balance = balanceDecimal
             }
-            erc20Balance[ethereumBalance.address] = balanceDecimal
+
+            erc20Manager.holder(for: ethereumBalance.address)?.balance = balanceDecimal
         }
     }
 
     // Manage Kit methods
 
     public func start() {
+        refreshAll()
+    }
+
+    public func refreshAll() {
         refresh()
-        erc20.forEach { erc20 in
-            refresh(contractAddress: erc20.contractAddress)
+        erc20Manager.holders.forEach { holder in
+            erc20Refresh(contractAddress: holder.erc20.contractAddress)
         }
     }
 
-    public func refresh(contractAddress: String? = nil, decimal: Int = 18) {
-        delegate?.kitStateUpdated(state: .syncing)
-        Single.zip(updateBalance(contractAddress: contractAddress, decimal: decimal), updateTransactions(contractAddress: contractAddress)).subscribe(onSuccess: { [weak self] (_, _) in
-            self?.delegate?.kitStateUpdated(state: .synced)
+    public func refresh() {
+        let address = receiveAddress
+        delegate?.kitStateUpdated(address: address, state: .syncing)
+        Single.zip(updateBlockHeight, updateGasPrice, updateBalance(), updateTransactions()).subscribe(onSuccess: { [weak self] (blockHeight, _, _, _) in
+            self?.delegate?.kitStateUpdated(address: address, state: .synced)
+            self?.lastBlockHeight = blockHeight
             self?.refreshManager.didRefresh()
         }, onError: { error in
-            self.delegate?.kitStateUpdated(state: .notSynced)
-            print(error)
-        }).disposed(by: disposeBag)
-    }
-
-    private func commonRefresh() {
-        Single.zip(updateBlockHeight, updateGasPrice).subscribe(onSuccess: { [weak self] (blockHeight, _) in
-            self?.commonRefreshManager.didRefresh()
-            self?.lastBlockHeight = blockHeight
-        }, onError: { error in
+            self.delegate?.kitStateUpdated(address: address, state: .notSynced)
             print(error)
         }).disposed(by: disposeBag)
     }
@@ -173,9 +165,9 @@ public class EthereumKit {
     public func transactions(fromHash: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {
         return Single.create { observer in
             let realm = self.realmFactory.realm
-            var transactions = realm.objects(EthereumTransaction.self).filter("contractAddress = %@", "").sorted(byKeyPath: "timestamp", ascending: false)
+            var transactions = realm.objects(EthereumTransaction.self).filter("contractAddress = '' AND input = '0x'").sorted(byKeyPath: "timestamp", ascending: false)
 
-            if let fromHash = fromHash, let fromTransaction = realm.objects(EthereumTransaction.self).filter("txHash = %@", fromHash).first {
+            if let fromHash = fromHash, let fromTransaction = transactions.filter("txHash = %@", fromHash).first {
                 transactions = transactions.filter("timestamp < %@", fromTransaction.timestamp)
             }
 
@@ -242,7 +234,7 @@ public class EthereumKit {
 
     private func updateTransactions(contractAddress: String? = nil) -> Single<Transactions> {
         let realm = realmFactory.realm
-        let lastBlockHeight = realm.objects(EthereumTransaction.self).filter("contractAddress = %@", (contractAddress?.lowercased() ?? "")).sorted(byKeyPath: "blockNumber", ascending: false).first?.blockNumber ?? 0
+        let lastBlockHeight = realm.objects(EthereumTransaction.self).filter("contractAddress = %@", (contractAddress ?? "")).sorted(byKeyPath: "blockNumber", ascending: false).first?.blockNumber ?? 0
 
         return gethProvider.getTransactions(address: wallet.address(), contractAddress: contractAddress, startBlock: Int64(lastBlockHeight + 1)).map { transactions in
             try? realm.write {
@@ -349,7 +341,7 @@ public class EthereumKit {
 
     private func addSentTransaction(transaction: EthereumTransaction) {
         let realm = realmFactory.realm
-        guard realm.objects(EthereumTransaction.self).filter("txHash = %@", transaction.txHash).first == nil else {
+        guard realm.objects(EthereumTransaction.self).filter("primary = %@", transaction.primary).first == nil else {
             // no need to save
             return
         }
@@ -371,13 +363,14 @@ public class EthereumKit {
     }
 
     private func handleBalance(changeset: RealmCollectionChange<Results<EthereumBalance>>) {
-        if case let .update(collection, deletions, insertions, modifications) = changeset {
-            delegate?.balanceUpdated(
-                    ethereumKit: self,
-                    inserted: insertions.map { collection[$0] },
-                    updated: modifications.map { collection[$0] },
-                    deleted: deletions
-            )
+        if case let .update(collection, _, insertions, modifications) = changeset {
+            let union: [EthereumBalance] = (insertions.map { collection[$0] }) + modifications.map { collection[$0] }
+            union.forEach { balance in
+                if let balanceWei = Decimal(string: balance.value) {
+                    let balanceDecimal = balanceWei / pow(10, balance.decimal)
+                    delegate?.balanceUpdated(ethereumKit: self, address: balance.address, balance: balanceDecimal)
+                }
+            }
         }
     }
 
@@ -386,28 +379,38 @@ public class EthereumKit {
 // ERC20 Extension
 public extension EthereumKit {
 
+    public func erc20Refresh(contractAddress: String) {
+        guard let holder = erc20Manager.holder(for: contractAddress) else {
+            return
+        }
+        let erc20 = holder.erc20
+
+        delegate?.kitStateUpdated(address: contractAddress, state: .syncing)
+        Single.zip(updateBalance(contractAddress: contractAddress, decimal: erc20.decimal), updateTransactions(contractAddress: contractAddress)).subscribe(onSuccess: { [weak self] (_, _) in
+            self?.delegate?.kitStateUpdated(address: contractAddress, state: .synced)
+            holder.didRefresh()
+        }, onError: { error in
+            self.delegate?.kitStateUpdated(address: contractAddress, state: .notSynced)
+            print(error)
+        }).disposed(by: disposeBag)
+    }
+
     public var erc20Fee: Decimal {
         // only for erc20 coin maximum fee
         let gasPrice = (Decimal(ethereumGasPrice.gasPrice) * Decimal(EthereumKit.erc20GasLimit)) / EthereumKit.ethRate
         return gasPrice
     }
 
-    public func erc20Balance(address: String, decimal: Int) -> Decimal {
-        let balanceString = realmFactory.realm.objects(EthereumBalance.self).filter("address = %@", address).first?.value ?? "0"
-
-        guard let balance = Decimal(string: balanceString) else {
-            // print("too big number")
-            return 0
-        }
-        return balance / pow(Decimal(10), decimal)
+    public func erc20Balance(address: String) -> Decimal {
+        return erc20Manager.holder(for: address)?.balance ?? 0
     }
 
-    public func transactions(contractAddress: String, fromHash: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {
+    public func erc20Transactions(contractAddress: String, fromHash: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {
         return Single.create { observer in
             let realm = self.realmFactory.realm
             var transactions = realm.objects(EthereumTransaction.self).filter("contractAddress = %@", contractAddress).sorted(byKeyPath: "timestamp", ascending: false)
 
-            if let fromHash = fromHash, let fromTransaction = realm.objects(EthereumTransaction.self).filter("txHash = %@", fromHash).first {
+            if let fromHash = fromHash, let fromTransaction = transactions.filter("txHash = %@", fromHash).first {
                 transactions = transactions.filter("timestamp < %@", fromTransaction.timestamp)
             }
 
@@ -427,8 +430,11 @@ public extension EthereumKit {
         return realmFactory.realm.objects(EthereumBalance.self).filter("address = %@", contractAddress).sorted(byKeyPath: "value", ascending: false)
     }
 
-    public func erc20Send(to address: String, contractAddress: String, decimal: Int, value: Decimal, gasPrice: Int? = nil, completion: ((Error?) -> ())? = nil) {
-        let contract = ERC20(contractAddress: contractAddress, decimal: decimal)
+    public func erc20Send(to address: String, contractAddress: String, value: Decimal, gasPrice: Int? = nil, completion: ((Error?) -> ())? = nil) {
+        guard let contract = erc20Manager.holder(for: contractAddress)?.erc20 else {
+            completion?(EthereumKitError.contractError(.contractNotExist(contractAddress)))
+            return
+        }
 
         let gasPrice = gasPrice ?? ethereumGasPrice.gasPrice
         geth.getTransactionCount(of: wallet.address(), blockParameter: .pending) { result in
@@ -454,7 +460,8 @@ public extension EthereumKit {
         let selfAddress = wallet.address()
 
         // check value
-        guard let weiString: String = convert(value: value, completion: completion)?.asString(withBase: 10) else {
+        guard let weiString: String = try? contract.power(amount: String(describing: value)).asString(withBase: 10) else {
+            completion?(EthereumKitError.convertError(.failedToConvert(value)))
             return
         }
 
@@ -474,7 +481,7 @@ public extension EthereumKit {
             geth.sendRawTransaction(rawTransaction: tx) { [weak self] result in
                 switch result {
                 case .success(let sentTransaction):
-                    let transaction = EthereumTransaction(txHash: sentTransaction.id, from: selfAddress, to: address, contractAddress: contract.contractAddress, gas: gasLimit, gasPrice: gasPrice, value: weiString, timestamp: Int(Date().timeIntervalSince1970))
+                    let transaction = EthereumTransaction(txHash: sentTransaction.id, from: selfAddress, to: address, contractAddress: contract.contractAddress, gas: gasLimit, gasPrice: gasPrice, value: weiString, timestamp: Int(Date().timeIntervalSince1970), input: params.toHexString().addHexPrefix())
                     self?.addSentTransaction(transaction: transaction)
                     completion?(nil)
                 case .failure(let error):
@@ -486,14 +493,12 @@ public extension EthereumKit {
         }
     }
 
-
 }
 
 public protocol EthereumKitDelegate: class {
     func transactionsUpdated(ethereumKit: EthereumKit, inserted: [EthereumTransaction], updated: [EthereumTransaction], deleted: [Int])
-    func balanceUpdated(ethereumKit: EthereumKit, inserted: [EthereumBalance], updated: [EthereumBalance], deleted: [Int])
-//    func balanceUpdated(ethereumKit: EthereumKit, address: String, balance: BInt)
-    func kitStateUpdated(state: EthereumKit.KitState)
+    func balanceUpdated(ethereumKit: EthereumKit, address: String, balance: Decimal)
+    func kitStateUpdated(address: String?, state: EthereumKit.KitState)
 }
 
 extension EthereumKit {
@@ -525,12 +530,19 @@ extension EthereumKit {
 extension EthereumKit: IRefreshKitDelegate {
 
     func onRefresh() {
-        commonRefresh()
-        start()
+        refresh()
     }
 
     func onDisconnect() {
-        delegate?.kitStateUpdated(state: .notSynced)
+        delegate?.kitStateUpdated(address: nil, state: .notSynced)
+    }
+
+}
+
+extension EthereumKit: IErc20ManagerRefreshDelegate {
+
+    func onRefresh(contractAddress: String) {
+        erc20Refresh(contractAddress: contractAddress)
     }
 
 }

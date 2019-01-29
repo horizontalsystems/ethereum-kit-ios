@@ -113,7 +113,7 @@ extension GethProvider: IGethProviderProtocol {
                 }
             }
             if let contractAddress = contractAddress {
-                geth?.getTokenTransactions(address: address, contractAddress: contractAddress, completionHandler: block)
+                geth?.getTokenTransactions(address: address, contractAddress: contractAddress, startBlock: startBlock, completionHandler: block)
             } else {
                 geth?.getTransactions(address: address, startBlock: startBlock, completionHandler: block)
             }

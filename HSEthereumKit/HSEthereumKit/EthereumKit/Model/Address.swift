@@ -16,7 +16,7 @@ public struct Address {
 extension Address {
     public init(data: Data) {
         self.data = data
-        self.string = "0x" + EIP55.encode(data)
+        self.string = EIP55.encode(data)
     }
     
     public init(string: String) {
