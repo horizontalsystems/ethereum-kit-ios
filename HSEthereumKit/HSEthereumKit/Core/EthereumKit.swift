@@ -349,17 +349,25 @@ public class EthereumKit {
             let insertions = insertions.map { collection[$0] }.filter { !$0.invalidTx }
             let modifications = modifications.map { collection[$0] }.filter { !$0.invalidTx }
 
-            delegate?.transactionsUpdated(
-                    inserted: insertions.filter { $0.contractAddress.isEmpty },
-                    updated: modifications.filter { $0.contractAddress.isEmpty },
-                    deleted: deletions
-            )
-            erc20Holders.forEach { address, holder in
-                holder.delegate?.transactionsUpdated(
-                        inserted: insertions.filter { $0.contractAddress == address },
-                        updated: modifications.filter { $0.contractAddress == address },
+            let ethereumInsertions = insertions.filter { $0.contractAddress.isEmpty }
+            let ethereumModifications = modifications.filter { $0.contractAddress.isEmpty }
+            if !ethereumInsertions.isEmpty || !ethereumModifications.isEmpty {
+                delegate?.transactionsUpdated(
+                        inserted: ethereumInsertions,
+                        updated: ethereumModifications,
                         deleted: deletions
                 )
+            }
+            erc20Holders.forEach { address, holder in
+                let erc20Insertions = insertions.filter { $0.contractAddress == address }
+                let erc20Modifications = modifications.filter { $0.contractAddress == address }
+                if !ethereumInsertions.isEmpty || !ethereumModifications.isEmpty {
+                    holder.delegate?.transactionsUpdated(
+                            inserted: erc20Insertions,
+                            updated: erc20Modifications,
+                            deleted: deletions
+                    )
+                }
             }
         }
     }
