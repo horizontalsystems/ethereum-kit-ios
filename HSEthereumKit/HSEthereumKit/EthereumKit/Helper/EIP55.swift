@@ -4,19 +4,30 @@ import HSCryptoKit
 public struct EIP55 {
     public static func encode(_ data: Data) -> String {
         let address = data.toHexString()
-        let hash = CryptoKit.sha3(address.data(using: .ascii)!).toHexString()
-        
-        return zip(address, hash)
-            .map { a, h -> String in
-                switch (a, h) {
-                case ("0", _), ("1", _), ("2", _), ("3", _), ("4", _), ("5", _), ("6", _), ("7", _), ("8", _), ("9", _):
-                    return String(a)
-                case (_, "8"), (_, "9"), (_, "a"), (_, "b"), (_, "c"), (_, "d"), (_, "e"), (_, "f"):
-                    return String(a).uppercased()
-                default:
-                    return String(a).lowercased()
-                }
-            }
-            .joined()
+
+        return EIP55.format(address)
     }
+
+    // convert lowercased address to valid
+    public static func format(_ address: String) -> String {
+        guard !address.isEmpty || address != address.lowercased() || address != address.uppercased() else {
+            return address
+        }
+        let address = address.hasPrefix("0x") ? String(address.dropFirst(2)) : address
+        let hash = CryptoKit.sha3(address.data(using: .ascii)!).toHexString()
+
+        return "0x" + zip(address, hash)
+                .map { a, h -> String in
+                    switch (a, h) {
+                    case ("0", _), ("1", _), ("2", _), ("3", _), ("4", _), ("5", _), ("6", _), ("7", _), ("8", _), ("9", _):
+                        return String(a)
+                    case (_, "8"), (_, "9"), (_, "a"), (_, "b"), (_, "c"), (_, "d"), (_, "e"), (_, "f"):
+                        return String(a).uppercased()
+                    default:
+                        return String(a).lowercased()
+                    }
+                }
+                .joined()
+    }
+
 }

@@ -44,7 +44,7 @@ public struct Transaction {
     public let cumulativeGasUsed: String
     
     /// Whether any error occured during broadcasting
-    public let isError: String
+    public let isError: String?
     
     /// Index of this transaction
     public let transactionIndex: String
@@ -124,9 +124,9 @@ extension Transaction: Codable {
         gasPrice = try container.decode(String.self, forKey: .gasPrice)
         gasUsed = try container.decode(String.self, forKey: .gasUsed)
         cumulativeGasUsed = try container.decode(String.self, forKey: .cumulativeGasUsed)
-        isError = try container.decode(String.self, forKey: .isError)
+        isError = try? container.decode(String.self, forKey: .isError)
         transactionIndex = try container.decode(String.self, forKey: .transactionIndex)
-        txReceiptStatus = try container.decode(String.self, forKey: .txReceiptStatus)
+        txReceiptStatus = (try? container.decode(String.self, forKey: .txReceiptStatus)) ?? ""
         value = try container.decode(String.self, forKey: .value)
     }
     

@@ -21,20 +21,30 @@ public class EthereumTransaction: Object {
     @objc public dynamic var txReceiptStatus: String = ""
     @objc public dynamic var value: String = ""
 
+    @objc public dynamic var primary: String = ""
+    @objc public dynamic var invalidTx: Bool = false
+
     override public class func primaryKey() -> String? {
-        return "txHash"
+        return "primary"
     }
 
-    public convenience init(txHash: String, from: String, to: String, gas: Int, gasPrice: Int, value: String, timestamp: Int) {
+    public convenience init(txHash: String, from: String, to: String, contractAddress: String? = nil, gas: Int, gasPrice: Int, value: String, timestamp: Int, input: String = "0x") {
         self.init()
         self.txHash = txHash
 
         self.from = from
         self.to = to
+        if let contractAddress = contractAddress {
+            self.contractAddress = contractAddress
+        }
         self.gas = gas
         self.gasPrice = gasPrice
         self.value = value
         self.timestamp = timestamp
+        self.input = input
+
+        self.primary = txHash + "_" + self.contractAddress
+        self.invalidTx = contractAddress == "" && input != "0x"
     }
 
     public convenience init(transaction: Transaction) {
@@ -50,17 +60,20 @@ public class EthereumTransaction: Object {
         self.confirmations = Int(transaction.confirmations) ?? 0
         self.nonce = Int(transaction.nonce) ?? 0
         self.timestamp = Int(transaction.timeStamp) ?? 0
-        self.contractAddress = transaction.contractAddress
-        self.from = transaction.from
-        self.to = transaction.to
+        self.contractAddress = EIP55.format(transaction.contractAddress)
+        self.from = EIP55.format(transaction.from)
+        self.to = EIP55.format(transaction.to)
         self.gas = Int(transaction.gas) ?? 0
         self.gasPrice = Int(transaction.gasPrice) ?? 0
         self.gasUsed = transaction.gasUsed
         self.cumulativeGasUsed = transaction.cumulativeGasUsed
-        self.isError = transaction.isError
+        self.isError = transaction.isError ?? ""
         self.transactionIndex = transaction.transactionIndex
         self.txReceiptStatus = transaction.txReceiptStatus
         self.value = transaction.value
+
+        self.primary = txHash + "_" + self.contractAddress
+        self.invalidTx = contractAddress == "" && input != "0x"
     }
 
 }
