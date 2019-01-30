@@ -18,8 +18,10 @@ class Manager {
     let networkType = EthereumKit.NetworkType.testNet
 
     var ethereumKit: EthereumKit!
+    var erc20Adapter = Erc20Adapter()
 
-    let balanceSubject = PublishSubject<(address: String, balance: Decimal)>()
+    let balanceSubject = PublishSubject<Decimal>()
+    let lastBlockHeight = PublishSubject<Int>()
     let transactionsSubject = PublishSubject<Void>()
     let progressSubject = PublishSubject<EthereumKit.KitState>()
 
@@ -47,7 +49,7 @@ class Manager {
 
     private func initEthereumKit(words: [String]) {
         ethereumKit = EthereumKit(withWords: words, networkType: networkType, infuraKey: Manager.infuraKey, etherscanKey: Manager.etherscanKey, debugPrints: false)
-        ethereumKit.enable(contractAddress: Manager.contractAddress, decimal: Manager.contractDecimal)
+        ethereumKit.register(token: erc20Adapter)
         ethereumKit.delegate = self
     }
 
@@ -72,15 +74,19 @@ class Manager {
 
 extension Manager: EthereumKitDelegate {
 
-    public func transactionsUpdated(ethereumKit: EthereumKit, inserted: [EthereumTransaction], updated: [EthereumTransaction], deleted: [Int]) {
+    public func transactionsUpdated(inserted: [EthereumTransaction], updated: [EthereumTransaction], deleted: [Int]) {
         transactionsSubject.onNext(())
     }
 
-    public func balanceUpdated(ethereumKit: EthereumKit, address: String, balance: Decimal) {
-        balanceSubject.onNext((address: address, balance: balance))
+    public func balanceUpdated(balance: Decimal) {
+        balanceSubject.onNext(balance)
     }
 
-    public func kitStateUpdated(address: String?, state: EthereumKit.KitState) {
+    public func lastBlockHeightUpdated(height: Int) {
+        lastBlockHeight.onNext(height)
+    }
+
+    public func kitStateUpdated(state: EthereumKit.KitState) {
         progressSubject.onNext(state)
     }
 

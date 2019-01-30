@@ -30,18 +30,25 @@ class BalanceController: UIViewController {
 
         let ethereumKit = Manager.shared.ethereumKit!
 
-        update(address: ethereumKit.receiveAddress, balance: ethereumKit.balance)
-        update(address: Manager.contractAddress, balance: ethereumKit.erc20Balance(address: Manager.contractAddress))
+        update(balance: ethereumKit.balance)
+        erc20update(balance: ethereumKit.erc20Balance(contractAddress: Manager.contractAddress))
 
         update(lastBlockHeight: ethereumKit.lastBlockHeight)
 
-        Manager.shared.balanceSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] address, balance in
-                self?.update(address: address, balance: balance)
+        Manager.shared.balanceSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] balance in
+                self?.update(balance: balance)
+        }).disposed(by: disposeBag)
+
+        Manager.shared.lastBlockHeight.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] height in
+                self?.update(lastBlockHeight: height)
         }).disposed(by: disposeBag)
 
         Manager.shared.progressSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] progress in
             self?.update(kitState: progress)
-            self?.update(lastBlockHeight: ethereumKit.lastBlockHeight)
+        }).disposed(by: disposeBag)
+
+        Manager.shared.erc20Adapter.balanceSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] balance in
+            self?.erc20update(balance: balance)
         }).disposed(by: disposeBag)
     }
 
@@ -63,14 +70,12 @@ class BalanceController: UIViewController {
         print(Manager.shared.ethereumKit.debugInfo)
     }
 
-    private func update(address: String, balance: Decimal) {
-        let ethereumKit = Manager.shared.ethereumKit!
+    private func update(balance: Decimal) {
+        balanceLabel?.text = "Balance: \(balance)"
+    }
 
-        if address == ethereumKit.receiveAddress {
-            balanceLabel?.text = "Balance: \(balance)"
-        } else {
-            balanceCoinLabel?.text = "Balance Coin: \(balance)"
-        }
+    private func erc20update(balance: Decimal) {
+        balanceCoinLabel?.text = "Balance Coin: \(balance)"
     }
 
     private func update(kitState: EthereumKit.KitState) {

@@ -14,6 +14,7 @@ class TransactionCell: UITableViewCell {
         let toAddress = transaction.to
 
         let amount = transaction.value
+        let confirmations = transaction.blockNumber > 0 ? "Confirmations: \(lastBlockHeight - transaction.blockNumber)" : "" 
 
         infoLabel?.text =
                 "# \(index)\n" +
@@ -23,7 +24,7 @@ class TransactionCell: UITableViewCell {
                 "From: \(fromAddress)\n" +
                 "To: \(toAddress)\n" + 
                         (transaction.contractAddress.isEmpty ? "" : "Contract: \(transaction.contractAddress) \n") +
-                "Confirmations: \(transaction.confirmations)"
+                confirmations
     }
 
 }

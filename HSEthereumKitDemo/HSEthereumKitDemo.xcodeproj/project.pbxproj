@@ -26,6 +26,7 @@
 		3A3B5A0C216B2694001C5E99 /* SendController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A3B59FC216B2694001C5E99 /* SendController.xib */; };
 		3A3B5A0E216B444D001C5E99 /* HSEthereumKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A3B5A0D216B444D001C5E99 /* HSEthereumKit.framework */; };
 		3A3B5A0F216B444D001C5E99 /* HSEthereumKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3A3B5A0D216B444D001C5E99 /* HSEthereumKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		58AAAD1855B631EEBFB80C0E /* Erc20Adapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAADF65F2933E87A9984B1 /* Erc20Adapter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -62,6 +63,7 @@
 		3A3B59FB216B2694001C5E99 /* TransactionCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TransactionCell.xib; sourceTree = "<group>"; };
 		3A3B59FC216B2694001C5E99 /* SendController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SendController.xib; sourceTree = "<group>"; };
 		3A3B5A0D216B444D001C5E99 /* HSEthereumKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = HSEthereumKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		58AAADF65F2933E87A9984B1 /* Erc20Adapter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Erc20Adapter.swift; sourceTree = "<group>"; };
 		67F0F8A6C826B6C65C14EE47 /* Pods-HSEthereumKitDemo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HSEthereumKitDemo.debug.xcconfig"; path = "../Pods/Target Support Files/Pods-HSEthereumKitDemo/Pods-HSEthereumKitDemo.debug.xcconfig"; sourceTree = "<group>"; };
 		C9491BBCAF7D251D1C8212D2 /* Pods_HSEthereumKitDemo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HSEthereumKitDemo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DBEA2F154FED438CE06CA406 /* Pods-HSEthereumKitDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HSEthereumKitDemo.release.xcconfig"; path = "../Pods/Target Support Files/Pods-HSEthereumKitDemo/Pods-HSEthereumKitDemo.release.xcconfig"; sourceTree = "<group>"; };
@@ -129,6 +131,7 @@
 				3A3B59F9216B2693001C5E99 /* TransactionsController.swift */,
 				3A3B59F4216B2693001C5E99 /* WordsController.swift */,
 				3A3B59F7216B2693001C5E99 /* WordsController.xib */,
+				58AAADF65F2933E87A9984B1 /* Erc20Adapter.swift */,
 			);
 			path = HSEthereumKitDemo;
 			sourceTree = "<group>";
@@ -284,6 +287,7 @@
 				3A3B5A09216B2694001C5E99 /* TransactionsController.swift in Sources */,
 				3A3B5A03216B2694001C5E99 /* BalanceController.swift in Sources */,
 				3A3B59FF216B2694001C5E99 /* MainController.swift in Sources */,
+				58AAAD1855B631EEBFB80C0E /* Erc20Adapter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
