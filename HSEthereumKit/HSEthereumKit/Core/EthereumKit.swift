@@ -41,10 +41,8 @@ public class EthereumKit {
         }
     }
 
-    public init(withWords words: [String], networkType: NetworkType, infuraKey: String, etherscanKey: String, debugPrints: Bool = false) {
-        let wordsHash = words.joined().data(using: .utf8).map { CryptoKit.sha256sha256($0).toHexString() } ?? words[0]
-
-        realmFactory = RealmFactory(realmFileName: "\(wordsHash)-\(networkType.rawValue).realm")
+    public init(withWords words: [String], networkType: NetworkType, walletId: String, infuraKey: String, etherscanKey: String, debugPrints: Bool = false) {
+        realmFactory = RealmFactory(realmFileName: "\(walletId)-\(networkType.rawValue).realm")
         addressValidator = AddressValidator()
 
         let network: Network
