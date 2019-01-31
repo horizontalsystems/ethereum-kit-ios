@@ -1,7 +1,12 @@
 class Erc20Holder: IRefreshKitDelegate {
 
-    weak var delegate: Erc20KitDelegate?
+    var delegate: Erc20KitDelegate
     var balance: Decimal = 0
+    var kitState: EthereumKit.KitState = .notSynced {
+        didSet {
+            delegate.kitStateUpdated(state: kitState)
+        }
+    }
 
     private let refreshTimer: IPeriodicTimer
     private let refreshManager: RefreshManager
@@ -9,7 +14,7 @@ class Erc20Holder: IRefreshKitDelegate {
     var refresh: (() -> ())?
     var disconnect: (() -> ())?
 
-    init(delegate: Erc20KitDelegate?, reachabilityManager: IReachabilityManager) {
+    init(delegate: Erc20KitDelegate, reachabilityManager: IReachabilityManager) {
         self.delegate = delegate
 
         refreshTimer = PeriodicTimer(interval: 30)
@@ -27,7 +32,7 @@ class Erc20Holder: IRefreshKitDelegate {
     }
 
     func onDisconnect() {
-        delegate?.kitStateUpdated(state: .notSynced)
+        kitState = .notSynced
 
         disconnect?()
     }
