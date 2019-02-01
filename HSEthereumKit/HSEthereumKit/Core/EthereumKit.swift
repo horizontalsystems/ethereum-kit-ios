@@ -361,7 +361,7 @@ public class EthereumKit {
             erc20Holders.forEach { address, holder in
                 let erc20Insertions = insertions.filter { $0.contractAddress == address }
                 let erc20Modifications = modifications.filter { $0.contractAddress == address }
-                if !ethereumInsertions.isEmpty || !ethereumModifications.isEmpty {
+                if !erc20Insertions.isEmpty || !erc20Modifications.isEmpty {
                     holder.delegate.transactionsUpdated(
                             inserted: erc20Insertions,
                             updated: erc20Modifications,
