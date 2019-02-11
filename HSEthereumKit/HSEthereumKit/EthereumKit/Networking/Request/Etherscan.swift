@@ -65,7 +65,6 @@ public final class Etherscan {
 
         public let configuration: Configuration
         public let address: String
-        public let contractAddress: String
         public let sort: Sort
         public let startBlock: Int64
         public let endBlock: Int64
@@ -87,7 +86,6 @@ public final class Etherscan {
                 "module": "account",
                 "action": "tokentx",
                 "address": address,
-                "contractaddress": contractAddress,
                 "startblock": NSNumber(value: startBlock),
                 "endblock": NSNumber(value: endBlock),
                 "sort": sort.rawValue,
