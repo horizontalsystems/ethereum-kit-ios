@@ -11,7 +11,8 @@ class BalanceController: UIViewController {
     @IBOutlet weak var lastBlockLabel: UILabel?
 
     @IBOutlet weak var balanceCoinLabel: UILabel?
-
+    @IBOutlet weak var progressCoinLabel: UILabel?
+    
     private lazy var dateFormatter: DateFormatter = {
         var formatter = DateFormatter()
         formatter.timeZone = TimeZone.autoupdatingCurrent
@@ -29,7 +30,6 @@ class BalanceController: UIViewController {
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Refresh", style: .plain, target: self, action: #selector(refresh))
 
         let ethereumKit = Manager.shared.ethereumKit!
-        ethereumKit.start()
 
         update(balance: ethereumKit.balance)
         erc20update(balance: ethereumKit.erc20Balance(contractAddress: Manager.contractAddress))
@@ -51,6 +51,12 @@ class BalanceController: UIViewController {
         Manager.shared.erc20Adapter.balanceSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] balance in
             self?.erc20update(balance: balance)
         }).disposed(by: disposeBag)
+
+        Manager.shared.erc20Adapter.progressSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] kitState in
+            self?.erc20update(kitState: kitState)
+        }).disposed(by: disposeBag)
+
+        ethereumKit.start()
     }
 
     @objc func logout() {
@@ -89,6 +95,18 @@ class BalanceController: UIViewController {
         }
 
         progressLabel?.text = "Sync State: \(kitStateString)"
+    }
+
+    private func erc20update(kitState: EthereumKit.KitState) {
+        let kitStateString: String
+
+        switch kitState {
+        case .synced: kitStateString = "Synced!"
+        case .syncing: kitStateString = "Syncing"
+        case .notSynced: kitStateString = "Not Synced"
+        }
+
+        progressCoinLabel?.text = "Sync State: \(kitStateString)"
     }
 
     private func update(lastBlockHeight: Int?) {
