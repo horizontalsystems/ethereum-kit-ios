@@ -102,7 +102,7 @@ extension GethProvider: IGethProviderProtocol {
         }
     }
 
-    func getTransactions(address: String, contractAddress: String? = nil, startBlock: Int64) -> Single<Transactions> {
+    func getTransactions(address: String, erc20: Bool = false, startBlock: Int64) -> Single<Transactions> {
         return Single.create { [weak geth] observer in
             let block: ((Result<Transactions>) -> ()) = { result in
                 switch result {
@@ -112,8 +112,8 @@ extension GethProvider: IGethProviderProtocol {
                     observer(.error(error))
                 }
             }
-            if let contractAddress = contractAddress {
-                geth?.getTokenTransactions(address: address, contractAddress: contractAddress, startBlock: startBlock, completionHandler: block)
+            if erc20 {
+                geth?.getTokenTransactions(address: address, startBlock: startBlock, completionHandler: block)
             } else {
                 geth?.getTransactions(address: address, startBlock: startBlock, completionHandler: block)
             }

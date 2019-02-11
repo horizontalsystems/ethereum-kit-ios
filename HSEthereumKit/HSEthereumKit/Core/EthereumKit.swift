@@ -5,12 +5,15 @@ import HSCryptoKit
 import HSHDWalletKit
 
 public class EthereumKit {
+    private static let refreshInterval: TimeInterval = 60.0
+
     private static let ethDecimal = 18
     private static let ethGasLimit = 21000
     private static let erc20GasLimit = 100000
     private static let ethRate: Decimal = pow(10, ethDecimal)
 
     private let disposeBag = DisposeBag()
+    private var refreshDisposable: Disposable? = nil
 
     public weak var delegate: EthereumKitDelegate?
 
@@ -72,7 +75,7 @@ public class EthereumKit {
 
         reachabilityManager = ReachabilityManager()
 
-        refreshTimer = PeriodicTimer(interval: 30)
+        refreshTimer = PeriodicTimer(interval: EthereumKit.refreshInterval)
         refreshManager = RefreshManager(reachabilityManager: reachabilityManager, timer: refreshTimer)
 
         if let balanceString = realmFactory.realm.objects(EthereumBalance.self).filter("address = %@", wallet.address()).first?.value,
@@ -105,10 +108,7 @@ public class EthereumKit {
         guard erc20Holders[token.contractAddress] == nil else {
             return
         }
-        let holder = Erc20Holder(delegate: token, reachabilityManager: reachabilityManager)
-        holder.refresh = { [weak self] in
-            self?.erc20Refresh(contractAddress: token.contractAddress)
-        }
+        let holder = Erc20Holder(delegate: token)
         erc20Holders[token.contractAddress] = holder
         realmFactory.realm.objects(EthereumBalance.self).filter("address = %@", token.contractAddress).forEach { ethereumBalance in
             update(ethereumBalance: ethereumBalance)
@@ -150,13 +150,22 @@ public class EthereumKit {
     }
 
     public func refresh() {
+        guard refreshDisposable == nil else {
+            return
+        }
         kitState = .syncing
-        Single.zip(updateBlockHeight, updateGasPrice, updateBalance(), updateTransactions()).subscribe(onSuccess: { [weak self] (_, _, _, _) in
+        let disposeBlock = { [weak self] in
+            self?.refreshDisposable?.dispose()
+            self?.refreshDisposable = nil
+        }
+        refreshDisposable = Single.zip(updateBlockHeight, updateGasPrice, updateBalance(), updateTransactions()).subscribe(onSuccess: { [weak self] (_, _, _, _) in
             self?.kitState = .synced
             self?.refreshManager.didRefresh()
+            disposeBlock()
         }, onError: { [weak self] error in
             self?.kitState = .notSynced
-        }).disposed(by: disposeBag)
+            disposeBlock()
+        })
     }
 
     public func validate(address: String) throws {
@@ -275,13 +284,18 @@ public class EthereumKit {
         }
     }
 
-    private func updateTransactions(contractAddress: String? = nil) -> Single<Transactions> {
+    private func updateTransactions() -> Single<Transactions> {
         let realm = realmFactory.realm
-        let lastBlockHeight = realm.objects(EthereumTransaction.self).filter("contractAddress = %@", (contractAddress ?? "")).sorted(byKeyPath: "blockNumber", ascending: false).first?.blockNumber ?? 0
+        let lastBlockHeight = realm.objects(EthereumTransaction.self).sorted(byKeyPath: "blockNumber", ascending: false).first?.blockNumber ?? 0
 
-        return gethProvider.getTransactions(address: receiveAddress, contractAddress: contractAddress, startBlock: Int64(lastBlockHeight + 1)).map { transactions in
+        let ethSingle = gethProvider.getTransactions(address: receiveAddress, erc20: false, startBlock: Int64(lastBlockHeight + 1))
+        let erc20Single = erc20Holders.isEmpty ? Single<Transactions>.just(Transactions(elements: [])) : gethProvider.getTransactions(address: receiveAddress, erc20: true, startBlock: Int64(lastBlockHeight + 1))
+        return Single.zip(ethSingle, erc20Single).map { (transactions, erc20Transactions) in
             try? realm.write {
                 transactions.elements.map({ EthereumTransaction(transaction: $0) }).forEach {
+                    realm.add($0, update: true)
+                }
+                erc20Transactions.elements.map({ EthereumTransaction(transaction: $0) }).forEach {
                     realm.add($0, update: true)
                 }
             }
@@ -308,6 +322,7 @@ public class EthereumKit {
 
     private var updateGasPrice: Single<Wei> {
         let realm = realmFactory.realm
+
         return gethProvider.getGasPrice().map { wei in
             guard let gasPrice = wei.toInt() else {
                 // print("too big value")
@@ -398,9 +413,8 @@ public extension EthereumKit {
             return
         }
         holder.kitState = .syncing
-        Single.zip(updateBalance(contractAddress: contractAddress, decimal: holder.delegate.decimal), updateTransactions(contractAddress: contractAddress)).subscribe(onSuccess: { (_, _) in
+        updateBalance(contractAddress: contractAddress, decimal: holder.delegate.decimal).subscribe(onSuccess: { _ in
             holder.kitState = .synced
-            holder.didRefresh()
         }, onError: { error in
             holder.kitState = .notSynced
         }).disposed(by: disposeBag)

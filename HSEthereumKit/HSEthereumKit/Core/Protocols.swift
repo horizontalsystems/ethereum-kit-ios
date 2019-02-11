@@ -15,7 +15,7 @@ protocol IGethProviderProtocol {
     func getGasPrice() -> Single<Wei>
     func getGasLimit(address: String, data: Data?) -> Single<Wei>
     func getBalance(address: String, contractAddress: String?, blockParameter: BlockParameter) -> Single<Balance>
-    func getTransactions(address: String, contractAddress: String?, startBlock: Int64) -> Single<Transactions>
+    func getTransactions(address: String, erc20: Bool, startBlock: Int64) -> Single<Transactions>
     func getBlockNumber() -> Single<Int>
     func getTransactionCount(address: String, blockParameter: BlockParameter) -> Single<Int>
     func sendRawTransaction(rawTransaction: String) -> Single<SentTransaction>

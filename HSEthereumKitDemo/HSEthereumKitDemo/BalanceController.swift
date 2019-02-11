@@ -26,9 +26,10 @@ class BalanceController: UIViewController {
         title = "Balance"
 
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Logout", style: .plain, target: self, action: #selector(logout))
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Refresh", style: .plain, target: self, action: #selector(start))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Refresh", style: .plain, target: self, action: #selector(refresh))
 
         let ethereumKit = Manager.shared.ethereumKit!
+        ethereumKit.start()
 
         update(balance: ethereumKit.balance)
         erc20update(balance: ethereumKit.erc20Balance(contractAddress: Manager.contractAddress))
@@ -62,7 +63,7 @@ class BalanceController: UIViewController {
         }
     }
 
-    @objc func start() {
+    @objc func refresh() {
         Manager.shared.ethereumKit.start()
     }
 

@@ -10,11 +10,14 @@ public struct EIP55 {
 
     // convert lowercased address to valid
     public static func format(_ address: String) -> String {
-        guard !address.isEmpty || address != address.lowercased() || address != address.uppercased() else {
+        guard !address.isEmpty else {
             return address
         }
         let address = address.hasPrefix("0x") ? String(address.dropFirst(2)) : address
-        let hash = CryptoKit.sha3(address.data(using: .ascii)!).toHexString()
+        guard address == address.lowercased() || address == address.uppercased() else {
+            return "0x" + address
+        }
+        let hash = CryptoKit.sha3(address.lowercased().data(using: .ascii)!).toHexString()
 
         return "0x" + zip(address, hash)
                 .map { a, h -> String in
