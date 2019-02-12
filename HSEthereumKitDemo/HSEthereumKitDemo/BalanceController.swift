@@ -35,6 +35,8 @@ class BalanceController: UIViewController {
         erc20update(balance: ethereumKit.erc20Balance(contractAddress: Manager.contractAddress))
 
         update(lastBlockHeight: ethereumKit.lastBlockHeight)
+        update(kitState: ethereumKit.kitState)
+        erc20update(kitState: ethereumKit.kitState)
 
         Manager.shared.balanceSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] balance in
                 self?.update(balance: balance)
@@ -70,7 +72,7 @@ class BalanceController: UIViewController {
     }
 
     @objc func refresh() {
-        Manager.shared.ethereumKit.start()
+        Manager.shared.ethereumKit.refresh()
     }
 
     @IBAction func showRealmInfo() {

@@ -2,8 +2,8 @@ import Foundation
 import RxSwift
 
 protocol IReachabilityManager {
-    var subject: PublishSubject<Bool> { get set }
-    func reachable() -> Bool
+    var isReachable: Bool { get }
+    var reachabilitySignal: Signal { get }
 }
 
 protocol IApiConfigProvider {

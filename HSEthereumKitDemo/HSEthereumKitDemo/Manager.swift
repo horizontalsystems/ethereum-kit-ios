@@ -49,8 +49,9 @@ class Manager {
 
     private func initEthereumKit(words: [String]) {
         ethereumKit = EthereumKit(withWords: words, networkType: networkType, walletId: "SomeId", infuraKey: Manager.infuraKey, etherscanKey: Manager.etherscanKey, debugPrints: false)
-        ethereumKit.register(token: erc20Adapter)
         ethereumKit.delegate = self
+
+        ethereumKit.register(token: erc20Adapter)
     }
 
     private var savedWords: [String]? {

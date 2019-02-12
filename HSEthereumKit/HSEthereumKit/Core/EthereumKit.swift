@@ -148,7 +148,15 @@ public class EthereumKit {
         }
     }
 
+    private func changeAllStates(state: KitState) {
+        kitState = state
+        erc20Holders.values.forEach { $0.kitState = state }
+    }
+
     public func refresh() {
+        guard reachabilityManager.isReachable else {
+            return
+        }
         guard kitState != .syncing else {
             return
         }
@@ -159,8 +167,7 @@ public class EthereumKit {
         }
         let ethAddress = receiveAddress
 
-        kitState = .syncing
-        erc20Holders.values.forEach { $0.kitState = .syncing }
+        changeAllStates(state: .syncing)
 
         refreshManager.didRefresh()
 
@@ -178,8 +185,7 @@ public class EthereumKit {
 
                     self?.refreshTransactions()
                 }, onError: { [weak self] _ in
-                    self?.kitState = .notSynced
-                    self?.erc20Holders.values.forEach { $0.kitState = .notSynced }
+                    self?.changeAllStates(state: .notSynced)
                 })
                 .disposed(by: disposeBag)
     }
@@ -314,7 +320,8 @@ public class EthereumKit {
             return
         }
 
-        gethProvider.getTransactions(address: receiveAddress, erc20: true, startBlock: Int64(lastBlockHeight + 1))
+        let erc20LastBlockHeight = realm.objects(EthereumTransaction.self).filter("contractAddress != ''").sorted(byKeyPath: "blockNumber", ascending: false).first?.blockNumber ?? 0
+        gethProvider.getTransactions(address: receiveAddress, erc20: true, startBlock: Int64(erc20LastBlockHeight + 1))
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { [weak self] transactions in
@@ -567,7 +574,7 @@ extension EthereumKit: IRefreshKitDelegate {
     }
 
     func onDisconnect() {
-        kitState = .notSynced
+        changeAllStates(state: .notSynced)
     }
 
 }
