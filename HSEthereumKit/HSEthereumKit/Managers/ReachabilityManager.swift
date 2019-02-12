@@ -2,10 +2,14 @@ import Foundation
 import Alamofire
 import RxSwift
 
-class ReachabilityManager: IReachabilityManager {
+import RxSwift
+import Alamofire
 
-    var subject = PublishSubject<Bool>()
+class ReachabilityManager {
     private let manager: NetworkReachabilityManager?
+
+    private(set) var isReachable: Bool
+    let reachabilitySignal = Signal()
 
     init(configProvider: IApiConfigProvider? = nil) {
         if let configProvider = configProvider {
@@ -14,20 +18,25 @@ class ReachabilityManager: IReachabilityManager {
             manager = NetworkReachabilityManager()
         }
 
-        manager?.listener = { [weak self] status in
-            switch status {
-            case .reachable:
-                self?.subject.onNext(true)
-            default:
-                self?.subject.onNext(false)
-            }
+        isReachable = manager?.isReachable ?? false
+
+        manager?.listener = { [weak self] _ in
+            self?.onUpdateStatus()
         }
 
         manager?.startListening()
     }
 
-    func reachable() -> Bool {
-        return manager?.isReachable ?? false
+    private func onUpdateStatus() {
+        let newReachable = manager?.isReachable ?? false
+
+        if isReachable != newReachable {
+            isReachable = newReachable
+            reachabilitySignal.notify()
+        }
     }
 
+}
+
+extension ReachabilityManager: IReachabilityManager {
 }

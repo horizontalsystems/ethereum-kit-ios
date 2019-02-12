@@ -5,18 +5,23 @@ class RefreshManager {
 
     private let disposeBag = DisposeBag()
 
+    private let reachabilityManager: IReachabilityManager
     private var timer: IPeriodicTimer
     public weak var delegate: IRefreshKitDelegate?
 
     init(delegate: IRefreshKitDelegate? = nil, reachabilityManager: IReachabilityManager, timer: IPeriodicTimer) {
         self.delegate = delegate
+        self.reachabilityManager = reachabilityManager
         self.timer = timer
 
         self.timer.delegate = self
 
-        reachabilityManager.subject
-                .subscribe(onNext: { [weak self] connected in
-                    if connected {
+        reachabilityManager.reachabilitySignal
+                .subscribe(onNext: { [weak self] in
+                    guard let reachabilityManager = self?.reachabilityManager else {
+                        return
+                    }
+                    if reachabilityManager.isReachable {
                         self?.refresh()
                     } else {
                         self?.disconnect()

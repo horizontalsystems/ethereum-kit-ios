@@ -62,6 +62,7 @@
 		58AAA908570CA831788F90D4 /* PeriodicTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAC4EEC58644B3BF08550 /* PeriodicTimer.swift */; };
 		58AAA9112849585C4F820AE8 /* AddressValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAA0DB1559A80BD16982E /* AddressValidator.swift */; };
 		58AAAA05184221C7EDAF630A /* RealmFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAACCC8AD8A2CC08E4A5EC /* RealmFactory.swift */; };
+		58AAABF92F0BD40996C36D0F /* Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAD5B009D6666F3821F02 /* Signal.swift */; };
 		58AAAC79C7CF8ECC33A8E8FE /* EthereumBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAFB6CCA44D8BFD8F4F39 /* EthereumBalance.swift */; };
 		58AAAF70BEF433B84C1AC0CD /* Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA69FB6E04728EDC5A525 /* Protocols.swift */; };
 		58AAAF8F8A30E0037B05A2CB /* Erc20Holder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAC8C0678EA81E9B6A796 /* Erc20Holder.swift */; };
@@ -140,6 +141,7 @@
 		58AAAC4EEC58644B3BF08550 /* PeriodicTimer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeriodicTimer.swift; sourceTree = "<group>"; };
 		58AAAC8C0678EA81E9B6A796 /* Erc20Holder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Erc20Holder.swift; sourceTree = "<group>"; };
 		58AAACCC8AD8A2CC08E4A5EC /* RealmFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealmFactory.swift; sourceTree = "<group>"; };
+		58AAAD5B009D6666F3821F02 /* Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Signal.swift; sourceTree = "<group>"; };
 		58AAAE7D03FDF272C10519E1 /* RefreshManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RefreshManager.swift; sourceTree = "<group>"; };
 		58AAAE7DC330A2628E515477 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		58AAAF8EF6D1122AD52C8BD6 /* EthereumGasPrice.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumGasPrice.swift; sourceTree = "<group>"; };
@@ -394,6 +396,7 @@
 				58AAA61E60AF6E31E1822ADE /* GethProvider.swift */,
 				58AAA69FB6E04728EDC5A525 /* Protocols.swift */,
 				58AAAC8C0678EA81E9B6A796 /* Erc20Holder.swift */,
+				58AAAD5B009D6666F3821F02 /* Signal.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -690,6 +693,7 @@
 				58AAA077832821FB1126AE0E /* Geth+Contract.swift in Sources */,
 				58AAA2AFBB0016E4653C1CEF /* ERC20+Contract.swift in Sources */,
 				58AAAF8F8A30E0037B05A2CB /* Erc20Holder.swift in Sources */,
+				58AAABF92F0BD40996C36D0F /* Signal.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
