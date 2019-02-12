@@ -155,6 +155,7 @@ public class EthereumKit {
 
     public func refresh() {
         guard reachabilityManager.isReachable else {
+            changeAllStates(state: .notSynced)
             return
         }
         guard kitState != .syncing else {
