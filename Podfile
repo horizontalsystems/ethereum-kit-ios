@@ -9,8 +9,8 @@ project 'HSEthereumKitDemo/HSEthereumKitDemo'
 project 'HSEthereumKit/HSEthereumKit'
 
 def kit_pods
-  pod 'HSCryptoKit', '~> 1.1.0'
-  pod 'HSHDWalletKit', '~> 1.0.3'
+  pod 'HSCryptoKit', :git => 'https://github.com/horizontalsystems/crypto-kit-ios.git', :branch => 'ethereum_light_client_crypto'
+  pod 'HSHDWalletKit', :git => 'https://github.com/horizontalsystems/hd-wallet-kit-ios.git', :branch => 'ethereum_light_client'
 
   pod 'RxSwift', '~> 4.0'
 
