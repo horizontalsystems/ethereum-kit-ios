@@ -10,6 +10,9 @@ class BalanceController: UIViewController {
     @IBOutlet weak var progressLabel: UILabel?
     @IBOutlet weak var lastBlockLabel: UILabel?
 
+    @IBOutlet weak var balanceCoinLabel: UILabel?
+    @IBOutlet weak var progressCoinLabel: UILabel?
+    
     private lazy var dateFormatter: DateFormatter = {
         var formatter = DateFormatter()
         formatter.timeZone = TimeZone.autoupdatingCurrent
@@ -24,22 +27,38 @@ class BalanceController: UIViewController {
         title = "Balance"
 
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Logout", style: .plain, target: self, action: #selector(logout))
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Refresh", style: .plain, target: self, action: #selector(start))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Refresh", style: .plain, target: self, action: #selector(refresh))
 
         let ethereumKit = Manager.shared.ethereumKit!
 
         update(balance: ethereumKit.balance)
+        erc20update(balance: ethereumKit.erc20Balance(contractAddress: Manager.contractAddress))
+
         update(lastBlockHeight: ethereumKit.lastBlockHeight)
+        update(kitState: ethereumKit.kitState)
+        erc20update(kitState: ethereumKit.kitState)
 
         Manager.shared.balanceSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] balance in
-            self?.update(balance: balance)
+                self?.update(balance: balance)
+        }).disposed(by: disposeBag)
+
+        Manager.shared.lastBlockHeight.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] height in
+                self?.update(lastBlockHeight: height)
         }).disposed(by: disposeBag)
 
         Manager.shared.progressSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] progress in
             self?.update(kitState: progress)
-            self?.update(balance: ethereumKit.balance)
-            self?.update(lastBlockHeight: ethereumKit.lastBlockHeight)
         }).disposed(by: disposeBag)
+
+        Manager.shared.erc20Adapter.balanceSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] balance in
+            self?.erc20update(balance: balance)
+        }).disposed(by: disposeBag)
+
+        Manager.shared.erc20Adapter.progressSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] kitState in
+            self?.erc20update(kitState: kitState)
+        }).disposed(by: disposeBag)
+
+        ethereumKit.start()
     }
 
     @objc func logout() {
@@ -52,17 +71,20 @@ class BalanceController: UIViewController {
         }
     }
 
-    @objc func start() {
-        Manager.shared.ethereumKit.start()
+    @objc func refresh() {
+        Manager.shared.ethereumKit.refresh()
     }
 
     @IBAction func showRealmInfo() {
         print(Manager.shared.ethereumKit.debugInfo)
     }
 
-    private func update(balance: BInt) {
-        let eth = (try? Converter.toEther(wei: balance)) ?? 0
-        balanceLabel?.text = "Balance: \(eth)"
+    private func update(balance: Decimal) {
+        balanceLabel?.text = "Balance: \(balance)"
+    }
+
+    private func erc20update(balance: Decimal) {
+        balanceCoinLabel?.text = "Balance Coin: \(balance)"
     }
 
     private func update(kitState: EthereumKit.KitState) {
@@ -77,9 +99,21 @@ class BalanceController: UIViewController {
         progressLabel?.text = "Sync State: \(kitStateString)"
     }
 
+    private func erc20update(kitState: EthereumKit.KitState) {
+        let kitStateString: String
+
+        switch kitState {
+        case .synced: kitStateString = "Synced!"
+        case .syncing: kitStateString = "Syncing"
+        case .notSynced: kitStateString = "Not Synced"
+        }
+
+        progressCoinLabel?.text = "Sync State: \(kitStateString)"
+    }
+
     private func update(lastBlockHeight: Int?) {
         if let lastBlockHeight = lastBlockHeight {
-            lastBlockLabel?.text = "Last Block: \(Int(lastBlockHeight * 100))"
+            lastBlockLabel?.text = "Last Block: \(Int(lastBlockHeight))"
         } else {
             lastBlockLabel?.text = "Last Block: n/a"
         }

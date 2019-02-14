@@ -2,8 +2,8 @@ import Foundation
 import RxSwift
 
 protocol IReachabilityManager {
-    var subject: PublishSubject<Bool> { get set }
-    func reachable() -> Bool
+    var isReachable: Bool { get }
+    var reachabilitySignal: Signal { get }
 }
 
 protocol IApiConfigProvider {
@@ -13,11 +13,12 @@ protocol IApiConfigProvider {
 
 protocol IGethProviderProtocol {
     func getGasPrice() -> Single<Wei>
-    func getBalance(address: String, blockParameter: BlockParameter) -> Single<Balance>
+    func getGasLimit(address: String, data: Data?) -> Single<Wei>
+    func getBalance(address: String, contractAddress: String?, blockParameter: BlockParameter) -> Single<Balance>
+    func getTransactions(address: String, erc20: Bool, startBlock: Int64) -> Single<Transactions>
     func getBlockNumber() -> Single<Int>
     func getTransactionCount(address: String, blockParameter: BlockParameter) -> Single<Int>
     func sendRawTransaction(rawTransaction: String) -> Single<SentTransaction>
-    func getTransactions(address: String, startBlock: Int64) -> Single<Transactions>
 }
 
 protocol IPeriodicTimer {

@@ -116,8 +116,19 @@ public final class Geth {
     ///   - startBlock: which block to start.
     ///   - endBlock: which block to end
     ///   - completionHandler:
-    public func getTransactions(address: String, sort: Etherscan.GetTransactions.Sort = .des, startBlock: Int64 = 0, endBlock: Int64 = 99999999, completionHandler: @escaping (Result<Transactions>) -> Void) {
+    public func getTransactions(address: String, sort: Etherscan.GetTransactions.Sort = .asc, startBlock: Int64 = 0, endBlock: Int64 = 99999999, completionHandler: @escaping (Result<Transactions>) -> Void) {
         let request = Etherscan.GetTransactions(
+            configuration: .init(baseURL: configuration.etherscanURL, apiKey: configuration.etherscanAPIKey),
+            address: address,
+            sort: sort,
+            startBlock: startBlock,
+            endBlock: endBlock
+        )
+        httpClient.send(request, completionHandler: completionHandler)
+    }
+
+    public func getTokenTransactions(address: String, sort: Etherscan.GetTokenTransactions.Sort = .asc, startBlock: Int64 = 0, endBlock: Int64 = 99999999, completionHandler: @escaping (Result<Transactions>) -> Void) {
+        let request = Etherscan.GetTokenTransactions(
             configuration: .init(baseURL: configuration.etherscanURL, apiKey: configuration.etherscanAPIKey),
             address: address,
             sort: sort,
