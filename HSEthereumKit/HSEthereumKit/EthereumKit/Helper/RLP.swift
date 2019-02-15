@@ -3,6 +3,7 @@ public struct RLP {
     enum RLPError: Error {
         case inputIsNull
         case invalidRLPData
+        case failedToEncode(Any)
     }
 
     public static func encode(_ element: Any) throws -> Data {
@@ -29,7 +30,7 @@ public struct RLP {
         }
 
         guard let data = encoded else {
-            throw EthereumKitError.cryptoError(.failedToEncode(element))
+            throw RLPError.failedToEncode(element)
         }
 
         return data

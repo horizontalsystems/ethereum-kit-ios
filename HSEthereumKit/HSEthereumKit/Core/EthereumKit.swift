@@ -17,7 +17,7 @@ public class EthereumKit {
     public weak var delegate: EthereumKitDelegate?
 
     private let wallet: Wallet
-    private let peer: Peer
+    private let peerGroup: PeerGroup
 
     private let realmFactory: RealmFactory
     private let addressValidator: AddressValidator
@@ -77,7 +77,7 @@ public class EthereumKit {
 
         refreshTimer = PeriodicTimer(interval: EthereumKit.refreshInterval)
         refreshManager = RefreshManager(reachabilityManager: reachabilityManager, timer: refreshTimer)
-        peer = Peer(nodeId: "e679038c2e4f9f764acd788c3935cf526f7f630b55254a122452e63e2cfae3066ca6b6c44082c2dfbe9ddffc9df80546d40ef38a0e3dfc9c8720c732446ca8f3", host: "192.168.4.39", port: 30303, discPort: 30301)
+        peerGroup = PeerGroup(network: Ropsten())
 
         if let balanceString = realmFactory.realm.objects(EthereumBalance.self).filter("address = %@", wallet.address()).first?.value,
            let balanceDecimal = Decimal(string: balanceString) {
@@ -94,8 +94,7 @@ public class EthereumKit {
         }
 
         refreshManager.delegate = self
-
-        peer.connect()
+        peerGroup.start()
     }
 
     public var debugInfo: String {

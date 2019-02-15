@@ -1,6 +1,6 @@
 import Foundation
 
-class PongMessage : IMessage {
+class PongMessage: IMessage {
 
     static let code = 0x03
     static let payload = Data(bytes: [UInt8(0xc0)])
@@ -17,7 +17,7 @@ class PongMessage : IMessage {
     }
 
     func toString() -> String {
-        return ""
+        return "PONG"
     }
 
 }

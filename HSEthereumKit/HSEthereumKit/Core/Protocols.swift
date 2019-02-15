@@ -1,6 +1,39 @@
 import Foundation
 import RxSwift
 
+
+protocol IPeerDelegate: class {
+    func blocksReceived(blocks: [Block])
+    func connected()
+}
+
+protocol IDevP2PPeerDelegate: class {
+    func connectionEstablished()
+    func connectionDidDisconnect(withError error: Error?)
+    func connection(didReceiveMessage message: IMessage)
+}
+
+protocol IConnectionDelegate: class {
+    func connectionEstablished()
+    func connectionKey() -> ECKey
+    func connectionDidDisconnect(withError error: Error?)
+    func connection(didReceiveMessage message: IMessage)
+}
+
+protocol IPeerConnection: class {
+    var delegate: IConnectionDelegate? { get set }
+    var logName: String { get }
+    func connect()
+    func disconnect(error: Error?)
+    func send(message: IMessage)
+}
+
+protocol INetwork {
+    var id: Int { get }
+    var genesisBlockHash: Data { get }
+    var checkpointBlock: Block{ get }
+}
+
 protocol IReachabilityManager {
     var isReachable: Bool { get }
     var reachabilitySignal: Signal { get }

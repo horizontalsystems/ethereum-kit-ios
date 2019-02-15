@@ -7,15 +7,15 @@ class Connection: NSObject {
         case encryptionHandshakeError
     }
 
-    private let bufferSize = 8192
+    private let bufferSize = 64
     private let interval = 1.0
 
-    let nodeId: String
+    let nodeId: Data
     let host: String
     let port: UInt32
     let discPort: UInt32
 
-    weak var delegate: PeerConnectionDelegate?
+    weak var delegate: IConnectionDelegate?
     private var handshake: EncryptionHandshake?
     private var frameCodec: FrameCodec?
 
@@ -32,14 +32,14 @@ class Connection: NSObject {
     var handshakeSent: Bool = false
 
     var logName: String {
-        return "\(nodeId)@\(host):\(port)'";
+        return "\(nodeId.toHexString())@\(host):\(port)'";
     }
 
-    init(nodeId: String, host: String, port: Int, discPort: Int) {
-        self.nodeId = nodeId
-        self.host = host
-        self.port = UInt32(port)
-        self.discPort = UInt32(discPort)
+    init(node: Node) {
+        self.nodeId = node.id
+        self.host = node.host
+        self.port = UInt32(node.port)
+        self.discPort = UInt32(node.discoveryPort)
     }
 
     deinit {
@@ -99,14 +99,19 @@ class Connection: NSObject {
             }
 
             if let frameCode = frameCodec {
-                let frames = frameCode.readFrames(from: packets)
+                while (packets.count >= 64) {
+                    let frames = frameCode.readFrames(from: packets)
 
-                if frames.count > 0 {
-                    packets = Data(packets.dropFirst(frames.reduce(0) { $0 + $1.size }))
-                }
+                    if frames.count > 0 {
+                        packets = Data(packets.dropFirst(frames.reduce(0) { $0 + $1.size }))
+                        print("packets left after read: \(packets.toHexString())")
+                    } else {
+                        break
+                    }
 
-                if let message = Frame.framesToMessage(frames: frames) {
-                    delegate?.connection(didReceiveMessage: message)
+                    if let message = Frame.framesToMessage(frames: frames) {
+                        delegate?.connection(didReceiveMessage: message)
+                    }
                 }
             }
 
@@ -125,7 +130,7 @@ class Connection: NSObject {
 
         handshakeSent = true
 
-        let handshake = EncryptionHandshake(myKey: delegate.connectionKey(), publicKeyPoint: ECPoint(nodeId: Data(hex: nodeId)))
+        let handshake = EncryptionHandshake(myKey: delegate.connectionKey(), publicKeyPoint: ECPoint(nodeId: nodeId))
         handshake.createAuthMessage()
 
         self.handshake = handshake
@@ -134,8 +139,6 @@ class Connection: NSObject {
     }
 
     private func sendPackets(data: Data) {
-        print(">>>>>> \(data.toHexString())")
-
         _ = data.withUnsafeBytes {
             outputStream?.write($0, maxLength: data.count)
         }
@@ -183,10 +186,10 @@ extension Connection: IPeerConnection {
     }
 
     func send(message: IMessage) {
-        print(">>> \(type(of: message))")
+        log(">>> \(message.toString())")
 
         guard let frameCodec = self.frameCodec else {
-            log("trying to send message before RLPx handshake")
+            log("ERROR: trying to send message before RLPx handshake")
             return
         }
 
@@ -250,19 +253,3 @@ extension Connection: StreamDelegate {
     }
 
 }
-
-protocol PeerConnectionDelegate: class {
-    func connectionEstablished()
-    func connectionKey() -> ECKey
-    func connectionDidDisconnect(withError error: Error?)
-    func connection(didReceiveMessage message: IMessage)
-}
-
-protocol IPeerConnection: class {
-    var delegate: PeerConnectionDelegate? { get set }
-    var logName: String { get }
-    func connect()
-    func disconnect(error: Error?)
-    func send(message: IMessage)
-}
-

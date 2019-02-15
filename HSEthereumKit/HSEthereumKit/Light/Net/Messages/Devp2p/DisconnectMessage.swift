@@ -3,7 +3,6 @@ import Foundation
 class DisconnectMessage: IMessage {
 
     enum ReasonCode: Int {
-
         case requested = 0x00
         case tcp_error = 0x01
         case bad_protocol = 0x02
@@ -18,7 +17,6 @@ class DisconnectMessage: IMessage {
         case ping_timeout = 0x0B
         case user_reason = 0x10
         case unknown = 0xFF
-
     }
 
     static let code = 0x01
@@ -35,7 +33,7 @@ class DisconnectMessage: IMessage {
     init(data: Data) {
         let rlp = try! RLP.decode(input: data)
 
-        if rlp.isList() && rlp.listValue.count > 0 && rlp.listValue[0].length == 0,
+        if rlp.isList() && rlp.listValue.count > 0 && rlp.listValue[0].dataValue.count > 0,
            let reason = ReasonCode(rawValue: rlp.listValue[0].intValue) {
             self.reason = reason
         } else {
@@ -48,7 +46,7 @@ class DisconnectMessage: IMessage {
     }
 
     func toString() -> String {
-        return "[reason: \(reason)]"
+        return "DISCONNECT [reason: \(reason)]"
     }
 
 }

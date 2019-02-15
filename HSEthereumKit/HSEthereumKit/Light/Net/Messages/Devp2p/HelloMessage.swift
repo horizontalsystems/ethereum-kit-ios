@@ -1,20 +1,22 @@
 import Foundation
 
-class HelloMessage : IMessage {
+class HelloMessage: IMessage {
 
     static let code = 0x00
+    static let lesCapability = Capability(name: "les", version: 2)
+
     var code: Int { return HelloMessage.code }
 
-    private let p2pVersion: Int
-    private let clientId: String
-    private let capabilities: [Capability]
-    private let port: Int
-    private let peerId: Data
+    let p2pVersion: Int
+    let clientId: String
+    let capabilities: [Capability]
+    let port: Int
+    let peerId: Data
 
     init(peerId: Data, port: UInt32) {
         self.p2pVersion = 4
         self.clientId = "EthereumKit"
-        self.capabilities = [Capability(name: "p2p", version: 4), Capability(name: "les", version: 2)]
+        self.capabilities = [HelloMessage.lesCapability]
         self.port = Int(port)
         self.peerId = peerId
     }
@@ -42,11 +44,11 @@ class HelloMessage : IMessage {
     }
 
     func toString() -> String {
-        return "[version: \(p2pVersion); clientId: \(clientId); capabilities: \(capabilities.map { $0.toString() }.joined(separator: ", ")); peerId: \(peerId.toHexString()); port: \(port)]"
+        return "HELLO [version: \(p2pVersion); clientId: \(clientId); capabilities: \(capabilities.map { $0.toString() }.joined(separator: ", ")); peerId: \(peerId.toHexString()); port: \(port)]"
     }
 
 
-    class Capability {
+    class Capability: Equatable {
 
         let name: String
         let version: Int
@@ -63,6 +65,11 @@ class HelloMessage : IMessage {
         func toString() -> String {
             return "[name: \(name); version: \(version)]"
         }
+
+        public static func == (lhs: Capability, rhs: Capability) -> Bool {
+            return lhs.name == rhs.name && lhs.version == rhs.version
+        }
+
     }
 
 }

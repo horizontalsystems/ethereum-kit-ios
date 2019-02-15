@@ -16,6 +16,10 @@ class FrameCodec {
     }
     
     func readFrames(from data: Data) -> [Frame] {
+        guard data.count >= 64 else {
+            return [Frame]()
+        }
+
         let header = data.subdata(in: 0..<16)
         let headerMac = data.subdata(in: 16..<32)
         let updatedMac = updateMac(mac: secrets.ingressMac, macKey: secrets.mac, data: header)
@@ -46,6 +50,10 @@ class FrameCodec {
         let paddingSize = 16 - (frameBodySize % 16)
         let frameSize = 32 + frameBodySize + paddingSize + 16  // header || body || padding || body-mac
 
+        guard data.count >= frameSize else {
+            return [Frame]()
+        }
+
         let frameBodyData = data.subdata(in: 32..<(32 + frameBodySize + paddingSize))
         let frameBodyMac = data.subdata(in: (32 + frameBodySize + paddingSize)..<frameSize)
 
@@ -66,7 +74,7 @@ class FrameCodec {
             return []
         }
 
-        var frame = Frame(type: packetType, payload: payload, size: frameSize, contextId: contextId, allFramesTotalSize: allFramesTotalSize)
+        let frame = Frame(type: packetType, payload: payload, size: frameSize, contextId: contextId, allFramesTotalSize: allFramesTotalSize)
 
         return [frame]
     }

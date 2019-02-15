@@ -1,6 +1,6 @@
 import Foundation
 
-class PingMessage : IMessage {
+class PingMessage: IMessage {
 
     static let code = 0x02
     static let payload = Data(bytes: [UInt8(0xc0)])
@@ -17,7 +17,7 @@ class PingMessage : IMessage {
     }
 
     func toString() -> String {
-        return ""
+        return "PING"
     }
 
 }

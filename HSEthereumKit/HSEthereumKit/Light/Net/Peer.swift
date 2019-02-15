@@ -3,81 +3,88 @@ import Foundation
 class Peer {
 
     enum PeerError: Error {
-        case peerDoesNotSupportLES
+        case peerBestBlockIsLessThanOne
+        case peerHasExpiredBlockChain(localHeight: BInt, peerHeight: BInt)
+        case wrongNetwork
     }
 
-    private let connection: IPeerConnection
-    private let myKey: ECKey
-    private let myListenPort: UInt32 = 30303
+    weak var delegate: IPeerDelegate?
 
-    init(nodeId: String, host: String, port: Int, discPort: Int) {
-        myKey = ECKey(
-                privateKey: Data(hex: "0000000000000000000000000000000000000000000000000000000000000000"),
-                publicKeyPoint: ECPoint(nodeId: Data(hex: "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"))
-        )
+    private let network: INetwork
+    private let bestBlock: Block
+    private let devP2PPeer: DevP2PPeer
+    private let protocolVersion: UInt8 = 2
 
-        connection = Connection(nodeId: nodeId, host: host, port: port, discPort: discPort)
-        connection.delegate = self
+    var statusSent: Bool = false
+    var statusReceived: Bool = false
+
+
+    init(network: INetwork, bestBlock: Block, key: ECKey, node: Node) {
+        self.network = network
+        self.bestBlock = bestBlock
+
+        devP2PPeer = DevP2PPeer(key: key, node: node)
+        devP2PPeer.delegate = self
     }
 
-    private func sendStatus() {
+    func proceedHandshake() {
+        if statusSent {
+            if statusReceived {
+                delegate?.connected()
+                return
+            }
+        } else {
+            let statusMessage = StatusMessage(
+                    protocolVersion: protocolVersion,
+                    networkId: network.id,
+                    genesisHash: network.genesisBlockHash,
+                    bestBlockTotalDifficulty: bestBlock.totalDifficulty,
+                    bestBlockHash: bestBlock.hashHex,
+                    bestBlockHeight: bestBlock.height
+            )
+
+            devP2PPeer.send(message: statusMessage)
+            statusSent = true
+        }
+    }
+
+    private func validatePeer(message: StatusMessage) throws {
+        guard message.bestBlockHeight > 0 else {
+            throw PeerError.peerBestBlockIsLessThanOne
+        }
+
+        guard message.bestBlockHeight >= bestBlock.height else {
+            throw PeerError.peerHasExpiredBlockChain(localHeight: bestBlock.height, peerHeight: message.bestBlockHeight)
+        }
+
+        guard message.networkId == network.id && message.genesisHash == network.genesisBlockHash else {
+            throw PeerError.wrongNetwork
+        }
     }
 
     private func handle(message: IMessage) throws {
         switch message {
-        case let helloMessage as HelloMessage: handle(message: helloMessage)
-        case let pingMessage as PingMessage: handle(message: pingMessage)
-        case let pongMessage as PongMessage: handle(message: pongMessage)
-        case let disconnectMessage as DisconnectMessage: handle(message: disconnectMessage)
         case let statusMessage as StatusMessage: handle(message: statusMessage)
+        case let blockHeadersMessage as BlockHeadersMessage: handle(message: blockHeadersMessage)
         default: break
         }
     }
 
-    // Devp2p messages
-
-    func handle(message: HelloMessage) {
-        print("<<< HELLO: \(message.toString())")
-    }
-
-    func handle(message: PingMessage) {
-        print("<<< PING: \(message.toString())")
-
-        let message = PongMessage()
-        connection.send(message: message)
-    }
-
-    func handle(message: PongMessage) {
-        print("<<< PONG: \(message.toString())")
-    }
-
-    func handle(message: DisconnectMessage) {
-        print("<<< DISCONNECT: \(message.toString())")
-    }
-
-
-    // LES Messages
-
-    private func validatePeerVersion(message: StatusMessage) throws {
-        //        guard let startHeight = message.startHeight, startHeight > 0 else {
-        //            throw PeerError.peerBestBlockIsLessThanOne
-        //        }
-        //
-        //        guard startHeight >= localBestBlockHeight else {
-        //            throw PeerError.peerHasExpiredBlockChain(localHeight: localBestBlockHeight, peerHeight: startHeight)
-        //        }
-        //
-        //        guard message.hasBlockChain(network: network) else {
-        //            throw PeerError.peerNotFullNode
-        //        }
-        //
-        //        guard message.supportsBloomFilter(network: network) else {
-        //            throw PeerError.peerDoesNotSupportBloomFilter
-        //        }
-    }
-
     private func handle(message: StatusMessage) {
-        print("<<< STATUS: \(message.toString())")
+        statusReceived = true
+
+        do {
+            try validatePeer(message: message)
+        } catch {
+            print("ERROR: \(error)")
+            disconnect(error: error)
+        }
+
+        proceedHandshake()
+    }
+
+    private func handle(message: BlockHeadersMessage) {
+        print("Handling BlockHeadersMessage")
     }
 
 }
@@ -85,29 +92,29 @@ class Peer {
 extension Peer {
 
     func connect() {
-        connection.connect()
+        devP2PPeer.connect()
     }
 
     func disconnect(error: Error? = nil) {
-//        self.connection.disconnect(error: error)
+        devP2PPeer.disconnect(error: error)
+    }
+
+    func downloadBlocksFrom(block: Block) {
+        let message = GetBlockHeadersMessage(requestId: Int.random(in: 0..<Int.max), blockHash: block.hashHex)
+
+        devP2PPeer.send(message: message)
     }
 
 }
 
-extension Peer: PeerConnectionDelegate {
+extension Peer: IDevP2PPeerDelegate {
 
     func connectionEstablished() {
-        let helloMessage = HelloMessage(peerId: myKey.publicKeyPoint.x + myKey.publicKeyPoint.y, port: myListenPort)
-
-        connection.send(message: helloMessage)
-    }
-
-    func connectionKey() -> ECKey {
-        return myKey
+        proceedHandshake()
     }
 
     func connectionDidDisconnect(withError error: Error?) {
-        print("Disconnected ...")
+//        print("Disconnected ...")
     }
 
     func connection(didReceiveMessage message: IMessage) {
