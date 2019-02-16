@@ -104,7 +104,6 @@ class Connection: NSObject {
 
                     if frames.count > 0 {
                         packets = Data(packets.dropFirst(frames.reduce(0) { $0 + $1.size }))
-                        print("packets left after read: \(packets.toHexString())")
                     } else {
                         break
                     }

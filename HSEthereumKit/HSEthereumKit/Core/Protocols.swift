@@ -3,7 +3,7 @@ import RxSwift
 
 
 protocol IPeerDelegate: class {
-    func blocksReceived(blocks: [Block])
+    func blocksReceived(blockHeaders: [BlockHeader])
     func connected()
 }
 
@@ -31,7 +31,7 @@ protocol IPeerConnection: class {
 protocol INetwork {
     var id: Int { get }
     var genesisBlockHash: Data { get }
-    var checkpointBlock: Block{ get }
+    var checkpointBlock: BlockHeader{ get }
 }
 
 protocol IReachabilityManager {

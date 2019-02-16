@@ -25,6 +25,18 @@ class RLPElement {
         }
     }
 
+    var bIntValue: BInt {
+        if length == 0 {
+            return 0
+        }
+
+        if let bInt = BInt(dataValue.toHexString(), radix: 16) {
+            return bInt
+        } else {
+            return 0
+        }
+    }
+
     var stringValue: String {
         return String(data: dataValue, encoding: .utf8) ?? ""
     }

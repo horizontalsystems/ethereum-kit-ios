@@ -60,7 +60,7 @@ public struct RLP {
                 listDataOffset += element.length + element.lengthOfLengthBytes
             }
 
-            output = RLPElement(type: .list, length: dataLen, lengthOfLengthBytes: offset, dataValue: Data(), listValue: value)
+            output = RLPElement(type: .list, length: dataLen, lengthOfLengthBytes: offset, dataValue: input.subdata(in: 0..<(offset + dataLen)), listValue: value)
         }
 
         return output

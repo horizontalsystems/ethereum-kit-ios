@@ -2,7 +2,7 @@ import Foundation
 
 class PeerGroup {
 
-    private var blocks = [Block]()
+    private var blockHeaders = [BlockHeader]()
     private var syncPeer: Peer?
 
     init(network: INetwork) {
@@ -19,7 +19,7 @@ class PeerGroup {
 
         syncPeer = Peer(network: network, bestBlock: network.checkpointBlock, key: myKey, node: node)
         syncPeer?.delegate = self
-        blocks.append(network.checkpointBlock)
+        blockHeaders.append(network.checkpointBlock)
     }
 
 
@@ -28,7 +28,7 @@ class PeerGroup {
     }
 
     func syncBlocks() {
-        if let lastBlock = blocks.last, let syncPeer = syncPeer {
+        if let lastBlock = blockHeaders.last, let syncPeer = syncPeer {
             syncPeer.downloadBlocksFrom(block: lastBlock)
         }
     }
@@ -37,8 +37,13 @@ class PeerGroup {
 
 extension PeerGroup: IPeerDelegate {
 
-    func blocksReceived(blocks: [Block]) {
-        self.blocks += blocks
+    func blocksReceived(blockHeaders: [BlockHeader]) {
+        if blockHeaders.count < 2 {
+            print("blocks synced!")
+            return
+        }
+
+        self.blockHeaders += blockHeaders
         self.syncBlocks()
     }
 

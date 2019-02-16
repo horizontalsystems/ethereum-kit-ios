@@ -47,7 +47,8 @@ class StatusMessage: IMessage {
             ["headTd", bestBlockTotalDifficulty],
             ["headHash", bestBlockHash],
             ["headNum", bestBlockHeight],
-            ["genesisHash", genesisHash]
+            ["genesisHash", genesisHash],
+            ["announceType", 1]
         ]
 
         return try! RLP.encode(toEncode)

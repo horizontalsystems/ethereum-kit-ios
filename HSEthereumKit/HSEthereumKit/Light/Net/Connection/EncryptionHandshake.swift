@@ -52,7 +52,7 @@ class EncryptionHandshake {
         let prefixBytes = Data(Data(bytes: &prefix, count: MemoryLayout<UInt16>.size).reversed())
 
         let eciesEncrypted = ECIES.encrypt(remotePublicKey: remotePublicKeyPoint, message: padded, macData: prefixBytes)
-        let encrypted = prefixBytes + eciesEncrypted
+        let encrypted: Data = prefixBytes + eciesEncrypted
 
         return encrypted
     }

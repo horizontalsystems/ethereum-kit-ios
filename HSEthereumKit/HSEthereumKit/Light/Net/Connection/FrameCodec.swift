@@ -47,11 +47,16 @@ class FrameCodec {
             allFramesTotalSize = rlpHeader.listValue[2].intValue
         }
 
-        let paddingSize = 16 - (frameBodySize % 16)
+        var paddingSize = 16 - (frameBodySize % 16)
+        if paddingSize >= 16 {
+            paddingSize = 0
+        }
+
         let frameSize = 32 + frameBodySize + paddingSize + 16  // header || body || padding || body-mac
 
         guard data.count >= frameSize else {
-            return [Frame]()
+            print("Not enough data to read!")
+            return []
         }
 
         let frameBodyData = data.subdata(in: 32..<(32 + frameBodySize + paddingSize))
@@ -107,8 +112,10 @@ class FrameCodec {
 
         header = encryptedHeader + headerMac
 
-        let padding = Data(repeating: 0, count: 16 - frameSize % 16)
-        var frameData = packetType + frame.payload + padding
+        var frameData = packetType + frame.payload
+        if frameSize % 16 > 0 {
+            frameData += Data(repeating: 0, count: 16 - frameSize % 16)
+        }
 
         let encryptedFrameData: Data = _AES.encrypt(frameData, withKey: secrets.aes, keySize: 256, iv: encIV)
 

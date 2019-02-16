@@ -33,7 +33,7 @@
 		2FA5DB9E65D95E9783E8555A /* ProofMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D70F6465DF3197A7D16B /* ProofMessage.swift */; };
 		2FA5DC2C7AD65186A16111DD /* AnnounceMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D6E9922D9BFE332F795F /* AnnounceMessage.swift */; };
 		2FA5DC6FA74CBC6B30E91678 /* EIP155Signer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D35C66049BB927E23808 /* EIP155Signer.swift */; };
-		2FA5DCA80A4F5AE77263EF06 /* Block.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D541908FBA863AE47DAF /* Block.swift */; };
+		2FA5DCA80A4F5AE77263EF06 /* BlockHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D541908FBA863AE47DAF /* BlockHeader.swift */; };
 		2FA5DCABC6722CA8A660F3BD /* PongMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D1A1BCF7A1371F2685D0 /* PongMessage.swift */; };
 		2FA5DD415FFB6952F05F2365 /* DisconnectMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5DD7404B8066A334ECB61 /* DisconnectMessage.swift */; };
 		2FA5DD46A3A481CF9B46FA10 /* GetReceiptsMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D9184B03056A0AA6A81C /* GetReceiptsMessage.swift */; };
@@ -131,7 +131,7 @@
 		2FA5D4591B4CF6B06A977FA7 /* GetBlockBodiesMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GetBlockBodiesMessage.swift; sourceTree = "<group>"; };
 		2FA5D4911004F5FDA3416211 /* GetProofsMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GetProofsMessage.swift; sourceTree = "<group>"; };
 		2FA5D51BD89CC6356F1E6138 /* Node.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Node.swift; sourceTree = "<group>"; };
-		2FA5D541908FBA863AE47DAF /* Block.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Block.swift; sourceTree = "<group>"; };
+		2FA5D541908FBA863AE47DAF /* BlockHeader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockHeader.swift; sourceTree = "<group>"; };
 		2FA5D5ABAD0B3E9783140405 /* BlockHeadersMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockHeadersMessage.swift; sourceTree = "<group>"; };
 		2FA5D6B64B8F5DB8A96B5764 /* PingMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PingMessage.swift; sourceTree = "<group>"; };
 		2FA5D6C74AC5D8A2458504FB /* GetHelperTrieProofsMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GetHelperTrieProofsMessage.swift; sourceTree = "<group>"; };
@@ -452,7 +452,7 @@
 				58AAAFB6CCA44D8BFD8F4F39 /* EthereumBalance.swift */,
 				58AAAF8EF6D1122AD52C8BD6 /* EthereumGasPrice.swift */,
 				58AAA779492ED6F8A1606DF3 /* EthereumBlockHeight.swift */,
-				2FA5D541908FBA863AE47DAF /* Block.swift */,
+				2FA5D541908FBA863AE47DAF /* BlockHeader.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -878,7 +878,7 @@
 				58AAABF92F0BD40996C36D0F /* Signal.swift in Sources */,
 				2FA5DE6B71DC226A27394D81 /* Ropsten.swift in Sources */,
 				2FA5D7C28C56B02217DEF448 /* PeerGroup.swift in Sources */,
-				2FA5DCA80A4F5AE77263EF06 /* Block.swift in Sources */,
+				2FA5DCA80A4F5AE77263EF06 /* BlockHeader.swift in Sources */,
 				2FA5D4D8A080C3424228FC74 /* Node.swift in Sources */,
 				2FA5D47E414D98392426E29C /* DevP2PPeer.swift in Sources */,
 				2FA5D10365467428AE6D1990 /* GetBlockHeadersMessage.swift in Sources */,

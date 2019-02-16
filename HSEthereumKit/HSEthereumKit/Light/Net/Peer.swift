@@ -11,7 +11,7 @@ class Peer {
     weak var delegate: IPeerDelegate?
 
     private let network: INetwork
-    private let bestBlock: Block
+    private let bestBlock: BlockHeader
     private let devP2PPeer: DevP2PPeer
     private let protocolVersion: UInt8 = 2
 
@@ -19,7 +19,7 @@ class Peer {
     var statusReceived: Bool = false
 
 
-    init(network: INetwork, bestBlock: Block, key: ECKey, node: Node) {
+    init(network: INetwork, bestBlock: BlockHeader, key: ECKey, node: Node) {
         self.network = network
         self.bestBlock = bestBlock
 
@@ -84,7 +84,7 @@ class Peer {
     }
 
     private func handle(message: BlockHeadersMessage) {
-        print("Handling BlockHeadersMessage")
+        delegate?.blocksReceived(blockHeaders: Array(message.headers.dropFirst()))
     }
 
 }
@@ -99,7 +99,7 @@ extension Peer {
         devP2PPeer.disconnect(error: error)
     }
 
-    func downloadBlocksFrom(block: Block) {
+    func downloadBlocksFrom(block: BlockHeader) {
         let message = GetBlockHeadersMessage(requestId: Int.random(in: 0..<Int.max), blockHash: block.hashHex)
 
         devP2PPeer.send(message: message)
