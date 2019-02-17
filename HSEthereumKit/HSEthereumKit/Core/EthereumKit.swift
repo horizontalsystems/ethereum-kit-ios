@@ -77,7 +77,7 @@ public class EthereumKit {
 
         refreshTimer = PeriodicTimer(interval: EthereumKit.refreshInterval)
         refreshManager = RefreshManager(reachabilityManager: reachabilityManager, timer: refreshTimer)
-        peerGroup = PeerGroup(network: Ropsten())
+        peerGroup = PeerGroup(network: Ropsten(), address: receiveAddress)
 
         if let balanceString = realmFactory.realm.objects(EthereumBalance.self).filter("address = %@", wallet.address()).first?.value,
            let balanceDecimal = Decimal(string: balanceString) {

@@ -43,7 +43,7 @@ class Frame {
         case BlockHeadersMessage.code: message = BlockHeadersMessage(data: frame.payload)
         case ContractCodesMessage.code: message = ContractCodesMessage(data: frame.payload)
         case HelperTrieProofsMessage.code: message = HelperTrieProofsMessage(data: frame.payload)
-        case ProofMessage.code: message = ProofMessage(data: frame.payload)
+        case ProofsMessage.code: message = ProofsMessage(data: frame.payload)
         case ReceiptsMessage.code: message = ReceiptsMessage(data: frame.payload)
         case StatusMessage.code: message = StatusMessage(data: frame.payload)
         case TransactionStatusMessage.code: message = TransactionStatusMessage(data: frame.payload)

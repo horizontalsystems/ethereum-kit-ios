@@ -66,6 +66,7 @@ class Peer {
         switch message {
         case let statusMessage as StatusMessage: handle(message: statusMessage)
         case let blockHeadersMessage as BlockHeadersMessage: handle(message: blockHeadersMessage)
+        case let proofsMessage as ProofsMessage: handle(message: proofsMessage)
         default: break
         }
     }
@@ -87,6 +88,10 @@ class Peer {
         delegate?.blocksReceived(blockHeaders: Array(message.headers.dropFirst()))
     }
 
+    private func handle(message: ProofsMessage) {
+        delegate?.proofReceived(message: message)
+    }
+
 }
 
 extension Peer {
@@ -101,6 +106,12 @@ extension Peer {
 
     func downloadBlocksFrom(block: BlockHeader) {
         let message = GetBlockHeadersMessage(requestId: Int.random(in: 0..<Int.max), blockHash: block.hashHex)
+
+        devP2PPeer.send(message: message)
+    }
+
+    func getBalance(forAddress address: Data, inBlockWithHash blockHash: Data) {
+        let message = GetProofsMessage(requestId: Int.random(in: 0..<Int.max), blockHash: blockHash, key: address, key2: Data())
 
         devP2PPeer.send(message: message)
     }

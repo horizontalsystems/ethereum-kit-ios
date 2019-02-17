@@ -3,8 +3,9 @@ import RxSwift
 
 
 protocol IPeerDelegate: class {
-    func blocksReceived(blockHeaders: [BlockHeader])
     func connected()
+    func blocksReceived(blockHeaders: [BlockHeader])
+    func proofReceived(message: ProofsMessage)
 }
 
 protocol IDevP2PPeerDelegate: class {
