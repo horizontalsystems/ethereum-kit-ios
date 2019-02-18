@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		11B3510467474AC4BFAFD764 /* EthereumBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3554DD0D3D4A6F7D9005C /* EthereumBalance.swift */; };
-		11B3518C1848401DE249961E /* Blockchain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35AC255BE64FE27CB8220 /* Blockchain.swift */; };
+		11B3518C1848401DE249961E /* GethBlockchain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35AC255BE64FE27CB8220 /* GethBlockchain.swift */; };
 		11B358F1C8520185D515F5C8 /* BlockchainState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B355F58513F030F5E8E201 /* BlockchainState.swift */; };
 		11B35CEF617BCF783C3D1DCA /* EthereumTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B359B70EC74CF5E6CFBC0C /* EthereumTransaction.swift */; };
 		11B35F9251133330AD1C5F38 /* GrdbStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35E9EFA334E9433C71CD4 /* GrdbStorage.swift */; };
@@ -84,7 +84,7 @@
 		11B3554DD0D3D4A6F7D9005C /* EthereumBalance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumBalance.swift; sourceTree = "<group>"; };
 		11B355F58513F030F5E8E201 /* BlockchainState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockchainState.swift; sourceTree = "<group>"; };
 		11B359B70EC74CF5E6CFBC0C /* EthereumTransaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumTransaction.swift; sourceTree = "<group>"; };
-		11B35AC255BE64FE27CB8220 /* Blockchain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Blockchain.swift; sourceTree = "<group>"; };
+		11B35AC255BE64FE27CB8220 /* GethBlockchain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GethBlockchain.swift; sourceTree = "<group>"; };
 		11B35E9EFA334E9433C71CD4 /* GrdbStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GrdbStorage.swift; sourceTree = "<group>"; };
 		2FA5D35C66049BB927E23808 /* EIP155Signer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EIP155Signer.swift; sourceTree = "<group>"; };
 		31624145EC1315E9F40EAFF4 /* Pods-HSEthereumKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HSEthereumKit.release.xcconfig"; path = "../Pods/Target Support Files/Pods-HSEthereumKit/Pods-HSEthereumKit.release.xcconfig"; sourceTree = "<group>"; };
@@ -382,7 +382,7 @@
 				58AAAC8C0678EA81E9B6A796 /* Erc20Holder.swift */,
 				58AAAD5B009D6666F3821F02 /* Signal.swift */,
 				11B35E9EFA334E9433C71CD4 /* GrdbStorage.swift */,
-				11B35AC255BE64FE27CB8220 /* Blockchain.swift */,
+				11B35AC255BE64FE27CB8220 /* GethBlockchain.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -677,7 +677,7 @@
 				11B3510467474AC4BFAFD764 /* EthereumBalance.swift in Sources */,
 				11B358F1C8520185D515F5C8 /* BlockchainState.swift in Sources */,
 				11B35F9251133330AD1C5F38 /* GrdbStorage.swift in Sources */,
-				11B3518C1848401DE249961E /* Blockchain.swift in Sources */,
+				11B3518C1848401DE249961E /* GethBlockchain.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

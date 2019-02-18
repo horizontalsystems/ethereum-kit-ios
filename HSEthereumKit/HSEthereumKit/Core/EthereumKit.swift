@@ -39,7 +39,7 @@ public class EthereumKit {
 
         storage = GrdbStorage(databaseFileName: "\(walletId)-\(testMode)")
 
-        blockchain = try Blockchain(storage: storage, reachabilityManager: reachabilityManager, words: words, testMode: testMode, infuraKey: infuraKey, etherscanKey: etherscanKey, debugPrints: debugPrints)
+        blockchain = try GethBlockchain(storage: storage, reachabilityManager: reachabilityManager, words: words, testMode: testMode, infuraKey: infuraKey, etherscanKey: etherscanKey, debugPrints: debugPrints)
         ethereumAddress = blockchain.ethereumAddress
 
         blockchain.delegate = self
@@ -50,7 +50,7 @@ public class EthereumKit {
     }
 
     private var gasPrice: Decimal {
-        return currentGasPrice ?? Blockchain.defaultGasPrice
+        return currentGasPrice ?? GethBlockchain.defaultGasPrice
     }
 
 }
@@ -108,7 +108,7 @@ extension EthereumKit {
 
     public var fee: Decimal {
         // only for standard transactions without data
-        return gasPrice * Decimal(Blockchain.ethGasLimit)
+        return gasPrice * Decimal(GethBlockchain.ethGasLimit)
     }
 
     public func transactions(fromHash: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {
@@ -135,7 +135,7 @@ extension EthereumKit {
 
     public var erc20Fee: Decimal {
         // only for erc20 coin maximum fee
-        return gasPrice * Decimal(Blockchain.erc20GasLimit)
+        return gasPrice * Decimal(GethBlockchain.erc20GasLimit)
     }
 
     public func erc20Balance(contractAddress: String) -> Decimal {

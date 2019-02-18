@@ -42,7 +42,7 @@ protocol IGethProviderProtocol {
     func getBalanceErc20(address: String, contractAddress: String, decimal: Int, blockParameter: BlockParameter) -> Single<Decimal>
 
     func getTransactions(address: String, startBlock: Int64, rate: Decimal) -> Single<[EthereumTransaction]>
-    func getTransactionsErc20(address: String, startBlock: Int64, contracts: [Blockchain.Erc20Contract]) -> Single<[EthereumTransaction]>
+    func getTransactionsErc20(address: String, startBlock: Int64, contracts: [GethBlockchain.Erc20Contract]) -> Single<[EthereumTransaction]>
 
     func sendRawTransaction(rawTransaction: String) -> Single<SentTransaction>
 }

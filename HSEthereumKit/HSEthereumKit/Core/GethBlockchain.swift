@@ -1,7 +1,7 @@
 import RxSwift
 import HSHDWalletKit
 
-class Blockchain {
+class GethBlockchain {
     private static let ethDecimal = 18
     private static let ethRate: Decimal = pow(10, ethDecimal)
 
@@ -70,7 +70,7 @@ class Blockchain {
     private func refreshTransactions() {
         let lastTransactionBlockHeight = storage.lastTransactionBlockHeight(erc20: false) ?? 0
 
-        gethProvider.getTransactions(address: ethereumAddress, startBlock: Int64(lastTransactionBlockHeight + 1), rate: Blockchain.ethRate)
+        gethProvider.getTransactions(address: ethereumAddress, startBlock: Int64(lastTransactionBlockHeight + 1), rate: GethBlockchain.ethRate)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { [weak self] transactions in
@@ -171,7 +171,7 @@ class Blockchain {
         let wei = try Converter.toWei(ether: value)
         let gasPriceWei = try Converter.toWei(ether: gasPrice)
 
-        let gasLimit = Blockchain.ethGasLimit
+        let gasLimit = GethBlockchain.ethGasLimit
         let ethereumAddress = self.ethereumAddress
 
         // todo: remove !
@@ -193,7 +193,7 @@ class Blockchain {
 
 }
 
-extension Blockchain: IBlockchain {
+extension GethBlockchain: IBlockchain {
 
     func start() {
         // todo: check reachability and decide if reachability should be in this layer
@@ -248,7 +248,7 @@ extension Blockchain: IBlockchain {
 
 }
 
-extension Blockchain {
+extension GethBlockchain {
 
     struct Erc20Contract: Equatable {
         let address: String

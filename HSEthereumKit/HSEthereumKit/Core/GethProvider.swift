@@ -143,7 +143,7 @@ extension GethProvider: IGethProviderProtocol {
         }
     }
 
-    func getTransactionsErc20(address: String, startBlock: Int64, contracts: [Blockchain.Erc20Contract]) -> Single<[EthereumTransaction]> {
+    func getTransactionsErc20(address: String, startBlock: Int64, contracts: [GethBlockchain.Erc20Contract]) -> Single<[EthereumTransaction]> {
         return Single.create { [weak self] observer in
             self?.geth.getTokenTransactions(address: address, startBlock: startBlock, completionHandler: { result in
                 switch result {
