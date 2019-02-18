@@ -1,79 +1,110 @@
 import Foundation
-import RealmSwift
+import GRDB
 
-public class EthereumTransaction: Object {
-    @objc public dynamic var blockHash: String = ""
-    @objc public dynamic var blockNumber: Int = 0
-    @objc public dynamic var txHash: String = ""
-    @objc public dynamic var input: String = ""
-    @objc public dynamic var confirmations: Int = 0
-    @objc public dynamic var nonce: Int = 0
-    @objc public dynamic var timestamp: Int = 0
-    @objc public dynamic var contractAddress: String = ""
-    @objc public dynamic var from: String = ""
-    @objc public dynamic var to: String = ""
-    @objc public dynamic var gas: Int = 0
-    @objc public dynamic var gasPrice: Int = 0
-    @objc public dynamic var gasUsed: String = ""
-    @objc public dynamic var cumulativeGasUsed: String = ""
-    @objc public dynamic var isError: String = ""
-    @objc public dynamic var transactionIndex: String = ""
-    @objc public dynamic var txReceiptStatus: String = ""
-    @objc public dynamic var value: String = ""
+public class EthereumTransaction: Record {
+    public let hash: String
+    public let nonce: Int
+    public let input: String
+    public let from: String
+    public let to: String
+    public let value: Decimal
+    public let gasLimit: Int
+    public let gasPrice: Decimal
+    public let timestamp: TimeInterval
 
-    @objc public dynamic var primary: String = ""
-    @objc public dynamic var invalidTx: Bool = false
+    public var contractAddress: String?
 
-    override public class func primaryKey() -> String? {
-        return "primary"
-    }
+    public var blockHash: String?
+    public var blockNumber: Int?
+    public var confirmations: Int?
+    public var gasUsed: Int?
+    public var cumulativeGasUsed: Int?
+    public var isError: Bool?
+    public var transactionIndex: Int?
+    public var txReceiptStatus: Bool?
 
-    public convenience init(txHash: String, from: String, to: String, contractAddress: String? = nil, gas: Int, gasPrice: Int, value: String, timestamp: Int, input: String = "0x") {
-        self.init()
-        self.txHash = txHash
-
+    public init(hash: String, nonce: Int, input: String = "0x", from: String, to: String, value: Decimal, gasLimit: Int, gasPrice: Decimal, timestamp: TimeInterval? = nil, contractAddress: String? = nil) {
+        self.hash = hash
+        self.nonce = nonce
+        self.input = input
         self.from = from
         self.to = to
-        if let contractAddress = contractAddress {
-            self.contractAddress = contractAddress
-        }
-        self.gas = gas
-        self.gasPrice = gasPrice
         self.value = value
-        self.timestamp = timestamp
-        self.input = input
+        self.gasLimit = gasLimit
+        self.gasPrice = gasPrice
+        self.timestamp = timestamp ?? Date().timeIntervalSince1970
+        self.contractAddress = contractAddress
 
-        self.primary = txHash + "_" + self.contractAddress
-        self.invalidTx = contractAddress == "" && input != "0x"
+        super.init()
     }
 
-    public convenience init(transaction: Transaction) {
-        self.init()
-        self.txHash = transaction.hash
-        update(with: transaction)
+    override public class var databaseTableName: String {
+        return "transactions"
     }
 
-    public func update(with transaction: Transaction) {
-        self.blockHash = transaction.blockHash
-        self.blockNumber = Int(transaction.blockNumber) ?? 0
-        self.input = transaction.input
-        self.confirmations = Int(transaction.confirmations) ?? 0
-        self.nonce = Int(transaction.nonce) ?? 0
-        self.timestamp = Int(transaction.timeStamp) ?? 0
-        self.contractAddress = EIP55.format(transaction.contractAddress)
-        self.from = EIP55.format(transaction.from)
-        self.to = EIP55.format(transaction.to)
-        self.gas = Int(transaction.gas) ?? 0
-        self.gasPrice = Int(transaction.gasPrice) ?? 0
-        self.gasUsed = transaction.gasUsed
-        self.cumulativeGasUsed = transaction.cumulativeGasUsed
-        self.isError = transaction.isError ?? ""
-        self.transactionIndex = transaction.transactionIndex
-        self.txReceiptStatus = transaction.txReceiptStatus
-        self.value = transaction.value
+    enum Columns: String, ColumnExpression {
+        case hash
+        case nonce
+        case input
+        case from
+        case to
+        case value
+        case gasLimit
+        case gasPrice
+        case timestamp
+        case contractAddress
+        case blockHash
+        case blockNumber
+        case confirmations
+        case gasUsed
+        case cumulativeGasUsed
+        case isError
+        case transactionIndex
+        case txReceiptStatus
+    }
 
-        self.primary = txHash + "_" + self.contractAddress
-        self.invalidTx = contractAddress == "" && input != "0x"
+    required init(row: Row) {
+        hash = row[Columns.hash]
+        nonce = row[Columns.nonce]
+        input = row[Columns.input]
+        from = row[Columns.from]
+        to = row[Columns.to]
+        value = Decimal(string: row[Columns.value]) ?? 0
+        gasLimit = row[Columns.gasLimit]
+        gasPrice = Decimal(string: row[Columns.gasPrice]) ?? 0
+        timestamp = row[Columns.timestamp]
+        contractAddress = row[Columns.contractAddress]
+        blockHash = row[Columns.blockHash]
+        blockNumber = row[Columns.blockNumber]
+        confirmations = row[Columns.confirmations]
+        gasUsed = row[Columns.gasUsed]
+        cumulativeGasUsed = row[Columns.cumulativeGasUsed]
+        isError = row[Columns.isError]
+        transactionIndex = row[Columns.transactionIndex]
+        txReceiptStatus = row[Columns.txReceiptStatus]
+
+        super.init(row: row)
+    }
+
+    override public func encode(to container: inout PersistenceContainer) {
+        container[Columns.hash] = hash
+        container[Columns.nonce] = nonce
+        container[Columns.input] = input
+        container[Columns.from] = from
+        container[Columns.to] = to
+        container[Columns.value] = NSDecimalNumber(decimal: value).stringValue
+        container[Columns.gasLimit] = gasLimit
+        container[Columns.gasPrice] = NSDecimalNumber(decimal: gasPrice).stringValue
+        container[Columns.timestamp] = timestamp
+        container[Columns.contractAddress] = contractAddress
+        container[Columns.blockHash] = blockHash
+        container[Columns.blockNumber] = blockNumber
+        container[Columns.confirmations] = confirmations
+        container[Columns.gasUsed] = gasUsed
+        container[Columns.cumulativeGasUsed] = cumulativeGasUsed
+        container[Columns.isError] = isError
+        container[Columns.transactionIndex] = transactionIndex
+        container[Columns.txReceiptStatus] = txReceiptStatus
     }
 
 }

@@ -1,5 +1,4 @@
 import UIKit
-import RealmSwift
 import RxSwift
 import HSEthereumKit
 
@@ -77,7 +76,7 @@ class TransactionsController: UITableViewController {
         guard indexPath.row < transactions.count else {
             return
         }
-        print("hash: \(transactions[indexPath.row].txHash)")
+        print("hash: \(transactions[indexPath.row].hash)")
     }
 
 }

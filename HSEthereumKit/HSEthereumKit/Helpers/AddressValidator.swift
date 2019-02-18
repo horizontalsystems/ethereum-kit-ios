@@ -1,7 +1,7 @@
-import Foundation
 import HSCryptoKit
 
 class AddressValidator {
+
     enum ValidationError: Error {
         case invalidChecksum
         case invalidAddressLength
@@ -9,7 +9,7 @@ class AddressValidator {
         case wrongAddressPrefix
     }
 
-    public func validate(address: String) throws {
+    func validate(address: String) throws {
         guard address.hasPrefix("0x") else {
             throw ValidationError.wrongAddressPrefix
         }
@@ -31,8 +31,7 @@ class AddressValidator {
         }
     }
 
-
-    func isCheckSumAddress(hex: String) throws {
+    private func isCheckSumAddress(hex: String) throws {
         let addressHash: String = CryptoKit.sha3(hex.lowercased().data(using: .ascii)!).toHexString()
         for i in 0..<40 {
             let hashSymbol = character(addressHash, i)

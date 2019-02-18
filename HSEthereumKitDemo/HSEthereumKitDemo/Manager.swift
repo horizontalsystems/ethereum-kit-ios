@@ -1,5 +1,4 @@
 import Foundation
-import RealmSwift
 import RxSwift
 import HSEthereumKit
 
@@ -15,15 +14,15 @@ class Manager {
 
     private let keyWords = "mnemonic_words"
 
-    let networkType = EthereumKit.NetworkType.testNet
+    private let testMode = true
 
     var ethereumKit: EthereumKit!
     var erc20Adapter = Erc20Adapter()
 
-    let balanceSubject = PublishSubject<Decimal>()
-    let lastBlockHeight = PublishSubject<Int>()
+    let balanceSubject = PublishSubject<Void>()
+    let lastBlockHeight = PublishSubject<Void>()
     let transactionsSubject = PublishSubject<Void>()
-    let progressSubject = PublishSubject<EthereumKit.KitState>()
+    let stateSubject = PublishSubject<Void>()
 
     init() {
         if let words = savedWords {
@@ -48,7 +47,7 @@ class Manager {
     }
 
     private func initEthereumKit(words: [String]) {
-        ethereumKit = EthereumKit(withWords: words, networkType: networkType, walletId: "SomeId", infuraKey: Manager.infuraKey, etherscanKey: Manager.etherscanKey, debugPrints: false)
+        ethereumKit = try! EthereumKit(withWords: words, walletId: "SomeId", testMode: testMode, infuraKey: Manager.infuraKey, etherscanKey: Manager.etherscanKey, debugPrints: false)
         ethereumKit.delegate = self
 
         ethereumKit.register(token: erc20Adapter)
@@ -75,20 +74,20 @@ class Manager {
 
 extension Manager: EthereumKitDelegate {
 
-    public func transactionsUpdated(inserted: [EthereumTransaction], updated: [EthereumTransaction], deleted: [Int]) {
+    public func onUpdate(transactions: [EthereumTransaction]) {
         transactionsSubject.onNext(())
     }
 
-    public func balanceUpdated(balance: Decimal) {
-        balanceSubject.onNext(balance)
+    public func onUpdateBalance() {
+        balanceSubject.onNext(())
     }
 
-    public func lastBlockHeightUpdated(height: Int) {
-        lastBlockHeight.onNext(height)
+    public func onUpdateLastBlockHeight() {
+        lastBlockHeight.onNext(())
     }
 
-    public func kitStateUpdated(state: EthereumKit.KitState) {
-        progressSubject.onNext(state)
+    public func onUpdateState() {
+        stateSubject.onNext(())
     }
 
 }
