@@ -3,7 +3,7 @@ import HSCryptoKit
 
 class BlockHeader {
 
-    static let EMPTY_TRIE_HASH = CryptoKit.sha3(try! RLP.encode([]))
+    static let EMPTY_TRIE_HASH = CryptoKit.sha3(RLP.encode([]))
 
     let hashHex: Data
     var totalDifficulty = Data() // Scalar value corresponding to the sum of difficulty values of all previous blocks

@@ -1,47 +1,35 @@
-public struct RLP {
+struct RLP {
 
-    enum RLPError: Error {
-        case inputIsNull
-        case invalidRLPData
-        case failedToEncode(Any)
-    }
-
-    public static func encode(_ element: Any) throws -> Data {
-        let encoded: Data?
-
+    static func encode(_ element: Any) -> Data {
         switch element {
         case let list as [Any]:
-            encoded = try encode(elements: list)
+            return encode(elements: list)
 
         case let bint as BInt:
-            encoded = encode(bint: bint)
+            return encode(bint: bint)
 
         case let int as Int:
-            encoded = encode(bint: BInt(int))
+            return encode(bint: BInt(int))
 
         case let data as Data:
-            encoded = encode(data: data)
+            return encode(data: data)
 
         case let string as String:
-            encoded = encode(string: string)
+            return encode(string: string) ?? Data()
 
         default:
-            encoded = nil
+            return Data()
         }
-
-        guard let data = encoded else {
-            throw RLPError.failedToEncode(element)
-        }
-
-        return data
     }
 
-    static func decode(input: Data) throws -> RLPElement {
+    static func decode(input: Data) -> RLPElement {
         guard input.count > 0 else {
-            return RLPElement(type: .list, length: 0, lengthOfLengthBytes: 0, dataValue: Data(), listValue: [])
+            return RLPElement.emptyList
         }
 
-        let (offset, dataLen, type) = try decode_length(input)
+        guard let (offset, dataLen, type) = decode_length(input) else {
+            return RLPElement.emptyList
+        }
 
         var output: RLPElement;
 
@@ -54,7 +42,7 @@ public struct RLP {
             var listDataOffset = 0
 
             while listDataOffset < listData.count {
-                let element = try decode(input: Data(listData.suffix(from: listDataOffset)))
+                let element = decode(input: Data(listData.suffix(from: listDataOffset)))
 
                 value.append(element)
                 listDataOffset += element.length + element.lengthOfLengthBytes
@@ -66,11 +54,11 @@ public struct RLP {
         return output
     }
 
-    private static func decode_length(_ input: Data) throws -> (Int, Int, RLPElementType) {
+    private static func decode_length(_ input: Data) -> (Int, Int, RLPElementType)? {
         let length = input.count
 
         guard input.count > 0 else {
-            throw RLPError.inputIsNull
+            return nil
         }
 
         let prefix = Int(input[0])
@@ -81,36 +69,48 @@ public struct RLP {
         } else if prefix <= 0xb7 && length > prefix - 0x80 {
             return (1, prefix - 0x80, .string)
 
-        } else if try (prefix <= 0xbf && length > prefix - 0xb7 && length > prefix - 0xb7 + to_integer(input.subdata(in: 1..<(1 + prefix - 0xb7)))) {
+        } else if prefix <= 0xbf && length > prefix - 0xb7,
+                  let len = to_integer(input.subdata(in: 1..<(1 + prefix - 0xb7))),
+                  length > prefix - 0xb7 + len {
+
             let lenOfStrLen = prefix - 0xb7
-            let strLen = (try to_integer(input.subdata(in: 1..<(1 + lenOfStrLen))))
-            return (1 + lenOfStrLen, strLen, .string)
+            if let strLen = to_integer(input.subdata(in: 1..<(1 + lenOfStrLen))) {
+                return (1 + lenOfStrLen, strLen, .string)
+            }
 
         } else if prefix <= 0xf7 && length > prefix - 0xc0 {
             let listLen = prefix - 0xc0
             return (1, listLen, .list)
 
-        } else if try (prefix <= 0xff && length > prefix - 0xf7 && length > prefix - 0xf7 + to_integer(input.subdata(in: 1..<(1 + prefix - 0xf7)))) {
-            let lenOfListLen = prefix - 0xf7
-            let listLen = (try to_integer(input.subdata(in: 1..<(1 + lenOfListLen))))
-            return (1 + lenOfListLen, listLen, .list)
+        } else if prefix <= 0xff && length > prefix - 0xf7,
+                  let len = to_integer(input.subdata(in: 1..<(1 + prefix - 0xf7))),
+                  length > prefix - 0xf7 + len {
 
-        } else {
-            throw RLPError.invalidRLPData
+            let lenOfListLen = prefix - 0xf7
+            if let listLen = to_integer(input.subdata(in: 1..<(1 + lenOfListLen))) {
+                return (1 + lenOfListLen, listLen, .list)
+            }
+
         }
+
+        return nil
     }
 
-    private static func to_integer(_ b: Data) throws -> Int {
+    private static func to_integer(_ b: Data) -> Int? {
         let length = b.count
 
         guard length > 0 else {
-            throw RLPError.inputIsNull
+            return nil
         }
 
         if length == 1 {
             return Int(b[0])
         } else {
-            return Int(b[length - 1]) + (try to_integer(b.subdata(in: 0..<(length - 1)))) * 256
+            if let len = to_integer(b.subdata(in: 0..<(length - 1))) {
+                return Int(b[length - 1]) + len * 256
+            } else {
+                return nil
+            }
         }
     }
 
@@ -131,7 +131,7 @@ public struct RLP {
         return encode(data: data)
     }
 
-    private static func encode(bint: BInt) -> Data? {
+    private static func encode(bint: BInt) -> Data {
         let data = bint.serialize()
         if data.isEmpty {
             return Data(bytes: [0x80])
@@ -139,10 +139,10 @@ public struct RLP {
         return encode(data: data)
     }
 
-    private static func encode(elements: [Any]) throws -> Data? {
+    private static func encode(elements: [Any]) -> Data {
         var data = Data()
         for element in elements {
-            data.append(try encode(element))
+            data.append(encode(element))
         }
 
         var encodedData = encodeHeader(size: UInt64(data.count), smallTag: 0xc0, largeTag: 0xf7)

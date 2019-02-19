@@ -3,9 +3,6 @@ import HSCryptoKit
 
 class GetProofsMessage: IMessage {
 
-    static let code = 0x18
-    var code: Int { return GetProofsMessage.code }
-
     let requestId: Int
     var proofRequests: [ProofRequest]
 
@@ -14,13 +11,17 @@ class GetProofsMessage: IMessage {
         self.proofRequests = [ProofRequest(blockHash: blockHash, key: key, key2: key2, fromLevel: fromLevel)]
     }
 
+    required init?(data: Data) {
+        return nil
+    }
+
     func encoded() -> Data {
         let toEncode: [Any] = [
             requestId,
             proofRequests.map{ $0.toArray() }
         ]
 
-        return try! RLP.encode(toEncode)
+        return RLP.encode(toEncode)
     }
 
     func toString() -> String {

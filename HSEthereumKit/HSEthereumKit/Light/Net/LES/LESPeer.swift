@@ -1,19 +1,39 @@
 import Foundation
 
-class Peer {
+class LESPeer {
 
-    enum PeerError: Error {
+    enum LESPeerError: Error {
         case peerBestBlockIsLessThanOne
         case peerHasExpiredBlockChain(localHeight: BInt, peerHeight: BInt)
         case wrongNetwork
     }
+
+    private let protocolVersion: UInt8 = 2
+    private let capability = Capability(name: "les", version: 2, packetTypesMap: [
+        0x00: StatusMessage.self,
+        0x01: AnnounceMessage.self,
+        0x02: GetBlockHeadersMessage.self,
+        0x03: BlockHeadersMessage.self,
+        0x04: GetBlockBodiesMessage.self,
+        0x05: BlockBodiesMessage.self,
+        0x06: GetReceiptsMessage.self,
+        0x07: ReceiptsMessage.self,
+        0x0a: GetContractCodesMessage.self,
+        0x0b: ContractCodesMessage.self,
+        0x0f: GetProofsMessage.self,
+        0x10: ProofsMessage.self,
+        0x11: GetHelperTrieProofsMessage.self,
+        0x12: HelperTrieProofsMessage.self,
+        0x13: SendTransactionMessage.self,
+        0x14: GetTransactionStatusMessage.self,
+        0x15: TransactionStatusMessage.self
+    ])
 
     weak var delegate: IPeerDelegate?
 
     private let network: INetwork
     private let bestBlock: BlockHeader
     private let devP2PPeer: DevP2PPeer
-    private let protocolVersion: UInt8 = 2
 
     var statusSent: Bool = false
     var statusReceived: Bool = false
@@ -23,7 +43,7 @@ class Peer {
         self.network = network
         self.bestBlock = bestBlock
 
-        devP2PPeer = DevP2PPeer(key: key, node: node)
+        devP2PPeer = DevP2PPeer(key: key, node: node, capability: capability)
         devP2PPeer.delegate = self
     }
 
@@ -49,16 +69,16 @@ class Peer {
     }
 
     private func validatePeer(message: StatusMessage) throws {
+        guard message.networkId == network.id && message.genesisHash == network.genesisBlockHash else {
+            throw LESPeerError.wrongNetwork
+        }
+
         guard message.bestBlockHeight > 0 else {
-            throw PeerError.peerBestBlockIsLessThanOne
+            throw LESPeerError.peerBestBlockIsLessThanOne
         }
 
         guard message.bestBlockHeight >= bestBlock.height else {
-            throw PeerError.peerHasExpiredBlockChain(localHeight: bestBlock.height, peerHeight: message.bestBlockHeight)
-        }
-
-        guard message.networkId == network.id && message.genesisHash == network.genesisBlockHash else {
-            throw PeerError.wrongNetwork
+            throw LESPeerError.peerHasExpiredBlockChain(localHeight: bestBlock.height, peerHeight: message.bestBlockHeight)
         }
     }
 
@@ -94,7 +114,7 @@ class Peer {
 
 }
 
-extension Peer {
+extension LESPeer: IPeer {
 
     func connect() {
         devP2PPeer.connect()
@@ -118,14 +138,14 @@ extension Peer {
 
 }
 
-extension Peer: IDevP2PPeerDelegate {
+extension LESPeer: IDevP2PPeerDelegate {
 
     func connectionEstablished() {
         proceedHandshake()
     }
 
     func connectionDidDisconnect(withError error: Error?) {
-//        print("Disconnected ...")
+        //        print("Disconnected ...")
     }
 
     func connection(didReceiveMessage message: IMessage) {

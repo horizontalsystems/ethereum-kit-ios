@@ -2,9 +2,7 @@ import Foundation
 
 class GetBlockHeadersMessage: IMessage {
 
-    static let code = 0x12
     static let maxHeaders = 50
-    var code: Int { return GetBlockHeadersMessage.code }
 
     var requestId: Int
     var blockHash: Data
@@ -18,6 +16,13 @@ class GetBlockHeadersMessage: IMessage {
         self.reverse = reverse
     }
 
+    required init?(data: Data) {
+        self.requestId = 0
+        self.blockHash = Data()
+        self.skip = 0
+        self.reverse = 0
+    }
+
     func encoded() -> Data {
         let toEncode: [Any] = [
             requestId,
@@ -29,7 +34,7 @@ class GetBlockHeadersMessage: IMessage {
             ]
         ]
 
-        return try! RLP.encode(toEncode)
+        return RLP.encode(toEncode)
     }
 
     func toString() -> String {

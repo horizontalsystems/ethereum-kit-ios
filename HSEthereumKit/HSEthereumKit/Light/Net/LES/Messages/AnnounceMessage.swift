@@ -2,15 +2,17 @@ import Foundation
 
 class AnnounceMessage: IMessage {
 
-    static let code = 0x11
-    var code: Int { return AnnounceMessage.code }
-
     var bestBlockTotalDifficulty = Data()
     var bestBlockHash = Data()
     var bestBlockHeight = BInt(0)
     var reorganizationDepth = BInt(0)
 
-    init(data: Data) {
+    required init?(data: Data) {
+        let rlp = RLP.decode(input: data)
+
+        guard rlp.isList() && rlp.listValue.count > 0 else {
+            return nil
+        }
     }
 
     func encoded() -> Data {

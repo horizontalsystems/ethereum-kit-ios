@@ -7,6 +7,8 @@ enum RLPElementType {
 
 class RLPElement {
 
+    static let emptyList = RLPElement(type: .list, length: 0, lengthOfLengthBytes: 0, dataValue: Data(), listValue: [])
+
     let type: RLPElementType
     let lengthOfLengthBytes: Int
     let length: Int

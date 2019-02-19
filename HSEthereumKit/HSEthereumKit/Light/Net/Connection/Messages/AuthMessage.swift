@@ -22,9 +22,7 @@ class AuthMessage {
             AuthMessage.version
         ]
         
-        let encoded = try! RLP.encode(toEncode)
-        
-        return encoded
+        return RLP.encode(toEncode)
     }
     
 }

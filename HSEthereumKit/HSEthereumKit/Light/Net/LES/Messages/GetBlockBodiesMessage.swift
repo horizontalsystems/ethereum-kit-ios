@@ -2,14 +2,16 @@ import Foundation
 
 class GetBlockBodiesMessage: IMessage {
 
-    static let code = 0x14
-    var code: Int { return GetBlockBodiesMessage.code }
-
     var requestId = 0
     var transactions = [[Data]]() // In format described in Ethereum specification
     var receipts = [[Data]]() // In format described in Ethereum specification
 
-    init(data: Data) {
+    required init?(data: Data) {
+        let rlp = RLP.decode(input: data)
+
+        guard rlp.isList() && rlp.listValue.count > 0 else {
+            return nil
+        }
     }
 
     func encoded() -> Data {

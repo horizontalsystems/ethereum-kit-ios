@@ -9,17 +9,19 @@ class ProofsMessage: IMessage {
         case nodesNotInterconnected
         case pathDoesNotMatchAddressHash
         case rootHashDoesNotMatchStateRoot
+        case wrongState
     }
-
-    static let code = 0x19
-    var code: Int { return ProofsMessage.code }
 
     let requestId: Int
     let bv: Int
     var nodes: [TrieNode]
 
-    init(data: Data) {
-        let rlp = try! RLP.decode(input: data)
+    required init?(data: Data) {
+        let rlp = RLP.decode(input: data)
+
+        guard rlp.isList() && rlp.listValue.count > 2 else {
+            return nil
+        }
 
         requestId = rlp.listValue[0].intValue
         bv = rlp.listValue[1].intValue
@@ -27,8 +29,8 @@ class ProofsMessage: IMessage {
         nodes = [TrieNode]()
 
         let rlpNodes: [RLPElement]
-        if rlp.listValue[2].listValue.count > 0 {
-            rlpNodes = rlp.listValue[2].listValue[0].listValue
+        if rlp.listValue[2].isList() && rlp.listValue[2].listValue.count > 0 {
+            rlpNodes = rlp.listValue[2].listValue
         } else {
             rlpNodes = [RLPElement]()
         }
@@ -48,7 +50,11 @@ class ProofsMessage: IMessage {
             throw ProofError.stateNodeNotFound
         }
 
-        let rlpState = try! RLP.decode(input: lastNode.elements[1])
+        let rlpState = RLP.decode(input: lastNode.elements[1])
+        guard rlpState.isList() && rlpState.listValue.count == 4 else {
+            throw ProofError.wrongState
+        }
+
         let nonce = rlpState.listValue[0].intValue
         let balance = Balance(wei: rlpState.listValue[1].bIntValue)
         let storageRoot = rlpState.listValue[2].dataValue

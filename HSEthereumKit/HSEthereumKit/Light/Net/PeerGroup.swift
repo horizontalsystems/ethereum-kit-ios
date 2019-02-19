@@ -3,7 +3,7 @@ import Foundation
 class PeerGroup {
 
     private var blockHeaders = [BlockHeader]()
-    private var syncPeer: Peer?
+    private var syncPeer: IPeer?
     private var address: Data
 
     init(network: INetwork, address: String) {
@@ -25,13 +25,13 @@ class PeerGroup {
                 discoveryPort: 30301
         )
 
-        syncPeer = Peer(network: network, bestBlock: network.checkpointBlock, key: myKey, node: node)
+        syncPeer = LESPeer(network: network, bestBlock: network.checkpointBlock, key: myKey, node: node)
         syncPeer?.delegate = self
         blockHeaders.append(network.checkpointBlock)
     }
 
     func start() {
-        syncPeer!.connect()
+        syncPeer?.connect()
     }
 
     func syncBlocks() {

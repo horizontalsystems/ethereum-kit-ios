@@ -2,14 +2,11 @@ import Foundation
 
 class GetHelperTrieProofsMessage: IMessage {
 
-    static let code = 0x21
-    var code: Int { return GetHelperTrieProofsMessage.code }
-
     var requestId = 0
     var proofRequests = [ProofRequest]()
     var auxData = [Data]()
 
-    init(data: Data) {
+    required init?(data: Data) {
     }
 
     func encoded() -> Data {

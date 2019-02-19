@@ -21,11 +21,20 @@ protocol IConnectionDelegate: class {
     func connection(didReceiveMessage message: IMessage)
 }
 
-protocol IPeerConnection: class {
+protocol IPeer: class {
+    var delegate: IPeerDelegate? { get set }
+    func connect()
+    func disconnect(error: Error?)
+    func downloadBlocksFrom(block: BlockHeader)
+    func getBalance(forAddress address: Data, inBlockWithHash blockHash: Data)
+}
+
+protocol IConnection: class {
     var delegate: IConnectionDelegate? { get set }
     var logName: String { get }
     func connect()
     func disconnect(error: Error?)
+    func register(packetTypesMap: [Int: IMessage.Type])
     func send(message: IMessage)
 }
 
@@ -33,6 +42,18 @@ protocol INetwork {
     var id: Int { get }
     var genesisBlockHash: Data { get }
     var checkpointBlock: BlockHeader{ get }
+}
+
+protocol IFramesMessageConverter {
+    func register(packetTypesMap: [Int: IMessage.Type])
+    func convertToMessage(frames: [Frame]) -> IMessage?
+    func convertToFrames(message: IMessage) -> [Frame]
+}
+
+protocol IMessage {
+    init?(data: Data)
+    func encoded() -> Data
+    func toString() -> String
 }
 
 protocol IReachabilityManager {

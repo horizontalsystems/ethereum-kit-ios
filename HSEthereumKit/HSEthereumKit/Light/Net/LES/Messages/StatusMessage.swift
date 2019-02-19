@@ -2,9 +2,6 @@ import Foundation
 
 class StatusMessage: IMessage {
 
-    static let code = 0x10
-    var code: Int { return StatusMessage.code }
-
     var protocolVersion: UInt8 = 0
     var networkId: Int = 0
     var bestBlockTotalDifficulty = Data()
@@ -21,10 +18,14 @@ class StatusMessage: IMessage {
         self.bestBlockHeight = bestBlockHeight
     }
 
-    init(data: Data) {
-        let rlpList = try! RLP.decode(input: data)
+    required init?(data: Data) {
+        let rlp = RLP.decode(input: data)
 
-        for rlpElement in rlpList.listValue {
+        guard rlp.isList() && rlp.listValue.count > 5 else {
+            return nil
+        }
+
+        for rlpElement in rlp.listValue {
             let name = rlpElement.listValue[0].stringValue
             let valueElement = rlpElement.listValue[1]
 
@@ -33,7 +34,7 @@ class StatusMessage: IMessage {
             case "networkId": networkId = valueElement.intValue
             case "headTd": bestBlockTotalDifficulty = valueElement.dataValue
             case "headHash": bestBlockHash = valueElement.dataValue
-            case "headNum": bestBlockHeight = BInt(valueElement.dataValue.toHexString(), radix: 16)!
+            case "headNum": bestBlockHeight = valueElement.bIntValue
             case "genesisHash": genesisHash = valueElement.dataValue
             default: ()
             }
@@ -51,7 +52,7 @@ class StatusMessage: IMessage {
             ["announceType", 1]
         ]
 
-        return try! RLP.encode(toEncode)
+        return RLP.encode(toEncode)
     }
 
     func toString() -> String {

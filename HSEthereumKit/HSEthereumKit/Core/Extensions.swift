@@ -21,6 +21,10 @@ extension Data {
         return Array(self)
     }
 
+    func to<T>(type: T.Type) -> T {
+        return self.withUnsafeBytes { $0.pointee }
+    }
+
     func toHexString() -> String {
         return reduce("") { $0 + String(format: "%02x", $1) }
     }

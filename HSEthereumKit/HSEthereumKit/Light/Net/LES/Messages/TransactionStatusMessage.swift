@@ -2,15 +2,11 @@ import Foundation
 
 class TransactionStatusMessage: IMessage {
 
-    static let code = 0x25
-    var code: Int { return TransactionStatusMessage.code }
-
     var requestId = 0
     var bv = 0
-    
     var transactionStatuses = [Data: TransactionStatus]()
 
-    init(data: Data) {
+    required init?(data: Data) {
     }
 
     func encoded() -> Data {

@@ -4,7 +4,11 @@ import Security
 
 class EncryptionHandshake {
 
-    public static let NONCE_SIZE: Int = 32
+    enum HandshakeError: Error {
+        case invalidAuthAckPayload
+    }
+
+    static let NONCE_SIZE: Int = 32
 
     let myKey: ECKey
     let ephemeralKey: ECKey
@@ -21,11 +25,11 @@ class EncryptionHandshake {
         initiatorNonce = randomBytes(length: 32)
     }
 
-    func createAuthMessage() {
+    func createAuthMessage() throws {
         let sharedSecret = CryptoKit.ecdhAgree(privateKey: myKey.privateKey, withPublicKey: remotePublicKeyPoint.uncompressed())
 
         let messageToSign = sharedSecret.xor(with: initiatorNonce)
-        let signature = try! CryptoKit.ellipticSign(messageToSign, privateKey: ephemeralKey.privateKey)
+        let signature = try CryptoKit.ellipticSign(messageToSign, privateKey: ephemeralKey.privateKey)
 
         let message = AuthMessage(signature: signature, publicKeyPoint: myKey.publicKeyPoint, nonce: initiatorNonce)
         authMessagePacket = encrypt(authMessage: message)
@@ -33,14 +37,17 @@ class EncryptionHandshake {
 
     func extractSecretsFromResponse(in responsePackets: Data) throws -> Secrets {
         let prefixBytes: Data = responsePackets.subdata(in: 0..<2)
-        let size = UInt16(prefixBytes.toHexString(), radix: 16)!
-        let responseData = responsePackets.subdata(in: 2..<Int(size + 2))
+        let prefix = Data(prefixBytes.reversed()).to(type: UInt16.self)
+        let responseData = responsePackets.subdata(in: 2..<Int(prefix + 2))
 
         authAckMessagePacket = prefixBytes + responseData
         let responseDecrypted = try ECIES.decrypt(privateKey: myKey.privateKey, message: responseData, macData: prefixBytes)
-        let message = AuthAckMessage(data: responseDecrypted)
 
-        return try extractSecrets(message: message)
+        guard let message = AuthAckMessage(data: responseDecrypted) else {
+            throw HandshakeError.invalidAuthAckPayload
+        }
+
+        return extractSecrets(message: message)
     }
 
 
@@ -57,8 +64,8 @@ class EncryptionHandshake {
         return encrypted
     }
 
-    private func extractSecrets(message: AuthAckMessage) throws -> Secrets {
-        let sPointer: UnsafeMutablePointer<UInt8> = _ECDH.agree(ephemeralKey.privateKey, withPublicKey: Data(hex: "04") + message.publicKeyPoint.x + message.publicKeyPoint.y)
+    private func extractSecrets(message: AuthAckMessage) -> Secrets {
+        let sPointer: UnsafeMutablePointer<UInt8> = _ECDH.agree(ephemeralKey.privateKey, withPublicKey: message.publicKeyPoint.uncompressed())
         let ephemeralSharedSecret = Data(buffer: UnsafeBufferPointer(start: sPointer, count: 32))
 
         let sharedSecret = CryptoKit.sha3(ephemeralSharedSecret + CryptoKit.sha3(message.nonce + initiatorNonce))

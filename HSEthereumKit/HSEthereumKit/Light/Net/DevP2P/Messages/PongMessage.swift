@@ -1,15 +1,13 @@
 import Foundation
 
-class PingMessage: IMessage {
+class PongMessage: IMessage {
 
-    static let code = 0x02
     static let payload = Data(bytes: [UInt8(0xc0)])
-    var code: Int { return PingMessage.code }
 
     init() {
     }
 
-    init(data: Data) {
+    required init?(data: Data) {
     }
 
     func encoded() -> Data {
@@ -17,7 +15,7 @@ class PingMessage: IMessage {
     }
 
     func toString() -> String {
-        return "PING"
+        return "PONG"
     }
 
 }

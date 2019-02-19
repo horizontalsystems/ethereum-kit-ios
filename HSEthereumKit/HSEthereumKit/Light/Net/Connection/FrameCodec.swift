@@ -3,6 +3,10 @@ import HSCryptoKit
 
 class FrameCodec {
 
+    enum FrameCodecError: Error {
+        case macMismatch
+    }
+
     private let secrets: Secrets;
     private let encIV = Data(hex: "00000000000000000000000000000000")
     private let decIV = Data(hex: "00000000000000000000000000000000")
@@ -15,9 +19,9 @@ class FrameCodec {
         self.secrets = secrets
     }
     
-    func readFrames(from data: Data) -> [Frame] {
+    func readFrames(from data: Data) throws -> [Frame] {
         guard data.count >= 64 else {
-            return [Frame]()
+            return []
         }
 
         let header = data.subdata(in: 0..<16)
@@ -25,19 +29,16 @@ class FrameCodec {
         let updatedMac = updateMac(mac: secrets.ingressMac, macKey: secrets.mac, data: header)
 
         guard updatedMac == headerMac else {
-            print("MAC mismatch!")
-            return []
+            throw FrameCodecError.macMismatch
         }
 
         let decryptedHeader: Data = _AES.encrypt(header, withKey: secrets.aes, keySize: 256, iv: decIV)
 
         let totalSizeBytes = Data(repeating: 0, count: 1) + decryptedHeader.subdata(in: 0..<3)
-        let totalSizeBigEndian = totalSizeBytes.withUnsafeBytes { (ptr: UnsafePointer<UInt32>) -> UInt32 in
-            return ptr.pointee
-        }
+        let totalSizeBigEndian = totalSizeBytes.to(type: UInt32.self)
         let frameBodySize = Int(UInt32(bigEndian: totalSizeBigEndian))
 
-        let rlpHeader = try! RLP.decode(input: decryptedHeader.subdata(in: 3..<16))
+        let rlpHeader = RLP.decode(input: decryptedHeader.subdata(in: 3..<16))
         var contextId = -1
         if rlpHeader.listValue.count > 1 {
             contextId = rlpHeader.listValue[1].intValue
@@ -55,7 +56,6 @@ class FrameCodec {
         let frameSize = 32 + frameBodySize + paddingSize + 16  // header || body || padding || body-mac
 
         guard data.count >= frameSize else {
-            print("Not enough data to read!")
             return []
         }
 
@@ -65,7 +65,7 @@ class FrameCodec {
         secrets.ingressMac.update(with: frameBodyData)
         let decryptedFrame: Data = _AES.encrypt(frameBodyData, withKey: secrets.aes, keySize: 256, iv: decIV)
 
-        let rlpPacketType = try! RLP.decode(input: decryptedFrame)
+        let rlpPacketType = RLP.decode(input: decryptedFrame)
         let packetType = rlpPacketType.intValue
         let packetTypeLength = rlpPacketType.lengthOfLengthBytes + rlpPacketType.length
 
@@ -75,8 +75,7 @@ class FrameCodec {
         let updatedFrameBodyMac = updateMac(mac: secrets.ingressMac, macKey: secrets.mac, data: ingressMac)
 
         guard updatedFrameBodyMac == frameBodyMac else {
-            print("MAC mismatch!")
-            return []
+            throw FrameCodecError.macMismatch
         }
 
         let frame = Frame(type: packetType, payload: payload, size: frameSize, contextId: contextId, allFramesTotalSize: allFramesTotalSize)
@@ -86,7 +85,7 @@ class FrameCodec {
 
     func encodeFrame(frame: Frame) -> Data {
         var header = Data()
-        let packetType = try! RLP.encode(frame.type)
+        let packetType = RLP.encode(frame.type)
 
         var frameSize: Int = frame.payloadSize + packetType.count
         withUnsafeBytes(of: &frameSize) { ptr in
@@ -104,7 +103,7 @@ class FrameCodec {
             headerDataElements.append(totalFrameSize)
         }
 
-        header += (try! RLP.encode(headerDataElements))
+        header += RLP.encode(headerDataElements)
         header += Data(repeating: 0, count: 16 - header.count)
 
         let encryptedHeader = _AES.encrypt(header, withKey: secrets.aes, keySize: 256, iv: encIV)

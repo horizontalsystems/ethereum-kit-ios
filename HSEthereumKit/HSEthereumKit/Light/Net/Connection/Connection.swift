@@ -18,6 +18,7 @@ class Connection: NSObject {
     weak var delegate: IConnectionDelegate?
     private var handshake: EncryptionHandshake?
     private var frameCodec: FrameCodec?
+    private let converter: IFramesMessageConverter
 
     private var runLoop: RunLoop?
     private var readStream: Unmanaged<CFReadStream>?
@@ -40,6 +41,8 @@ class Connection: NSObject {
         self.host = node.host
         self.port = UInt32(node.port)
         self.discPort = UInt32(node.discoveryPort)
+
+        converter = FramesMessageConverter()
     }
 
     deinit {
@@ -100,7 +103,13 @@ class Connection: NSObject {
 
             if let frameCode = frameCodec {
                 while (packets.count >= 64) {
-                    let frames = frameCode.readFrames(from: packets)
+                    let frames: [Frame]
+                    do {
+                        frames = try frameCode.readFrames(from: packets)
+                    } catch {
+                        disconnect(error: error)
+                        return
+                    }
 
                     if frames.count > 0 {
                         packets = Data(packets.dropFirst(frames.reduce(0) { $0 + $1.size }))
@@ -108,7 +117,7 @@ class Connection: NSObject {
                         break
                     }
 
-                    if let message = Frame.framesToMessage(frames: frames) {
+                    if let message = converter.convertToMessage(frames: frames) {
                         delegate?.connection(didReceiveMessage: message)
                     }
                 }
@@ -130,7 +139,13 @@ class Connection: NSObject {
         handshakeSent = true
 
         let handshake = EncryptionHandshake(myKey: delegate.connectionKey(), publicKeyPoint: ECPoint(nodeId: nodeId))
-        handshake.createAuthMessage()
+
+        do {
+            try handshake.createAuthMessage()
+        } catch {
+            disconnect(error: error)
+            return
+        }
 
         self.handshake = handshake
 
@@ -150,7 +165,7 @@ class Connection: NSObject {
 }
 
 
-extension Connection: IPeerConnection {
+extension Connection: IConnection {
 
     func connect() {
         if runLoop == nil {
@@ -184,6 +199,10 @@ extension Connection: IPeerConnection {
         log("DISCONNECTED")
     }
 
+    func register(packetTypesMap: [Int: IMessage.Type]) {
+        converter.register(packetTypesMap: packetTypesMap)
+    }
+
     func send(message: IMessage) {
         log(">>> \(message.toString())")
 
@@ -192,10 +211,12 @@ extension Connection: IPeerConnection {
             return
         }
 
-        let frame = Frame(message: message)
-        let encodedFrame = frameCodec.encodeFrame(frame: frame)
+        let frames = converter.convertToFrames(message: message)
 
-        sendPackets(data: encodedFrame)
+        for frame in frames {
+            let encodedFrame = frameCodec.encodeFrame(frame: frame)
+            sendPackets(data: encodedFrame)
+        }
     }
 
 }

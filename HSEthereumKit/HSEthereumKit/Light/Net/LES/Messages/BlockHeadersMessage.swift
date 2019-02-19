@@ -2,15 +2,16 @@ import Foundation
 
 class BlockHeadersMessage: IMessage {
 
-    static let code = 0x13
-    var code: Int { return BlockHeadersMessage.code }
-
     var requestId: Int
     var bv: Int
     var headers: [BlockHeader]
 
-    init(data: Data) {
-        let rlp = try! RLP.decode(input: data)
+    required init?(data: Data) {
+        let rlp = RLP.decode(input: data)
+
+        guard rlp.isList() && rlp.listValue.count > 2 else {
+            return nil
+        }
 
         self.requestId = rlp.listValue[0].intValue
         self.bv = rlp.listValue[1].intValue

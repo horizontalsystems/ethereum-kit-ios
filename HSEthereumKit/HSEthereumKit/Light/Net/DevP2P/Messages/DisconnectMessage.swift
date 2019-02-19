@@ -19,22 +19,20 @@ class DisconnectMessage: IMessage {
         case unknown = 0xFF
     }
 
-    static let code = 0x01
-    var code: Int {
-        return DisconnectMessage.code
-    }
-
     private let reason: ReasonCode
 
     init(reason: ReasonCode) {
         self.reason = reason
     }
 
-    init(data: Data) {
-        let rlp = try! RLP.decode(input: data)
+    required init?(data: Data) {
+        let rlp = RLP.decode(input: data)
 
-        if rlp.isList() && rlp.listValue.count > 0 && rlp.listValue[0].dataValue.count > 0,
-           let reason = ReasonCode(rawValue: rlp.listValue[0].intValue) {
+        guard rlp.isList() && rlp.listValue.count > 0 else {
+            return nil
+        }
+
+        if let reason = ReasonCode(rawValue: rlp.listValue[0].intValue) {
             self.reason = reason
         } else {
             self.reason = ReasonCode.unknown
@@ -42,7 +40,7 @@ class DisconnectMessage: IMessage {
     }
 
     func encoded() -> Data {
-        return try! RLP.encode([reason.rawValue])
+        return RLP.encode([reason.rawValue])
     }
 
     func toString() -> String {
