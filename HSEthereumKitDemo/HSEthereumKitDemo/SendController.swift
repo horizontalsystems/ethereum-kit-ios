@@ -1,7 +1,9 @@
 import UIKit
 import HSEthereumKit
+import RxSwift
 
 class SendController: UIViewController {
+    private let disposeBag = DisposeBag()
 
     @IBOutlet weak var addressTextField: UITextField?
     @IBOutlet weak var amountTextField: UITextField?
@@ -34,20 +36,23 @@ class SendController: UIViewController {
             return
         }
 
-        let onSuccess: () -> () = { [weak self] in
-            self?.showSuccess(address: address, amount: amount)
-        }
-
-        let onError: (Error) -> () = { [weak self] error in
-            self?.show(error: "Something conversion wrong: \(error)")
-        }
+        let single: Single<EthereumTransaction>
 
         if (sender as? UIButton) == sendCoin {
-            ethereumKit.erc20Send(to: address, contractAddress: Manager.contractAddress, amount: amount, onSuccess: onSuccess, onError: onError)
+            single = ethereumKit.sendErc20Single(to: address, contractAddress: Manager.contractAddress, amount: amount)
         } else {
-            ethereumKit.send(to: address, amount: amount, onSuccess: onSuccess, onError: onError)
+            single = ethereumKit.sendSingle(to: address, amount: amount)
         }
 
+        single
+                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+                .observeOn(MainScheduler.instance)
+                .subscribe(onSuccess: { [weak self] _ in
+                    self?.showSuccess(address: address, amount: amount)
+                }, onError: { [weak self] error in
+                    self?.show(error: "Something conversion wrong: \(error)")
+                })
+                .disposed(by: disposeBag)
     }
 
     private func show(error: String) {

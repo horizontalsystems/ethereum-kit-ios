@@ -1,55 +1,38 @@
 import RxSwift
 import HSHDWalletKit
 
-class GethBlockchain {
-    private static let ethDecimal = 18
-    private static let ethRate: Decimal = pow(10, ethDecimal)
-
-    static let ethGasLimit = 21_000
-    static let erc20GasLimit = 100_000
-    static let defaultGasPrice: Decimal = 10_000_000_000 / ethRate
-
+class ApiBlockchain {
     private var disposeBag = DisposeBag()
 
     weak var delegate: IBlockchainDelegate?
 
     private let storage: IStorage
-    private let hdWallet: Wallet
-
-    private let geth: Geth
-    private let gethProvider: IGethProviderProtocol
+    private let apiProvider: IApiProvider
 
     private var erc20Contracts = [Erc20Contract]()
 
     let ethereumAddress: String
-    let gasPrice: Decimal = 0
+    private(set) var gasPrice: Decimal = 10_000_000_000 / pow(10, 18)
+    let gasLimitEthereum = 21_000
+    let gasLimitErc20 = 100_000
 
-    init(storage: IStorage, words: [String], testMode: Bool, infuraKey: String, etherscanKey: String, debugPrints: Bool = false) throws {
+    init(storage: IStorage, apiProvider: IApiProvider, ethereumAddress: String) {
         self.storage = storage
+        self.apiProvider = apiProvider
+        self.ethereumAddress = ethereumAddress
 
-        let network: Network = testMode ? .ropsten : .mainnet
-
-        hdWallet = try Wallet(seed: Mnemonic.seed(mnemonic: words), network: network, debugPrints: debugPrints)
-        ethereumAddress = hdWallet.address()
-
-        let configuration = Configuration(
-                network: network,
-                nodeEndpoint: network.infura + infuraKey,
-                etherscanAPIKey: etherscanKey,
-                debugPrints: debugPrints
-        )
-        geth = Geth(configuration: configuration)
-        gethProvider = GethProvider(geth: geth)
-
+        if let storedGasPrice = storage.gasPrice {
+            gasPrice = storedGasPrice
+        }
     }
 
     private func refreshAll() {
         changeAllStates(state: .syncing)
 
         Single.zip(
-                        gethProvider.getLastBlockHeight(),
-                        gethProvider.getGasPrice(),
-                        gethProvider.getBalance(address: ethereumAddress, blockParameter: .latest)
+                        apiProvider.getLastBlockHeight(),
+                        apiProvider.getGasPrice(),
+                        apiProvider.getBalance(address: ethereumAddress)
                 )
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .observeOn(MainScheduler.instance)
@@ -69,7 +52,7 @@ class GethBlockchain {
     private func refreshTransactions() {
         let lastTransactionBlockHeight = storage.lastTransactionBlockHeight(erc20: false) ?? 0
 
-        gethProvider.getTransactions(address: ethereumAddress, startBlock: Int64(lastTransactionBlockHeight + 1), rate: GethBlockchain.ethRate)
+        apiProvider.getTransactions(address: ethereumAddress, startBlock: Int64(lastTransactionBlockHeight + 1))
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { [weak self] transactions in
@@ -86,7 +69,7 @@ class GethBlockchain {
 
         let erc20LastTransactionBlockHeight = storage.lastTransactionBlockHeight(erc20: true) ?? 0
 
-        gethProvider.getTransactionsErc20(address: ethereumAddress, startBlock: Int64(erc20LastTransactionBlockHeight + 1), contracts: erc20Contracts)
+        apiProvider.getTransactionsErc20(address: ethereumAddress, startBlock: Int64(erc20LastTransactionBlockHeight + 1), contracts: erc20Contracts)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { [weak self] transactions in
@@ -102,7 +85,7 @@ class GethBlockchain {
 
     private func refreshErc20Balances() {
         erc20Contracts.forEach { contract in
-            gethProvider.getBalanceErc20(address: ethereumAddress, contractAddress: contract.address, decimal: contract.decimal, blockParameter: .latest)
+            apiProvider.getBalanceErc20(address: ethereumAddress, contractAddress: contract.address, decimal: contract.decimal)
                     .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                     .observeOn(MainScheduler.instance)
                     .subscribe(onSuccess: { [weak self] balance in
@@ -128,8 +111,8 @@ class GethBlockchain {
     }
 
     private func update(gasPrice: Decimal) {
+        self.gasPrice = gasPrice
         storage.save(gasPrice: gasPrice)
-//        delegate?.onUpdate(gasPrice: gasPrice)
     }
 
     private func update(balance: Decimal) {
@@ -166,33 +149,21 @@ class GethBlockchain {
         }
     }
 
-    private func send(nonce: Int, address: String, value: Decimal, gasPrice: Decimal, completion: ((Error?) -> ())? = nil) throws {
-        let wei = try Converter.toWei(ether: value)
-        let gasPriceWei = try Converter.toWei(ether: gasPrice)
+    private func sendSingle(to address: String, nonce: Int, amount: Decimal, gasPrice: Decimal?) -> Single<EthereumTransaction> {
+        return apiProvider.send(from: ethereumAddress, to: address, nonce: nonce, amount: amount, gasPrice: gasPrice ?? self.gasPrice, gasLimit: gasLimitEthereum)
+    }
 
-        let gasLimit = GethBlockchain.ethGasLimit
-        let ethereumAddress = self.ethereumAddress
-
-        // todo: remove !
-        let rawTransaction = RawTransaction(wei: wei.asString(withBase: 10), to: address, gasPrice: gasPriceWei.toInt()!, gasLimit: gasLimit, nonce: nonce)
-
-        let signedTransaction = try hdWallet.sign(rawTransaction: rawTransaction)
-
-        geth.sendRawTransaction(rawTransaction: signedTransaction) { [weak self] result in
-            switch result {
-            case .success(let sentTransaction):
-                let transaction = EthereumTransaction(hash: sentTransaction.id, nonce: nonce, from: ethereumAddress, to: address, value: value, gasLimit: gasLimit, gasPrice: gasPrice)
-                self?.storage.save(transactions: [transaction])
-                completion?(nil)
-            case .failure(let error):
-                completion?(error)
-            }
+    private func sendErc20Single(to address: String, contractAddress: String, nonce: Int, amount: Decimal, gasPrice: Decimal?) -> Single<EthereumTransaction> {
+        guard let erc20Contract = erc20Contracts.first(where: { $0.address == contractAddress }) else {
+            return Single.error(ApiError.contractNotRegistered)
         }
+
+        return apiProvider.sendErc20(contractAddress: erc20Contract.address, decimal: erc20Contract.decimal, from: ethereumAddress, to: address, nonce: nonce, amount: amount, gasPrice: gasPrice ?? self.gasPrice, gasLimit: gasLimitErc20)
     }
 
 }
 
-extension GethBlockchain: IBlockchain {
+extension ApiBlockchain: IBlockchain {
 
     func start() {
         // todo: check reachability and decide if reachability should be in this layer
@@ -226,33 +197,66 @@ extension GethBlockchain: IBlockchain {
         }
     }
 
-    func send(to address: String, amount: Decimal, gasPrice: Decimal?, onSuccess: (() -> ())?, onError: ((Error) -> ())?) {
-        geth.getTransactionCount(of: ethereumAddress, blockParameter: .pending) { [weak self] result in
-            switch result {
-            case .success(let nonce):
-                do {
-//                    try self?.send(nonce: nonce, address: address, value: amount, gasPrice: gasPrice, completion: completion)
-//                    onSuccess()
-                } catch {
-                    onError?(error)
+    func sendSingle(to address: String, amount: Decimal, gasPrice: Decimal?) -> Single<EthereumTransaction> {
+        return apiProvider.getTransactionCount(address: ethereumAddress)
+                .flatMap { [weak self] nonce -> Single<EthereumTransaction> in
+                    guard let weakSelf = self else {
+                        return Single.error(ApiError.internalError)
+                    }
+
+                    return weakSelf.sendSingle(to: address, nonce: nonce, amount: amount, gasPrice: gasPrice)
                 }
-            case .failure(let error):
-                onError?(error)
-            }
-        }
+                .do(onSuccess: { [weak self] transaction in
+                    self?.storage.save(transactions: [transaction])
+                })
     }
 
-    func erc20Send(to address: String, contractAddress: String, amount: Decimal, gasPrice: Decimal?, onSuccess: (() -> ())?, onError: ((Error) -> ())?) {
-        // todo: implement erc20 send
+    func sendErc20Single(to address: String, contractAddress: String, amount: Decimal, gasPrice: Decimal?) -> Single<EthereumTransaction> {
+        return apiProvider.getTransactionCount(address: ethereumAddress)
+                .flatMap { [weak self] nonce -> Single<EthereumTransaction> in
+                    guard let weakSelf = self else {
+                        return Single.error(ApiError.internalError)
+                    }
+
+                    return weakSelf.sendErc20Single(to: address, contractAddress: contractAddress, nonce: nonce, amount: amount, gasPrice: gasPrice)
+                }
+                .do(onSuccess: { [weak self] transaction in
+                    self?.storage.save(transactions: [transaction])
+                })
     }
 
 }
 
-extension GethBlockchain {
+extension ApiBlockchain {
 
     struct Erc20Contract: Equatable {
         let address: String
         let decimal: Int
+    }
+
+    enum ApiError: Error {
+        case contractNotRegistered
+        case internalError
+    }
+
+}
+
+extension ApiBlockchain {
+
+    static func apiBlockchain(storage: IStorage, words: [String], testMode: Bool, infuraKey: String, etherscanKey: String, debugPrints: Bool = false) throws -> ApiBlockchain {
+        let network: Network = testMode ? .ropsten : .mainnet
+
+        let hdWallet = try Wallet(seed: Mnemonic.seed(mnemonic: words), network: network, debugPrints: debugPrints)
+
+        let configuration = Configuration(
+                network: network,
+                nodeEndpoint: network.infura + infuraKey,
+                etherscanAPIKey: etherscanKey,
+                debugPrints: debugPrints
+        )
+        let apiProvider = GethProvider(geth: Geth(configuration: configuration), hdWallet: hdWallet)
+
+        return ApiBlockchain(storage: storage, apiProvider: apiProvider, ethereumAddress: hdWallet.address())
     }
 
 }

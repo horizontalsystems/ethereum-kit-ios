@@ -84,7 +84,7 @@ class BalanceController: UIViewController {
     }
 
     private func erc20updateBalance() {
-        balanceCoinLabel?.text = "Balance Coin: \(Manager.shared.ethereumKit.erc20Balance(contractAddress: Manager.contractAddress))"
+        balanceCoinLabel?.text = "Balance Coin: \(Manager.shared.ethereumKit.balanceErc20(contractAddress: Manager.contractAddress))"
     }
 
     private func updateState() {
@@ -102,7 +102,7 @@ class BalanceController: UIViewController {
     private func erc20updateState() {
         let kitStateString: String
 
-        switch Manager.shared.ethereumKit.erc20SyncState(contractAddress: Manager.contractAddress) {
+        switch Manager.shared.ethereumKit.syncStateErc20(contractAddress: Manager.contractAddress) {
         case .synced: kitStateString = "Synced!"
         case .syncing: kitStateString = "Syncing"
         case .notSynced: kitStateString = "Not Synced"

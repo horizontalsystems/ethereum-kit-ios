@@ -2,10 +2,12 @@ import Foundation
 import RxSwift
 
 class GethProvider {
-    let geth: Geth
+    private let geth: Geth
+    private let hdWallet: Wallet
 
-    init(geth: Geth) {
+    init(geth: Geth, hdWallet: Wallet) {
         self.geth = geth
+        self.hdWallet = hdWallet
     }
 
     private func ethereumTransaction(from gethTransaction: Transaction, rate: Decimal) -> EthereumTransaction {
@@ -38,7 +40,7 @@ class GethProvider {
     }
 }
 
-extension GethProvider: IGethProviderProtocol {
+extension GethProvider: IApiProvider {
 
     func getGasPrice() -> Single<Decimal> {
         return Single.create { [weak geth] observer in
@@ -73,9 +75,9 @@ extension GethProvider: IGethProviderProtocol {
         }
     }
 
-    func getTransactionCount(address: String, blockParameter: BlockParameter) -> Single<Int> {
+    func getTransactionCount(address: String) -> Single<Int> {
         return Single.create { [weak geth] observer in
-            geth?.getTransactionCount(of: address, blockParameter: blockParameter) { result in
+            geth?.getTransactionCount(of: address) { result in
                 switch result {
                 case .success(let count):
                     observer(.success(count))
@@ -87,9 +89,9 @@ extension GethProvider: IGethProviderProtocol {
         }
     }
 
-    func getBalance(address: String, blockParameter: BlockParameter) -> Single<Decimal> {
+    func getBalance(address: String) -> Single<Decimal> {
         return Single.create { [weak geth] observer in
-            geth?.getBalance(of: address, blockParameter: blockParameter, completionHandler: { result in
+            geth?.getBalance(of: address, completionHandler: { result in
                 switch result {
                 case .success(let balance):
                     do {
@@ -105,7 +107,7 @@ extension GethProvider: IGethProviderProtocol {
         }
     }
 
-    func getBalanceErc20(address: String, contractAddress: String, decimal: Int, blockParameter: BlockParameter) -> Single<Decimal> {
+    func getBalanceErc20(address: String, contractAddress: String, decimal: Int) -> Single<Decimal> {
         return Single.create { [weak geth] observer in
             geth?.getTokenBalance(contractAddress: contractAddress, address: address, completionHandler: { result in
                 switch result {
@@ -126,13 +128,13 @@ extension GethProvider: IGethProviderProtocol {
 
     }
 
-    func getTransactions(address: String, startBlock: Int64, rate: Decimal) -> Single<[EthereumTransaction]> {
+    func getTransactions(address: String, startBlock: Int64) -> Single<[EthereumTransaction]> {
         return Single.create { [weak self] observer in
             self?.geth.getTransactions(address: address, startBlock: startBlock, completionHandler: { result in
                 switch result {
                 case .success(let transactions):
                     let ethereumTransactions = transactions.elements.compactMap {
-                        self?.ethereumTransaction(from: $0, rate: rate)
+                        self?.ethereumTransaction(from: $0, rate: pow(10, 18))
                     }
                     observer(.success(ethereumTransactions))
                 case .failure(let error):
@@ -143,7 +145,7 @@ extension GethProvider: IGethProviderProtocol {
         }
     }
 
-    func getTransactionsErc20(address: String, startBlock: Int64, contracts: [GethBlockchain.Erc20Contract]) -> Single<[EthereumTransaction]> {
+    func getTransactionsErc20(address: String, startBlock: Int64, contracts: [ApiBlockchain.Erc20Contract]) -> Single<[EthereumTransaction]> {
         return Single.create { [weak self] observer in
             self?.geth.getTokenTransactions(address: address, startBlock: startBlock, completionHandler: { result in
                 switch result {
@@ -163,18 +165,12 @@ extension GethProvider: IGethProviderProtocol {
         }
     }
 
-    func sendRawTransaction(rawTransaction: String) -> Single<SentTransaction> {
-        return Single.create { [weak geth] observer in
-            geth?.sendRawTransaction(rawTransaction: rawTransaction) { result in
-                switch result {
-                case .success(let sentTransaction):
-                    observer(.success(sentTransaction))
-                case .failure(let error):
-                    observer(.error(error))
-                }
-            }
-            return Disposables.create()
-        }
+    func send(from: String, to: String, nonce: Int, amount: Decimal, gasPrice: Decimal, gasLimit: Int) -> Single<EthereumTransaction> {
+        fatalError("send(from:to:nonce:amount:gasPrice:gasLimit:) has not been implemented")
+    }
+
+    func sendErc20(contractAddress: String, decimal: Int, from: String, to: String, nonce: Int, amount: Decimal, gasPrice: Decimal, gasLimit: Int) -> Single<EthereumTransaction> {
+        fatalError("sendErc20(contractAddress:decimal:from:to:nonce:amount:gasPrice:gasLimit:) has not been implemented")
     }
 
 }

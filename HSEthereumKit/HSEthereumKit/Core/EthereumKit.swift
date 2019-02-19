@@ -9,14 +9,12 @@ public class EthereumKit {
     private let blockchain: IBlockchain
     private let storage: IStorage
     private let addressValidator: IAddressValidator
-    private let configProvider: IConfigProvider
     private let state: EthereumKitState
 
-    init(blockchain: IBlockchain, storage: IStorage, addressValidator: IAddressValidator, configProvider: IConfigProvider, state: EthereumKitState = EthereumKitState()) {
+    init(blockchain: IBlockchain, storage: IStorage, addressValidator: IAddressValidator, state: EthereumKitState = EthereumKitState()) {
         self.blockchain = blockchain
         self.storage = storage
         self.addressValidator = addressValidator
-        self.configProvider = configProvider
         self.state = state
 
         state.balance = storage.balance(forAddress: blockchain.ethereumAddress)
@@ -83,15 +81,15 @@ extension EthereumKit {
 
     public func fee(gasPrice: Decimal? = nil) -> Decimal {
         // only for standard transactions without data
-        return (gasPrice ?? blockchain.gasPrice) * Decimal(configProvider.ethereumGasLimit)
+        return (gasPrice ?? blockchain.gasPrice) * Decimal(blockchain.gasLimitEthereum)
     }
 
-    public func transactions(fromHash: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {
+    public func transactionsSingle(fromHash: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {
         return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: nil)
     }
 
-    public func send(to address: String, amount: Decimal, gasPrice: Decimal? = nil, onSuccess: (() -> ())? = nil, onError: ((Error) -> ())? = nil) {
-        blockchain.send(to: address, amount: amount, gasPrice: gasPrice, onSuccess: onSuccess, onError: onError)
+    public func sendSingle(to address: String, amount: Decimal, gasPrice: Decimal? = nil) -> Single<EthereumTransaction> {
+        return blockchain.sendSingle(to: address, amount: amount, gasPrice: gasPrice)
     }
 
     public var debugInfo: String {
@@ -109,25 +107,25 @@ extension EthereumKit {
 
 extension EthereumKit {
 
-    public func erc20Fee(gasPrice: Decimal? = nil) -> Decimal {
+    public func feeErc20(gasPrice: Decimal? = nil) -> Decimal {
         // only for erc20 coin maximum fee
-        return (gasPrice ?? blockchain.gasPrice) * Decimal(configProvider.erc20GasLimit)
+        return (gasPrice ?? blockchain.gasPrice) * Decimal(blockchain.gasLimitErc20)
     }
 
-    public func erc20Balance(contractAddress: String) -> Decimal {
+    public func balanceErc20(contractAddress: String) -> Decimal {
         return state.balance(contractAddress: contractAddress) ?? 0
     }
 
-    public func erc20SyncState(contractAddress: String) -> SyncState {
+    public func syncStateErc20(contractAddress: String) -> SyncState {
         return state.syncState(contractAddress: contractAddress) ?? .notSynced
     }
 
-    public func erc20Transactions(contractAddress: String, fromHash: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {
+    public func transactionsErc20Single(contractAddress: String, fromHash: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {
         return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: contractAddress)
     }
 
-    public func erc20Send(to address: String, contractAddress: String, amount: Decimal, gasPrice: Decimal? = nil, onSuccess: (() -> ())? = nil, onError: ((Error) -> ())? = nil) {
-        blockchain.erc20Send(to: address, contractAddress: contractAddress, amount: amount, gasPrice: gasPrice, onSuccess: onSuccess, onError: onError)
+    public func sendErc20Single(to address: String, contractAddress: String, amount: Decimal, gasPrice: Decimal? = nil) -> Single<EthereumTransaction> {
+        return blockchain.sendErc20Single(to: address, contractAddress: contractAddress, amount: amount, gasPrice: gasPrice)
     }
 
 }
@@ -177,11 +175,10 @@ extension EthereumKit {
 
     public static func ethereumKit(words: [String], walletId: String, testMode: Bool, infuraKey: String, etherscanKey: String, debugPrints: Bool = false) throws -> EthereumKit {
         let storage = GrdbStorage(databaseFileName: "\(walletId)-\(testMode)")
-        let blockchain = try GethBlockchain(storage: storage, words: words, testMode: testMode, infuraKey: infuraKey, etherscanKey: etherscanKey, debugPrints: debugPrints)
+        let blockchain = try ApiBlockchain.apiBlockchain(storage: storage, words: words, testMode: testMode, infuraKey: infuraKey, etherscanKey: etherscanKey, debugPrints: debugPrints)
         let addressValidator = AddressValidator()
-        let configProvider = ConfigProvider()
 
-        let ethereumKit = EthereumKit(blockchain: blockchain, storage: storage, addressValidator: addressValidator, configProvider: configProvider)
+        let ethereumKit = EthereumKit(blockchain: blockchain, storage: storage, addressValidator: addressValidator)
 
         blockchain.delegate = ethereumKit
 
