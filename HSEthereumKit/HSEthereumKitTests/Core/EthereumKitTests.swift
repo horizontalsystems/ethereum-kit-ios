@@ -135,6 +135,7 @@ class EthereumKitTests: XCTestCase {
     }
 
     func testRegister() {
+        let balance: Decimal = 123.45
         let contractAddress = "contract_address"
         let decimal = 18
         let delegate = MockIEthereumKitDelegate()
@@ -142,14 +143,19 @@ class EthereumKitTests: XCTestCase {
         stub(mockState) { mock in
             when(mock.has(contractAddress: contractAddress)).thenReturn(false)
             when(mock.add(contractAddress: any(), decimal: any(), delegate: any())).thenDoNothing()
+            when(mock.set(balance: any(), contractAddress: any())).thenDoNothing()
         }
         stub(mockBlockchain) { mock in
             when(mock.register(contractAddress: any(), decimal: any())).thenDoNothing()
+        }
+        stub(mockStorage) { mock in
+            when(mock.balance(forAddress: contractAddress)).thenReturn(balance)
         }
 
         kit.register(contractAddress: contractAddress, decimal: decimal, delegate: delegate)
 
         verify(mockState).add(contractAddress: contractAddress, decimal: decimal, delegate: equal(to: delegate) { $0 === $1 })
+        verify(mockState).set(balance: equal(to: balance), contractAddress: equal(to: contractAddress))
         verify(mockBlockchain).register(contractAddress: contractAddress, decimal: decimal)
     }
 

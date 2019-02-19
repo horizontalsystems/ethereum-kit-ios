@@ -40,6 +40,8 @@ extension EthereumKit {
     }
 
     public func clear() {
+        delegate = nil
+
         blockchain.clear()
         storage.clear()
         state.clear()
@@ -67,6 +69,8 @@ extension EthereumKit {
         }
 
         state.add(contractAddress: contractAddress, decimal: decimal, delegate: delegate)
+        state.set(balance: storage.balance(forAddress: contractAddress) ?? 0, contractAddress: contractAddress)
+
         blockchain.register(contractAddress: contractAddress, decimal: decimal)
     }
 

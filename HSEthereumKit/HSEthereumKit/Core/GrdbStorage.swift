@@ -91,7 +91,13 @@ extension GrdbStorage: IStorage {
     func transactionsSingle(fromHash: String?, limit: Int?, contractAddress: String?) -> Single<[EthereumTransaction]> {
         return Single.create { [weak self] observer in
             try? self?.dbPool.read { db in
-                var request = EthereumTransaction.filter(EthereumTransaction.Columns.contractAddress == (contractAddress ?? ""))
+                var request = EthereumTransaction.all()
+
+                if let contractAddress = contractAddress {
+                    request = request.filter(EthereumTransaction.Columns.contractAddress == contractAddress)
+                } else {
+                    request = request.filter(EthereumTransaction.Columns.contractAddress == "" && EthereumTransaction.Columns.input == "0x")
+                }
 
                 if let fromHash = fromHash, let fromTransaction = try request.filter(EthereumTransaction.Columns.hash == fromHash).fetchOne(db) {
                     request = request.filter(EthereumTransaction.Columns.timestamp < fromTransaction.timestamp)

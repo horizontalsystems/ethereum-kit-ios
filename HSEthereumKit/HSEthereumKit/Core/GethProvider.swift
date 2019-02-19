@@ -150,7 +150,7 @@ extension GethProvider: IApiProvider {
                 switch result {
                 case .success(let transactions):
                     let ethereumTransactions = transactions.elements.compactMap { transaction -> EthereumTransaction? in
-                        guard let contract = contracts.first(where: { $0.address == transaction.contractAddress }) else {
+                        guard let contract = contracts.first(where: { $0.address == EIP55.format(transaction.contractAddress) }) else {
                             return nil
                         }
                         return self?.ethereumTransaction(from: transaction, rate: pow(10, contract.decimal))
