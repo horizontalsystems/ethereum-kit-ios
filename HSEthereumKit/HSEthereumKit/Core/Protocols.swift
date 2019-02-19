@@ -19,7 +19,7 @@ protocol IApiConfigProvider {
 }
 
 protocol IApiProvider {
-    func getGasPrice() -> Single<Decimal>
+    func getGasPriceInWei() -> Single<Int>
     func getLastBlockHeight() -> Single<Int>
     func getTransactionCount(address: String) -> Single<Int>
 
@@ -29,8 +29,8 @@ protocol IApiProvider {
     func getTransactions(address: String, startBlock: Int64) -> Single<[EthereumTransaction]>
     func getTransactionsErc20(address: String, startBlock: Int64, contracts: [ApiBlockchain.Erc20Contract]) -> Single<[EthereumTransaction]>
 
-    func send(from: String, to: String, nonce: Int, amount: Decimal, gasPrice: Decimal, gasLimit: Int) -> Single<EthereumTransaction>
-    func sendErc20(contractAddress: String, decimal: Int, from: String, to: String, nonce: Int, amount: Decimal, gasPrice: Decimal, gasLimit: Int) -> Single<EthereumTransaction>
+    func send(from: String, to: String, nonce: Int, amount: Decimal, gasPriceInWei: Int, gasLimit: Int) -> Single<EthereumTransaction>
+    func sendErc20(contractAddress: String, decimal: Int, from: String, to: String, nonce: Int, amount: Decimal, gasPriceInWei: Int, gasLimit: Int) -> Single<EthereumTransaction>
 }
 
 protocol IPeriodicTimer {
@@ -58,14 +58,14 @@ protocol IAddressValidator {
 
 protocol IStorage {
     var lastBlockHeight: Int? { get }
-    var gasPrice: Decimal? { get }
+    var gasPriceInWei: Int? { get }
 
     func balance(forAddress address: String) -> Decimal?
     func lastTransactionBlockHeight(erc20: Bool) -> Int?
     func transactionsSingle(fromHash: String?, limit: Int?, contractAddress: String?) -> Single<[EthereumTransaction]>
 
     func save(lastBlockHeight: Int)
-    func save(gasPrice: Decimal)
+    func save(gasPriceInWei: Int)
     func save(balance: Decimal, address: String)
     func save(transactions: [EthereumTransaction])
 
@@ -74,7 +74,7 @@ protocol IStorage {
 
 protocol IBlockchain {
     var ethereumAddress: String { get }
-    var gasPrice: Decimal { get }
+    var gasPriceInWei: Int { get }
     var gasLimitEthereum: Int { get }
     var gasLimitErc20: Int { get }
 
@@ -87,8 +87,8 @@ protocol IBlockchain {
     func register(contractAddress: String, decimal: Int)
     func unregister(contractAddress: String)
 
-    func sendSingle(to address: String, amount: Decimal, gasPrice: Decimal?) -> Single<EthereumTransaction>
-    func sendErc20Single(to address: String, contractAddress: String, amount: Decimal, gasPrice: Decimal?) -> Single<EthereumTransaction>
+    func sendSingle(to address: String, amount: Decimal, gasPriceInWei: Int?) -> Single<EthereumTransaction>
+    func sendErc20Single(to address: String, contractAddress: String, amount: Decimal, gasPriceInWei: Int?) -> Single<EthereumTransaction>
 }
 
 protocol IBlockchainDelegate: class {

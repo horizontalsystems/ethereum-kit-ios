@@ -25,9 +25,9 @@ class GrdbStorage {
                 t.column(EthereumTransaction.Columns.input.name, .text).notNull()
                 t.column(EthereumTransaction.Columns.from.name, .text).notNull()
                 t.column(EthereumTransaction.Columns.to.name, .text).notNull()
-                t.column(EthereumTransaction.Columns.value.name, .text).notNull()
+                t.column(EthereumTransaction.Columns.amount.name, .text).notNull()
                 t.column(EthereumTransaction.Columns.gasLimit.name, .integer).notNull()
-                t.column(EthereumTransaction.Columns.gasPrice.name, .integer).notNull()
+                t.column(EthereumTransaction.Columns.gasPriceInWei.name, .integer).notNull()
                 t.column(EthereumTransaction.Columns.timestamp.name, .double).notNull()
                 t.column(EthereumTransaction.Columns.contractAddress.name, .text)
                 t.column(EthereumTransaction.Columns.blockHash.name, .text)
@@ -56,7 +56,7 @@ class GrdbStorage {
             try db.create(table: BlockchainState.databaseTableName) { t in
                 t.column(BlockchainState.Columns.primaryKey.name, .text).notNull()
                 t.column(BlockchainState.Columns.lastBlockHeight.name, .integer)
-                t.column(BlockchainState.Columns.gasPrice.name, .text)
+                t.column(BlockchainState.Columns.gasPriceInWei.name, .integer)
 
                 t.primaryKey([BlockchainState.Columns.primaryKey.name], onConflict: .replace)
             }
@@ -75,9 +75,9 @@ extension GrdbStorage: IStorage {
         }
     }
 
-    var gasPrice: Decimal? {
+    var gasPriceInWei: Int? {
         return try! dbPool.read { db in
-            try BlockchainState.fetchOne(db)?.gasPrice
+            try BlockchainState.fetchOne(db)?.gasPriceInWei
         }
     }
 
@@ -102,10 +102,10 @@ extension GrdbStorage: IStorage {
         }
     }
 
-    func save(gasPrice: Decimal) {
+    func save(gasPriceInWei: Int) {
         _ = try? dbPool.write { db in
             let state = try BlockchainState.fetchOne(db) ?? BlockchainState()
-            state.gasPrice = gasPrice
+            state.gasPriceInWei = gasPriceInWei
             try state.insert(db)
         }
     }

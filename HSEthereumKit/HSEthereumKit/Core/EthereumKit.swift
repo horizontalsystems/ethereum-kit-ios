@@ -79,17 +79,17 @@ extension EthereumKit {
         try addressValidator.validate(address: address)
     }
 
-    public func fee(gasPrice: Decimal? = nil) -> Decimal {
+    public func fee(gasPriceInWei: Int? = nil) -> Decimal {
         // only for standard transactions without data
-        return (gasPrice ?? blockchain.gasPrice) * Decimal(blockchain.gasLimitEthereum)
+        return Decimal(gasPriceInWei ?? blockchain.gasPriceInWei) / pow(10, 18) * Decimal(blockchain.gasLimitEthereum)
     }
 
     public func transactionsSingle(fromHash: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {
         return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: nil)
     }
 
-    public func sendSingle(to address: String, amount: Decimal, gasPrice: Decimal? = nil) -> Single<EthereumTransaction> {
-        return blockchain.sendSingle(to: address, amount: amount, gasPrice: gasPrice)
+    public func sendSingle(to address: String, amount: Decimal, gasPriceInWei: Int? = nil) -> Single<EthereumTransaction> {
+        return blockchain.sendSingle(to: address, amount: amount, gasPriceInWei: gasPriceInWei)
     }
 
     public var debugInfo: String {
@@ -107,9 +107,9 @@ extension EthereumKit {
 
 extension EthereumKit {
 
-    public func feeErc20(gasPrice: Decimal? = nil) -> Decimal {
+    public func feeErc20(gasPriceInWei: Int? = nil) -> Decimal {
         // only for erc20 coin maximum fee
-        return (gasPrice ?? blockchain.gasPrice) * Decimal(blockchain.gasLimitErc20)
+        return Decimal(gasPriceInWei ?? blockchain.gasPriceInWei) / pow(10, 18) * Decimal(blockchain.gasLimitErc20)
     }
 
     public func balanceErc20(contractAddress: String) -> Decimal {
@@ -124,8 +124,8 @@ extension EthereumKit {
         return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: contractAddress)
     }
 
-    public func sendErc20Single(to address: String, contractAddress: String, amount: Decimal, gasPrice: Decimal? = nil) -> Single<EthereumTransaction> {
-        return blockchain.sendErc20Single(to: address, contractAddress: contractAddress, amount: amount, gasPrice: gasPrice)
+    public func sendErc20Single(to address: String, contractAddress: String, amount: Decimal, gasPriceInWei: Int? = nil) -> Single<EthereumTransaction> {
+        return blockchain.sendErc20Single(to: address, contractAddress: contractAddress, amount: amount, gasPriceInWei: gasPriceInWei)
     }
 
 }

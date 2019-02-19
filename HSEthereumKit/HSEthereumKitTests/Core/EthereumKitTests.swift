@@ -264,57 +264,57 @@ class EthereumKitTests: XCTestCase {
     }
 
     func testFee() {
-        let gasPrice: Decimal = 123.45
+        let gasPriceInWei = 12345
         let gasLimit = 21_000
 
         stub(mockBlockchain) { mock in
-            when(mock.gasPrice.get).thenReturn(gasPrice)
+            when(mock.gasPriceInWei.get).thenReturn(gasPriceInWei)
             when(mock.gasLimitEthereum.get).thenReturn(gasLimit)
         }
 
-        let expectedFee = gasPrice * Decimal(gasLimit)
+        let expectedFee = Decimal(gasPriceInWei) / pow(10, 18) * Decimal(gasLimit)
 
         XCTAssertEqual(kit.fee(), expectedFee)
     }
 
     func testFee_customGasPrice() {
-        let gasPrice: Decimal = 234.56
+        let gasPriceInWei = 23456
         let gasLimit = 21_000
 
         stub(mockBlockchain) { mock in
             when(mock.gasLimitEthereum.get).thenReturn(gasLimit)
         }
 
-        let expectedFee = gasPrice * Decimal(gasLimit)
+        let expectedFee = Decimal(gasPriceInWei) / pow(10, 18) * Decimal(gasLimit)
 
-        XCTAssertEqual(kit.fee(gasPrice: gasPrice), expectedFee)
+        XCTAssertEqual(kit.fee(gasPriceInWei: gasPriceInWei), expectedFee)
     }
 
     func testFeeErc20() {
-        let gasPrice: Decimal = 123.45
+        let gasPriceInWei = 12345
         let gasLimit = 21_000
 
         stub(mockBlockchain) { mock in
-            when(mock.gasPrice.get).thenReturn(gasPrice)
+            when(mock.gasPriceInWei.get).thenReturn(gasPriceInWei)
             when(mock.gasLimitErc20.get).thenReturn(gasLimit)
         }
 
-        let expectedFee = gasPrice * Decimal(gasLimit)
+        let expectedFee = Decimal(gasPriceInWei) / pow(10, 18) * Decimal(gasLimit)
 
         XCTAssertEqual(kit.feeErc20(), expectedFee)
     }
 
     func testFeeErc20_customGasPrice() {
-        let gasPrice: Decimal = 234.56
+        let gasPriceInWei = 23456
         let gasLimit = 21_000
 
         stub(mockBlockchain) { mock in
             when(mock.gasLimitErc20.get).thenReturn(gasLimit)
         }
 
-        let expectedFee = gasPrice * Decimal(gasLimit)
+        let expectedFee = Decimal(gasPriceInWei) / pow(10, 18) * Decimal(gasLimit)
 
-        XCTAssertEqual(kit.feeErc20(gasPrice: gasPrice), expectedFee)
+        XCTAssertEqual(kit.feeErc20(gasPriceInWei: gasPriceInWei), expectedFee)
     }
 
     func testBalanceErc20() {

@@ -13,7 +13,7 @@ class TransactionCell: UITableViewCell {
         let fromAddress = transaction.from
         let toAddress = transaction.to
 
-        let amount = transaction.value
+        let amount = transaction.amount
         var confirmations = ""
 
         if let blockNumber = transaction.blockNumber {

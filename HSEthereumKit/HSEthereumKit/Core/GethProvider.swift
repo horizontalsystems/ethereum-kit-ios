@@ -17,9 +17,9 @@ class GethProvider {
                 input: gethTransaction.input,
                 from: EIP55.format(gethTransaction.from),
                 to: EIP55.format(gethTransaction.to),
-                value: Decimal(string: gethTransaction.value).map { $0 / rate } ?? 0,
+                amount: Decimal(string: gethTransaction.value).map { $0 / rate } ?? 0,
                 gasLimit: Int(gethTransaction.gas) ?? 0,
-                gasPrice: Decimal(string: gethTransaction.gasPrice).map { $0 / rate } ?? 0,
+                gasPriceInWei: Int(gethTransaction.gasPrice) ?? 0,
                 timestamp: TimeInterval(gethTransaction.timeStamp)
         )
 
@@ -42,17 +42,16 @@ class GethProvider {
 
 extension GethProvider: IApiProvider {
 
-    func getGasPrice() -> Single<Decimal> {
+    func getGasPriceInWei() -> Single<Int> {
         return Single.create { [weak geth] observer in
             geth?.getGasPrice() { result in
                 switch result {
                 case .success(let gasPriceWei):
-                    do {
-                        let gasPrice = try Converter.toEther(wei: gasPriceWei)
-                        observer(.success(gasPrice))
-                    } catch {
-                        observer(.error(error))
+                    guard let gasPriceInWei = gasPriceWei.toInt() else {
+                        return
                     }
+
+                    observer(.success(gasPriceInWei))
                 case .failure(let error):
                     observer(.error(error))
                 }
@@ -77,7 +76,7 @@ extension GethProvider: IApiProvider {
 
     func getTransactionCount(address: String) -> Single<Int> {
         return Single.create { [weak geth] observer in
-            geth?.getTransactionCount(of: address) { result in
+            geth?.getTransactionCount(of: address, blockParameter: .pending) { result in
                 switch result {
                 case .success(let count):
                     observer(.success(count))
@@ -165,12 +164,94 @@ extension GethProvider: IApiProvider {
         }
     }
 
-    func send(from: String, to: String, nonce: Int, amount: Decimal, gasPrice: Decimal, gasLimit: Int) -> Single<EthereumTransaction> {
-        fatalError("send(from:to:nonce:amount:gasPrice:gasLimit:) has not been implemented")
+    func send(from: String, to: String, nonce: Int, amount: Decimal, gasPriceInWei: Int, gasLimit: Int) -> Single<EthereumTransaction> {
+        return Single.create { [weak self] observer in
+            do {
+                let weiString = try Converter.toWei(ether: amount).asString(withBase: 10)
+                let rawTransaction = RawTransaction(wei: weiString, to: to, gasPrice: gasPriceInWei, gasLimit: gasLimit, nonce: nonce)
+
+                guard let hdWallet = self?.hdWallet else {
+                    throw GethError.noHdWallet
+                }
+
+                let signedTransaction = try hdWallet.sign(rawTransaction: rawTransaction)
+
+                self?.geth.sendRawTransaction(rawTransaction: signedTransaction) { result in
+                    switch result {
+                    case .success(let sentTransaction):
+                        let transaction = EthereumTransaction(
+                                hash: sentTransaction.id,
+                                nonce: nonce,
+                                from: from,
+                                to: to,
+                                amount: amount,
+                                gasLimit: gasLimit,
+                                gasPriceInWei: gasPriceInWei
+                        )
+                        observer(.success(transaction))
+                    case .failure(let error):
+                        observer(.error(error))
+                    }
+                }
+            } catch {
+                observer(.error(error))
+            }
+
+            return Disposables.create()
+        }
     }
 
-    func sendErc20(contractAddress: String, decimal: Int, from: String, to: String, nonce: Int, amount: Decimal, gasPrice: Decimal, gasLimit: Int) -> Single<EthereumTransaction> {
-        fatalError("sendErc20(contractAddress:decimal:from:to:nonce:amount:gasPrice:gasLimit:) has not been implemented")
+    func sendErc20(contractAddress: String, decimal: Int, from: String, to: String, nonce: Int, amount: Decimal, gasPriceInWei: Int, gasLimit: Int) -> Single<EthereumTransaction> {
+        return Single.create { [weak self] observer in
+            let contract = ERC20(contractAddress: contractAddress, decimal: decimal)
+
+            do {
+                // check value
+                let bIntValue = try contract.power(amount: String(describing: amount))
+
+                // check right contract parameters create
+                let params = ERC20.ContractFunctions.transfer(address: to, amount: bIntValue).data
+                let rawTransaction = RawTransaction(wei: "0", to: contractAddress, gasPrice: gasPriceInWei, gasLimit: gasLimit, nonce: nonce, data: params)
+
+                guard let hdWallet = self?.hdWallet else {
+                    throw GethError.noHdWallet
+                }
+
+                let signedTransaction = try hdWallet.sign(rawTransaction: rawTransaction)
+
+                self?.geth.sendRawTransaction(rawTransaction: signedTransaction) { result in
+                    switch result {
+                    case .success(let sentTransaction):
+                        let transaction = EthereumTransaction(
+                                hash: sentTransaction.id,
+                                nonce: nonce,
+                                input: params.toHexString().addHexPrefix(),
+                                from: from,
+                                to: to,
+                                amount: amount,
+                                gasLimit: gasLimit,
+                                gasPriceInWei: gasPriceInWei,
+                                contractAddress: contractAddress
+                        )
+                        observer(.success(transaction))
+                    case .failure(let error):
+                        observer(.error(error))
+                    }
+                }
+            } catch {
+                observer(.error(error))
+            }
+
+            return Disposables.create()
+        }
+    }
+
+}
+
+extension GethProvider {
+
+    enum GethError: Error {
+        case noHdWallet
     }
 
 }

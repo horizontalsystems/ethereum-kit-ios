@@ -6,7 +6,7 @@ class BlockchainState: Record {
 
     private let primaryKey: String = BlockchainState.primaryKey
     var lastBlockHeight: Int?
-    var gasPrice: Decimal?
+    var gasPriceInWei: Int?
 
     override init() {
         super.init()
@@ -19,12 +19,12 @@ class BlockchainState: Record {
     enum Columns: String, ColumnExpression {
         case primaryKey
         case lastBlockHeight
-        case gasPrice
+        case gasPriceInWei
     }
 
     required init(row: Row) {
         lastBlockHeight = row[Columns.lastBlockHeight]
-        gasPrice = row[Columns.gasPrice].flatMap { Decimal(string: $0) }
+        gasPriceInWei = row[Columns.gasPriceInWei]
 
         super.init(row: row)
     }
@@ -32,7 +32,7 @@ class BlockchainState: Record {
     override func encode(to container: inout PersistenceContainer) {
         container[Columns.primaryKey] = primaryKey
         container[Columns.lastBlockHeight] = lastBlockHeight
-        container[Columns.gasPrice] = gasPrice.map { NSDecimalNumber(decimal: $0).stringValue }
+        container[Columns.gasPriceInWei] = gasPriceInWei
     }
 
 }

@@ -7,9 +7,9 @@ public class EthereumTransaction: Record {
     public let input: String
     public let from: String
     public let to: String
-    public let value: Decimal
+    public let amount: Decimal
     public let gasLimit: Int
-    public let gasPrice: Decimal
+    public let gasPriceInWei: Int
     public let timestamp: TimeInterval
 
     public var contractAddress: String?
@@ -23,15 +23,15 @@ public class EthereumTransaction: Record {
     public var transactionIndex: Int?
     public var txReceiptStatus: Bool?
 
-    public init(hash: String, nonce: Int, input: String = "0x", from: String, to: String, value: Decimal, gasLimit: Int, gasPrice: Decimal, timestamp: TimeInterval? = nil, contractAddress: String? = nil) {
+    public init(hash: String, nonce: Int, input: String = "0x", from: String, to: String, amount: Decimal, gasLimit: Int, gasPriceInWei: Int, timestamp: TimeInterval? = nil, contractAddress: String? = nil) {
         self.hash = hash
         self.nonce = nonce
         self.input = input
         self.from = from
         self.to = to
-        self.value = value
+        self.amount = amount
         self.gasLimit = gasLimit
-        self.gasPrice = gasPrice
+        self.gasPriceInWei = gasPriceInWei
         self.timestamp = timestamp ?? Date().timeIntervalSince1970
         self.contractAddress = contractAddress
 
@@ -48,9 +48,9 @@ public class EthereumTransaction: Record {
         case input
         case from
         case to
-        case value
+        case amount
         case gasLimit
-        case gasPrice
+        case gasPriceInWei
         case timestamp
         case contractAddress
         case blockHash
@@ -69,9 +69,9 @@ public class EthereumTransaction: Record {
         input = row[Columns.input]
         from = row[Columns.from]
         to = row[Columns.to]
-        value = Decimal(string: row[Columns.value]) ?? 0
+        amount = Decimal(string: row[Columns.amount]) ?? 0
         gasLimit = row[Columns.gasLimit]
-        gasPrice = Decimal(string: row[Columns.gasPrice]) ?? 0
+        gasPriceInWei = row[Columns.gasPriceInWei]
         timestamp = row[Columns.timestamp]
         contractAddress = row[Columns.contractAddress]
         blockHash = row[Columns.blockHash]
@@ -92,9 +92,9 @@ public class EthereumTransaction: Record {
         container[Columns.input] = input
         container[Columns.from] = from
         container[Columns.to] = to
-        container[Columns.value] = NSDecimalNumber(decimal: value).stringValue
+        container[Columns.amount] = NSDecimalNumber(decimal: amount).stringValue
         container[Columns.gasLimit] = gasLimit
-        container[Columns.gasPrice] = NSDecimalNumber(decimal: gasPrice).stringValue
+        container[Columns.gasPriceInWei] = gasPriceInWei
         container[Columns.timestamp] = timestamp
         container[Columns.contractAddress] = contractAddress
         container[Columns.blockHash] = blockHash
