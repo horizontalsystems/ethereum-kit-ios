@@ -46,7 +46,7 @@ class BalanceController: UIViewController {
             self?.updateLastBlockHeight()
         }).disposed(by: disposeBag)
 
-        Manager.shared.stateSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
+        Manager.shared.syncStateSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
             self?.updateState()
         }).disposed(by: disposeBag)
 
@@ -54,7 +54,7 @@ class BalanceController: UIViewController {
             self?.erc20updateBalance()
         }).disposed(by: disposeBag)
 
-        Manager.shared.erc20Adapter.stateSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
+        Manager.shared.erc20Adapter.syncStateSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
             self?.erc20updateState()
         }).disposed(by: disposeBag)
 
@@ -90,7 +90,7 @@ class BalanceController: UIViewController {
     private func updateState() {
         let kitStateString: String
 
-        switch Manager.shared.ethereumKit.state {
+        switch Manager.shared.ethereumKit.syncState {
         case .synced: kitStateString = "Synced!"
         case .syncing: kitStateString = "Syncing"
         case .notSynced: kitStateString = "Not Synced"
@@ -102,7 +102,7 @@ class BalanceController: UIViewController {
     private func erc20updateState() {
         let kitStateString: String
 
-        switch Manager.shared.ethereumKit.erc20State(contractAddress: Manager.contractAddress) {
+        switch Manager.shared.ethereumKit.erc20SyncState(contractAddress: Manager.contractAddress) {
         case .synced: kitStateString = "Synced!"
         case .syncing: kitStateString = "Syncing"
         case .notSynced: kitStateString = "Not Synced"

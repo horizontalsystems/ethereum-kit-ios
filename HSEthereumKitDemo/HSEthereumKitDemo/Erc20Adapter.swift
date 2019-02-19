@@ -1,14 +1,11 @@
 import HSEthereumKit
 import RxSwift
 
-class Erc20Adapter: Erc20KitDelegate {
-    private(set) var contractAddress: String = Manager.contractAddress
-    private(set) var decimal: Int = Manager.contractDecimal
-
+class Erc20Adapter: IEthereumKitDelegate {
     let balanceSubject = PublishSubject<Void>()
     let lastBlockHeight = PublishSubject<Void>()
     let transactionsSubject = PublishSubject<Void>()
-    let stateSubject = PublishSubject<Void>()
+    let syncStateSubject = PublishSubject<Void>()
 
     func onUpdate(transactions: [EthereumTransaction]) {
         transactionsSubject.onNext(())
@@ -22,8 +19,8 @@ class Erc20Adapter: Erc20KitDelegate {
         lastBlockHeight.onNext(())
     }
 
-    func onUpdateState() {
-        stateSubject.onNext(())
+    func onUpdateSyncState() {
+        syncStateSubject.onNext(())
     }
 
 }

@@ -14,7 +14,6 @@ class GethBlockchain {
     weak var delegate: IBlockchainDelegate?
 
     private let storage: IStorage
-    private let reachabilityManager: ReachabilityManager
     private let hdWallet: Wallet
 
     private let geth: Geth
@@ -23,10 +22,10 @@ class GethBlockchain {
     private var erc20Contracts = [Erc20Contract]()
 
     let ethereumAddress: String
+    let gasPrice: Decimal = 0
 
-    init(storage: IStorage, reachabilityManager: ReachabilityManager, words: [String], testMode: Bool, infuraKey: String, etherscanKey: String, debugPrints: Bool = false) throws {
+    init(storage: IStorage, words: [String], testMode: Bool, infuraKey: String, etherscanKey: String, debugPrints: Bool = false) throws {
         self.storage = storage
-        self.reachabilityManager = reachabilityManager
 
         let network: Network = testMode ? .ropsten : .mainnet
 
@@ -75,9 +74,9 @@ class GethBlockchain {
                 .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { [weak self] transactions in
                     self?.update(transactions: transactions)
-                    self?.delegate?.onUpdate(state: .synced)
+                    self?.delegate?.onUpdate(syncState: .synced)
                 }, onError: { [weak self] _ in
-                    self?.delegate?.onUpdate(state: .notSynced)
+                    self?.delegate?.onUpdate(syncState: .notSynced)
                 })
                 .disposed(by: disposeBag)
 
@@ -95,7 +94,7 @@ class GethBlockchain {
                     self?.refreshErc20Balances()
                 }, onError: { [weak self] _ in
                     self?.erc20Contracts.forEach {
-                        self?.delegate?.onUpdateErc20(state: .notSynced, contractAddress: $0.address)
+                        self?.delegate?.onUpdateErc20(syncState: .notSynced, contractAddress: $0.address)
                     }
                 })
                 .disposed(by: disposeBag)
@@ -108,18 +107,18 @@ class GethBlockchain {
                     .observeOn(MainScheduler.instance)
                     .subscribe(onSuccess: { [weak self] balance in
                         self?.updateErc20(balance: balance, contractAddress: contract.address)
-                        self?.delegate?.onUpdateErc20(state: .synced, contractAddress: contract.address)
+                        self?.delegate?.onUpdateErc20(syncState: .synced, contractAddress: contract.address)
                     }, onError: { [weak self] _ in
-                        self?.delegate?.onUpdateErc20(state: .notSynced, contractAddress: contract.address)
+                        self?.delegate?.onUpdateErc20(syncState: .notSynced, contractAddress: contract.address)
                     })
                     .disposed(by: disposeBag)
         }
     }
 
     private func changeAllStates(state: EthereumKit.SyncState) {
-        delegate?.onUpdate(state: state)
+        delegate?.onUpdate(syncState: state)
         erc20Contracts.forEach {
-            delegate?.onUpdateErc20(state: state, contractAddress: $0.address)
+            delegate?.onUpdateErc20(syncState: state, contractAddress: $0.address)
         }
     }
 
@@ -130,7 +129,7 @@ class GethBlockchain {
 
     private func update(gasPrice: Decimal) {
         storage.save(gasPrice: gasPrice)
-        delegate?.onUpdate(gasPrice: gasPrice)
+//        delegate?.onUpdate(gasPrice: gasPrice)
     }
 
     private func update(balance: Decimal) {
@@ -227,22 +226,23 @@ extension GethBlockchain: IBlockchain {
         }
     }
 
-    func send(to address: String, value: Decimal, gasPrice: Decimal, completion: ((Error?) -> ())?) {
+    func send(to address: String, amount: Decimal, gasPrice: Decimal?, onSuccess: (() -> ())?, onError: ((Error) -> ())?) {
         geth.getTransactionCount(of: ethereumAddress, blockParameter: .pending) { [weak self] result in
             switch result {
             case .success(let nonce):
                 do {
-                    try self?.send(nonce: nonce, address: address, value: value, gasPrice: gasPrice, completion: completion)
+//                    try self?.send(nonce: nonce, address: address, value: amount, gasPrice: gasPrice, completion: completion)
+//                    onSuccess()
                 } catch {
-                    completion?(error)
+                    onError?(error)
                 }
             case .failure(let error):
-                completion?(error)
+                onError?(error)
             }
         }
     }
 
-    func erc20Send(to address: String, contractAddress: String, value: Decimal, gasPrice: Decimal, completion: ((Error?) -> ())?) {
+    func erc20Send(to address: String, contractAddress: String, amount: Decimal, gasPrice: Decimal?, onSuccess: (() -> ())?, onError: ((Error) -> ())?) {
         // todo: implement erc20 send
     }
 

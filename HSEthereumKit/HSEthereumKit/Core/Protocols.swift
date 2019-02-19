@@ -1,26 +1,11 @@
 import Foundation
 import RxSwift
 
-public protocol EthereumKitDelegate: class {
+public protocol IEthereumKitDelegate: class {
     func onUpdate(transactions: [EthereumTransaction])
     func onUpdateBalance()
     func onUpdateLastBlockHeight()
-    func onUpdateState()
-}
-
-public protocol Erc20KitDelegate: EthereumKitDelegate {
-    var contractAddress: String { get }
-    var decimal: Int { get }
-}
-
-extension EthereumKit {
-
-    public enum SyncState {
-        case synced
-        case syncing
-        case notSynced
-    }
-
+    func onUpdateSyncState()
 }
 
 protocol IReachabilityManager {
@@ -66,6 +51,10 @@ protocol IRefreshManager {
     func didRefresh()
 }
 
+protocol IAddressValidator {
+    func validate(address: String) throws
+}
+
 protocol IStorage {
     var lastBlockHeight: Int? { get }
     var gasPrice: Decimal? { get }
@@ -84,6 +73,8 @@ protocol IStorage {
 
 protocol IBlockchain {
     var ethereumAddress: String { get }
+    var gasPrice: Decimal { get }
+
     var delegate: IBlockchainDelegate? { get set }
 
     func start()
@@ -93,20 +84,24 @@ protocol IBlockchain {
     func register(contractAddress: String, decimal: Int)
     func unregister(contractAddress: String)
 
-    func send(to address: String, value: Decimal, gasPrice: Decimal, completion: ((Error?) -> ())?)
-    func erc20Send(to address: String, contractAddress: String, value: Decimal, gasPrice: Decimal, completion: ((Error?) -> ())?)
+    func send(to address: String, amount: Decimal, gasPrice: Decimal?, onSuccess: (() -> ())?, onError: ((Error) -> ())?)
+    func erc20Send(to address: String, contractAddress: String, amount: Decimal, gasPrice: Decimal?, onSuccess: (() -> ())?, onError: ((Error) -> ())?)
 }
 
 protocol IBlockchainDelegate: class {
     func onUpdate(lastBlockHeight: Int)
-    func onUpdate(gasPrice: Decimal)
-
-    func onUpdate(state: EthereumKit.SyncState)
-    func onUpdateErc20(state: EthereumKit.SyncState, contractAddress: String)
 
     func onUpdate(balance: Decimal)
     func onUpdateErc20(balance: Decimal, contractAddress: String)
 
+    func onUpdate(syncState: EthereumKit.SyncState)
+    func onUpdateErc20(syncState: EthereumKit.SyncState, contractAddress: String)
+
     func onUpdate(transactions: [EthereumTransaction])
     func onUpdateErc20(transactions: [EthereumTransaction], contractAddress: String)
+}
+
+protocol IConfigProvider {
+    var ethereumGasLimit: Int { get }
+    var erc20GasLimit: Int { get }
 }

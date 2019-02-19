@@ -34,18 +34,18 @@ class SendController: UIViewController {
             return
         }
 
-        let handler: ((Error?) -> ()) = { [weak self] error in
-            if error != nil {
-                self?.show(error: "Something conversion wrong")
-            } else {
-                self?.showSuccess(address: address, amount: amount)
-            }
+        let onSuccess: () -> () = { [weak self] in
+            self?.showSuccess(address: address, amount: amount)
+        }
+
+        let onError: (Error) -> () = { [weak self] error in
+            self?.show(error: "Something conversion wrong: \(error)")
         }
 
         if (sender as? UIButton) == sendCoin {
-            ethereumKit.erc20Send(to: address, contractAddress: Manager.contractAddress, value: amount, completion: handler)
+            ethereumKit.erc20Send(to: address, contractAddress: Manager.contractAddress, amount: amount, onSuccess: onSuccess, onError: onError)
         } else {
-            ethereumKit.send(to: address, value: amount, completion: handler)
+            ethereumKit.send(to: address, amount: amount, onSuccess: onSuccess, onError: onError)
         }
 
     }

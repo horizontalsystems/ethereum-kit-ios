@@ -22,7 +22,7 @@ class Manager {
     let balanceSubject = PublishSubject<Void>()
     let lastBlockHeight = PublishSubject<Void>()
     let transactionsSubject = PublishSubject<Void>()
-    let stateSubject = PublishSubject<Void>()
+    let syncStateSubject = PublishSubject<Void>()
 
     init() {
         if let words = savedWords {
@@ -36,21 +36,16 @@ class Manager {
     }
 
     func logout() {
-        do {
-            try ethereumKit.clear()
-        } catch {
-            print("EthereumKit Clear Error: \(error)")
-        }
-
+        ethereumKit.clear()
         clearWords()
         ethereumKit = nil
     }
 
     private func initEthereumKit(words: [String]) {
-        ethereumKit = try! EthereumKit(withWords: words, walletId: "SomeId", testMode: testMode, infuraKey: Manager.infuraKey, etherscanKey: Manager.etherscanKey, debugPrints: false)
+        ethereumKit = try! EthereumKit.ethereumKit(words: words, walletId: "SomeId", testMode: testMode, infuraKey: Manager.infuraKey, etherscanKey: Manager.etherscanKey, debugPrints: false)
         ethereumKit.delegate = self
 
-        ethereumKit.register(token: erc20Adapter)
+        ethereumKit.register(contractAddress: Manager.contractAddress, decimal: Manager.contractDecimal, delegate: erc20Adapter)
     }
 
     private var savedWords: [String]? {
@@ -72,7 +67,7 @@ class Manager {
 
 }
 
-extension Manager: EthereumKitDelegate {
+extension Manager: IEthereumKitDelegate {
 
     public func onUpdate(transactions: [EthereumTransaction]) {
         transactionsSubject.onNext(())
@@ -86,8 +81,8 @@ extension Manager: EthereumKitDelegate {
         lastBlockHeight.onNext(())
     }
 
-    public func onUpdateState() {
-        stateSubject.onNext(())
+    public func onUpdateSyncState() {
+        syncStateSubject.onNext(())
     }
 
 }
