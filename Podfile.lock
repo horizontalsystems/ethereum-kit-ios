@@ -6,12 +6,6 @@ PODS:
   - HSHDWalletKit (1.0.3):
     - HSCryptoKit (~> 1.1.0)
   - RxAtomic (4.4.0)
-  - RxGRDB (0.13.0):
-    - RxGRDB/default (= 0.13.0)
-    - RxSwift (~> 4.0)
-  - RxGRDB/default (0.13.0):
-    - GRDB.swift (~> 3.5)
-    - RxSwift (~> 4.0)
   - RxSwift (4.4.0):
     - RxAtomic (~> 4.4)
 
@@ -21,7 +15,6 @@ DEPENDENCIES:
   - GRDB.swift
   - HSCryptoKit (~> 1.1.0)
   - HSHDWalletKit (~> 1.0.3)
-  - RxGRDB
   - RxSwift (~> 4.0)
 
 SPEC REPOS:
@@ -32,7 +25,6 @@ SPEC REPOS:
     - HSCryptoKit
     - HSHDWalletKit
     - RxAtomic
-    - RxGRDB
     - RxSwift
 
 SPEC CHECKSUMS:
@@ -42,9 +34,8 @@ SPEC CHECKSUMS:
   HSCryptoKit: 8679d53083d1136fc128bbf9b040976110ce1491
   HSHDWalletKit: f75cd8186f00bae4f6aa76548a0b1f24c13dff72
   RxAtomic: eacf60db868c96bfd63320e28619fe29c179656f
-  RxGRDB: 4e2686821ae8f8507c6d6d00d3083ae2df84fea3
   RxSwift: 5976ecd04fc2fefd648827c23de5e11157faa973
 
-PODFILE CHECKSUM: eeb05fba942d1950b4b7407c5d22810b2dde43b6
+PODFILE CHECKSUM: 18c0e77d1cc96c8fa2413b05c36862d9e2d119f2
 
 COCOAPODS: 1.5.3

@@ -1,6 +1,5 @@
 import RxSwift
 import GRDB
-import RxGRDB
 
 class GrdbStorage {
     private let dbPool: DatabasePool
@@ -29,7 +28,7 @@ class GrdbStorage {
                 t.column(EthereumTransaction.Columns.gasLimit.name, .integer).notNull()
                 t.column(EthereumTransaction.Columns.gasPriceInWei.name, .integer).notNull()
                 t.column(EthereumTransaction.Columns.timestamp.name, .double).notNull()
-                t.column(EthereumTransaction.Columns.contractAddress.name, .text)
+                t.column(EthereumTransaction.Columns.contractAddress.name, .text).notNull()
                 t.column(EthereumTransaction.Columns.blockHash.name, .text)
                 t.column(EthereumTransaction.Columns.blockNumber.name, .integer)
                 t.column(EthereumTransaction.Columns.confirmations.name, .integer)
@@ -90,8 +89,24 @@ extension GrdbStorage: IStorage {
     }
 
     func transactionsSingle(fromHash: String?, limit: Int?, contractAddress: String?) -> Single<[EthereumTransaction]> {
-        // todo: implement method and check for invalid transactions
-        return Single.just([])
+        return Single.create { [weak self] observer in
+            try? self?.dbPool.read { db in
+                var request = EthereumTransaction.filter(EthereumTransaction.Columns.contractAddress == (contractAddress ?? ""))
+
+                if let fromHash = fromHash, let fromTransaction = try request.filter(EthereumTransaction.Columns.hash == fromHash).fetchOne(db) {
+                    request = request.filter(EthereumTransaction.Columns.timestamp < fromTransaction.timestamp)
+                }
+                if let limit = limit {
+                    request = request.limit(limit)
+                }
+
+                let transactions = try request.order(EthereumTransaction.Columns.timestamp.desc).fetchAll(db)
+
+                observer(.success(transactions))
+            }
+
+            return Disposables.create()
+        }
     }
 
     func save(lastBlockHeight: Int) {

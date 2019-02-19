@@ -73,7 +73,7 @@ public class EthereumTransaction: Record {
         gasLimit = row[Columns.gasLimit]
         gasPriceInWei = row[Columns.gasPriceInWei]
         timestamp = row[Columns.timestamp]
-        contractAddress = row[Columns.contractAddress]
+        contractAddress = row[Columns.contractAddress] == "" ? nil : row[Columns.contractAddress]
         blockHash = row[Columns.blockHash]
         blockNumber = row[Columns.blockNumber]
         confirmations = row[Columns.confirmations]
@@ -96,7 +96,7 @@ public class EthereumTransaction: Record {
         container[Columns.gasLimit] = gasLimit
         container[Columns.gasPriceInWei] = gasPriceInWei
         container[Columns.timestamp] = timestamp
-        container[Columns.contractAddress] = contractAddress
+        container[Columns.contractAddress] = contractAddress ?? ""
         container[Columns.blockHash] = blockHash
         container[Columns.blockNumber] = blockNumber
         container[Columns.confirmations] = confirmations

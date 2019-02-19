@@ -15,7 +15,6 @@ def common_pods
   pod 'HSCryptoKit', '~> 1.1.0'
 
   pod 'GRDB.swift'
-  pod 'RxGRDB'
 
   pod 'Alamofire', '~> 4.8.0'
 end
