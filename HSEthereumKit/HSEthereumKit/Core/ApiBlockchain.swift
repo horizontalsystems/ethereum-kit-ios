@@ -260,7 +260,7 @@ extension ApiBlockchain: IBlockchain {
                     return weakSelf.sendSingle(to: address, nonce: nonce, amount: amount, gasPriceInWei: gasPriceInWei)
                 }
                 .do(onSuccess: { [weak self] transaction in
-                    self?.storage.save(transactions: [transaction])
+                    self?.update(transactions: [transaction])
                 })
     }
 
@@ -274,7 +274,7 @@ extension ApiBlockchain: IBlockchain {
                     return weakSelf.sendErc20Single(to: address, contractAddress: contractAddress, nonce: nonce, amount: amount, gasPriceInWei: gasPriceInWei)
                 }
                 .do(onSuccess: { [weak self] transaction in
-                    self?.storage.save(transactions: [transaction])
+                    self?.update(transactions: [transaction])
                 })
     }
 
