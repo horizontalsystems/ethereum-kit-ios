@@ -1,5 +1,4 @@
 import UIKit
-import RealmSwift
 import RxSwift
 import HSEthereumKit
 
@@ -31,31 +30,32 @@ class BalanceController: UIViewController {
 
         let ethereumKit = Manager.shared.ethereumKit!
 
-        update(balance: ethereumKit.balance)
-        erc20update(balance: ethereumKit.erc20Balance(contractAddress: Manager.contractAddress))
+        updateLastBlockHeight()
 
-        update(lastBlockHeight: ethereumKit.lastBlockHeight)
-        update(kitState: ethereumKit.kitState)
-        erc20update(kitState: ethereumKit.kitState)
+        updateBalance()
+        updateState()
 
-        Manager.shared.balanceSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] balance in
-                self?.update(balance: balance)
+        erc20updateBalance()
+        erc20updateState()
+
+        Manager.shared.balanceSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
+            self?.updateBalance()
         }).disposed(by: disposeBag)
 
-        Manager.shared.lastBlockHeight.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] height in
-                self?.update(lastBlockHeight: height)
+        Manager.shared.lastBlockHeight.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
+            self?.updateLastBlockHeight()
         }).disposed(by: disposeBag)
 
-        Manager.shared.progressSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] progress in
-            self?.update(kitState: progress)
+        Manager.shared.syncStateSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
+            self?.updateState()
         }).disposed(by: disposeBag)
 
-        Manager.shared.erc20Adapter.balanceSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] balance in
-            self?.erc20update(balance: balance)
+        Manager.shared.erc20Adapter.balanceSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
+            self?.erc20updateBalance()
         }).disposed(by: disposeBag)
 
-        Manager.shared.erc20Adapter.progressSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] kitState in
-            self?.erc20update(kitState: kitState)
+        Manager.shared.erc20Adapter.syncStateSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
+            self?.erc20updateState()
         }).disposed(by: disposeBag)
 
         ethereumKit.start()
@@ -72,25 +72,25 @@ class BalanceController: UIViewController {
     }
 
     @objc func refresh() {
-        Manager.shared.ethereumKit.refresh()
+        Manager.shared.ethereumKit.start()
     }
 
-    @IBAction func showRealmInfo() {
+    @IBAction func showDebugInfo() {
         print(Manager.shared.ethereumKit.debugInfo)
     }
 
-    private func update(balance: Decimal) {
-        balanceLabel?.text = "Balance: \(balance)"
+    private func updateBalance() {
+        balanceLabel?.text = "Balance: \(Manager.shared.ethereumKit.balance)"
     }
 
-    private func erc20update(balance: Decimal) {
-        balanceCoinLabel?.text = "Balance Coin: \(balance)"
+    private func erc20updateBalance() {
+        balanceCoinLabel?.text = "Balance Coin: \(Manager.shared.ethereumKit.balanceErc20(contractAddress: Manager.contractAddress))"
     }
 
-    private func update(kitState: EthereumKit.KitState) {
+    private func updateState() {
         let kitStateString: String
 
-        switch kitState {
+        switch Manager.shared.ethereumKit.syncState {
         case .synced: kitStateString = "Synced!"
         case .syncing: kitStateString = "Syncing"
         case .notSynced: kitStateString = "Not Synced"
@@ -99,10 +99,10 @@ class BalanceController: UIViewController {
         progressLabel?.text = "Sync State: \(kitStateString)"
     }
 
-    private func erc20update(kitState: EthereumKit.KitState) {
+    private func erc20updateState() {
         let kitStateString: String
 
-        switch kitState {
+        switch Manager.shared.ethereumKit.syncStateErc20(contractAddress: Manager.contractAddress) {
         case .synced: kitStateString = "Synced!"
         case .syncing: kitStateString = "Syncing"
         case .notSynced: kitStateString = "Not Synced"
@@ -111,8 +111,8 @@ class BalanceController: UIViewController {
         progressCoinLabel?.text = "Sync State: \(kitStateString)"
     }
 
-    private func update(lastBlockHeight: Int?) {
-        if let lastBlockHeight = lastBlockHeight {
+    private func updateLastBlockHeight() {
+        if let lastBlockHeight = Manager.shared.ethereumKit.lastBlockHeight {
             lastBlockLabel?.text = "Last Block: \(Int(lastBlockHeight))"
         } else {
             lastBlockLabel?.text = "Last Block: n/a"

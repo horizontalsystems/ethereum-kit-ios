@@ -1,21 +1,36 @@
 import Foundation
-import RealmSwift
+import GRDB
 
-public class EthereumBalance: Object {
+class EthereumBalance: Record {
+    let address: String
+    let value: Decimal
 
-    @objc public dynamic var address: String = ""
-    @objc public dynamic var decimal: Int = 0
-    @objc public dynamic var value: String = ""
+    init(address: String, value: Decimal) {
+        self.address = address
+        self.value = value
 
-    override class public func primaryKey() -> String? {
-        return "address"
+        super.init()
     }
 
-    convenience init(address: String, decimal: Int, balance: Balance) {
-        self.init()
-        self.address = address
-        self.decimal = decimal
-        value = balance.wei.asString(withBase: 10)
+    override class var databaseTableName: String {
+        return "balances"
+    }
+
+    enum Columns: String, ColumnExpression {
+        case address
+        case value
+    }
+
+    required init(row: Row) {
+        address = row[Columns.address]
+        value = Decimal(string: row[Columns.value]) ?? 0
+
+        super.init(row: row)
+    }
+
+    override func encode(to container: inout PersistenceContainer) {
+        container[Columns.address] = address
+        container[Columns.value] = NSDecimalNumber(decimal: value).stringValue
     }
 
 }

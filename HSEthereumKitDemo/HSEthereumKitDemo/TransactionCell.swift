@@ -13,17 +13,21 @@ class TransactionCell: UITableViewCell {
         let fromAddress = transaction.from
         let toAddress = transaction.to
 
-        let amount = transaction.value
-        let confirmations = transaction.blockNumber > 0 ? "Confirmations: \(lastBlockHeight - transaction.blockNumber)" : "" 
+        let amount = transaction.amount
+        var confirmations = ""
+
+        if let blockNumber = transaction.blockNumber {
+            confirmations = blockNumber > 0 ? "Confirmations: \(lastBlockHeight - blockNumber)" : ""
+        }
 
         infoLabel?.text =
                 "# \(index)\n" +
                 "Amount: \(amount)\n" +
                 "Date: \(transaction.timestamp)\n" +
-                "Tx Hash: \(transaction.txHash.prefix(10))...\n" +
+                "Tx Hash: \(transaction.hash.prefix(10))...\n" +
                 "From: \(fromAddress)\n" +
                 "To: \(toAddress)\n" + 
-                        (transaction.contractAddress.isEmpty ? "" : "Contract: \(transaction.contractAddress) \n") +
+                        (transaction.contractAddress == nil ? "" : "Contract: \(transaction.contractAddress!) \n") +
                 confirmations
     }
 

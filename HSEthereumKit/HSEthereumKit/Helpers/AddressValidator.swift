@@ -1,7 +1,7 @@
-import Foundation
 import HSCryptoKit
 
 class AddressValidator {
+
     enum ValidationError: Error {
         case invalidChecksum
         case invalidAddressLength
@@ -9,7 +9,29 @@ class AddressValidator {
         case wrongAddressPrefix
     }
 
-    public func validate(address: String) throws {
+    private func isCheckSumAddress(hex: String) throws {
+        let addressHash: String = CryptoKit.sha3(hex.lowercased().data(using: .ascii)!).toHexString()
+        for i in 0..<40 {
+            let hashSymbol = character(addressHash, i)
+
+            guard let int = Int(hashSymbol, radix: 16) else {
+                throw ValidationError.invalidSymbols
+            }
+            if (int > 7 && character(hex, i).uppercased() != character(hex, i)) || (int < 8 && character(hex, i).lowercased() != character(hex, i)) {
+                throw ValidationError.invalidChecksum
+            }
+        }
+    }
+
+    private func character(_ str: String, _ i: Int) -> String {
+        return String(str[str.index(str.startIndex, offsetBy: i)])
+    }
+
+}
+
+extension AddressValidator: IAddressValidator {
+
+    func validate(address: String) throws {
         guard address.hasPrefix("0x") else {
             throw ValidationError.wrongAddressPrefix
         }
@@ -29,25 +51,6 @@ class AddressValidator {
         } else {
             try isCheckSumAddress(hex: hex)
         }
-    }
-
-
-    func isCheckSumAddress(hex: String) throws {
-        let addressHash: String = CryptoKit.sha3(hex.lowercased().data(using: .ascii)!).toHexString()
-        for i in 0..<40 {
-            let hashSymbol = character(addressHash, i)
-
-            guard let int = Int(hashSymbol, radix: 16) else {
-                throw ValidationError.invalidSymbols
-            }
-            if (int > 7 && character(hex, i).uppercased() != character(hex, i)) || (int < 8 && character(hex, i).lowercased() != character(hex, i)) {
-                throw ValidationError.invalidChecksum
-            }
-        }
-    }
-
-    private func character(_ str: String, _ i: Int) -> String {
-        return String(str[str.index(str.startIndex, offsetBy: i)])
     }
 
 }
