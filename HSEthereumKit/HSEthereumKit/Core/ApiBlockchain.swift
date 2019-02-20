@@ -38,7 +38,6 @@ class ApiBlockchain {
 
         Observable<Int>.interval(refreshInterval, scheduler: ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(onNext: { [weak self] _ in
                     self?.refreshAll()
                 })
@@ -46,7 +45,6 @@ class ApiBlockchain {
 
         reachabilityManager.reachabilitySignal
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(onNext: { [weak self] in
                     self?.refreshAll()
                 })
@@ -75,7 +73,6 @@ class ApiBlockchain {
                         apiProvider.getBalance(address: ethereumAddress)
                 )
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { [weak self] lastBlockHeight, gasPriceInWei, balance in
                     self?.update(lastBlockHeight: lastBlockHeight)
                     self?.update(gasPriceInWei: gasPriceInWei)
@@ -94,7 +91,6 @@ class ApiBlockchain {
 
         apiProvider.getTransactions(address: ethereumAddress, startBlock: Int64(lastTransactionBlockHeight + 1))
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { [weak self] transactions in
                     self?.update(transactions: transactions)
                     self?.syncState = .synced
@@ -112,7 +108,6 @@ class ApiBlockchain {
 
         apiProvider.getTransactionsErc20(address: ethereumAddress, startBlock: Int64(erc20LastTransactionBlockHeight + 1), decimals: decimals)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { [weak self] transactions in
                     self?.updateErc20(transactions: transactions)
                     self?.refreshErc20Balances()
@@ -128,7 +123,6 @@ class ApiBlockchain {
         erc20Contracts.values.forEach { contract in
             apiProvider.getBalanceErc20(address: ethereumAddress, contractAddress: contract.address, decimal: contract.decimal)
                     .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                    .observeOn(MainScheduler.instance)
                     .subscribe(onSuccess: { [weak self] balance in
                         self?.updateErc20(balance: balance, contractAddress: contract.address)
                         self?.update(syncState: .synced, contractAddress: contract.address)

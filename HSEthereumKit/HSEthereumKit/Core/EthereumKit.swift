@@ -10,12 +10,14 @@ public class EthereumKit {
     private let storage: IStorage
     private let addressValidator: IAddressValidator
     private let state: EthereumKitState
+    private let delegateQueue: DispatchQueue
 
-    init(blockchain: IBlockchain, storage: IStorage, addressValidator: IAddressValidator, state: EthereumKitState = EthereumKitState()) {
+    init(blockchain: IBlockchain, storage: IStorage, addressValidator: IAddressValidator, state: EthereumKitState = EthereumKitState(), delegateQueue: DispatchQueue = .main) {
         self.blockchain = blockchain
         self.storage = storage
         self.addressValidator = addressValidator
         self.state = state
+        self.delegateQueue = delegateQueue
 
         state.balance = storage.balance(forAddress: blockchain.ethereumAddress)
         state.lastBlockHeight = storage.lastBlockHeight
@@ -129,22 +131,42 @@ extension EthereumKit {
 extension EthereumKit: IBlockchainDelegate {
 
     func onUpdate(lastBlockHeight: Int) {
+        guard state.lastBlockHeight != lastBlockHeight else {
+            return
+        }
+
         state.lastBlockHeight = lastBlockHeight
 
-        delegate?.onUpdateLastBlockHeight()
-        state.erc20Delegates.forEach { delegate in
-            delegate.onUpdateLastBlockHeight()
+        delegateQueue.async { [weak self] in
+            self?.delegate?.onUpdateLastBlockHeight()
+            self?.state.erc20Delegates.forEach { delegate in
+                delegate.onUpdateLastBlockHeight()
+            }
         }
     }
 
     func onUpdate(balance: Decimal) {
+        guard state.balance != balance else {
+            return
+        }
+
         state.balance = balance
-        delegate?.onUpdateBalance()
+
+        delegateQueue.async { [weak self] in
+            self?.delegate?.onUpdateBalance()
+        }
     }
 
     func onUpdateErc20(balance: Decimal, contractAddress: String) {
+        guard state.balance(contractAddress: contractAddress) != balance else {
+            return
+        }
+
         state.set(balance: balance, contractAddress: contractAddress)
-        state.delegate(contractAddress: contractAddress)?.onUpdateBalance()
+
+        delegateQueue.async { [weak self] in
+            self?.state.delegate(contractAddress: contractAddress)?.onUpdateBalance()
+        }
     }
 
     func onUpdate(syncState: SyncState) {
@@ -152,15 +174,21 @@ extension EthereumKit: IBlockchainDelegate {
     }
 
     func onUpdateErc20(syncState: SyncState, contractAddress: String) {
-        state.delegate(contractAddress: contractAddress)?.onUpdateSyncState()
+        delegateQueue.async { [weak self] in
+            self?.state.delegate(contractAddress: contractAddress)?.onUpdateSyncState()
+        }
     }
 
     func onUpdate(transactions: [EthereumTransaction]) {
-        delegate?.onUpdate(transactions: transactions)
+        delegateQueue.async { [weak self] in
+            self?.delegate?.onUpdate(transactions: transactions)
+        }
     }
 
     func onUpdateErc20(transactions: [EthereumTransaction], contractAddress: String) {
-        state.delegate(contractAddress: contractAddress)?.onUpdate(transactions: transactions)
+        delegateQueue.async { [weak self] in
+            self?.state.delegate(contractAddress: contractAddress)?.onUpdate(transactions: transactions)
+        }
     }
 
 }
