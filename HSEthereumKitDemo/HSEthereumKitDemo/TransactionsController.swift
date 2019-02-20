@@ -1,5 +1,4 @@
 import UIKit
-import RealmSwift
 import RxSwift
 import HSEthereumKit
 
@@ -48,7 +47,7 @@ class TransactionsController: UITableViewController {
         guard let ethereumKit = Manager.shared.ethereumKit else {
             return
         }
-        let observable = showEthereumTransaction ? ethereumKit.transactions() : ethereumKit.erc20Transactions(contractAddress: Manager.contractAddress)
+        let observable = showEthereumTransaction ? ethereumKit.transactionsSingle() : ethereumKit.transactionsErc20Single(contractAddress: Manager.contractAddress)
         observable.subscribe(onSuccess: { [weak self] transactions in
             self?.transactions = transactions
             self?.tableView.reloadData()
@@ -77,7 +76,7 @@ class TransactionsController: UITableViewController {
         guard indexPath.row < transactions.count else {
             return
         }
-        print("hash: \(transactions[indexPath.row].txHash)")
+        print("hash: \(transactions[indexPath.row].hash)")
     }
 
 }

@@ -1,14 +1,15 @@
+import Foundation
+
 class Erc20Holder {
+    let contractAddress: String
+    let decimal: Int
+    let delegate: IEthereumKitDelegate
 
-    var delegate: Erc20KitDelegate
-    var balance: Decimal = 0
-    var kitState: EthereumKit.KitState = .notSynced {
-        didSet {
-            delegate.kitStateUpdated(state: kitState)
-        }
-    }
+    var balance: Decimal?
 
-    init(delegate: Erc20KitDelegate) {
+    init(contractAddress: String, decimal: Int, delegate: IEthereumKitDelegate) {
+        self.contractAddress = contractAddress
+        self.decimal = decimal
         self.delegate = delegate
     }
 

@@ -37,10 +37,10 @@
                     <nil key="highlightedColor"/>
                 </label>
                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oEu-Qf-bsR">
-                    <rect key="frame" x="130.5" y="587" width="114" height="30"/>
-                    <state key="normal" title="Show Realm Info"/>
+                    <rect key="frame" x="129" y="587" width="117" height="30"/>
+                    <state key="normal" title="Show Debug Info"/>
                     <connections>
-                        <action selector="showRealmInfo" destination="-1" eventType="touchUpInside" id="pRN-NE-AP9"/>
+                        <action selector="showDebugInfo" destination="-1" eventType="touchUpInside" id="kP7-Nd-3lt"/>
                     </connections>
                 </button>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Last Block: n/a" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OO3-Pv-oyv">
