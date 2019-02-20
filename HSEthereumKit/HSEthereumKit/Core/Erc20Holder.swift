@@ -6,7 +6,6 @@ class Erc20Holder {
     let delegate: IEthereumKitDelegate
 
     var balance: Decimal?
-    var syncState: EthereumKit.SyncState?
 
     init(contractAddress: String, decimal: Int, delegate: IEthereumKitDelegate) {
         self.contractAddress = contractAddress

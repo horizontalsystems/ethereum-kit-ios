@@ -70,10 +70,7 @@ class EthereumKitTests: XCTestCase {
         verify(mockState).lastBlockHeight.set(equal(to: lastBlockHeight))
     }
 
-    func testStart_notSyncing() {
-        stub(mockState) { mock in
-            when(mock.isSyncing.get).thenReturn(false)
-        }
+    func testStart() {
         stub(mockBlockchain) { mock in
             when(mock.start()).thenDoNothing()
         }
@@ -81,19 +78,6 @@ class EthereumKitTests: XCTestCase {
         kit.start()
 
         verify(mockBlockchain).start()
-    }
-
-    func testStart_alreadySyncing() {
-        stub(mockState) { mock in
-            when(mock.isSyncing.get).thenReturn(true)
-        }
-        stub(mockBlockchain) { mock in
-            when(mock.start()).thenDoNothing()
-        }
-
-        kit.start()
-
-        verify(mockBlockchain, never()).start()
     }
 
     func testStop() {
@@ -254,19 +238,11 @@ class EthereumKitTests: XCTestCase {
     func testSyncState() {
         let syncState: EthereumKit.SyncState = .synced
 
-        stub(mockState) { mock in
+        stub(mockBlockchain) { mock in
             when(mock.syncState.get).thenReturn(syncState)
         }
 
         XCTAssertEqual(kit.syncState, syncState)
-    }
-
-    func testSyncState_default() {
-        stub(mockState) { mock in
-            when(mock.syncState.get).thenReturn(nil)
-        }
-
-        XCTAssertEqual(kit.syncState, EthereumKit.SyncState.notSynced)
     }
 
     func testFee() {
@@ -348,21 +324,11 @@ class EthereumKitTests: XCTestCase {
         let contractAddress = "contract_address"
         let syncState: EthereumKit.SyncState = .synced
 
-        stub(mockState) { mock in
+        stub(mockBlockchain) { mock in
             when(mock.syncState(contractAddress: contractAddress)).thenReturn(syncState)
         }
 
         XCTAssertEqual(kit.syncStateErc20(contractAddress: contractAddress), syncState)
-    }
-
-    func testSyncStateErc20_default() {
-        let contractAddress = "contract_address"
-
-        stub(mockState) { mock in
-            when(mock.syncState(contractAddress: contractAddress)).thenReturn(nil)
-        }
-
-        XCTAssertEqual(kit.syncStateErc20(contractAddress: contractAddress), EthereumKit.SyncState.notSynced)
     }
 
     func testOnUpdateLastBlockHeight() {
@@ -405,13 +371,9 @@ class EthereumKitTests: XCTestCase {
         stub(mockDelegate) { mock in
             when(mock.onUpdateSyncState()).thenDoNothing()
         }
-        stub(mockState) { mock in
-            when(mock.syncState.set(any())).thenDoNothing()
-        }
 
         kit.onUpdate(syncState: syncState)
 
-        verify(mockState).syncState.set(equal(to: syncState))
         verify(mockDelegate).onUpdateSyncState()
     }
 
@@ -440,7 +402,6 @@ class EthereumKitTests: XCTestCase {
         let mockErc20Delegate = MockIEthereumKitDelegate()
 
         stub(mockState) { mock in
-            when(mock.set(syncState: any(), contractAddress: any())).thenDoNothing()
             when(mock.delegate(contractAddress: contractAddress)).thenReturn(mockErc20Delegate)
         }
         stub(mockErc20Delegate) { mock in
@@ -449,7 +410,6 @@ class EthereumKitTests: XCTestCase {
 
         kit.onUpdateErc20(syncState: syncState, contractAddress: contractAddress)
 
-        verify(mockState).set(syncState: equal(to: syncState), contractAddress: equal(to: contractAddress))
         verify(mockErc20Delegate).onUpdateSyncState()
     }
 

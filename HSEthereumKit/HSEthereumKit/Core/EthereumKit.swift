@@ -28,10 +28,6 @@ public class EthereumKit {
 extension EthereumKit {
 
     public func start() {
-        guard !state.isSyncing else {
-            return
-        }
-
         blockchain.start()
     }
 
@@ -56,7 +52,7 @@ extension EthereumKit {
     }
 
     public var syncState: SyncState {
-        return state.syncState ?? .notSynced
+        return blockchain.syncState
     }
 
     public var receiveAddress: String {
@@ -121,7 +117,7 @@ extension EthereumKit {
     }
 
     public func syncStateErc20(contractAddress: String) -> SyncState {
-        return state.syncState(contractAddress: contractAddress) ?? .notSynced
+        return blockchain.syncState(contractAddress: contractAddress)
     }
 
     public func transactionsErc20Single(contractAddress: String, fromHash: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {
@@ -156,12 +152,10 @@ extension EthereumKit: IBlockchainDelegate {
     }
 
     func onUpdate(syncState: SyncState) {
-        state.syncState = syncState
         delegate?.onUpdateSyncState()
     }
 
     func onUpdateErc20(syncState: SyncState, contractAddress: String) {
-        state.set(syncState: syncState, contractAddress: contractAddress)
         state.delegate(contractAddress: contractAddress)?.onUpdateSyncState()
     }
 

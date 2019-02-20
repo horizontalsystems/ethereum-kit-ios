@@ -27,7 +27,7 @@ protocol IApiProvider {
     func getBalanceErc20(address: String, contractAddress: String, decimal: Int) -> Single<Decimal>
 
     func getTransactions(address: String, startBlock: Int64) -> Single<[EthereumTransaction]>
-    func getTransactionsErc20(address: String, startBlock: Int64, contracts: [ApiBlockchain.Erc20Contract]) -> Single<[EthereumTransaction]>
+    func getTransactionsErc20(address: String, startBlock: Int64, decimals: [String: Int]) -> Single<[EthereumTransaction]>
 
     func send(from: String, to: String, nonce: Int, amount: Decimal, gasPriceInWei: Int, gasLimit: Int) -> Single<EthereumTransaction>
     func sendErc20(contractAddress: String, decimal: Int, from: String, to: String, nonce: Int, amount: Decimal, gasPriceInWei: Int, gasLimit: Int) -> Single<EthereumTransaction>
@@ -83,6 +83,9 @@ protocol IBlockchain {
     func start()
     func stop()
     func clear()
+
+    var syncState: EthereumKit.SyncState { get }
+    func syncState(contractAddress: String) -> EthereumKit.SyncState
 
     func register(contractAddress: String, decimal: Int)
     func unregister(contractAddress: String)

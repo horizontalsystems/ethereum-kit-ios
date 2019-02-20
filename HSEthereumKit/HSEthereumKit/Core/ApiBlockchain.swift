@@ -9,7 +9,12 @@ class ApiBlockchain {
     private let storage: IStorage
     private let apiProvider: IApiProvider
 
-    private var erc20Contracts = [Erc20Contract]()
+    private var erc20Contracts = [String: Erc20Contract]()
+    private(set) var syncState: EthereumKit.SyncState = .notSynced {
+        didSet {
+            delegate?.onUpdate(syncState: syncState)
+        }
+    }
 
     let ethereumAddress: String
     private(set) var gasPriceInWei: Int = 10_000_000_000
@@ -27,7 +32,7 @@ class ApiBlockchain {
     }
 
     private func refreshAll() {
-        changeAllStates(state: .syncing)
+        changeAllSyncStates(syncState: .syncing)
 
         Single.zip(
                         apiProvider.getLastBlockHeight(),
@@ -43,7 +48,7 @@ class ApiBlockchain {
 
                     self?.refreshTransactions()
                 }, onError: { [weak self] _ in
-                    self?.changeAllStates(state: .notSynced)
+                    self?.changeAllSyncStates(syncState: .notSynced)
                 })
                 .disposed(by: disposeBag)
 
@@ -57,9 +62,9 @@ class ApiBlockchain {
                 .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { [weak self] transactions in
                     self?.update(transactions: transactions)
-                    self?.delegate?.onUpdate(syncState: .synced)
+                    self?.syncState = .synced
                 }, onError: { [weak self] _ in
-                    self?.delegate?.onUpdate(syncState: .notSynced)
+                    self?.syncState = .notSynced
                 })
                 .disposed(by: disposeBag)
 
@@ -68,41 +73,47 @@ class ApiBlockchain {
         }
 
         let erc20LastTransactionBlockHeight = storage.lastTransactionBlockHeight(erc20: true) ?? 0
+        let decimals = erc20Contracts.mapValues { $0.decimal }
 
-        apiProvider.getTransactionsErc20(address: ethereumAddress, startBlock: Int64(erc20LastTransactionBlockHeight + 1), contracts: erc20Contracts)
+        apiProvider.getTransactionsErc20(address: ethereumAddress, startBlock: Int64(erc20LastTransactionBlockHeight + 1), decimals: decimals)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { [weak self] transactions in
                     self?.updateErc20(transactions: transactions)
                     self?.refreshErc20Balances()
                 }, onError: { [weak self] _ in
-                    self?.erc20Contracts.forEach {
-                        self?.delegate?.onUpdateErc20(syncState: .notSynced, contractAddress: $0.address)
+                    self?.erc20Contracts.keys.forEach {
+                        self?.update(syncState: .notSynced, contractAddress: $0)
                     }
                 })
                 .disposed(by: disposeBag)
     }
 
     private func refreshErc20Balances() {
-        erc20Contracts.forEach { contract in
+        erc20Contracts.values.forEach { contract in
             apiProvider.getBalanceErc20(address: ethereumAddress, contractAddress: contract.address, decimal: contract.decimal)
                     .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                     .observeOn(MainScheduler.instance)
                     .subscribe(onSuccess: { [weak self] balance in
                         self?.updateErc20(balance: balance, contractAddress: contract.address)
-                        self?.delegate?.onUpdateErc20(syncState: .synced, contractAddress: contract.address)
+                        self?.update(syncState: .synced, contractAddress: contract.address)
                     }, onError: { [weak self] _ in
-                        self?.delegate?.onUpdateErc20(syncState: .notSynced, contractAddress: contract.address)
+                        self?.update(syncState: .notSynced, contractAddress: contract.address)
                     })
                     .disposed(by: disposeBag)
         }
     }
 
-    private func changeAllStates(state: EthereumKit.SyncState) {
-        delegate?.onUpdate(syncState: state)
-        erc20Contracts.forEach {
-            delegate?.onUpdateErc20(syncState: state, contractAddress: $0.address)
+    private func changeAllSyncStates(syncState: EthereumKit.SyncState) {
+        self.syncState = syncState
+        erc20Contracts.keys.forEach {
+            update(syncState: syncState, contractAddress: $0)
         }
+    }
+
+    private func update(syncState: EthereumKit.SyncState, contractAddress: String) {
+        erc20Contracts[contractAddress]?.syncState = syncState
+        delegate?.onUpdateErc20(syncState: syncState, contractAddress: contractAddress)
     }
 
     private func update(lastBlockHeight: Int) {
@@ -161,7 +172,7 @@ class ApiBlockchain {
     }
 
     private func sendErc20Single(to address: String, contractAddress: String, nonce: Int, amount: Decimal, gasPriceInWei: Int?) -> Single<EthereumTransaction> {
-        guard let erc20Contract = erc20Contracts.first(where: { $0.address == contractAddress }) else {
+        guard let erc20Contract = erc20Contracts[contractAddress] else {
             return Single.error(ApiError.contractNotRegistered)
         }
 
@@ -181,6 +192,15 @@ class ApiBlockchain {
 extension ApiBlockchain: IBlockchain {
 
     func start() {
+        guard syncState != .syncing else {
+            return
+        }
+        for contract in erc20Contracts.values {
+            if contract.syncState == .syncing {
+                return
+            }
+        }
+
         // todo: check reachability and decide if reachability should be in this layer
 
         refreshAll()
@@ -191,25 +211,26 @@ extension ApiBlockchain: IBlockchain {
     }
 
     func clear() {
-        erc20Contracts = []
+        erc20Contracts = [:]
         disposeBag = DisposeBag()
     }
 
+    func syncState(contractAddress: String) -> EthereumKit.SyncState {
+        return erc20Contracts[contractAddress]?.syncState ?? .notSynced
+    }
+
     func register(contractAddress: String, decimal: Int) {
-        guard !erc20Contracts.contains(where: { $0.address == contractAddress }) else {
+        guard erc20Contracts[contractAddress] == nil else {
             return
         }
 
-        erc20Contracts.append(Erc20Contract(address: contractAddress, decimal: decimal))
+        erc20Contracts[contractAddress] = Erc20Contract(address: contractAddress, decimal: decimal, syncState: .notSynced)
 
         // todo: refresh if not already refreshing
-
     }
 
     func unregister(contractAddress: String) {
-        if let index = erc20Contracts.firstIndex(where: { $0.address == contractAddress }) {
-            erc20Contracts.remove(at: index)
-        }
+        erc20Contracts.removeValue(forKey: contractAddress)
     }
 
     func sendSingle(to address: String, amount: Decimal, gasPriceInWei: Int?) -> Single<EthereumTransaction> {
@@ -247,6 +268,7 @@ extension ApiBlockchain {
     struct Erc20Contract: Equatable {
         let address: String
         let decimal: Int
+        var syncState: EthereumKit.SyncState
     }
 
     enum ApiError: Error {

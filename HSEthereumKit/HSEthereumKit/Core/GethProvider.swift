@@ -144,16 +144,16 @@ extension GethProvider: IApiProvider {
         }
     }
 
-    func getTransactionsErc20(address: String, startBlock: Int64, contracts: [ApiBlockchain.Erc20Contract]) -> Single<[EthereumTransaction]> {
+    func getTransactionsErc20(address: String, startBlock: Int64, decimals: [String: Int]) -> Single<[EthereumTransaction]> {
         return Single.create { [weak self] observer in
             self?.geth.getTokenTransactions(address: address, startBlock: startBlock, completionHandler: { result in
                 switch result {
                 case .success(let transactions):
                     let ethereumTransactions = transactions.elements.compactMap { transaction -> EthereumTransaction? in
-                        guard let contract = contracts.first(where: { $0.address == EIP55.format(transaction.contractAddress) }) else {
+                        guard let decimal = decimals[EIP55.format(transaction.contractAddress)] else {
                             return nil
                         }
-                        return self?.ethereumTransaction(from: transaction, rate: pow(10, contract.decimal))
+                        return self?.ethereumTransaction(from: transaction, rate: pow(10, decimal))
                     }
                     observer(.success(ethereumTransactions))
                 case .failure(let error):
