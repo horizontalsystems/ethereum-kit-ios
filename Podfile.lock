@@ -2,9 +2,9 @@ PODS:
   - Alamofire (4.8.0)
   - Cuckoo (0.12.0)
   - GRDB.swift (3.6.2)
-  - HSCryptoKit (1.1.0)
+  - HSCryptoKit (1.2.0)
   - HSHDWalletKit (1.0.3):
-    - HSCryptoKit (~> 1.1.0)
+    - HSCryptoKit (~> 1.2.0)
   - RxAtomic (4.4.0)
   - RxSwift (4.4.0):
     - RxAtomic (~> 4.4)
@@ -13,8 +13,8 @@ DEPENDENCIES:
   - Alamofire (~> 4.8.0)
   - Cuckoo (~> 0.12.0)
   - GRDB.swift
-  - HSCryptoKit (~> 1.1.0)
-  - HSHDWalletKit (~> 1.0.3)
+  - HSCryptoKit (from `https://github.com/horizontalsystems/crypto-kit-ios.git`, branch `ethereum_light_client_crypto`)
+  - HSHDWalletKit (from `https://github.com/horizontalsystems/hd-wallet-kit-ios.git`, branch `ethereum_light_client`)
   - RxSwift (~> 4.0)
 
 SPEC REPOS:
@@ -22,20 +22,34 @@ SPEC REPOS:
     - Alamofire
     - Cuckoo
     - GRDB.swift
-    - HSCryptoKit
-    - HSHDWalletKit
     - RxAtomic
     - RxSwift
+
+EXTERNAL SOURCES:
+  HSCryptoKit:
+    :branch: ethereum_light_client_crypto
+    :git: https://github.com/horizontalsystems/crypto-kit-ios.git
+  HSHDWalletKit:
+    :branch: ethereum_light_client
+    :git: https://github.com/horizontalsystems/hd-wallet-kit-ios.git
+
+CHECKOUT OPTIONS:
+  HSCryptoKit:
+    :commit: 6a488aa0aca88d8416f9b6e694526571bfed003d
+    :git: https://github.com/horizontalsystems/crypto-kit-ios.git
+  HSHDWalletKit:
+    :commit: b60a546dcc1fe77e0d9df5d0d6910186055b124f
+    :git: https://github.com/horizontalsystems/hd-wallet-kit-ios.git
 
 SPEC CHECKSUMS:
   Alamofire: 3ec537f71edc9804815215393ae2b1a8ea33a844
   Cuckoo: d30b6c149e52ffbcfe6b4a9543e4627d08947274
   GRDB.swift: e10787d857b6b8135354b9e08fb23b4bb8e2fab7
-  HSCryptoKit: 8679d53083d1136fc128bbf9b040976110ce1491
-  HSHDWalletKit: f75cd8186f00bae4f6aa76548a0b1f24c13dff72
+  HSCryptoKit: da3be7a8ee366d6ec786c83236e387951fb1e467
+  HSHDWalletKit: b1e2dd08c8084603cf9f31eb822055cfeece87a6
   RxAtomic: eacf60db868c96bfd63320e28619fe29c179656f
   RxSwift: 5976ecd04fc2fefd648827c23de5e11157faa973
 
-PODFILE CHECKSUM: 18c0e77d1cc96c8fa2413b05c36862d9e2d119f2
+PODFILE CHECKSUM: fbd8dc9977512f4237121c1df754c235e5975f0b
 
 COCOAPODS: 1.5.3

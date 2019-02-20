@@ -63,6 +63,15 @@ protocol IMessage {
     func toString() -> String
 }
 
+protocol IPeerGroupDelegate: class {
+    func onUpdate(state: AccountState)
+}
+
+protocol IPeerGroup {
+    var delegate: IPeerGroupDelegate? { get set }
+    func start()
+}
+
 protocol IReachabilityManager {
     var isReachable: Bool { get }
     var reachabilitySignal: Signal { get }

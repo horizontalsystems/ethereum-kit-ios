@@ -19,7 +19,6 @@ class FramesMessageConverter: IFramesMessageConverter {
 
     func convertToMessage(frames: [Frame]) -> IMessage? {
         let frame = frames[0]
-        let message: IMessage?
 
         guard let messageClass = packetTypesMap[frame.type] else {
             return nil

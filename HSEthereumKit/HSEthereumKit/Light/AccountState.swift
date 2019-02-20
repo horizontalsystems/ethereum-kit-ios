@@ -1,6 +1,6 @@
 import Foundation
 
-class AddressState {
+class AccountState {
 
     let address: Data
     let nonce: Int
@@ -24,4 +24,5 @@ class AddressState {
                 "  codeHash: \(codeHash.toHexString())\n" +
                 ")"
     }
+
 }

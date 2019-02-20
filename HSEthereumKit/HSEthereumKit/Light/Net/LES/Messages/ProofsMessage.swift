@@ -40,7 +40,7 @@ class ProofsMessage: IMessage {
         }
     }
 
-    func getValidatedState(stateRoot: Data, address: Data) throws -> AddressState {
+    func getValidatedState(stateRoot: Data, address: Data) throws -> AccountState {
         guard var lastNode = nodes.last else {
             throw ProofError.noNodes
         }
@@ -83,7 +83,7 @@ class ProofsMessage: IMessage {
             throw ProofError.rootHashDoesNotMatchStateRoot
         }
 
-        return AddressState(address: address, nonce: nonce, balance: balance, storageHash: storageRoot, codeHash: codeHash)
+        return AccountState(address: address, nonce: nonce, balance: balance, storageHash: storageRoot, codeHash: codeHash)
     }
 
     func encoded() -> Data {

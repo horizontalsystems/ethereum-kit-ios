@@ -5,6 +5,7 @@ class PeerGroup {
     private var blockHeaders = [BlockHeader]()
     private var syncPeer: IPeer?
     private var address: Data
+    weak var delegate: IPeerGroupDelegate?
 
     init(network: INetwork, address: String) {
         self.address = Data(hex: address.substring(from: address.index(address.startIndex, offsetBy: 2)))
@@ -30,14 +31,18 @@ class PeerGroup {
         blockHeaders.append(network.checkpointBlock)
     }
 
-    func start() {
-        syncPeer?.connect()
-    }
-
     func syncBlocks() {
         if let lastBlock = blockHeaders.last, let syncPeer = syncPeer {
             syncPeer.downloadBlocksFrom(block: lastBlock)
         }
+    }
+
+}
+
+extension PeerGroup: IPeerGroup {
+
+    func start() {
+        syncPeer?.connect()
     }
 
 }
@@ -67,7 +72,7 @@ extension PeerGroup: IPeerDelegate {
         if let lastBlock = self.blockHeaders.last {
             do {
                 let state = try message.getValidatedState(stateRoot: lastBlock.stateRoot, address: address)
-                print(state.toString())
+                delegate?.onUpdate(state: state)
             } catch {
                 print("proof result: \(error)")
             }
