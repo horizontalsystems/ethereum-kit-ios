@@ -31,10 +31,6 @@ extension EthereumKit {
         blockchain.start()
     }
 
-    public func stop() {
-        blockchain.stop()
-    }
-
     public func clear() {
         delegate = nil
 

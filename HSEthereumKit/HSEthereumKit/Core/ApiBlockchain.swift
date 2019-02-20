@@ -2,17 +2,22 @@ import RxSwift
 import HSHDWalletKit
 
 class ApiBlockchain {
+    private let refreshInterval: TimeInterval = 30
+
     private var disposeBag = DisposeBag()
 
     weak var delegate: IBlockchainDelegate?
 
     private let storage: IStorage
     private let apiProvider: IApiProvider
+    private let reachabilityManager: IReachabilityManager
 
     private var erc20Contracts = [String: Erc20Contract]()
     private(set) var syncState: EthereumKit.SyncState = .notSynced {
         didSet {
-            delegate?.onUpdate(syncState: syncState)
+            if oldValue != syncState {
+                delegate?.onUpdate(syncState: syncState)
+            }
         }
     }
 
@@ -21,17 +26,47 @@ class ApiBlockchain {
     let gasLimitEthereum = 21_000
     let gasLimitErc20 = 100_000
 
-    init(storage: IStorage, apiProvider: IApiProvider, ethereumAddress: String) {
+    init(storage: IStorage, apiProvider: IApiProvider, reachabilityManager: IReachabilityManager, ethereumAddress: String) {
         self.storage = storage
         self.apiProvider = apiProvider
+        self.reachabilityManager = reachabilityManager
         self.ethereumAddress = ethereumAddress
 
         if let storedGasPriceInWei = storage.gasPriceInWei {
             gasPriceInWei = storedGasPriceInWei
         }
+
+        Observable<Int>.interval(refreshInterval, scheduler: ConcurrentDispatchQueueScheduler(qos: .background))
+                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+                .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+                .subscribe(onNext: { [weak self] _ in
+                    self?.refreshAll()
+                })
+                .disposed(by: disposeBag)
+
+        reachabilityManager.reachabilitySignal
+                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+                .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+                .subscribe(onNext: { [weak self] in
+                    self?.refreshAll()
+                })
+                .disposed(by: disposeBag)
     }
 
     private func refreshAll() {
+        guard reachabilityManager.isReachable else {
+            changeAllSyncStates(syncState: .notSynced)
+            return
+        }
+        guard syncState != .syncing else {
+            return
+        }
+        for contract in erc20Contracts.values {
+            if contract.syncState == .syncing {
+                return
+            }
+        }
+
         changeAllSyncStates(syncState: .syncing)
 
         Single.zip(
@@ -112,6 +147,10 @@ class ApiBlockchain {
     }
 
     private func update(syncState: EthereumKit.SyncState, contractAddress: String) {
+        guard erc20Contracts[contractAddress]?.syncState != syncState else {
+            return
+        }
+
         erc20Contracts[contractAddress]?.syncState = syncState
         delegate?.onUpdateErc20(syncState: syncState, contractAddress: contractAddress)
     }
@@ -192,27 +231,11 @@ class ApiBlockchain {
 extension ApiBlockchain: IBlockchain {
 
     func start() {
-        guard syncState != .syncing else {
-            return
-        }
-        for contract in erc20Contracts.values {
-            if contract.syncState == .syncing {
-                return
-            }
-        }
-
-        // todo: check reachability and decide if reachability should be in this layer
-
         refreshAll()
-    }
-
-    func stop() {
-        disposeBag = DisposeBag()
     }
 
     func clear() {
         erc20Contracts = [:]
-        disposeBag = DisposeBag()
     }
 
     func syncState(contractAddress: String) -> EthereumKit.SyncState {
@@ -226,7 +249,7 @@ extension ApiBlockchain: IBlockchain {
 
         erc20Contracts[contractAddress] = Erc20Contract(address: contractAddress, decimal: decimal, syncState: .notSynced)
 
-        // todo: refresh if not already refreshing
+        refreshAll()
     }
 
     func unregister(contractAddress: String) {
@@ -292,8 +315,9 @@ extension ApiBlockchain {
                 debugPrints: debugPrints
         )
         let apiProvider = GethProvider(geth: Geth(configuration: configuration), hdWallet: hdWallet)
+        let reachabilityManager = ReachabilityManager()
 
-        return ApiBlockchain(storage: storage, apiProvider: apiProvider, ethereumAddress: hdWallet.address())
+        return ApiBlockchain(storage: storage, apiProvider: apiProvider, reachabilityManager: reachabilityManager, ethereumAddress: hdWallet.address())
     }
 
 }

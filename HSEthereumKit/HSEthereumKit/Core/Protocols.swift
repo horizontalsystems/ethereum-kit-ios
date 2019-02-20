@@ -81,7 +81,6 @@ protocol IBlockchain {
     var delegate: IBlockchainDelegate? { get set }
 
     func start()
-    func stop()
     func clear()
 
     var syncState: EthereumKit.SyncState { get }

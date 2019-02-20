@@ -80,16 +80,6 @@ class EthereumKitTests: XCTestCase {
         verify(mockBlockchain).start()
     }
 
-    func testStop() {
-        stub(mockBlockchain) { mock in
-            when(mock.stop()).thenDoNothing()
-        }
-
-        kit.stop()
-
-        verify(mockBlockchain).stop()
-    }
-
     func testClear() {
         stub(mockStorage) { mock in
             when(mock.clear()).thenDoNothing()
