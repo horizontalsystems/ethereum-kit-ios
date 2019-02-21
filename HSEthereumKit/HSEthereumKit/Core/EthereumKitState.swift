@@ -1,8 +1,6 @@
-import Foundation
-
 class EthereumKitState {
 
-    var balance: Decimal?
+    var balance: String?
     var lastBlockHeight: Int?
 
     private var erc20Holders: [String: Erc20Holder] = [:]
@@ -15,19 +13,19 @@ class EthereumKitState {
         return erc20Holders[contractAddress] != nil
     }
 
-    func add(contractAddress: String, decimal: Int, delegate: IEthereumKitDelegate) {
-        erc20Holders[contractAddress] = Erc20Holder(contractAddress: contractAddress, decimal: decimal, delegate: delegate)
+    func add(contractAddress: String, delegate: IEthereumKitDelegate) {
+        erc20Holders[contractAddress] = Erc20Holder(contractAddress: contractAddress, delegate: delegate)
     }
 
     func remove(contractAddress: String) {
         erc20Holders.removeValue(forKey: contractAddress)
     }
 
-    func balance(contractAddress: String) -> Decimal? {
+    func balance(contractAddress: String) -> String? {
         return erc20Holders[contractAddress]?.balance
     }
 
-    func set(balance: Decimal, contractAddress: String) {
+    func set(balance: String?, contractAddress: String) {
         erc20Holders[contractAddress]?.balance = balance
     }
 

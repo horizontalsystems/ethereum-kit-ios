@@ -1,4 +1,3 @@
-import Foundation
 import GRDB
 
 public class EthereumTransaction: Record {
@@ -7,7 +6,7 @@ public class EthereumTransaction: Record {
     public let input: String
     public let from: String
     public let to: String
-    public let amount: Decimal
+    public let amount: String
     public let gasLimit: Int
     public let gasPriceInWei: Int
     public let timestamp: TimeInterval
@@ -23,7 +22,7 @@ public class EthereumTransaction: Record {
     public var transactionIndex: Int?
     public var txReceiptStatus: Bool?
 
-    public init(hash: String, nonce: Int, input: String = "0x", from: String, to: String, amount: Decimal, gasLimit: Int, gasPriceInWei: Int, timestamp: TimeInterval? = nil, contractAddress: String? = nil) {
+    public init(hash: String, nonce: Int, input: String = "0x", from: String, to: String, amount: String, gasLimit: Int, gasPriceInWei: Int, timestamp: TimeInterval? = nil, contractAddress: String? = nil) {
         self.hash = hash
         self.nonce = nonce
         self.input = input
@@ -69,7 +68,7 @@ public class EthereumTransaction: Record {
         input = row[Columns.input]
         from = row[Columns.from]
         to = row[Columns.to]
-        amount = Decimal(string: row[Columns.amount]) ?? 0
+        amount = row[Columns.amount]
         gasLimit = row[Columns.gasLimit]
         gasPriceInWei = row[Columns.gasPriceInWei]
         timestamp = row[Columns.timestamp]
@@ -92,7 +91,7 @@ public class EthereumTransaction: Record {
         container[Columns.input] = input
         container[Columns.from] = from
         container[Columns.to] = to
-        container[Columns.amount] = NSDecimalNumber(decimal: amount).stringValue
+        container[Columns.amount] = amount
         container[Columns.gasLimit] = gasLimit
         container[Columns.gasPriceInWei] = gasPriceInWei
         container[Columns.timestamp] = timestamp

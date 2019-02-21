@@ -56,7 +56,7 @@ class EthereumKitTests: XCTestCase {
     }
 
     func testInit_balance() {
-        let balance: Decimal = 123.45
+        let balance = "12345"
         let lastBlockHeight = 123
 
         stub(mockStorage) { mock in
@@ -109,47 +109,45 @@ class EthereumKitTests: XCTestCase {
     }
 
     func testRegister() {
-        let balance: Decimal = 123.45
+        let balance = "12345"
         let contractAddress = "contract_address"
-        let decimal = 18
         let delegate = MockIEthereumKitDelegate()
 
         stub(mockState) { mock in
             when(mock.has(contractAddress: contractAddress)).thenReturn(false)
-            when(mock.add(contractAddress: any(), decimal: any(), delegate: any())).thenDoNothing()
+            when(mock.add(contractAddress: any(), delegate: any())).thenDoNothing()
             when(mock.set(balance: any(), contractAddress: any())).thenDoNothing()
         }
         stub(mockBlockchain) { mock in
-            when(mock.register(contractAddress: any(), decimal: any())).thenDoNothing()
+            when(mock.register(contractAddress: any())).thenDoNothing()
         }
         stub(mockStorage) { mock in
             when(mock.balance(forAddress: contractAddress)).thenReturn(balance)
         }
 
-        kit.register(contractAddress: contractAddress, decimal: decimal, delegate: delegate)
+        kit.register(contractAddress: contractAddress, delegate: delegate)
 
-        verify(mockState).add(contractAddress: contractAddress, decimal: decimal, delegate: equal(to: delegate) { $0 === $1 })
+        verify(mockState).add(contractAddress: contractAddress, delegate: equal(to: delegate) { $0 === $1 })
         verify(mockState).set(balance: equal(to: balance), contractAddress: equal(to: contractAddress))
-        verify(mockBlockchain).register(contractAddress: contractAddress, decimal: decimal)
+        verify(mockBlockchain).register(contractAddress: contractAddress)
     }
 
     func testRegister_alreadyRegistered() {
         let contractAddress = "contract_address"
-        let decimal = 18
         let delegate = MockIEthereumKitDelegate()
 
         stub(mockState) { mock in
             when(mock.has(contractAddress: contractAddress)).thenReturn(true)
-            when(mock.add(contractAddress: any(), decimal: any(), delegate: any())).thenDoNothing()
+            when(mock.add(contractAddress: any(), delegate: any())).thenDoNothing()
         }
         stub(mockBlockchain) { mock in
-            when(mock.register(contractAddress: any(), decimal: any())).thenDoNothing()
+            when(mock.register(contractAddress: any())).thenDoNothing()
         }
 
-        kit.register(contractAddress: contractAddress, decimal: decimal, delegate: delegate)
+        kit.register(contractAddress: contractAddress, delegate: delegate)
 
-        verify(mockState, never()).add(contractAddress: any(), decimal: any(), delegate: any())
-        verify(mockBlockchain, never()).register(contractAddress: any(), decimal: any())
+        verify(mockState, never()).add(contractAddress: any(), delegate: any())
+        verify(mockBlockchain, never()).register(contractAddress: any())
     }
 
     func testUnregister() {
@@ -208,21 +206,13 @@ class EthereumKitTests: XCTestCase {
     }
 
     func testBalance() {
-        let balance: Decimal = 123.45
+        let balance = "12345"
 
         stub(mockState) { mock in
             when(mock.balance.get).thenReturn(balance)
         }
 
         XCTAssertEqual(kit.balance, balance)
-    }
-
-    func testBalance_default() {
-        stub(mockState) { mock in
-            when(mock.balance.get).thenReturn(nil)
-        }
-
-        XCTAssertEqual(kit.balance, 0)
     }
 
     func testSyncState() {
@@ -244,7 +234,7 @@ class EthereumKitTests: XCTestCase {
             when(mock.gasLimitEthereum.get).thenReturn(gasLimit)
         }
 
-        let expectedFee = Decimal(gasPriceInWei) / pow(10, 18) * Decimal(gasLimit)
+        let expectedFee = Decimal(gasPriceInWei) * Decimal(gasLimit)
 
         XCTAssertEqual(kit.fee(), expectedFee)
     }
@@ -257,7 +247,7 @@ class EthereumKitTests: XCTestCase {
             when(mock.gasLimitEthereum.get).thenReturn(gasLimit)
         }
 
-        let expectedFee = Decimal(gasPriceInWei) / pow(10, 18) * Decimal(gasLimit)
+        let expectedFee = Decimal(gasPriceInWei) * Decimal(gasLimit)
 
         XCTAssertEqual(kit.fee(gasPriceInWei: gasPriceInWei), expectedFee)
     }
@@ -271,7 +261,7 @@ class EthereumKitTests: XCTestCase {
             when(mock.gasLimitErc20.get).thenReturn(gasLimit)
         }
 
-        let expectedFee = Decimal(gasPriceInWei) / pow(10, 18) * Decimal(gasLimit)
+        let expectedFee = Decimal(gasPriceInWei) * Decimal(gasLimit)
 
         XCTAssertEqual(kit.feeErc20(), expectedFee)
     }
@@ -284,30 +274,20 @@ class EthereumKitTests: XCTestCase {
             when(mock.gasLimitErc20.get).thenReturn(gasLimit)
         }
 
-        let expectedFee = Decimal(gasPriceInWei) / pow(10, 18) * Decimal(gasLimit)
+        let expectedFee = Decimal(gasPriceInWei) * Decimal(gasLimit)
 
         XCTAssertEqual(kit.feeErc20(gasPriceInWei: gasPriceInWei), expectedFee)
     }
 
     func testBalanceErc20() {
         let contractAddress = "contract_address"
-        let balance: Decimal = 123.45
+        let balance = "12345"
 
         stub(mockState) { mock in
             when(mock.balance(contractAddress: contractAddress)).thenReturn(balance)
         }
 
         XCTAssertEqual(kit.balanceErc20(contractAddress: contractAddress), balance)
-    }
-
-    func testBalanceErc20_default() {
-        let contractAddress = "contract_address"
-
-        stub(mockState) { mock in
-            when(mock.balance(contractAddress: contractAddress)).thenReturn(nil)
-        }
-
-        XCTAssertEqual(kit.balanceErc20(contractAddress: contractAddress), 0)
     }
 
     func testSyncStateErc20() {
@@ -320,87 +300,5 @@ class EthereumKitTests: XCTestCase {
 
         XCTAssertEqual(kit.syncStateErc20(contractAddress: contractAddress), syncState)
     }
-
-//    func testOnUpdateLastBlockHeight() {
-//        let lastBlockHeight = 123
-//        let mockErc20Delegate = MockIEthereumKitDelegate()
-//
-//        stub(mockDelegate) { mock in
-//            when(mock.onUpdateLastBlockHeight()).thenDoNothing()
-//        }
-//        stub(mockErc20Delegate) { mock in
-//            when(mock.onUpdateLastBlockHeight()).thenDoNothing()
-//        }
-//        stub(mockState) { mock in
-//            when(mock.erc20Delegates.get).thenReturn([mockErc20Delegate])
-//        }
-//
-//        kit.onUpdate(lastBlockHeight: lastBlockHeight)
-//
-//        verify(mockState).lastBlockHeight.set(equal(to: lastBlockHeight))
-//        verify(mockDelegate).onUpdateLastBlockHeight()
-//        verify(mockErc20Delegate).onUpdateLastBlockHeight()
-//    }
-//
-//    func testOnUpdateBalance() {
-//        let balance: Decimal = 123.45
-//
-//        stub(mockDelegate) { mock in
-//            when(mock.onUpdateBalance()).thenDoNothing()
-//        }
-//
-//        kit.onUpdate(balance: balance)
-//
-//        verify(mockState).balance.set(equal(to: balance))
-//        verify(mockDelegate).onUpdateBalance()
-//    }
-//
-//    func testOnUpdateSyncState() {
-//        let syncState: EthereumKit.SyncState = .syncing
-//
-//        stub(mockDelegate) { mock in
-//            when(mock.onUpdateSyncState()).thenDoNothing()
-//        }
-//
-//        kit.onUpdate(syncState: syncState)
-//
-//        verify(mockDelegate).onUpdateSyncState()
-//    }
-//
-//    func testOnUpdateErc20Balance() {
-//        let balance: Decimal = 123.45
-//        let contractAddress = "contract_address"
-//        let mockErc20Delegate = MockIEthereumKitDelegate()
-//
-//        stub(mockState) { mock in
-//            when(mock.set(balance: any(), contractAddress: any())).thenDoNothing()
-//            when(mock.delegate(contractAddress: contractAddress)).thenReturn(mockErc20Delegate)
-//        }
-//        stub(mockErc20Delegate) { mock in
-//            when(mock.onUpdateBalance()).thenDoNothing()
-//        }
-//
-//        kit.onUpdateErc20(balance: balance, contractAddress: contractAddress)
-//
-//        verify(mockState).set(balance: equal(to: balance), contractAddress: equal(to: contractAddress))
-//        verify(mockErc20Delegate).onUpdateBalance()
-//    }
-//
-//    func testOnUpdateErc20SyncState() {
-//        let syncState: EthereumKit.SyncState = .syncing
-//        let contractAddress = "contract_address"
-//        let mockErc20Delegate = MockIEthereumKitDelegate()
-//
-//        stub(mockState) { mock in
-//            when(mock.delegate(contractAddress: contractAddress)).thenReturn(mockErc20Delegate)
-//        }
-//        stub(mockErc20Delegate) { mock in
-//            when(mock.onUpdateSyncState()).thenDoNothing()
-//        }
-//
-//        kit.onUpdateErc20(syncState: syncState, contractAddress: contractAddress)
-//
-//        verify(mockErc20Delegate).onUpdateSyncState()
-//    }
 
 }
