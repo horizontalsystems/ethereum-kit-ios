@@ -10,6 +10,8 @@ class EncryptionHandshake {
 
     static let NONCE_SIZE: Int = 32
 
+    let crypto: ICrypto
+    let factory: IFactory
     let myKey: ECKey
     let ephemeralKey: ECKey
     let remotePublicKeyPoint: ECPoint
@@ -18,32 +20,30 @@ class EncryptionHandshake {
     var authAckMessagePacket = Data()
 
 
-    init(myKey: ECKey, publicKeyPoint: ECPoint) {
+    init(myKey: ECKey, publicKeyPoint: ECPoint, crypto: ICrypto, factory: IFactory) {
+        self.crypto = crypto
+        self.factory = factory
         self.myKey = myKey
         remotePublicKeyPoint = publicKeyPoint
-        ephemeralKey = ECKey.randomKey()
-        initiatorNonce = randomBytes(length: 32)
+        ephemeralKey = crypto.randomKey()
+        initiatorNonce = crypto.randomBytes(length: 32)
     }
 
     func createAuthMessage() throws {
-        let sharedSecret = CryptoKit.ecdhAgree(privateKey: myKey.privateKey, withPublicKey: remotePublicKeyPoint.uncompressed())
+        let sharedSecret = crypto.ecdhAgree(myKey: myKey, remotePublicKeyPoint: remotePublicKeyPoint)
 
         let messageToSign = sharedSecret.xor(with: initiatorNonce)
-        let signature = try CryptoKit.ellipticSign(messageToSign, privateKey: ephemeralKey.privateKey)
+        let signature = try crypto.ellipticSign(messageToSign, key: ephemeralKey)
 
-        let message = AuthMessage(signature: signature, publicKeyPoint: myKey.publicKeyPoint, nonce: initiatorNonce)
+        let message = factory.authMessage(signature: signature, publicKeyPoint: myKey.publicKeyPoint, nonce: initiatorNonce)
         authMessagePacket = encrypt(authMessage: message)
     }
 
     func extractSecretsFromResponse(in responsePackets: Data) throws -> Secrets {
-        let prefixBytes: Data = responsePackets.subdata(in: 0..<2)
-        let prefix = Data(prefixBytes.reversed()).to(type: UInt16.self)
-        let responseData = responsePackets.subdata(in: 2..<Int(prefix + 2))
+        authAckMessagePacket = responsePackets
+        let responseDecrypted = try crypto.eciesDecrypt(privateKey: myKey.privateKey, message: responsePackets)
 
-        authAckMessagePacket = prefixBytes + responseData
-        let responseDecrypted = try ECIES.decrypt(privateKey: myKey.privateKey, message: responseData, macData: prefixBytes)
-
-        guard let message = AuthAckMessage(data: responseDecrypted) else {
+        guard let message = factory.authAckMessage(data: responseDecrypted) else {
             throw HandshakeError.invalidAuthAckPayload
         }
 
@@ -52,43 +52,35 @@ class EncryptionHandshake {
 
 
     private func encrypt(authMessage message: AuthMessage) -> Data {
-        let encodedMessage = message.encoded()
-        let padded = eip8pad(message: encodedMessage)
+        let encodedMessage = message.encoded() + eip8padding()
+        let eciesEncrypted = crypto.eciesEncrypt(remotePublicKey: remotePublicKeyPoint, message: encodedMessage)
 
-        var prefix = UInt16(ECIES.prefix + padded.count)
-        let prefixBytes = Data(Data(bytes: &prefix, count: MemoryLayout<UInt16>.size).reversed())
-
-        let eciesEncrypted = ECIES.encrypt(remotePublicKey: remotePublicKeyPoint, message: padded, macData: prefixBytes)
-        let encrypted: Data = prefixBytes + eciesEncrypted
-
-        return encrypted
+        return eciesEncrypted
     }
 
     private func extractSecrets(message: AuthAckMessage) -> Secrets {
-        let sPointer: UnsafeMutablePointer<UInt8> = _ECDH.agree(ephemeralKey.privateKey, withPublicKey: message.publicKeyPoint.uncompressed())
-        let ephemeralSharedSecret = Data(buffer: UnsafeBufferPointer(start: sPointer, count: 32))
+        let ephemeralSharedSecret = crypto.ecdhAgree(myKey: ephemeralKey, remotePublicKeyPoint: message.publicKeyPoint)
 
-        let sharedSecret = CryptoKit.sha3(ephemeralSharedSecret + CryptoKit.sha3(message.nonce + initiatorNonce))
+        let sharedSecret = crypto.sha3(ephemeralSharedSecret + crypto.sha3(message.nonce + initiatorNonce))
+        let aes = crypto.sha3(ephemeralSharedSecret + sharedSecret)
+        let mac = crypto.sha3(ephemeralSharedSecret + aes)
+        let token = crypto.sha3(sharedSecret)
 
-        let aes = CryptoKit.sha3(ephemeralSharedSecret + sharedSecret)
-        let mac = CryptoKit.sha3(ephemeralSharedSecret + aes)
-        let token = CryptoKit.sha3(sharedSecret)
-
-        let egressMac = KeccakDigest()
+        let egressMac = factory.keccakDigest()
         egressMac.update(with: mac.xor(with: message.nonce))
         egressMac.update(with: authMessagePacket)
 
-        let ingressMac = KeccakDigest()
+        let ingressMac = factory.keccakDigest()
         ingressMac.update(with: mac.xor(with: initiatorNonce))
         ingressMac.update(with: authAckMessagePacket)
 
         return Secrets(aes: aes, mac: mac, token: token, egressMac: egressMac, ingressMac: ingressMac)
     }
 
-    private func eip8pad(message: Data) -> Data {
+    private func eip8padding() -> Data {
         let junkLength = Int.random(in: 100..<300)
 
-        return message + randomBytes(length: junkLength)
+        return crypto.randomBytes(length: junkLength)
     }
 
 }

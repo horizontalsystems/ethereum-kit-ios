@@ -138,7 +138,7 @@ class Connection: NSObject {
 
         handshakeSent = true
 
-        let handshake = EncryptionHandshake(myKey: delegate.connectionKey(), publicKeyPoint: ECPoint(nodeId: nodeId))
+        let handshake = EncryptionHandshake(myKey: delegate.connectionKey(), publicKeyPoint: ECPoint(nodeId: nodeId), crypto: Crypto(), factory: Factory())
 
         do {
             try handshake.createAuthMessage()

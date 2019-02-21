@@ -1,5 +1,22 @@
 import Foundation
 import RxSwift
+import HSCryptoKit
+
+protocol IFactory: class {
+    func authMessage(signature: Data, publicKeyPoint: ECPoint, nonce: Data) -> AuthMessage
+    func authAckMessage(data: Data) -> AuthAckMessage?
+    func keccakDigest() -> KeccakDigest
+}
+
+protocol ICrypto: class {
+    func randomKey() -> ECKey
+    func randomBytes(length: Int) -> Data
+    func ecdhAgree(myKey: ECKey, remotePublicKeyPoint: ECPoint) -> Data
+    func ellipticSign(_ messageToSign: Data, key: ECKey) throws -> Data
+    func eciesDecrypt(privateKey: Data, message: Data) throws -> Data
+    func eciesEncrypt(remotePublicKey: ECPoint, message: Data) -> Data
+    func sha3(_ data: Data) -> Data
+}
 
 public protocol IEthereumKitDelegate: class {
     func onUpdate(transactions: [EthereumTransaction])
