@@ -85,8 +85,12 @@ class Connection: NSObject {
 
         if packets.count >= 0 {
             if let handshake = handshake {
+                guard let eciesMessage = ECIESEncryptedMessage(data: packets) else {
+                    return
+                }
+
                 do {
-                    let secrets = try handshake.extractSecretsFromResponse(in: packets)
+                    let secrets = try handshake.extractSecrets(from: eciesMessage)
                     packets = Data(packets.dropFirst(handshake.authAckMessagePacket.count))
 
                     frameCodec = FrameCodec(secrets: secrets)
@@ -102,7 +106,7 @@ class Connection: NSObject {
             }
 
             if let frameCode = frameCodec {
-                while (packets.count >= 64) {
+                while (packets.count >= bufferSize) {
                     let frames: [Frame]
                     do {
                         frames = try frameCode.readFrames(from: packets)
@@ -111,12 +115,7 @@ class Connection: NSObject {
                         return
                     }
 
-                    if frames.count > 0 {
-                        packets = Data(packets.dropFirst(frames.reduce(0) { $0 + $1.size }))
-                    } else {
-                        break
-                    }
-
+                    packets = Data(packets.dropFirst(frames.reduce(0) { $0 + $1.size }))
                     frameHandler.addFrames(frames: frames)
 
                     do {

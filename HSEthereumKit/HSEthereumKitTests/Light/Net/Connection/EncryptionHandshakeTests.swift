@@ -1,5 +1,4 @@
 import XCTest
-import RxSwift
 import Cuckoo
 import HSCryptoKit
 @testable import HSEthereumKit
@@ -20,8 +19,9 @@ class EncryptionHandshakeTests: XCTestCase {
     private var sharedSecret = Data(repeating: 3, count: 32)
     private var ephemeralSharedSecret = Data(repeating: 4, count: 32)
     private var signature = Data(repeating: 5, count: 32)
-    private var encryptedAuthMessage = Data(repeating: 6, count: 200)
-    private var decryptedAuthAckMessage: Data!
+    private var authECIESMessage = ECIESEncryptedMessage(prefixBytes: Data(), ephemeralPublicKey: Data(), initialVector: Data(), cipher: Data(), checksum: Data())
+    private var encodedAuthECIESMessage: Data!
+    private var encodedAuthAckMessage: Data!
 
     private var encryptionHandshake: EncryptionHandshake!
 
@@ -32,10 +32,11 @@ class EncryptionHandshakeTests: XCTestCase {
         ephemeralKey = ECKey.randomKey()
         remoteKeyPoint = ECKey.randomKey().publicKeyPoint
         remoteEphemeralKeyPoint = ECKey.randomKey().publicKeyPoint
+        encodedAuthECIESMessage = authECIESMessage.encoded()
 
         authMessage = AuthMessage(signature: signature, publicKeyPoint: myKey.publicKeyPoint, nonce: nonce)
-        decryptedAuthAckMessage = RLP.encode([remoteEphemeralKeyPoint.x + remoteEphemeralKeyPoint.y, remoteNonce, 4])
-        authAckMessage = AuthAckMessage(data: decryptedAuthAckMessage)!
+        encodedAuthAckMessage = RLP.encode([remoteEphemeralKeyPoint.x + remoteEphemeralKeyPoint.y, remoteNonce, 4])
+        authAckMessage = AuthAckMessage(data: encodedAuthAckMessage)!
 
         mockCrypto = MockICrypto()
         mockFactory = MockIFactory()
@@ -47,8 +48,8 @@ class EncryptionHandshakeTests: XCTestCase {
             when(mock.ecdhAgree(myKey: equal(to: myKey), remotePublicKeyPoint: equal(to: remoteKeyPoint))).thenReturn(sharedSecret)
             when(mock.ecdhAgree(myKey: equal(to: ephemeralKey), remotePublicKeyPoint: equal(to: remoteEphemeralKeyPoint))).thenReturn(ephemeralSharedSecret)
             when(mock.ellipticSign(_: equal(to: sharedSecret.xor(with: nonce)), key: equal(to: ephemeralKey))).thenReturn(signature)
-            when(mock.eciesEncrypt(remotePublicKey: equal(to: remoteKeyPoint), message: equal(to: authMessage.encoded() + junkData))).thenReturn(encryptedAuthMessage)
-            when(mock.eciesDecrypt(privateKey: equal(to: myKey.privateKey), message: any())).thenReturn(decryptedAuthAckMessage)
+            when(mock.eciesEncrypt(remotePublicKey: equal(to: remoteKeyPoint), message: equal(to: authMessage.encoded() + junkData))).thenReturn(authECIESMessage)
+            when(mock.eciesDecrypt(privateKey: equal(to: myKey.privateKey), message: any())).thenReturn(encodedAuthAckMessage)
         }
 
         stub(mockFactory) { mock in
@@ -91,10 +92,10 @@ class EncryptionHandshakeTests: XCTestCase {
         verifyNoMoreInteractions(mockCrypto)
         verifyNoMoreInteractions(mockFactory)
 
-        XCTAssertEqual(encryptionHandshake.authMessagePacket, encryptedAuthMessage)
+        XCTAssertEqual(encryptionHandshake.authMessagePacket, encodedAuthECIESMessage)
     }
 
-    func testExtractSecretsFromResponse() {
+    func testExtractSecrets() {
         let noncesHash = Data(repeating: 7, count: 32)
         let sharedSecret = Data(repeating: 8, count: 32)
         let aes = Data(repeating: 9, count: 32)
@@ -102,6 +103,7 @@ class EncryptionHandshakeTests: XCTestCase {
         let token = Data(repeating: 11, count: 32)
         let egressMac = KeccakDigest()
         let ingressMac = KeccakDigest()
+        let eciesMessage = ECIESEncryptedMessage(prefixBytes: Data(), ephemeralPublicKey: Data(), initialVector: Data(), cipher: Data(), checksum: Data())
 
         stub(mockCrypto) { mock in
             when(mock.sha3(_: equal(to: remoteNonce + nonce))).thenReturn(noncesHash)
@@ -117,20 +119,20 @@ class EncryptionHandshakeTests: XCTestCase {
 
         let secrets: Secrets!
         do {
-            secrets = try encryptionHandshake.extractSecretsFromResponse(in: Data())
+            secrets = try encryptionHandshake.extractSecrets(from: eciesMessage)
         } catch {
             XCTFail("Unexpected error: \(error)")
             return
         }
 
-        verify(mockCrypto).eciesDecrypt(privateKey: equal(to: myKey.privateKey), message: equal(to: Data()))
+        verify(mockCrypto).eciesDecrypt(privateKey: equal(to: myKey.privateKey), message: equal(to: eciesMessage))
         verify(mockCrypto).ecdhAgree(myKey: equal(to: ephemeralKey), remotePublicKeyPoint: equal(to: remoteEphemeralKeyPoint))
         verify(mockCrypto).sha3(_: equal(to: remoteNonce + nonce))
         verify(mockCrypto).sha3(_: equal(to: ephemeralSharedSecret + noncesHash))
         verify(mockCrypto).sha3(_: equal(to: ephemeralSharedSecret + sharedSecret))
         verify(mockCrypto).sha3(_: equal(to: ephemeralSharedSecret + aes))
         verify(mockCrypto).sha3(_: equal(to: sharedSecret))
-        verify(mockFactory).authAckMessage(data: equal(to: decryptedAuthAckMessage))
+        verify(mockFactory).authAckMessage(data: equal(to: encodedAuthAckMessage))
         verify(mockFactory, times(2)).keccakDigest()
 
         verifyNoMoreInteractions(mockCrypto)
@@ -146,13 +148,14 @@ class EncryptionHandshakeTests: XCTestCase {
         XCTAssertEqual(secrets.ingressMac.digest(), keccakDigest(updatedWith: [mac.xor(with: nonce), Data()]))
     }
 
-    func testExtractSecretsFromResponse_NonDecodableMessage() {
+    func testExtractSecrets_NonDecodableMessage() {
+        let eciesMessage = ECIESEncryptedMessage(prefixBytes: Data(), ephemeralPublicKey: Data(), initialVector: Data(), cipher: Data(), checksum: Data())
         stub(mockFactory) { mock in
             when(mock.authAckMessage(data: any())).thenReturn(nil)
         }
 
         do {
-            _ = try encryptionHandshake.extractSecretsFromResponse(in: Data())
+            _ = try encryptionHandshake.extractSecrets(from: eciesMessage)
             XCTFail("Expecting error")
         } catch let error as EncryptionHandshake.HandshakeError {
             XCTAssertEqual(error, EncryptionHandshake.HandshakeError.invalidAuthAckPayload)

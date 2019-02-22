@@ -39,9 +39,9 @@ class EncryptionHandshake {
         authMessagePacket = encrypt(authMessage: message)
     }
 
-    func extractSecretsFromResponse(in responsePackets: Data) throws -> Secrets {
-        authAckMessagePacket = responsePackets
-        let responseDecrypted = try crypto.eciesDecrypt(privateKey: myKey.privateKey, message: responsePackets)
+    func extractSecrets(from eciesMessage: ECIESEncryptedMessage) throws -> Secrets {
+        authAckMessagePacket = eciesMessage.encoded()
+        let responseDecrypted = try crypto.eciesDecrypt(privateKey: myKey.privateKey, message: eciesMessage)
 
         guard let message = factory.authAckMessage(data: responseDecrypted) else {
             throw HandshakeError.invalidAuthAckPayload
@@ -53,9 +53,9 @@ class EncryptionHandshake {
 
     private func encrypt(authMessage message: AuthMessage) -> Data {
         let encodedMessage = message.encoded() + eip8padding()
-        let eciesEncrypted = crypto.eciesEncrypt(remotePublicKey: remotePublicKeyPoint, message: encodedMessage)
+        let eciesMessage = crypto.eciesEncrypt(remotePublicKey: remotePublicKeyPoint, message: encodedMessage)
 
-        return eciesEncrypted
+        return eciesMessage.encoded()
     }
 
     private func extractSecrets(message: AuthAckMessage) -> Secrets {

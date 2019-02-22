@@ -32,7 +32,7 @@
 		2FA5D4A4E2261235099C40A1 /* AccountState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5DE7DC417CD1AFC180818 /* AccountState.swift */; };
 		2FA5D4D8A080C3424228FC74 /* Node.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D51BD89CC6356F1E6138 /* Node.swift */; };
 		2FA5D51682C4E5B3142ED129 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D86EB23FA5FAC1F8D980 /* Secrets.swift */; };
-		2FA5D5B35CEDF93EFF129A99 /* ECIES.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D83153C7DAF54FFDAC69 /* ECIES.swift */; };
+		2FA5D5B35CEDF93EFF129A99 /* ECIESEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D83153C7DAF54FFDAC69 /* ECIESEngine.swift */; };
 		2FA5D63EFB63A7A6FB6C9641 /* HelperTrieProofsMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D9EB4FC06116CAF83E63 /* HelperTrieProofsMessage.swift */; };
 		2FA5D7BDF45541E1DCC4CD6B /* ECKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D8679E66C5E8E2DA15AB /* ECKey.swift */; };
 		2FA5D7C28C56B02217DEF448 /* PeerGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5DC4BD52779213E1952A6 /* PeerGroup.swift */; };
@@ -48,6 +48,7 @@
 		2FA5DC6FA74CBC6B30E91678 /* EIP155Signer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D35C66049BB927E23808 /* EIP155Signer.swift */; };
 		2FA5DCA80A4F5AE77263EF06 /* BlockHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D541908FBA863AE47DAF /* BlockHeader.swift */; };
 		2FA5DCABC6722CA8A660F3BD /* PongMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D1A1BCF7A1371F2685D0 /* PongMessage.swift */; };
+		2FA5DCECC11487472ABF4E74 /* ECIESEncryptedMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5DB6A93C818473E5758F3 /* ECIESEncryptedMessage.swift */; };
 		2FA5DD415FFB6952F05F2365 /* DisconnectMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5DD7404B8066A334ECB61 /* DisconnectMessage.swift */; };
 		2FA5DD46A3A481CF9B46FA10 /* GetReceiptsMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D9184B03056A0AA6A81C /* GetReceiptsMessage.swift */; };
 		2FA5DD6E7E7E0E34F522ECF0 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D13230B8A0C65D36EB88 /* Extensions.swift */; };
@@ -116,6 +117,7 @@
 		D0DE28D52211695C00FA428C /* AuthAckMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DE28D42211695C00FA428C /* AuthAckMessage.swift */; };
 		D0DE28D7221169A600FA428C /* Frame.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DE28D6221169A600FA428C /* Frame.swift */; };
 		D0DE28D9221169C300FA428C /* FrameCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DE28D8221169C300FA428C /* FrameCodec.swift */; };
+		D0F03E7E22200D6E00E217F5 /* ECIESEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F03E7D22200D6E00E217F5 /* ECIESEngineTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -155,7 +157,7 @@
 		2FA5D6E9922D9BFE332F795F /* AnnounceMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnnounceMessage.swift; sourceTree = "<group>"; };
 		2FA5D70F6465DF3197A7D16B /* ProofsMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProofsMessage.swift; sourceTree = "<group>"; };
 		2FA5D7631B05C28AD14CB208 /* TrieNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TrieNode.swift; sourceTree = "<group>"; };
-		2FA5D83153C7DAF54FFDAC69 /* ECIES.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ECIES.swift; sourceTree = "<group>"; };
+		2FA5D83153C7DAF54FFDAC69 /* ECIESEngine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ECIESEngine.swift; sourceTree = "<group>"; };
 		2FA5D8679E66C5E8E2DA15AB /* ECKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ECKey.swift; sourceTree = "<group>"; };
 		2FA5D86EB23FA5FAC1F8D980 /* Secrets.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
 		2FA5D9184B03056A0AA6A81C /* GetReceiptsMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GetReceiptsMessage.swift; sourceTree = "<group>"; };
@@ -167,6 +169,7 @@
 		2FA5DB020DCF129D22579F81 /* Connection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Connection.swift; sourceTree = "<group>"; };
 		2FA5DB26884D3DD6B0348F7A /* GetContractCodesMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GetContractCodesMessage.swift; sourceTree = "<group>"; };
 		2FA5DB45240D5ABA8611298A /* LESPeer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LESPeer.swift; sourceTree = "<group>"; };
+		2FA5DB6A93C818473E5758F3 /* ECIESEncryptedMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ECIESEncryptedMessage.swift; sourceTree = "<group>"; };
 		2FA5DB7ECB5A111AABF95774 /* TransactionStatusMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionStatusMessage.swift; sourceTree = "<group>"; };
 		2FA5DBCC12984369F14F3168 /* SendTransactionMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendTransactionMessage.swift; sourceTree = "<group>"; };
 		2FA5DC4BD52779213E1952A6 /* PeerGroup.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerGroup.swift; sourceTree = "<group>"; };
@@ -245,6 +248,7 @@
 		D0DE28D42211695C00FA428C /* AuthAckMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthAckMessage.swift; sourceTree = "<group>"; };
 		D0DE28D6221169A600FA428C /* Frame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Frame.swift; sourceTree = "<group>"; };
 		D0DE28D8221169C300FA428C /* FrameCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameCodec.swift; sourceTree = "<group>"; };
+		D0F03E7D22200D6E00E217F5 /* ECIESEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ECIESEngineTests.swift; sourceTree = "<group>"; };
 		DB2DFC95631D62377495C0D8 /* Pods_HSEthereumKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HSEthereumKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -280,8 +284,8 @@
 		3A19DECD216F4422009109F2 /* HSEthereumKitTests */ = {
 			isa = PBXGroup;
 			children = (
+				D0F03E7B22200D5100E217F5 /* Light */,
 				11B3526164D70BCFA52E80FF /* Core */,
-				D045FC1F221C19DB0009BEF6 /* Net */,
 				3A19DED8216F455A009109F2 /* Helpers */,
 				11B359F34D40C2E21B4CD620 /* GeneratedMocks.swift */,
 				3A19DED0216F4422009109F2 /* Info.plist */,
@@ -603,7 +607,8 @@
 			children = (
 				2FA5D954B771889521CE2999 /* Crypto.swift */,
 				2FA5D8679E66C5E8E2DA15AB /* ECKey.swift */,
-				2FA5D83153C7DAF54FFDAC69 /* ECIES.swift */,
+				2FA5DB6A93C818473E5758F3 /* ECIESEncryptedMessage.swift */,
+				2FA5D83153C7DAF54FFDAC69 /* ECIESEngine.swift */,
 				2FA5D2551DD1A31FAE14B658 /* ECPoint.swift */,
 			);
 			path = Crypto;
@@ -651,6 +656,23 @@
 				2FA5DB7ECB5A111AABF95774 /* TransactionStatusMessage.swift */,
 			);
 			path = Messages;
+			sourceTree = "<group>";
+		};
+		D0F03E7B22200D5100E217F5 /* Light */ = {
+			isa = PBXGroup;
+			children = (
+				D0F03E7C22200D5F00E217F5 /* Crypto */,
+				D045FC1F221C19DB0009BEF6 /* Net */,
+			);
+			path = Light;
+			sourceTree = "<group>";
+		};
+		D0F03E7C22200D5F00E217F5 /* Crypto */ = {
+			isa = PBXGroup;
+			children = (
+				D0F03E7D22200D6E00E217F5 /* ECIESEngineTests.swift */,
+			);
+			path = Crypto;
 			sourceTree = "<group>";
 		};
 		FEB70F892491AA1E98BF0B33 /* Pods */ = {
@@ -866,6 +888,7 @@
 				58AAA7C99F4D8FD7DF51C749 /* AddressValidatorTests.swift in Sources */,
 				D045FC22221C1A290009BEF6 /* EncryptionHandshakeTests.swift in Sources */,
 				3C7B97D4EA0867E5FC827D07 /* EIP55Tests.swift in Sources */,
+				D0F03E7E22200D6E00E217F5 /* ECIESEngineTests.swift in Sources */,
 				11B35FCE3632C73F4272964F /* EthereumKitTests.swift in Sources */,
 				11B356BF054DFC99D8EB19E5 /* GeneratedMocks.swift in Sources */,
 				2FA5DD6E7E7E0E34F522ECF0 /* Extensions.swift in Sources */,
@@ -931,7 +954,7 @@
 				2FA5D1A791D3CCD4D6112AD4 /* EncryptionHandshake.swift in Sources */,
 				2FA5D20E88F8586DE6525EE8 /* ECPoint.swift in Sources */,
 				2FA5D7BDF45541E1DCC4CD6B /* ECKey.swift in Sources */,
-				2FA5D5B35CEDF93EFF129A99 /* ECIES.swift in Sources */,
+				2FA5D5B35CEDF93EFF129A99 /* ECIESEngine.swift in Sources */,
 				2FA5D3F4D073AC875668BC60 /* RLPElement.swift in Sources */,
 				2FA5D51682C4E5B3142ED129 /* Secrets.swift in Sources */,
 				2FA5D305198C4D1299F3E243 /* PingMessage.swift in Sources */,
@@ -975,6 +998,7 @@
 				2FA5D0AB7FDC96F55B71D878 /* SPVBlockchain.swift in Sources */,
 				2FA5DEC3120ADD70599E4D30 /* Crypto.swift in Sources */,
 				2FA5D0C989B966163BEDA335 /* Factory.swift in Sources */,
+				2FA5DCECC11487472ABF4E74 /* ECIESEncryptedMessage.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -8,13 +8,24 @@ protocol IFactory: class {
     func keccakDigest() -> KeccakDigest
 }
 
+protocol IECIESCrypto {
+    func randomKey() -> ECKey
+    func randomBytes(length: Int) -> Data
+    func ecdhAgree(myKey: ECKey, remotePublicKeyPoint: ECPoint) -> Data
+    func ecdhAgree(myPrivateKey: Data, remotePublicKeyPoint: Data) -> Data
+    func concatKDF(_ data: Data) -> Data
+    func sha256(_ data: Data) -> Data
+    func aesEncrypt(_: Data, withKey: Data, keySize: Int, iv: Data) -> Data
+    func hmacSha256(_: Data, key: Data, iv: Data, macData: Data) -> Data
+}
+
 protocol ICrypto: class {
     func randomKey() -> ECKey
     func randomBytes(length: Int) -> Data
     func ecdhAgree(myKey: ECKey, remotePublicKeyPoint: ECPoint) -> Data
     func ellipticSign(_ messageToSign: Data, key: ECKey) throws -> Data
-    func eciesDecrypt(privateKey: Data, message: Data) throws -> Data
-    func eciesEncrypt(remotePublicKey: ECPoint, message: Data) -> Data
+    func eciesDecrypt(privateKey: Data, message: ECIESEncryptedMessage) throws -> Data
+    func eciesEncrypt(remotePublicKey: ECPoint, message: Data) -> ECIESEncryptedMessage
     func sha3(_ data: Data) -> Data
 }
 
