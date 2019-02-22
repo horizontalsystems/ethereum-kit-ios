@@ -4,6 +4,9 @@ class PingMessage: IMessage {
 
     static let payload = Data(bytes: [UInt8(0xc0)])
 
+    init() {
+    }
+
     required init?(data: Data) {
     }
 

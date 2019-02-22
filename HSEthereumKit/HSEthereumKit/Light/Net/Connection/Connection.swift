@@ -18,7 +18,7 @@ class Connection: NSObject {
     weak var delegate: IConnectionDelegate?
     private var handshake: EncryptionHandshake?
     private var frameCodec: FrameCodec?
-    private let converter: IFramesMessageConverter
+    private let frameHandler: IFrameHandler
 
     private var runLoop: RunLoop?
     private var readStream: Unmanaged<CFReadStream>?
@@ -42,7 +42,7 @@ class Connection: NSObject {
         self.port = UInt32(node.port)
         self.discPort = UInt32(node.discoveryPort)
 
-        converter = FramesMessageConverter()
+        frameHandler = FrameHandler()
     }
 
     deinit {
@@ -117,8 +117,15 @@ class Connection: NSObject {
                         break
                     }
 
-                    if let message = converter.convertToMessage(frames: frames) {
-                        delegate?.connection(didReceiveMessage: message)
+                    frameHandler.addFrames(frames: frames)
+
+                    do {
+                        while let message = try frameHandler.getMessage() {
+                            delegate?.connection(didReceiveMessage: message)
+                        }
+                    } catch {
+                        log("ERROR: Frame handling error: \(error)")
+                        disconnect(error: error)
                     }
                 }
             }
@@ -199,8 +206,8 @@ extension Connection: IConnection {
         log("DISCONNECTED")
     }
 
-    func register(packetTypesMap: [Int: IMessage.Type]) {
-        converter.register(packetTypesMap: packetTypesMap)
+    func register(capability: Capability) {
+        frameHandler.register(capability: capability)
     }
 
     func send(message: IMessage) {
@@ -211,7 +218,7 @@ extension Connection: IConnection {
             return
         }
 
-        let frames = converter.convertToFrames(message: message)
+        let frames = frameHandler.getFrames(from: message)
 
         for frame in frames {
             let encodedFrame = frameCodec.encodeFrame(frame: frame)

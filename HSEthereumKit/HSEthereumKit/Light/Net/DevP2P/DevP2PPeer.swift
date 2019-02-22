@@ -29,7 +29,7 @@ class DevP2PPeer {
     func proceedHandshake() {
         if helloSent {
             if helloReceived {
-                connection.register(packetTypesMap: capability.packetTypesMap)
+                connection.register(capability: capability)
                 delegate?.connectionEstablished()
                 return
             }

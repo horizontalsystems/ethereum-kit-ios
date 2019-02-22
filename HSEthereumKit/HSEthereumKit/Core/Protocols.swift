@@ -58,7 +58,7 @@ protocol IConnection: class {
     var logName: String { get }
     func connect()
     func disconnect(error: Error?)
-    func register(packetTypesMap: [Int: IMessage.Type])
+    func register(capability: Capability)
     func send(message: IMessage)
 }
 
@@ -68,10 +68,11 @@ protocol INetwork {
     var checkpointBlock: BlockHeader{ get }
 }
 
-protocol IFramesMessageConverter {
-    func register(packetTypesMap: [Int: IMessage.Type])
-    func convertToMessage(frames: [Frame]) -> IMessage?
-    func convertToFrames(message: IMessage) -> [Frame]
+protocol IFrameHandler {
+    func register(capability: Capability)
+    func addFrames(frames: [Frame])
+    func getMessage() throws -> IMessage?
+    func getFrames(from message: IMessage) -> [Frame]
 }
 
 protocol IMessage {
