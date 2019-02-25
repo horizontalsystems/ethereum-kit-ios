@@ -12,8 +12,8 @@ class ECIESEngine {
     static let prefix = 65 + 128 / 8 + 32
 
     func encrypt(crypto: IECIESCrypto, remotePublicKey: ECPoint, message: Data) -> ECIESEncryptedMessage {
-        var prefix = UInt16(ECIESEngine.prefix + message.count)
-        let prefixBytes = Data(Data(bytes: &prefix, count: MemoryLayout<UInt16>.size).reversed())
+        let prefix = UInt16(ECIESEngine.prefix + message.count)
+        let prefixBytes = Data(prefix.data.reversed())
 
         let initialVector = crypto.randomBytes(length: 16)
         let ephemeralKey = crypto.randomKey()
