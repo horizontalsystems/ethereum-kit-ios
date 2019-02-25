@@ -159,9 +159,9 @@ extension GrdbStorage: IStorage {
             let predicate: SQLExpressible
 
             if erc20 {
-                predicate = EthereumTransaction.Columns.contractAddress != nil
+                predicate = EthereumTransaction.Columns.contractAddress != ""
             } else {
-                predicate = EthereumTransaction.Columns.contractAddress == nil
+                predicate = EthereumTransaction.Columns.contractAddress == ""
             }
 
             return try EthereumTransaction.filter(predicate).order(EthereumTransaction.Columns.blockNumber.desc).fetchOne(db)?.blockNumber

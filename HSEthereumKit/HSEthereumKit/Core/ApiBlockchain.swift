@@ -170,7 +170,9 @@ class ApiBlockchain {
 
     private func update(transactions: [EthereumTransaction]) {
         storage.save(transactions: transactions)
-        delegate?.onUpdate(transactions: transactions)
+
+        // transactions related to erc20 should be saved to db, but not reported to delegate
+        delegate?.onUpdate(transactions: transactions.filter { $0.input == "0x" })
     }
 
     private func updateErc20(transactions: [EthereumTransaction]) {
