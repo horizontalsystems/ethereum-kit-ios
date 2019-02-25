@@ -276,7 +276,7 @@ extension ApiBlockchain: IBlockchain {
                     return weakSelf.sendErc20Single(to: address, contractAddress: contractAddress, nonce: nonce, amount: amount, gasPriceInWei: gasPriceInWei)
                 }
                 .do(onSuccess: { [weak self] transaction in
-                    self?.update(transactions: [transaction])
+                    self?.updateErc20(transactions: [transaction])
                 })
     }
 

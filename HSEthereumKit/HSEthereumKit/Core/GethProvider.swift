@@ -93,7 +93,7 @@ extension GethProvider: IApiProvider {
 
     func balanceSingle(address: String) -> Single<String> {
         return Single.create { [unowned geth] observer in
-            geth.getBalance(of: address, blockParameter: .pending, completionHandler: { result in
+            geth.getBalance(of: address, completionHandler: { result in
                 switch result {
                 case .success(let balance):
                     observer(.success(balance.wei.asString(withBase: 10)))
