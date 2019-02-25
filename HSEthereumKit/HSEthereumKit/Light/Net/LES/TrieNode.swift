@@ -61,7 +61,8 @@ class TrieNode {
     private static func secondCharacter(ofByteInHex byte: UInt8) -> String {
         let byteString = String(byte, radix: 16)
 
-        return byteString.substring(from: byteString.index(byteString.startIndex, offsetBy: 1))
+        let startIndex = byteString.index(byteString.startIndex, offsetBy: 1)
+        return String(byteString[startIndex...])
     }
 
     func getPath(element: Data?) -> String? {

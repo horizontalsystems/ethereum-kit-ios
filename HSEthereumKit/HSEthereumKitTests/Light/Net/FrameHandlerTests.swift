@@ -48,7 +48,7 @@ class FrameHandlerTests: XCTestCase {
         frameHandler.addFrames(frames: frames)
 
         do {
-            let resolvedMessage = try frameHandler.getMessage()
+            let _ = try frameHandler.getMessage()
             XCTFail("Expected to throw error")
         } catch let error as FrameHandler.FrameHandlerError {
             XCTAssertEqual(error, FrameHandler.FrameHandlerError.unknownMessageType)
@@ -65,7 +65,7 @@ class FrameHandlerTests: XCTestCase {
         frameHandler.addFrames(frames: frames)
 
         do {
-            let resolvedMessage = try frameHandler.getMessage()
+            let _ = try frameHandler.getMessage()
             XCTFail("Expected to throw error")
         } catch let error as FrameHandler.FrameHandlerError {
             XCTAssertEqual(error, FrameHandler.FrameHandlerError.invalidPayload)

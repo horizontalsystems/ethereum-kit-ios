@@ -8,7 +8,7 @@ class PeerGroup {
     weak var delegate: IPeerGroupDelegate?
 
     init(network: INetwork, address: String) {
-        self.address = Data(hex: address.substring(from: address.index(address.startIndex, offsetBy: 2)))
+        self.address = Data(hex: String(address[address.index(address.startIndex, offsetBy: 2)...]))
 //        self.address = Data(hex: "f757461bdc25ee2b047d545a50768e52d530b750")
 //        self.address = Data(hex: "f757461bdc25ee2b047d545a50768e52d530b751")
 //        self.address = Data(hex: "37531e574427BDE92d9B3a3c2291D9A004827435")

@@ -15,8 +15,8 @@ protocol IECIESCrypto {
     func ecdhAgree(myPrivateKey: Data, remotePublicKeyPoint: Data) -> Data
     func concatKDF(_ data: Data) -> Data
     func sha256(_ data: Data) -> Data
-    func aesEncrypt(_: Data, withKey: Data, keySize: Int, iv: Data) -> Data
-    func hmacSha256(_: Data, key: Data, iv: Data, macData: Data) -> Data
+    func aesEncrypt(_ data: Data, withKey: Data, keySize: Int, iv: Data) -> Data
+    func hmacSha256(_ data: Data, key: Data, iv: Data, macData: Data) -> Data
 }
 
 protocol ICrypto: class {
