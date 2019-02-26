@@ -115,6 +115,7 @@
 		D0B13ED9222504A700C7C2CA /* AESEncryptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B13ED8222504A700C7C2CA /* AESEncryptor.swift */; };
 		D0B13EDB2225350B00C7C2CA /* FrameCodecHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B13EDA2225350B00C7C2CA /* FrameCodecHelper.swift */; };
 		D0B13EDD2225589600C7C2CA /* FrameCodecHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B13EDC2225589600C7C2CA /* FrameCodecHelperTests.swift */; };
+		D0B13EE22225609E00C7C2CA /* RandomHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B13EE12225609E00C7C2CA /* RandomHelper.swift */; };
 		D0DE28CC221168EC00FA428C /* HelloMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DE28CB221168EC00FA428C /* HelloMessage.swift */; };
 		D0DE28D02211691B00FA428C /* StatusMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DE28CF2211691B00FA428C /* StatusMessage.swift */; };
 		D0DE28D32211694E00FA428C /* AuthMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DE28D22211694E00FA428C /* AuthMessage.swift */; };
@@ -250,6 +251,7 @@
 		D0B13ED8222504A700C7C2CA /* AESEncryptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AESEncryptor.swift; sourceTree = "<group>"; };
 		D0B13EDA2225350B00C7C2CA /* FrameCodecHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameCodecHelper.swift; sourceTree = "<group>"; };
 		D0B13EDC2225589600C7C2CA /* FrameCodecHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameCodecHelperTests.swift; sourceTree = "<group>"; };
+		D0B13EE12225609E00C7C2CA /* RandomHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RandomHelper.swift; sourceTree = "<group>"; };
 		D0DE28CB221168EC00FA428C /* HelloMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelloMessage.swift; sourceTree = "<group>"; };
 		D0DE28CF2211691B00FA428C /* StatusMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusMessage.swift; sourceTree = "<group>"; };
 		D0DE28D22211694E00FA428C /* AuthMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthMessage.swift; sourceTree = "<group>"; };
@@ -626,6 +628,14 @@
 			path = Crypto;
 			sourceTree = "<group>";
 		};
+		D0B13EE02225608500C7C2CA /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				D0B13EE12225609E00C7C2CA /* RandomHelper.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
 		D0BE8B6F21C9173B0090D264 /* Crypto */ = {
 			isa = PBXGroup;
 			children = (
@@ -638,6 +648,7 @@
 			isa = PBXGroup;
 			children = (
 				D08D5BE721FB19B900E5424D /* Crypto */,
+				D0B13EE02225608500C7C2CA /* Helpers */,
 				D08D5BDE21F9810A00E5424D /* Net */,
 				D05FFB7D221D5F1A00A85000 /* Models */,
 				2FA5DE7DC417CD1AFC180818 /* AccountState.swift */,
@@ -960,6 +971,7 @@
 				58AAA9112849585C4F820AE8 /* AddressValidator.swift in Sources */,
 				58AAA05BE3573AABBCBC6018 /* GethProvider.swift in Sources */,
 				58AAA609C234AA48E23F4AE9 /* ReachabilityManager.swift in Sources */,
+				D0B13EE22225609E00C7C2CA /* RandomHelper.swift in Sources */,
 				58AAAF70BEF433B84C1AC0CD /* Protocols.swift in Sources */,
 				D0DE28D9221169C300FA428C /* FrameCodec.swift in Sources */,
 				58AAA52235D840702E55CAF4 /* Extensions.swift in Sources */,

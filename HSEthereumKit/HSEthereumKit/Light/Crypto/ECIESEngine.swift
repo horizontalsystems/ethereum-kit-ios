@@ -11,12 +11,12 @@ class ECIESEngine {
     // 128 bit EC public key, IV, 256 bit MAC
     static let prefix = 65 + 128 / 8 + 32
 
-    func encrypt(crypto: IECIESCrypto, remotePublicKey: ECPoint, message: Data) -> ECIESEncryptedMessage {
+    func encrypt(crypto: IECIESCrypto, randomHelper: IRandomHelper, remotePublicKey: ECPoint, message: Data) -> ECIESEncryptedMessage {
         let prefix = UInt16(ECIESEngine.prefix + message.count)
         let prefixBytes = Data(prefix.data.reversed())
 
-        let initialVector = crypto.randomBytes(length: 16)
-        let ephemeralKey = crypto.randomKey()
+        let initialVector = randomHelper.randomBytes(length: 16)
+        let ephemeralKey = randomHelper.randomKey()
 
         let sharedSecret = crypto.ecdhAgree(myKey: ephemeralKey, remotePublicKeyPoint: remotePublicKey)
         let derivedKey = crypto.concatKDF(sharedSecret)

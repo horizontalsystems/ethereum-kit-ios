@@ -9,6 +9,7 @@ class EncryptionHandshakeTests: XCTestCase {
     private var remoteKeyPoint: ECPoint!
     private var remoteEphemeralKeyPoint: ECPoint!
     private var mockCrypto: MockICrypto!
+    private var mockRandom: MockIRandomHelper!
     private var mockFactory: MockIFactory!
     private var authMessage: AuthMessage!
     private var authAckMessage: AuthAckMessage!
@@ -39,12 +40,16 @@ class EncryptionHandshakeTests: XCTestCase {
         authAckMessage = AuthAckMessage(data: encodedAuthAckMessage)!
 
         mockCrypto = MockICrypto()
+        mockRandom = MockIRandomHelper()
         mockFactory = MockIFactory()
 
-        stub(mockCrypto) { mock in
+        stub(mockRandom) { mock in
             when(mock.randomKey()).thenReturn(ephemeralKey)
             when(mock.randomBytes(length: equal(to: 32))).thenReturn(nonce)
-            when(mock.randomBytes(length: equal(to: 100, equalWhen: { $0 <= $1 }))).thenReturn(junkData)
+            when(mock.randomBytes(length: equal(to: Range<Int>(uncheckedBounds: (lower: 100, upper: 300))))).thenReturn(junkData)
+        }
+
+        stub(mockCrypto) { mock in
             when(mock.ecdhAgree(myKey: equal(to: myKey), remotePublicKeyPoint: equal(to: remoteKeyPoint))).thenReturn(sharedSecret)
             when(mock.ecdhAgree(myKey: equal(to: ephemeralKey), remotePublicKeyPoint: equal(to: remoteEphemeralKeyPoint))).thenReturn(ephemeralSharedSecret)
             when(mock.ellipticSign(_: equal(to: sharedSecret.xor(with: nonce)), key: equal(to: ephemeralKey))).thenReturn(signature)
@@ -57,9 +62,9 @@ class EncryptionHandshakeTests: XCTestCase {
             when(mock.authAckMessage(data: any())).thenReturn(authAckMessage)
         }
 
-        encryptionHandshake = EncryptionHandshake(myKey: myKey, publicKeyPoint: remoteKeyPoint, crypto: mockCrypto, factory: mockFactory)
-        verify(mockCrypto).randomKey()
-        verify(mockCrypto).randomBytes(length: equal(to: 32))
+        encryptionHandshake = EncryptionHandshake(myKey: myKey, publicKeyPoint: remoteKeyPoint, crypto: mockCrypto, randomHelper: mockRandom, factory: mockFactory)
+        verify(mockRandom).randomKey()
+        verify(mockRandom).randomBytes(length: equal(to: 32))
     }
     
     override func tearDown() {
@@ -69,6 +74,7 @@ class EncryptionHandshakeTests: XCTestCase {
         remoteEphemeralKeyPoint = nil
         encryptionHandshake = nil
         mockCrypto = nil
+        mockRandom = nil
         mockFactory = nil
         authMessage = nil
         authAckMessage = nil
@@ -87,7 +93,7 @@ class EncryptionHandshakeTests: XCTestCase {
 
         verify(mockCrypto).ecdhAgree(myKey: equal(to: myKey), remotePublicKeyPoint: equal(to: remoteKeyPoint))
         verify(mockCrypto).ellipticSign(_: equal(to: sharedSecret.xor(with: nonce)), key: equal(to: ephemeralKey))
-        verify(mockCrypto).randomBytes(length: equal(to: 100, equalWhen: { $0 <= $1 }))
+        verify(mockRandom).randomBytes(length: equal(to: Range<Int>(uncheckedBounds: (lower: 100, upper: 300))))
         verify(mockCrypto).eciesEncrypt(remotePublicKey: equal(to: remoteKeyPoint), message: equal(to: authMessage.encoded() + junkData))
         verify(mockFactory).authMessage(signature: equal(to: signature), publicKeyPoint: equal(to: myKey.publicKeyPoint), nonce: equal(to: nonce))
 

@@ -4,6 +4,7 @@ import Cuckoo
 
 class ECIESEngineTests: XCTestCase {
     private var mockCrypto: MockIECIESCrypto!
+    private var mockRandom: MockIRandomHelper!
     private var eciesEngine: ECIESEngine!
 
     private var myKey = ECKey.randomKey()
@@ -25,10 +26,14 @@ class ECIESEngineTests: XCTestCase {
         prefixBytes = Data(prefix.data.reversed())
 
         mockCrypto = MockIECIESCrypto()
-        stub(mockCrypto) { mock in
+        mockRandom = MockIRandomHelper()
+
+        stub(mockRandom) { mock in
             when(mock.randomBytes(length: equal(to: 16))).thenReturn(initialVector)
             when(mock.randomKey()).thenReturn(ephemeralKey)
+        }
 
+        stub(mockCrypto) { mock in
             when(mock.ecdhAgree(myKey: equal(to: ephemeralKey), remotePublicKeyPoint: equal(to: remotePublicKey))).thenReturn(sharedSecret)
             when(mock.ecdhAgree(myPrivateKey: equal(to: myKey.privateKey), remotePublicKeyPoint: equal(to: ephemeralKey.publicKeyPoint.uncompressed()))).thenReturn(sharedSecret)
 
@@ -52,10 +57,10 @@ class ECIESEngineTests: XCTestCase {
     }
 
     func testEncrypt() {
-        let encrypted = eciesEngine.encrypt(crypto: mockCrypto, remotePublicKey: remotePublicKey, message: message)
+        let encrypted = eciesEngine.encrypt(crypto: mockCrypto, randomHelper: mockRandom, remotePublicKey: remotePublicKey, message: message)
 
-        verify(mockCrypto).randomBytes(length: equal(to: 16))
-        verify(mockCrypto).randomKey()
+        verify(mockRandom).randomBytes(length: equal(to: 16))
+        verify(mockRandom).randomKey()
         verify(mockCrypto).ecdhAgree(myKey: equal(to: ephemeralKey), remotePublicKeyPoint: equal(to: remotePublicKey))
         verify(mockCrypto).concatKDF(_: equal(to: sharedSecret))
         verify(mockCrypto).sha256(_: equal(to: Data(derivedKey.subdata(in: 16..<32))))

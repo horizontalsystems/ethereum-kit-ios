@@ -11,6 +11,7 @@ class EncryptionHandshake {
     static let NONCE_SIZE: Int = 32
 
     private let crypto: ICrypto
+    private let random: IRandomHelper
     private let factory: IFactory
     private let myKey: ECKey
     private let ephemeralKey: ECKey
@@ -18,13 +19,14 @@ class EncryptionHandshake {
     private let initiatorNonce: Data
     private var authMessagePacket = Data()
 
-    init(myKey: ECKey, publicKeyPoint: ECPoint, crypto: ICrypto, factory: IFactory) {
+    init(myKey: ECKey, publicKeyPoint: ECPoint, crypto: ICrypto, randomHelper: IRandomHelper, factory: IFactory) {
         self.crypto = crypto
+        self.random = randomHelper
         self.factory = factory
         self.myKey = myKey
         remotePublicKeyPoint = publicKeyPoint
-        ephemeralKey = crypto.randomKey()
-        initiatorNonce = crypto.randomBytes(length: 32)
+        ephemeralKey = random.randomKey()
+        initiatorNonce = random.randomBytes(length: 32)
     }
 
     func createAuthMessage() throws -> Data {
@@ -75,9 +77,7 @@ class EncryptionHandshake {
     }
 
     private func eip8padding() -> Data {
-        let junkLength = Int.random(in: 100..<300)
-
-        return crypto.randomBytes(length: junkLength)
+        return random.randomBytes(length: 100..<300)
     }
 
 }

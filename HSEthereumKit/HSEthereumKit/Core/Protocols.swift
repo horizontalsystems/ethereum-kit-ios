@@ -2,6 +2,12 @@ import Foundation
 import RxSwift
 import HSCryptoKit
 
+protocol IRandomHelper: class {
+    func randomKey() -> ECKey
+    func randomBytes(length: Int) -> Data
+    func randomBytes(length: Range<Int>) -> Data
+}
+
 protocol IFactory: class {
     func authMessage(signature: Data, publicKeyPoint: ECPoint, nonce: Data) -> AuthMessage
     func authAckMessage(data: Data) -> AuthAckMessage?
@@ -19,8 +25,6 @@ protocol IAESEncryptor {
 }
 
 protocol IECIESCrypto {
-    func randomKey() -> ECKey
-    func randomBytes(length: Int) -> Data
     func ecdhAgree(myKey: ECKey, remotePublicKeyPoint: ECPoint) -> Data
     func ecdhAgree(myPrivateKey: Data, remotePublicKeyPoint: Data) -> Data
     func concatKDF(_ data: Data) -> Data
@@ -30,8 +34,6 @@ protocol IECIESCrypto {
 }
 
 protocol ICrypto: class {
-    func randomKey() -> ECKey
-    func randomBytes(length: Int) -> Data
     func ecdhAgree(myKey: ECKey, remotePublicKeyPoint: ECPoint) -> Data
     func ellipticSign(_ messageToSign: Data, key: ECKey) throws -> Data
     func eciesDecrypt(privateKey: Data, message: ECIESEncryptedMessage) throws -> Data

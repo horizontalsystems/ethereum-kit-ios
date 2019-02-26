@@ -4,20 +4,7 @@ import HSCryptoKit
 class Crypto: ICrypto {
 
     let eciesEngine = ECIESEngine()
-
-    func randomKey() -> ECKey {
-        return ECKey.randomKey()
-    }
-
-    func randomBytes(length: Int) -> Data {
-        var bytes = Data(count: length)
-        let _ = bytes.withUnsafeMutableBytes {
-            (mutableBytes: UnsafeMutablePointer<UInt8>) -> Int32 in
-            SecRandomCopyBytes(kSecRandomDefault, length, mutableBytes)
-        }
-
-        return bytes
-    }
+    let random = RandomHelper()
 
     func ecdhAgree(myKey: ECKey, remotePublicKeyPoint: ECPoint) -> Data {
         return CryptoKit.ecdhAgree(privateKey: myKey.privateKey, withPublicKey: remotePublicKeyPoint.uncompressed())
@@ -32,7 +19,7 @@ class Crypto: ICrypto {
     }
 
     func eciesEncrypt(remotePublicKey: ECPoint, message: Data) -> ECIESEncryptedMessage {
-        return eciesEngine.encrypt(crypto: self, remotePublicKey: remotePublicKey, message: message)
+        return eciesEngine.encrypt(crypto: self, randomHelper: random, remotePublicKey: remotePublicKey, message: message)
     }
 
     func sha3(_ data: Data) -> Data {
