@@ -15,9 +15,9 @@ class FrameHandler: IFrameHandler {
         0x03: PongMessage.self
     ]
 
-    var packetTypesMap: [Int: IMessage.Type] = FrameHandler.devP2PPacketTypesMap
-    var frames = [Frame]()
-    var capabilities: [Capability] = []
+    private var packetTypesMap: [Int: IMessage.Type] = FrameHandler.devP2PPacketTypesMap
+    private var frames = [Frame]()
+    private var capabilities: [Capability] = []
 
     func register(capability: Capability) {
         self.packetTypesMap = FrameHandler.devP2PPacketTypesMap
@@ -37,8 +37,8 @@ class FrameHandler: IFrameHandler {
         }
     }
 
-    func addFrames(frames: [Frame]) {
-        self.frames.append(contentsOf: frames)
+    func add(frame: Frame) {
+        self.frames.append(frame)
     }
 
     func getMessage() throws -> IMessage? {
@@ -71,5 +71,5 @@ class FrameHandler: IFrameHandler {
 
         return frames
     }
-}
 
+}

@@ -42,6 +42,7 @@
 		2FA5DB10DC5D47E5D962923E /* BlockHeadersMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D5ABAD0B3E9783140405 /* BlockHeadersMessage.swift */; };
 		2FA5DB53D8BEF7817AF48226 /* GetProofsMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D4911004F5FDA3416211 /* GetProofsMessage.swift */; };
 		2FA5DB82D60FEB171078AD2B /* ReceiptsMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5DAE3530F7B1EB580DD6F /* ReceiptsMessage.swift */; };
+		2FA5DB895FCE9F2D5F647471 /* FrameCodecTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D1166DD8433574C3A3CF /* FrameCodecTests.swift */; };
 		2FA5DB8E7A85D2FFF7EDF697 /* TransactionStatusMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5DB7ECB5A111AABF95774 /* TransactionStatusMessage.swift */; };
 		2FA5DB9E65D95E9783E8555A /* ProofsMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D70F6465DF3197A7D16B /* ProofsMessage.swift */; };
 		2FA5DC2C7AD65186A16111DD /* AnnounceMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D6E9922D9BFE332F795F /* AnnounceMessage.swift */; };
@@ -111,6 +112,9 @@
 		CF113F32D42C1F8ED834F4C4 /* Pods_HSEthereumKitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 76F074BC2886A32B1444D8D7 /* Pods_HSEthereumKitTests.framework */; };
 		D045FC22221C1A290009BEF6 /* EncryptionHandshakeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D045FC21221C1A290009BEF6 /* EncryptionHandshakeTests.swift */; };
 		D07C3ED3221ACBDA0081DCD2 /* Capability.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07C3ED2221ACBDA0081DCD2 /* Capability.swift */; };
+		D0B13ED9222504A700C7C2CA /* AESEncryptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B13ED8222504A700C7C2CA /* AESEncryptor.swift */; };
+		D0B13EDB2225350B00C7C2CA /* FrameCodecHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B13EDA2225350B00C7C2CA /* FrameCodecHelper.swift */; };
+		D0B13EDD2225589600C7C2CA /* FrameCodecHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B13EDC2225589600C7C2CA /* FrameCodecHelperTests.swift */; };
 		D0DE28CC221168EC00FA428C /* HelloMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DE28CB221168EC00FA428C /* HelloMessage.swift */; };
 		D0DE28D02211691B00FA428C /* StatusMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DE28CF2211691B00FA428C /* StatusMessage.swift */; };
 		D0DE28D32211694E00FA428C /* AuthMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DE28D22211694E00FA428C /* AuthMessage.swift */; };
@@ -140,6 +144,7 @@
 		11B35AC255BE64FE27CB8220 /* ApiBlockchain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApiBlockchain.swift; sourceTree = "<group>"; };
 		11B35E9EFA334E9433C71CD4 /* GrdbStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GrdbStorage.swift; sourceTree = "<group>"; };
 		2FA5D05F4E0D54E432282958 /* Ropsten.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ropsten.swift; sourceTree = "<group>"; };
+		2FA5D1166DD8433574C3A3CF /* FrameCodecTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FrameCodecTests.swift; sourceTree = "<group>"; };
 		2FA5D13230B8A0C65D36EB88 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		2FA5D1A1BCF7A1371F2685D0 /* PongMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PongMessage.swift; sourceTree = "<group>"; };
 		2FA5D2551DD1A31FAE14B658 /* ECPoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ECPoint.swift; sourceTree = "<group>"; };
@@ -242,6 +247,9 @@
 		A7A1910508AEEE2D89293A0A /* Pods-HSEthereumKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HSEthereumKit.debug.xcconfig"; path = "../Pods/Target Support Files/Pods-HSEthereumKit/Pods-HSEthereumKit.debug.xcconfig"; sourceTree = "<group>"; };
 		D045FC21221C1A290009BEF6 /* EncryptionHandshakeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptionHandshakeTests.swift; sourceTree = "<group>"; };
 		D07C3ED2221ACBDA0081DCD2 /* Capability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Capability.swift; sourceTree = "<group>"; };
+		D0B13ED8222504A700C7C2CA /* AESEncryptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AESEncryptor.swift; sourceTree = "<group>"; };
+		D0B13EDA2225350B00C7C2CA /* FrameCodecHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameCodecHelper.swift; sourceTree = "<group>"; };
+		D0B13EDC2225589600C7C2CA /* FrameCodecHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameCodecHelperTests.swift; sourceTree = "<group>"; };
 		D0DE28CB221168EC00FA428C /* HelloMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelloMessage.swift; sourceTree = "<group>"; };
 		D0DE28CF2211691B00FA428C /* StatusMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusMessage.swift; sourceTree = "<group>"; };
 		D0DE28D22211694E00FA428C /* AuthMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthMessage.swift; sourceTree = "<group>"; };
@@ -518,6 +526,7 @@
 				2FA5DFB30D819EF531C3398E /* EncryptionHandshake.swift */,
 				D0DE28D6221169A600FA428C /* Frame.swift */,
 				D0DE28D8221169C300FA428C /* FrameCodec.swift */,
+				D0B13EDA2225350B00C7C2CA /* FrameCodecHelper.swift */,
 				2FA5D9307BE059CD9E3D547B /* FramesHandler.swift */,
 				2FA5D86EB23FA5FAC1F8D980 /* Secrets.swift */,
 			);
@@ -528,7 +537,6 @@
 			isa = PBXGroup;
 			children = (
 				D045FC20221C19F20009BEF6 /* Connection */,
-				2FA5DD8CB36A6B69D3C60578 /* FrameHandlerTests.swift */,
 			);
 			path = Net;
 			sourceTree = "<group>";
@@ -537,6 +545,9 @@
 			isa = PBXGroup;
 			children = (
 				D045FC21221C1A290009BEF6 /* EncryptionHandshakeTests.swift */,
+				2FA5D1166DD8433574C3A3CF /* FrameCodecTests.swift */,
+				D0B13EDC2225589600C7C2CA /* FrameCodecHelperTests.swift */,
+				2FA5DD8CB36A6B69D3C60578 /* FrameHandlerTests.swift */,
 			);
 			path = Connection;
 			sourceTree = "<group>";
@@ -605,6 +616,7 @@
 		D08D5BE721FB19B900E5424D /* Crypto */ = {
 			isa = PBXGroup;
 			children = (
+				D0B13ED8222504A700C7C2CA /* AESEncryptor.swift */,
 				2FA5D954B771889521CE2999 /* Crypto.swift */,
 				2FA5D8679E66C5E8E2DA15AB /* ECKey.swift */,
 				2FA5DB6A93C818473E5758F3 /* ECIESEncryptedMessage.swift */,
@@ -887,12 +899,14 @@
 			files = (
 				58AAA7C99F4D8FD7DF51C749 /* AddressValidatorTests.swift in Sources */,
 				D045FC22221C1A290009BEF6 /* EncryptionHandshakeTests.swift in Sources */,
+				D0B13EDD2225589600C7C2CA /* FrameCodecHelperTests.swift in Sources */,
 				3C7B97D4EA0867E5FC827D07 /* EIP55Tests.swift in Sources */,
 				D0F03E7E22200D6E00E217F5 /* ECIESEngineTests.swift in Sources */,
 				11B35FCE3632C73F4272964F /* EthereumKitTests.swift in Sources */,
 				11B356BF054DFC99D8EB19E5 /* GeneratedMocks.swift in Sources */,
 				2FA5DD6E7E7E0E34F522ECF0 /* Extensions.swift in Sources */,
 				2FA5D1789341FEC8ECAEDF28 /* FrameHandlerTests.swift in Sources */,
+				2FA5DB895FCE9F2D5F647471 /* FrameCodecTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -903,6 +917,7 @@
 				3A38FA05216B78EE00A764EB /* IDGenerator.swift in Sources */,
 				3A38F9FC216B78EE00A764EB /* Wallet.swift in Sources */,
 				3A38FA0D216B78EE00A764EB /* JSONRPC.swift in Sources */,
+				D0B13EDB2225350B00C7C2CA /* FrameCodecHelper.swift in Sources */,
 				3A38F9E7216B78EE00A764EB /* EIP55.swift in Sources */,
 				3A38FA09216B78EE00A764EB /* JSONRPCRequest.swift in Sources */,
 				3A38F9ED216B78EE00A764EB /* BlockParameter.swift in Sources */,
@@ -952,6 +967,7 @@
 				2FA5D3DD1064899B9A147B46 /* Connection.swift in Sources */,
 				D07C3ED3221ACBDA0081DCD2 /* Capability.swift in Sources */,
 				2FA5D1A791D3CCD4D6112AD4 /* EncryptionHandshake.swift in Sources */,
+				D0B13ED9222504A700C7C2CA /* AESEncryptor.swift in Sources */,
 				2FA5D20E88F8586DE6525EE8 /* ECPoint.swift in Sources */,
 				2FA5D7BDF45541E1DCC4CD6B /* ECKey.swift in Sources */,
 				2FA5D5B35CEDF93EFF129A99 /* ECIESEngine.swift in Sources */,

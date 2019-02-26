@@ -77,10 +77,12 @@ class EncryptionHandshakeTests: XCTestCase {
     }
     
     func testCreateAuthMessage() {
+        let authMessagePacket: Data!
         do {
-            try encryptionHandshake.createAuthMessage()
+            authMessagePacket = try encryptionHandshake.createAuthMessage()
         } catch {
             XCTFail("Unexpected error: \(error)")
+            return
         }
 
         verify(mockCrypto).ecdhAgree(myKey: equal(to: myKey), remotePublicKeyPoint: equal(to: remoteKeyPoint))
@@ -92,7 +94,7 @@ class EncryptionHandshakeTests: XCTestCase {
         verifyNoMoreInteractions(mockCrypto)
         verifyNoMoreInteractions(mockFactory)
 
-        XCTAssertEqual(encryptionHandshake.authMessagePacket, encodedAuthECIESMessage)
+        XCTAssertEqual(authMessagePacket, encodedAuthECIESMessage)
     }
 
     func testExtractSecrets() {

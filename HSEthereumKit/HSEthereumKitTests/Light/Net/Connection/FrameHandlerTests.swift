@@ -19,11 +19,7 @@ class FrameHandlerTests: XCTestCase {
 
     func testGetMessage() {
         let message = HelloMessage(peerId: Data(repeating: 0, count: 64), port: 0, capabilities: [])
-        let frames = [
-            Frame(type: 0, payload: message.encoded(), size: 0, contextId: 0, allFramesTotalSize: 0)
-        ]
-
-        frameHandler.addFrames(frames: frames)
+        frameHandler.add(frame: Frame(type: 0, payload: message.encoded(), size: 0, contextId: 0, allFramesTotalSize: 0))
 
         guard let resolvedMessage = try! frameHandler.getMessage() as? HelloMessage else {
             XCTFail("Expected to resolve HelloMessage")
@@ -41,11 +37,7 @@ class FrameHandlerTests: XCTestCase {
 
     func testGetMessage_UnknownMessageType() {
         let helloMessage = HelloMessage(peerId: Data(repeating: 0, count: 64), port: 0, capabilities: [])
-        let frames = [
-            Frame(type: 5, payload: helloMessage.encoded(), size: 0, contextId: 0, allFramesTotalSize: 0),
-        ]
-
-        frameHandler.addFrames(frames: frames)
+        frameHandler.add(frame: Frame(type: 5, payload: helloMessage.encoded(), size: 0, contextId: 0, allFramesTotalSize: 0))
 
         do {
             let _ = try frameHandler.getMessage()
@@ -58,11 +50,7 @@ class FrameHandlerTests: XCTestCase {
     }
 
     func testGetMessage_InvalidPayload() {
-        let frames = [
-            Frame(type: 0, payload: PingMessage().encoded(), size: 0, contextId: 0, allFramesTotalSize: 0),
-        ]
-
-        frameHandler.addFrames(frames: frames)
+        frameHandler.add(frame: Frame(type: 0, payload: PingMessage().encoded(), size: 0, contextId: 0, allFramesTotalSize: 0))
 
         do {
             let _ = try frameHandler.getMessage()
@@ -77,12 +65,9 @@ class FrameHandlerTests: XCTestCase {
     func testGetMessage_TwoMessagesInFrames() {
         let helloMessage = HelloMessage(peerId: Data(repeating: 0, count: 64), port: 0, capabilities: [])
         let pingMessage = PingMessage()
-        let frames = [
-            Frame(type: 0, payload: helloMessage.encoded(), size: 0, contextId: 0, allFramesTotalSize: 0),
-            Frame(type: 2, payload: pingMessage.encoded(), size: 0, contextId: 0, allFramesTotalSize: 0)
-        ]
 
-        frameHandler.addFrames(frames: frames)
+        frameHandler.add(frame: Frame(type: 0, payload: helloMessage.encoded(), size: 0, contextId: 0, allFramesTotalSize: 0))
+        frameHandler.add(frame: Frame(type: 2, payload: pingMessage.encoded(), size: 0, contextId: 0, allFramesTotalSize: 0))
 
         guard let resolvedHelloMessage = try! frameHandler.getMessage() as? HelloMessage else {
             XCTFail("Expected to resolve HelloMessage")
@@ -106,12 +91,9 @@ class FrameHandlerTests: XCTestCase {
 
         let helloMessage = HelloMessage(peerId: Data(repeating: 0, count: 64), port: 0, capabilities: [])
         let testMessage = TestMessage1()
-        let frames = [
-            Frame(type: 0, payload: helloMessage.encoded(), size: 0, contextId: 0, allFramesTotalSize: 0),
-            Frame(type: 0x10, payload: testMessage.encoded(), size: 0, contextId: 0, allFramesTotalSize: 0)
-        ]
 
-        frameHandler.addFrames(frames: frames)
+        frameHandler.add(frame: Frame(type: 0, payload: helloMessage.encoded(), size: 0, contextId: 0, allFramesTotalSize: 0))
+        frameHandler.add(frame: Frame(type: 0x10, payload: testMessage.encoded(), size: 0, contextId: 0, allFramesTotalSize: 0))
 
         guard let resolvedHelloMessage = try! frameHandler.getMessage() as? HelloMessage else {
             XCTFail("Expected to resolve HelloMessage")
@@ -143,13 +125,9 @@ class FrameHandlerTests: XCTestCase {
         let testMessage = TestMessage1()
         let testMessage2 = TestMessage2()
         let testMessage3 = TestMessage3()
-        let frames = [
-            Frame(type: 0x15, payload: testMessage.encoded(), size: 0, contextId: 0, allFramesTotalSize: 0),
-            Frame(type: 0x1a, payload: testMessage2.encoded(), size: 0, contextId: 0, allFramesTotalSize: 0),
-            Frame(type: 0x1f, payload: testMessage3.encoded(), size: 0, contextId: 0, allFramesTotalSize: 0)
-        ]
-
-        frameHandler.addFrames(frames: frames)
+        frameHandler.add(frame: Frame(type: 0x15, payload: testMessage.encoded(), size: 0, contextId: 0, allFramesTotalSize: 0))
+        frameHandler.add(frame: Frame(type: 0x1a, payload: testMessage2.encoded(), size: 0, contextId: 0, allFramesTotalSize: 0))
+        frameHandler.add(frame: Frame(type: 0x1f, payload: testMessage3.encoded(), size: 0, contextId: 0, allFramesTotalSize: 0))
 
         guard let resolvedTestMessage = try! frameHandler.getMessage() as? TestMessage1 else {
             XCTFail("Expected to resolve TestMessage1")

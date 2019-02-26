@@ -8,6 +8,16 @@ protocol IFactory: class {
     func keccakDigest() -> KeccakDigest
 }
 
+protocol IFrameCodecHelper {
+    func updateMac(mac: KeccakDigest, macKey: Data, data: Data) -> Data
+    func toThreeBytes(int: Int) -> Data
+    func fromThreeBytes(data: Data) -> Int
+}
+
+protocol IAESEncryptor {
+    func encrypt(_ data: Data) -> Data
+}
+
 protocol IECIESCrypto {
     func randomKey() -> ECKey
     func randomBytes(length: Int) -> Data
@@ -27,6 +37,7 @@ protocol ICrypto: class {
     func eciesDecrypt(privateKey: Data, message: ECIESEncryptedMessage) throws -> Data
     func eciesEncrypt(remotePublicKey: ECPoint, message: Data) -> ECIESEncryptedMessage
     func sha3(_ data: Data) -> Data
+    func aesEncrypt(_ data: Data, withKey: Data, keySize: Int) -> Data
 }
 
 public protocol IEthereumKitDelegate: class {
@@ -81,7 +92,7 @@ protocol INetwork {
 
 protocol IFrameHandler {
     func register(capability: Capability)
-    func addFrames(frames: [Frame])
+    func add(frame: Frame)
     func getMessage() throws -> IMessage?
     func getFrames(from message: IMessage) -> [Frame]
 }

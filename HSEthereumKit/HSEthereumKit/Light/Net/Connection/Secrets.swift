@@ -3,11 +3,11 @@ import HSCryptoKit
 
 class Secrets {
 
-    let aes: Data;
-    let mac: Data;
-    let token: Data;
-    let egressMac: KeccakDigest;
-    let ingressMac: KeccakDigest;
+    let aes: Data
+    let mac: Data
+    let token: Data
+    let egressMac: KeccakDigest
+    let ingressMac: KeccakDigest
 
     init(aes: Data, mac: Data, token: Data, egressMac: KeccakDigest, ingressMac: KeccakDigest) {
         self.aes = aes

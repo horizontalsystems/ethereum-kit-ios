@@ -10,15 +10,13 @@ class EncryptionHandshake {
 
     static let NONCE_SIZE: Int = 32
 
-    let crypto: ICrypto
-    let factory: IFactory
-    let myKey: ECKey
-    let ephemeralKey: ECKey
-    let remotePublicKeyPoint: ECPoint
-    let initiatorNonce: Data
-    var authMessagePacket = Data()
-    var authAckMessagePacket = Data()
-
+    private let crypto: ICrypto
+    private let factory: IFactory
+    private let myKey: ECKey
+    private let ephemeralKey: ECKey
+    private let remotePublicKeyPoint: ECPoint
+    private let initiatorNonce: Data
+    private var authMessagePacket = Data()
 
     init(myKey: ECKey, publicKeyPoint: ECPoint, crypto: ICrypto, factory: IFactory) {
         self.crypto = crypto
@@ -29,25 +27,24 @@ class EncryptionHandshake {
         initiatorNonce = crypto.randomBytes(length: 32)
     }
 
-    func createAuthMessage() throws {
+    func createAuthMessage() throws -> Data {
         let sharedSecret = crypto.ecdhAgree(myKey: myKey, remotePublicKeyPoint: remotePublicKeyPoint)
-
         let messageToSign = sharedSecret.xor(with: initiatorNonce)
         let signature = try crypto.ellipticSign(messageToSign, key: ephemeralKey)
-
         let message = factory.authMessage(signature: signature, publicKeyPoint: myKey.publicKeyPoint, nonce: initiatorNonce)
+
         authMessagePacket = encrypt(authMessage: message)
+        return authMessagePacket
     }
 
     func extractSecrets(from eciesMessage: ECIESEncryptedMessage) throws -> Secrets {
-        authAckMessagePacket = eciesMessage.encoded()
         let responseDecrypted = try crypto.eciesDecrypt(privateKey: myKey.privateKey, message: eciesMessage)
 
         guard let message = factory.authAckMessage(data: responseDecrypted) else {
             throw HandshakeError.invalidAuthAckPayload
         }
 
-        return extractSecrets(message: message)
+        return extractSecrets(message: message, authAckMessagePacket: eciesMessage.encoded())
     }
 
 
@@ -58,7 +55,7 @@ class EncryptionHandshake {
         return eciesMessage.encoded()
     }
 
-    private func extractSecrets(message: AuthAckMessage) -> Secrets {
+    private func extractSecrets(message: AuthAckMessage, authAckMessagePacket: Data) -> Secrets {
         let ephemeralSharedSecret = crypto.ecdhAgree(myKey: ephemeralKey, remotePublicKeyPoint: message.publicKeyPoint)
 
         let sharedSecret = crypto.sha3(ephemeralSharedSecret + crypto.sha3(message.nonce + initiatorNonce))

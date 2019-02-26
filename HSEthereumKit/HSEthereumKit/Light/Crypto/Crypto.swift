@@ -39,6 +39,11 @@ class Crypto: ICrypto {
         return CryptoKit.sha3(data)
     }
 
+    // Stateless encryption
+    func aesEncrypt(_ data: Data, withKey key: Data, keySize: Int) -> Data {
+        return _AES.encrypt(data, withKey: key, keySize: keySize)
+    }
+
 }
 
 extension Crypto: IECIESCrypto {
@@ -51,8 +56,8 @@ extension Crypto: IECIESCrypto {
         return _Hash.sha256(data)
     }
 
-    func aesEncrypt(_ data: Data, withKey: Data, keySize: Int, iv: Data) -> Data {
-        return _AES.encrypt(data, withKey: withKey, keySize: keySize, iv: iv.copy())
+    func aesEncrypt(_ data: Data, withKey key: Data, keySize: Int, iv: Data) -> Data {
+        return AESEncryptor(keySize: keySize, key: key, initialVector: iv).encrypt(data)
     }
 
     func hmacSha256(_ data: Data, key: Data, iv: Data, macData: Data) -> Data {

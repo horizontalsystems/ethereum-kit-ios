@@ -7,36 +7,34 @@ class FrameCodec {
         case macMismatch
     }
 
-    private let secrets: Secrets;
-    private let encIV = Data(hex: "00000000000000000000000000000000")
-    private let decIV = Data(hex: "00000000000000000000000000000000")
-    private var totalBodySize: Int = 0;
-    private var contextId: Int = -1;
-    private var totalFrameSize: Int = -1;
+    private let secrets: Secrets
+    private let helper: IFrameCodecHelper
+    private let encryptor: IAESEncryptor
+    private let decryptor: IAESEncryptor  // AES in CTR encrypt gives the message back when you encrypt the cipher
 
 
-    init(secrets: Secrets) {
+    init(secrets: Secrets, helper: IFrameCodecHelper, encryptor: IAESEncryptor, decryptor: IAESEncryptor) {
         self.secrets = secrets
+        self.helper = helper
+        self.encryptor = encryptor
+        self.decryptor = decryptor
     }
     
-    func readFrames(from data: Data) throws -> [Frame] {
+    func readFrame(from data: Data) throws -> Frame? {
         guard data.count >= 64 else {
-            return []
+            return nil
         }
 
         let header = data.subdata(in: 0..<16)
         let headerMac = data.subdata(in: 16..<32)
-        let updatedMac = updateMac(mac: secrets.ingressMac, macKey: secrets.mac, data: header)
+        let updatedMac = helper.updateMac(mac: secrets.ingressMac, macKey: secrets.mac, data: header)
 
         guard updatedMac == headerMac else {
             throw FrameCodecError.macMismatch
         }
 
-        let decryptedHeader: Data = _AES.encrypt(header, withKey: secrets.aes, keySize: 256, iv: decIV)
-
-        let totalSizeBytes = Data(repeating: 0, count: 1) + decryptedHeader.subdata(in: 0..<3)
-        let totalSizeBigEndian = totalSizeBytes.to(type: UInt32.self)
-        let frameBodySize = Int(UInt32(bigEndian: totalSizeBigEndian))
+        let decryptedHeader = decryptor.encrypt(header)
+        let frameBodySize = helper.fromThreeBytes(data: decryptedHeader.subdata(in: 0..<3))
 
         let rlpHeader = RLP.decode(input: decryptedHeader.subdata(in: 3..<16))
         var contextId = -1
@@ -56,14 +54,14 @@ class FrameCodec {
         let frameSize = 32 + frameBodySize + paddingSize + 16  // header || body || padding || body-mac
 
         guard data.count >= frameSize else {
-            return []
+            return nil
         }
 
-        let frameBodyData = data.subdata(in: 32..<(32 + frameBodySize + paddingSize))
-        let frameBodyMac = data.subdata(in: (32 + frameBodySize + paddingSize)..<frameSize)
-
+        let frameBodyData = data.subdata(in: 32..<(frameSize - 16))
+        let frameBodyMac = data.subdata(in: (frameSize - 16)..<frameSize)
         secrets.ingressMac.update(with: frameBodyData)
-        let decryptedFrame: Data = _AES.encrypt(frameBodyData, withKey: secrets.aes, keySize: 256, iv: decIV)
+
+        let decryptedFrame: Data = decryptor.encrypt(frameBodyData)
 
         let rlpPacketType = RLP.decode(input: decryptedFrame)
         let packetType = rlpPacketType.intValue
@@ -72,70 +70,48 @@ class FrameCodec {
         let payload = decryptedFrame.subdata(in: packetTypeLength..<frameBodySize)
 
         let ingressMac = secrets.ingressMac.digest()
-        let updatedFrameBodyMac = updateMac(mac: secrets.ingressMac, macKey: secrets.mac, data: ingressMac)
+        let updatedFrameBodyMac = helper.updateMac(mac: secrets.ingressMac, macKey: secrets.mac, data: ingressMac)
 
         guard updatedFrameBodyMac == frameBodyMac else {
             throw FrameCodecError.macMismatch
         }
 
-        let frame = Frame(type: packetType, payload: payload, size: frameSize, contextId: contextId, allFramesTotalSize: allFramesTotalSize)
-
-        return [frame]
+        return Frame(type: packetType, payload: payload, size: frameSize, contextId: contextId, allFramesTotalSize: allFramesTotalSize)
     }
 
     func encodeFrame(frame: Frame) -> Data {
-        var header = Data()
+        // Header
         let packetType = RLP.encode(frame.type)
-
-        var frameSize: Int = frame.payloadSize + packetType.count
-        withUnsafeBytes(of: &frameSize) { ptr in
-            let bytes = Array(ptr)
-            header += bytes[2]
-            header += bytes[1]
-            header += bytes[0]
-        }
+        let frameSize = frame.payloadSize + packetType.count
 
         var headerDataElements = [0]
-        if contextId > 0 {
-            headerDataElements.append(contextId)
+        if frame.contextId > 0 {
+            headerDataElements.append(frame.contextId)
         }
-        if totalFrameSize > 0 {
-            headerDataElements.append(totalFrameSize)
+        if frame.allFramesTotalSize > 0 {
+            headerDataElements.append(frame.allFramesTotalSize)
         }
 
+        var header = helper.toThreeBytes(int: frameSize)
         header += RLP.encode(headerDataElements)
         header += Data(repeating: 0, count: 16 - header.count)
 
-        let encryptedHeader = _AES.encrypt(header, withKey: secrets.aes, keySize: 256, iv: encIV)
-        let headerMac = updateMac(mac: secrets.egressMac, macKey: secrets.mac, data: encryptedHeader)
+        let encryptedHeader = encryptor.encrypt(header)
+        let headerMac = helper.updateMac(mac: secrets.egressMac, macKey: secrets.mac, data: encryptedHeader)
 
-        header = encryptedHeader + headerMac
-
+        // Body
         var frameData = packetType + frame.payload
         if frameSize % 16 > 0 {
             frameData += Data(repeating: 0, count: 16 - frameSize % 16)
         }
 
-        let encryptedFrameData: Data = _AES.encrypt(frameData, withKey: secrets.aes, keySize: 256, iv: encIV)
-
+        let encryptedFrameData = encryptor.encrypt(frameData)
         secrets.egressMac.update(with: encryptedFrameData)
+
         let egressMac = secrets.egressMac.digest()
+        let frameMac = helper.updateMac(mac: secrets.egressMac, macKey: secrets.mac, data: egressMac)
 
-        let frameMac = updateMac(mac: secrets.egressMac, macKey: secrets.mac, data: egressMac)
-
-        frameData = encryptedFrameData + frameMac
-
-        return header + frameData
+        return encryptedHeader + headerMac + encryptedFrameData + frameMac
     }
 
-    private func updateMac(mac: KeccakDigest, macKey: Data, data: Data) -> Data {
-        let macDigest = mac.digest()
-        let encryptedMacDigest: Data = _AES.encrypt(macDigest, withKey: macKey, keySize: 256)
-
-        mac.update(with: encryptedMacDigest.subdata(in: 0..<16).xor(with: data))
-        let checksum = mac.digest().subdata(in: 0..<16)
-
-        return checksum
-    }
 }
-

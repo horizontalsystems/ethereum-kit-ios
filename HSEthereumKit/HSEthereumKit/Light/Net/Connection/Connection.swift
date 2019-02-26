@@ -19,6 +19,7 @@ class Connection: NSObject {
     private var handshake: EncryptionHandshake?
     private var frameCodec: FrameCodec?
     private let frameHandler: IFrameHandler
+    private let crypto = Crypto()
 
     private var runLoop: RunLoop?
     private var readStream: Unmanaged<CFReadStream>?
@@ -33,7 +34,7 @@ class Connection: NSObject {
     var handshakeSent: Bool = false
 
     var logName: String {
-        return "\(nodeId.toHexString())@\(host):\(port)'";
+        return "\(nodeId.toHexString())@\(host):\(port)'"
     }
 
     init(node: Node) {
@@ -91,9 +92,12 @@ class Connection: NSObject {
 
                 do {
                     let secrets = try handshake.extractSecrets(from: eciesMessage)
-                    packets = Data(packets.dropFirst(handshake.authAckMessagePacket.count))
+                    packets = Data(packets.dropFirst(eciesMessage.encoded().count))
 
-                    frameCodec = FrameCodec(secrets: secrets)
+                    frameCodec = FrameCodec(
+                            secrets: secrets, helper: FrameCodecHelper(crypto: crypto),
+                            encryptor: AESEncryptor(keySize: 256, key: secrets.aes), decryptor: AESEncryptor(keySize: 256, key: secrets.aes)
+                    )
                     self.handshake = nil
 
                     delegate?.connectionEstablished()
@@ -107,16 +111,20 @@ class Connection: NSObject {
 
             if let frameCode = frameCodec {
                 while (packets.count >= bufferSize) {
-                    let frames: [Frame]
+                    let frame: Frame!
                     do {
-                        frames = try frameCode.readFrames(from: packets)
+                        frame = try frameCode.readFrame(from: packets)
                     } catch {
                         disconnect(error: error)
                         return
                     }
 
-                    packets = Data(packets.dropFirst(frames.reduce(0) { $0 + $1.size }))
-                    frameHandler.addFrames(frames: frames)
+                    if frame == nil {
+                        return
+                    }
+
+                    packets = Data(packets.dropFirst(frame.size))
+                    frameHandler.add(frame: frame)
 
                     do {
                         while let message = try frameHandler.getMessage() {
@@ -143,11 +151,11 @@ class Connection: NSObject {
         }
 
         handshakeSent = true
+        let handshake = EncryptionHandshake(myKey: delegate.connectionKey(), publicKeyPoint: ECPoint(nodeId: nodeId), crypto: crypto, factory: Factory())
 
-        let handshake = EncryptionHandshake(myKey: delegate.connectionKey(), publicKeyPoint: ECPoint(nodeId: nodeId), crypto: Crypto(), factory: Factory())
-
+        let authMessagePacket: Data!
         do {
-            try handshake.createAuthMessage()
+            authMessagePacket = try handshake.createAuthMessage()
         } catch {
             disconnect(error: error)
             return
@@ -155,7 +163,7 @@ class Connection: NSObject {
 
         self.handshake = handshake
 
-        sendPackets(data: handshake.authMessagePacket)
+        sendPackets(data: authMessagePacket)
     }
 
     private func sendPackets(data: Data) {

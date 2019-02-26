@@ -35,7 +35,7 @@ class TrieNode {
 
             switch nibble {
             case 0:
-                nodeType = NodeType.EXTENSION;
+                nodeType = NodeType.EXTENSION
                 encodedPath = first.subdata(in: 1..<first.count).toHexString()
 
             case 1:
@@ -43,7 +43,7 @@ class TrieNode {
                 encodedPath = TrieNode.secondCharacter(ofByteInHex: first[0]) + first.subdata(in: 1..<first.count).toHexString()
 
             case 2:
-                nodeType = NodeType.LEAF;
+                nodeType = NodeType.LEAF
                 encodedPath = first.subdata(in: 1..<first.count).toHexString()
 
             case 3:
@@ -67,7 +67,7 @@ class TrieNode {
 
     func getPath(element: Data?) -> String? {
         if (element == nil && nodeType == NodeType.LEAF) {
-            return encodedPath;
+            return encodedPath
         }
 
         for (i, elementInNode) in elements.enumerated() {
@@ -75,12 +75,12 @@ class TrieNode {
                 if (nodeType == NodeType.BRANCH) {
                     return TrieNode.alphabet[i]
                 } else if (nodeType == NodeType.EXTENSION) {
-                    return encodedPath;
+                    return encodedPath
                 }
             }
         }
 
-        return nil;
+        return nil
     }
 
     func toString() -> String {
