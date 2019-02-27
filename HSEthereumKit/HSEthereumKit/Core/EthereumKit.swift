@@ -197,8 +197,8 @@ extension EthereumKit {
 
     public static func ethereumKit(words: [String], walletId: String, testMode: Bool, infuraKey: String, etherscanKey: String, debugPrints: Bool = false) throws -> EthereumKit {
         let storage = GrdbStorage(databaseFileName: "\(walletId)-\(testMode)")
-        let blockchain = SPVBlockchain(storage: storage, words: words, debugPrints: debugPrints)
-//        let blockchain = try ApiBlockchain.apiBlockchain(storage: storage, words: words, testMode: testMode, infuraKey: infuraKey, etherscanKey: etherscanKey, debugPrints: debugPrints)
+//        let blockchain = SPVBlockchain(storage: storage, words: words, debugPrints: debugPrints)
+        let blockchain = try ApiBlockchain.apiBlockchain(storage: storage, words: words, testMode: testMode, infuraKey: infuraKey, etherscanKey: etherscanKey, debugPrints: debugPrints)
         let addressValidator = AddressValidator()
 
         let ethereumKit = EthereumKit(blockchain: blockchain, storage: storage, addressValidator: addressValidator)

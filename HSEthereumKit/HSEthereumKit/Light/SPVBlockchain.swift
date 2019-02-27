@@ -40,19 +40,19 @@ extension SPVBlockchain: IBlockchain {
         return EthereumKit.SyncState.synced
     }
 
-    func register(contractAddress: String, decimal: Int) {
+    func register(contractAddress: String) {
     }
 
     func unregister(contractAddress: String) {
     }
 
-    func sendSingle(to address: String, amount: Decimal, gasPriceInWei: Int?) -> Single<EthereumTransaction> {
-        let stubTransaction = EthereumTransaction(hash: "", nonce: 0, from: "", to: "", amount: 0, gasLimit: 0, gasPriceInWei: 0)
+    func sendSingle(to address: String, amount: String, gasPriceInWei: Int?) -> Single<EthereumTransaction> {
+        let stubTransaction = EthereumTransaction(hash: "", nonce: 0, from: "", to: "", amount: "", gasLimit: 0, gasPriceInWei: 0)
         return Single.just(stubTransaction)
     }
 
-    func sendErc20Single(to address: String, contractAddress: String, amount: Decimal, gasPriceInWei: Int?) -> Single<EthereumTransaction> {
-        let stubTransaction = EthereumTransaction(hash: "", nonce: 0, from: "", to: "", amount: 0, gasLimit: 0, gasPriceInWei: 0)
+    func sendErc20Single(to address: String, contractAddress: String, amount: String, gasPriceInWei: Int?) -> Single<EthereumTransaction> {
+        let stubTransaction = EthereumTransaction(hash: "", nonce: 0, from: "", to: "", amount: "", gasLimit: 0, gasPriceInWei: 0)
         return Single.just(stubTransaction)
     }
 }
@@ -60,7 +60,7 @@ extension SPVBlockchain: IBlockchain {
 extension SPVBlockchain: IPeerGroupDelegate {
 
     func onUpdate(state: AccountState) {
-        delegate?.onUpdate(balance: try! state.balance.ether())
+        delegate?.onUpdate(balance: state.balance.wei.asString(withBase: 10))
     }
 
 }
