@@ -11,8 +11,8 @@ project 'HSEthereumKit/HSEthereumKit'
 def common_pods
   pod 'RxSwift', '~> 4.0'
 
-  pod 'HSCryptoKit', :git => 'https://github.com/horizontalsystems/crypto-kit-ios.git', :branch => 'ethereum_light_client_crypto'
-  pod 'HSHDWalletKit', :git => 'https://github.com/horizontalsystems/hd-wallet-kit-ios.git', :branch => 'ethereum_light_client'
+  pod 'HSCryptoKit', '~> 1.3.0'
+  pod 'HSHDWalletKit', '~> 1.0.4'
 
   pod 'GRDB.swift'
 
