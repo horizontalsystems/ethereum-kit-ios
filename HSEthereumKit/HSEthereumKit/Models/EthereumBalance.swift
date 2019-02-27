@@ -3,9 +3,9 @@ import GRDB
 
 class EthereumBalance: Record {
     let address: String
-    let value: Decimal
+    let value: String
 
-    init(address: String, value: Decimal) {
+    init(address: String, value: String) {
         self.address = address
         self.value = value
 
@@ -23,14 +23,14 @@ class EthereumBalance: Record {
 
     required init(row: Row) {
         address = row[Columns.address]
-        value = Decimal(string: row[Columns.value]) ?? 0
+        value = row[Columns.value]
 
         super.init(row: row)
     }
 
     override func encode(to container: inout PersistenceContainer) {
         container[Columns.address] = address
-        container[Columns.value] = NSDecimalNumber(decimal: value).stringValue
+        container[Columns.value] = value
     }
 
 }

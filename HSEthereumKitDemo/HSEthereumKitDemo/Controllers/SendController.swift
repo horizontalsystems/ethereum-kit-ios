@@ -22,6 +22,10 @@ class SendController: UIViewController {
     }
 
     @IBAction func send(_ sender: Any) {
+        guard Manager.shared.ethereumKit != nil else {
+            return
+        }
+
         guard let address = addressTextField?.text, !address.isEmpty else {
             show(error: "Empty Address")
             return
@@ -32,19 +36,15 @@ class SendController: UIViewController {
             return
         }
 
-        guard let ethereumKit = Manager.shared.ethereumKit else {
-            return
-        }
-
-        let single: Single<EthereumTransaction>
+        let adapter: BaseAdapter
 
         if (sender as? UIButton) == sendCoin {
-            single = ethereumKit.sendErc20Single(to: address, contractAddress: Manager.contractAddress, amount: amount)
+            adapter = Manager.shared.erc20Adapter
         } else {
-            single = ethereumKit.sendSingle(to: address, amount: amount)
+            adapter = Manager.shared.ethereumAdapter
         }
 
-        single
+        adapter.sendSingle(to: address, amount: amount)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { [weak self] _ in

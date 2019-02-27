@@ -10,14 +10,14 @@ class GethProvider {
         self.hdWallet = hdWallet
     }
 
-    private func ethereumTransaction(from gethTransaction: Transaction, rate: Decimal) -> EthereumTransaction {
+    private func ethereumTransaction(from gethTransaction: Transaction) -> EthereumTransaction {
         let transaction = EthereumTransaction(
                 hash: gethTransaction.hash,
                 nonce: Int(gethTransaction.nonce) ?? 0,
                 input: gethTransaction.input,
                 from: EIP55.format(gethTransaction.from),
                 to: EIP55.format(gethTransaction.to),
-                amount: Decimal(string: gethTransaction.value).map { $0 / rate } ?? 0,
+                amount: gethTransaction.value,
                 gasLimit: Int(gethTransaction.gas) ?? 0,
                 gasPriceInWei: Int(gethTransaction.gasPrice) ?? 0,
                 timestamp: TimeInterval(gethTransaction.timeStamp)
@@ -42,27 +42,28 @@ class GethProvider {
 
 extension GethProvider: IApiProvider {
 
-    func getGasPriceInWei() -> Single<Int> {
-        return Single.create { [weak geth] observer in
-            geth?.getGasPrice() { result in
+    func gasPriceInWeiSingle() -> Single<Int> {
+        return Single.create { [unowned geth] observer in
+            geth.getGasPrice() { result in
                 switch result {
                 case .success(let gasPriceWei):
-                    guard let gasPriceInWei = gasPriceWei.toInt() else {
-                        return
+                    if let gasPriceInWei = gasPriceWei.toInt() {
+                        observer(.success(gasPriceInWei))
+                    } else {
+                        observer(.error(EthereumKitError.convertError(.failedToConvert(gasPriceWei))))
                     }
-
-                    observer(.success(gasPriceInWei))
                 case .failure(let error):
                     observer(.error(error))
                 }
             }
+
             return Disposables.create()
         }
     }
 
-    func getLastBlockHeight() -> Single<Int> {
-        return Single.create { [weak geth] observer in
-            geth?.getBlockNumber() { result in
+    func lastBlockHeightSingle() -> Single<Int> {
+        return Single.create { [unowned geth] observer in
+            geth.getBlockNumber() { result in
                 switch result {
                 case .success(let number):
                     observer(.success(number))
@@ -70,13 +71,14 @@ extension GethProvider: IApiProvider {
                     observer(.error(error))
                 }
             }
+
             return Disposables.create()
         }
     }
 
-    func getTransactionCount(address: String) -> Single<Int> {
-        return Single.create { [weak geth] observer in
-            geth?.getTransactionCount(of: address, blockParameter: .pending) { result in
+    func transactionCountSingle(address: String) -> Single<Int> {
+        return Single.create { [unowned geth] observer in
+            geth.getTransactionCount(of: address, blockParameter: .pending) { result in
                 switch result {
                 case .success(let count):
                     observer(.success(count))
@@ -84,99 +86,82 @@ extension GethProvider: IApiProvider {
                     observer(.error(error))
                 }
             }
+
             return Disposables.create()
         }
     }
 
-    func getBalance(address: String) -> Single<Decimal> {
-        return Single.create { [weak geth] observer in
-            geth?.getBalance(of: address, completionHandler: { result in
+    func balanceSingle(address: String) -> Single<String> {
+        return Single.create { [unowned geth] observer in
+            geth.getBalance(of: address, completionHandler: { result in
                 switch result {
                 case .success(let balance):
-                    do {
-                        observer(.success(try balance.ether()))
-                    } catch {
-                        observer(.error(error))
-                    }
+                    observer(.success(balance.wei.asString(withBase: 10)))
                 case .failure(let error):
                     observer(.error(error))
                 }
             })
+
             return Disposables.create()
         }
     }
 
-    func getBalanceErc20(address: String, contractAddress: String, decimal: Int) -> Single<Decimal> {
-        return Single.create { [weak geth] observer in
-            geth?.getTokenBalance(contractAddress: contractAddress, address: address, completionHandler: { result in
+    func balanceErc20Single(address: String, contractAddress: String) -> Single<String> {
+        return Single.create { [unowned geth] observer in
+            geth.getTokenBalance(contractAddress: contractAddress, address: address, completionHandler: { result in
                 switch result {
                 case .success(let balance):
-                    let wei = balance.wei
-
-                    guard let decimalWei = Decimal(string: balance.wei.description) else {
-                        observer(.error(EthereumKitError.convertError(.failedToConvert(wei.description))))
-                        return
-                    }
-                    observer(.success(decimalWei / pow(Decimal(10), decimal)))
+                    observer(.success(balance.wei.asString(withBase: 10)))
                 case .failure(let error):
                     observer(.error(error))
                 }
             })
+
             return Disposables.create()
         }
 
     }
 
-    func getTransactions(address: String, startBlock: Int64) -> Single<[EthereumTransaction]> {
-        return Single.create { [weak self] observer in
-            self?.geth.getTransactions(address: address, startBlock: startBlock, completionHandler: { result in
+    func transactionsSingle(address: String, startBlock: Int64) -> Single<[EthereumTransaction]> {
+        return Single.create { [unowned self] observer in
+            self.geth.getTransactions(address: address, startBlock: startBlock, completionHandler: { result in
                 switch result {
                 case .success(let transactions):
-                    let ethereumTransactions = transactions.elements.compactMap {
-                        self?.ethereumTransaction(from: $0, rate: pow(10, 18))
-                    }
+                    let ethereumTransactions = transactions.elements.map { self.ethereumTransaction(from: $0) }
                     observer(.success(ethereumTransactions))
                 case .failure(let error):
                     observer(.error(error))
                 }
             })
+
             return Disposables.create()
         }
     }
 
-    func getTransactionsErc20(address: String, startBlock: Int64, decimals: [String: Int]) -> Single<[EthereumTransaction]> {
-        return Single.create { [weak self] observer in
-            self?.geth.getTokenTransactions(address: address, startBlock: startBlock, completionHandler: { result in
+    func transactionsErc20Single(address: String, startBlock: Int64) -> Single<[EthereumTransaction]> {
+        return Single.create { [unowned self] observer in
+            self.geth.getTokenTransactions(address: address, startBlock: startBlock, completionHandler: { result in
                 switch result {
                 case .success(let transactions):
-                    let ethereumTransactions = transactions.elements.compactMap { transaction -> EthereumTransaction? in
-                        guard let decimal = decimals[EIP55.format(transaction.contractAddress)] else {
-                            return nil
-                        }
-                        return self?.ethereumTransaction(from: transaction, rate: pow(10, decimal))
-                    }
+                    let ethereumTransactions = transactions.elements.map { self.ethereumTransaction(from: $0) }
                     observer(.success(ethereumTransactions))
                 case .failure(let error):
                     observer(.error(error))
                 }
             })
+
             return Disposables.create()
         }
     }
 
-    func send(from: String, to: String, nonce: Int, amount: Decimal, gasPriceInWei: Int, gasLimit: Int) -> Single<EthereumTransaction> {
-        return Single.create { [weak self] observer in
+    func sendSingle(from: String, to: String, nonce: Int, amount: String, gasPriceInWei: Int, gasLimit: Int) -> Single<EthereumTransaction> {
+        return Single.create { [unowned self] observer in
             do {
-                let weiString = try Converter.toWei(ether: amount).asString(withBase: 10)
-                let rawTransaction = RawTransaction(wei: weiString, to: to, gasPrice: gasPriceInWei, gasLimit: gasLimit, nonce: nonce)
+                let rawTransaction = RawTransaction(wei: amount, to: to, gasPrice: gasPriceInWei, gasLimit: gasLimit, nonce: nonce)
 
-                guard let hdWallet = self?.hdWallet else {
-                    throw GethError.noHdWallet
-                }
+                let signedTransaction = try self.hdWallet.sign(rawTransaction: rawTransaction)
 
-                let signedTransaction = try hdWallet.sign(rawTransaction: rawTransaction)
-
-                self?.geth.sendRawTransaction(rawTransaction: signedTransaction) { result in
+                self.geth.sendRawTransaction(rawTransaction: signedTransaction) { result in
                     switch result {
                     case .success(let sentTransaction):
                         let transaction = EthereumTransaction(
@@ -201,25 +186,21 @@ extension GethProvider: IApiProvider {
         }
     }
 
-    func sendErc20(contractAddress: String, decimal: Int, from: String, to: String, nonce: Int, amount: Decimal, gasPriceInWei: Int, gasLimit: Int) -> Single<EthereumTransaction> {
-        return Single.create { [weak self] observer in
-            let contract = ERC20(contractAddress: contractAddress, decimal: decimal)
-
+    func sendErc20Single(contractAddress: String, from: String, to: String, nonce: Int, amount: String, gasPriceInWei: Int, gasLimit: Int) -> Single<EthereumTransaction> {
+        return Single.create { [unowned self] observer in
             do {
                 // check value
-                let bIntValue = try contract.power(amount: String(describing: amount))
+                guard let bIntValue = BInt(number: amount, withBase: 10) else {
+                    throw EthereumKitError.convertError(.failedToConvert(amount))
+                }
 
                 // check right contract parameters create
                 let params = ERC20.ContractFunctions.transfer(address: to, amount: bIntValue).data
                 let rawTransaction = RawTransaction(wei: "0", to: contractAddress, gasPrice: gasPriceInWei, gasLimit: gasLimit, nonce: nonce, data: params)
 
-                guard let hdWallet = self?.hdWallet else {
-                    throw GethError.noHdWallet
-                }
+                let signedTransaction = try self.hdWallet.sign(rawTransaction: rawTransaction)
 
-                let signedTransaction = try hdWallet.sign(rawTransaction: rawTransaction)
-
-                self?.geth.sendRawTransaction(rawTransaction: signedTransaction) { result in
+                self.geth.sendRawTransaction(rawTransaction: signedTransaction) { result in
                     switch result {
                     case .success(let sentTransaction):
                         let transaction = EthereumTransaction(
@@ -244,14 +225,6 @@ extension GethProvider: IApiProvider {
 
             return Disposables.create()
         }
-    }
-
-}
-
-extension GethProvider {
-
-    enum GethError: Error {
-        case noHdWallet
     }
 
 }

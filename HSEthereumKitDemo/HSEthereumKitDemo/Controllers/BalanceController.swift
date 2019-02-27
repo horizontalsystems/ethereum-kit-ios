@@ -20,6 +20,9 @@ class BalanceController: UIViewController {
         return formatter
     }()
 
+    private let ethereumAdapter: BaseAdapter = Manager.shared.ethereumAdapter!
+    private let erc20Adapter: BaseAdapter = Manager.shared.erc20Adapter!
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -27,8 +30,6 @@ class BalanceController: UIViewController {
 
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Logout", style: .plain, target: self, action: #selector(logout))
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Refresh", style: .plain, target: self, action: #selector(refresh))
-
-        let ethereumKit = Manager.shared.ethereumKit!
 
         updateLastBlockHeight()
 
@@ -38,27 +39,24 @@ class BalanceController: UIViewController {
         erc20updateBalance()
         erc20updateState()
 
-        Manager.shared.balanceSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
-            self?.updateBalance()
-        }).disposed(by: disposeBag)
-
-        Manager.shared.lastBlockHeight.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
+        ethereumAdapter.lastBlockHeightSignal.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
             self?.updateLastBlockHeight()
         }).disposed(by: disposeBag)
 
-        Manager.shared.syncStateSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
+        ethereumAdapter.balanceSignal.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
+            self?.updateBalance()
+        }).disposed(by: disposeBag)
+        ethereumAdapter.syncStateSignal.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
             self?.updateState()
         }).disposed(by: disposeBag)
 
-        Manager.shared.erc20Adapter.balanceSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
+        erc20Adapter.balanceSignal.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
             self?.erc20updateBalance()
         }).disposed(by: disposeBag)
 
-        Manager.shared.erc20Adapter.syncStateSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
+        erc20Adapter.syncStateSignal.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
             self?.erc20updateState()
         }).disposed(by: disposeBag)
-
-        ethereumKit.start()
     }
 
     @objc func logout() {
@@ -80,17 +78,17 @@ class BalanceController: UIViewController {
     }
 
     private func updateBalance() {
-        balanceLabel?.text = "Balance: \(Manager.shared.ethereumKit.balance)"
+        balanceLabel?.text = "Balance: \(ethereumAdapter.balance)"
     }
 
     private func erc20updateBalance() {
-        balanceCoinLabel?.text = "Balance Coin: \(Manager.shared.ethereumKit.balanceErc20(contractAddress: Manager.contractAddress))"
+        balanceCoinLabel?.text = "Balance Coin: \(erc20Adapter.balance)"
     }
 
     private func updateState() {
         let kitStateString: String
 
-        switch Manager.shared.ethereumKit.syncState {
+        switch ethereumAdapter.syncState {
         case .synced: kitStateString = "Synced!"
         case .syncing: kitStateString = "Syncing"
         case .notSynced: kitStateString = "Not Synced"
@@ -102,7 +100,7 @@ class BalanceController: UIViewController {
     private func erc20updateState() {
         let kitStateString: String
 
-        switch Manager.shared.ethereumKit.syncStateErc20(contractAddress: Manager.contractAddress) {
+        switch erc20Adapter.syncState {
         case .synced: kitStateString = "Synced!"
         case .syncing: kitStateString = "Syncing"
         case .notSynced: kitStateString = "Not Synced"
@@ -112,8 +110,8 @@ class BalanceController: UIViewController {
     }
 
     private func updateLastBlockHeight() {
-        if let lastBlockHeight = Manager.shared.ethereumKit.lastBlockHeight {
-            lastBlockLabel?.text = "Last Block: \(Int(lastBlockHeight))"
+        if let lastBlockHeight = ethereumAdapter.lastBlockHeight {
+            lastBlockLabel?.text = "Last Block: \(lastBlockHeight)"
         } else {
             lastBlockLabel?.text = "Last Block: n/a"
         }

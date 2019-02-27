@@ -45,8 +45,8 @@ extension EthereumKit {
         return state.lastBlockHeight
     }
 
-    public var balance: Decimal {
-        return state.balance ?? 0
+    public var balance: String? {
+        return state.balance
     }
 
     public var syncState: SyncState {
@@ -57,15 +57,15 @@ extension EthereumKit {
         return blockchain.ethereumAddress
     }
 
-    public func register(contractAddress: String, decimal: Int, delegate: IEthereumKitDelegate) {
+    public func register(contractAddress: String, delegate: IEthereumKitDelegate) {
         guard !state.has(contractAddress: contractAddress) else {
             return
         }
 
-        state.add(contractAddress: contractAddress, decimal: decimal, delegate: delegate)
-        state.set(balance: storage.balance(forAddress: contractAddress) ?? 0, contractAddress: contractAddress)
+        state.add(contractAddress: contractAddress, delegate: delegate)
+        state.set(balance: storage.balance(forAddress: contractAddress), contractAddress: contractAddress)
 
-        blockchain.register(contractAddress: contractAddress, decimal: decimal)
+        blockchain.register(contractAddress: contractAddress)
     }
 
     public func unregister(contractAddress: String) {
@@ -79,14 +79,14 @@ extension EthereumKit {
 
     public func fee(gasPriceInWei: Int? = nil) -> Decimal {
         // only for standard transactions without data
-        return Decimal(gasPriceInWei ?? blockchain.gasPriceInWei) / pow(10, 18) * Decimal(blockchain.gasLimitEthereum)
+        return Decimal(gasPriceInWei ?? blockchain.gasPriceInWei) * Decimal(blockchain.gasLimitEthereum)
     }
 
     public func transactionsSingle(fromHash: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {
         return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: nil)
     }
 
-    public func sendSingle(to address: String, amount: Decimal, gasPriceInWei: Int? = nil) -> Single<EthereumTransaction> {
+    public func sendSingle(to address: String, amount: String, gasPriceInWei: Int? = nil) -> Single<EthereumTransaction> {
         return blockchain.sendSingle(to: address, amount: amount, gasPriceInWei: gasPriceInWei)
     }
 
@@ -107,11 +107,11 @@ extension EthereumKit {
 
     public func feeErc20(gasPriceInWei: Int? = nil) -> Decimal {
         // only for erc20 coin maximum fee
-        return Decimal(gasPriceInWei ?? blockchain.gasPriceInWei) / pow(10, 18) * Decimal(blockchain.gasLimitErc20)
+        return Decimal(gasPriceInWei ?? blockchain.gasPriceInWei) * Decimal(blockchain.gasLimitErc20)
     }
 
-    public func balanceErc20(contractAddress: String) -> Decimal {
-        return state.balance(contractAddress: contractAddress) ?? 0
+    public func balanceErc20(contractAddress: String) -> String? {
+        return state.balance(contractAddress: contractAddress)
     }
 
     public func syncStateErc20(contractAddress: String) -> SyncState {
@@ -122,7 +122,7 @@ extension EthereumKit {
         return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: contractAddress)
     }
 
-    public func sendErc20Single(to address: String, contractAddress: String, amount: Decimal, gasPriceInWei: Int? = nil) -> Single<EthereumTransaction> {
+    public func sendErc20Single(to address: String, contractAddress: String, amount: String, gasPriceInWei: Int? = nil) -> Single<EthereumTransaction> {
         return blockchain.sendErc20Single(to: address, contractAddress: contractAddress, amount: amount, gasPriceInWei: gasPriceInWei)
     }
 
@@ -145,7 +145,7 @@ extension EthereumKit: IBlockchainDelegate {
         }
     }
 
-    func onUpdate(balance: Decimal) {
+    func onUpdate(balance: String) {
         guard state.balance != balance else {
             return
         }
@@ -157,7 +157,7 @@ extension EthereumKit: IBlockchainDelegate {
         }
     }
 
-    func onUpdateErc20(balance: Decimal, contractAddress: String) {
+    func onUpdateErc20(balance: String, contractAddress: String) {
         guard state.balance(contractAddress: contractAddress) != balance else {
             return
         }

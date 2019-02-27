@@ -1,11 +1,10 @@
 import UIKit
 import RxSwift
-import HSEthereumKit
 
 class TransactionsController: UITableViewController {
     let disposeBag = DisposeBag()
 
-    var transactions = [EthereumTransaction]()
+    var transactions = [TransactionRecord]()
     var showEthereumTransaction: Bool = true
 
     override func viewDidLoad() {
@@ -19,17 +18,17 @@ class TransactionsController: UITableViewController {
 
         update()
 
-        Manager.shared.lastBlockHeight.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] _ in
+        Manager.shared.ethereumAdapter.lastBlockHeightSignal.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] _ in
             self?.update()
         }).disposed(by: disposeBag)
 
-        Manager.shared.transactionsSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
+        Manager.shared.ethereumAdapter.transactionsSignal.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
             if self?.showEthereumTransaction ?? false {
                 self?.update()
             }
         }).disposed(by: disposeBag)
 
-        Manager.shared.erc20Adapter.transactionsSubject.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
+        Manager.shared.erc20Adapter.transactionsSignal.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
             if !(self?.showEthereumTransaction ?? true) {
                 self?.update()
             }
@@ -44,11 +43,13 @@ class TransactionsController: UITableViewController {
     }
 
     private func update() {
-        guard let ethereumKit = Manager.shared.ethereumKit else {
+        guard Manager.shared.ethereumKit != nil else {
             return
         }
-        let observable = showEthereumTransaction ? ethereumKit.transactionsSingle() : ethereumKit.transactionsErc20Single(contractAddress: Manager.contractAddress)
-        observable.subscribe(onSuccess: { [weak self] transactions in
+
+        let adapter = showEthereumTransaction ? Manager.shared.ethereumAdapter! : Manager.shared.erc20Adapter!
+
+        adapter.transactionsSingle().subscribe(onSuccess: { [weak self] transactions in
             self?.transactions = transactions
             self?.tableView.reloadData()
         }).disposed(by: disposeBag)
@@ -68,7 +69,7 @@ class TransactionsController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         if let cell = cell as? TransactionCell {
-            cell.bind(transaction: transactions[indexPath.row], index: transactions.count - indexPath.row, lastBlockHeight: Manager.shared.ethereumKit.lastBlockHeight ?? 0)
+            cell.bind(transaction: transactions[indexPath.row], index: transactions.count - indexPath.row, lastBlockHeight: Manager.shared.ethereumAdapter.lastBlockHeight)
         }
     }
 
@@ -76,7 +77,7 @@ class TransactionsController: UITableViewController {
         guard indexPath.row < transactions.count else {
             return
         }
-        print("hash: \(transactions[indexPath.row].hash)")
+        print("hash: \(transactions[indexPath.row].transactionHash)")
     }
 
 }

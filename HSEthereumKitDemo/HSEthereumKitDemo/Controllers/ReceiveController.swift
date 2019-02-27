@@ -9,7 +9,7 @@ class ReceiveController: UIViewController {
 
         title = "Receive"
 
-        addressLabel?.text = Manager.shared.ethereumKit.receiveAddress
+        addressLabel?.text = Manager.shared.ethereumAdapter.receiveAddress
     }
 
     @IBAction func copyToClipboard() {

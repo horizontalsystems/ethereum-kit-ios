@@ -80,7 +80,7 @@ extension GrdbStorage: IStorage {
         }
     }
 
-    func balance(forAddress address: String) -> Decimal? {
+    func balance(forAddress address: String) -> String? {
         let request = EthereumBalance.filter(EthereumBalance.Columns.address == address)
 
         return try! dbPool.read { db in
@@ -131,7 +131,7 @@ extension GrdbStorage: IStorage {
         }
     }
 
-    func save(balance: Decimal, address: String) {
+    func save(balance: String, address: String) {
         _ = try? dbPool.write { db in
             let balanceObject = EthereumBalance(address: address, value: balance)
             try balanceObject.insert(db)
@@ -159,9 +159,9 @@ extension GrdbStorage: IStorage {
             let predicate: SQLExpressible
 
             if erc20 {
-                predicate = EthereumTransaction.Columns.contractAddress != nil
+                predicate = EthereumTransaction.Columns.contractAddress != ""
             } else {
-                predicate = EthereumTransaction.Columns.contractAddress == nil
+                predicate = EthereumTransaction.Columns.contractAddress == ""
             }
 
             return try EthereumTransaction.filter(predicate).order(EthereumTransaction.Columns.blockNumber.desc).fetchOne(db)?.blockNumber
