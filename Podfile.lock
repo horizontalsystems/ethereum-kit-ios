@@ -12,7 +12,7 @@ PODS:
 DEPENDENCIES:
   - Alamofire (~> 4.8.0)
   - Cuckoo (~> 0.12.0)
-  - GRDB.swift
+  - GRDB.swift (~> 3.6.2)
   - HSCryptoKit (~> 1.1.0)
   - HSHDWalletKit (~> 1.0.3)
   - RxSwift (~> 4.0)
@@ -36,6 +36,6 @@ SPEC CHECKSUMS:
   RxAtomic: eacf60db868c96bfd63320e28619fe29c179656f
   RxSwift: 5976ecd04fc2fefd648827c23de5e11157faa973
 
-PODFILE CHECKSUM: 18c0e77d1cc96c8fa2413b05c36862d9e2d119f2
+PODFILE CHECKSUM: 0d5d0b78cf2d9fc1ef6f08cde26dc16d7bcdc0b4
 
 COCOAPODS: 1.5.3

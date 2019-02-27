@@ -14,7 +14,7 @@ def common_pods
   pod 'HSHDWalletKit', '~> 1.0.3'
   pod 'HSCryptoKit', '~> 1.1.0'
 
-  pod 'GRDB.swift'
+  pod 'GRDB.swift', '~> 3.6.2'
 
   pod 'Alamofire', '~> 4.8.0'
 end
