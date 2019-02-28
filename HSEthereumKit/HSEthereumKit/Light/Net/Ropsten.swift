@@ -25,4 +25,8 @@ class Ropsten: INetwork {
             nonce: Data(hex: "2bb183a1640b7c81")
     )
 
+    let coinType = UInt32(1)
+    let privateKeyPrefix: UInt32 = 0x04358394
+    let publicKeyPrefix: UInt32 = 0x043587cf
+
 }

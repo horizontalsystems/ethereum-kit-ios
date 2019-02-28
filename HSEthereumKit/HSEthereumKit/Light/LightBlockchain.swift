@@ -1,9 +1,10 @@
 import Foundation
 import RxSwift
 import HSHDWalletKit
+import HSCryptoKit
 
-class SPVBlockchain {
-    var ethereumAddress: String = ""
+class LightBlockchain {
+    var ethereumAddress: String
     var gasPriceInWei: Int = 0
     var gasLimitEthereum: Int = 0
     var gasLimitErc20: Int = 0
@@ -12,14 +13,26 @@ class SPVBlockchain {
 
     var peerGroup: IPeerGroup
     let reachabilityManager: ReachabilityManager
-    let storage: IStorage
+    let storage: ILightStorage
 
-    init(storage: IStorage, words: [String], debugPrints: Bool = false) {
-        let hdWallet = try! Wallet(seed: Mnemonic.seed(mnemonic: words), network: Network.ropsten, debugPrints: debugPrints)
-        ethereumAddress = hdWallet.address()
+    init(storage: ILightStorage, words: [String], network: INetwork, debugPrints: Bool = false) {
+        let hdWallet = HDWallet(seed: Mnemonic.seed(mnemonic: words), coinType: network.coinType, xPrivKey: network.privateKeyPrefix.bigEndian, xPubKey: network.publicKeyPrefix.bigEndian)
 
-        peerGroup = PeerGroup(network: Ropsten(), address: ethereumAddress)
+        let addressKey = try! hdWallet.privateKey(account: 0, index: 0, chain: .external)
+        let publicKey = addressKey.publicKey(compressed: false).raw
+        let address = EIP55.encode(CryptoKit.sha3(publicKey.dropFirst()).suffix(20))
+        let addressData = Data(hex: String(address[address.index(address.startIndex, offsetBy: 2)...]))
+
+        let connectionKey = try! hdWallet.privateKey(account: 100, index: 100, chain: .external)
+        let connectionPublicKey = Data(connectionKey.publicKey(compressed: false).raw.suffix(from: 1))
+        let connectionECKey = ECKey(
+                privateKey: connectionKey.raw,
+                publicKeyPoint: ECPoint(nodeId: connectionPublicKey)
+        )
+
+        peerGroup = PeerGroup(network: Ropsten(), storage: storage, connectionKey: connectionECKey, address: addressData)
         reachabilityManager = ReachabilityManager()
+        self.ethereumAddress = address
         self.storage = storage
 
         peerGroup.delegate = self
@@ -27,7 +40,7 @@ class SPVBlockchain {
 
 }
 
-extension SPVBlockchain: IBlockchain {
+extension LightBlockchain: IBlockchain {
 
     func start() {
         peerGroup.start()
@@ -57,7 +70,7 @@ extension SPVBlockchain: IBlockchain {
     }
 }
 
-extension SPVBlockchain: IPeerGroupDelegate {
+extension LightBlockchain: IPeerGroupDelegate {
 
     func onUpdate(state: AccountState) {
         delegate?.onUpdate(balance: state.balance.wei.asString(withBase: 10))

@@ -1,7 +1,8 @@
 import Foundation
 import HSCryptoKit
+import GRDB
 
-class BlockHeader {
+class BlockHeader: Record {
 
     static let EMPTY_TRIE_HASH = CryptoKit.sha3(RLP.encode([]))
 
@@ -53,6 +54,8 @@ class BlockHeader {
         self.extraData = extraData
         self.mixHash = mixHash
         self.nonce = nonce
+
+        super.init()
     }
 
     init(rlp: RLPElement) {
@@ -86,6 +89,74 @@ class BlockHeader {
         self.nonce = rlp.listValue[14].dataValue
 
         self.hashHex = CryptoKit.sha3(rlp.dataValue)
+
+        super.init()
+    }
+
+    override class var databaseTableName: String {
+        return "block_headers"
+    }
+
+    enum Columns: String, ColumnExpression {
+        case hashHex
+        case totalDifficulty
+        case parentHash
+        case unclesHash
+        case coinbase
+        case stateRoot
+        case transactionsRoot
+        case receiptsRoot
+        case logsBloom
+        case difficulty
+        case height
+        case gasLimit
+        case gasUsed
+        case timestamp
+        case extraData
+        case mixHash
+        case nonce
+    }
+
+    required init(row: Row) {
+        hashHex = row[Columns.hashHex]
+        totalDifficulty = row[Columns.totalDifficulty]
+        parentHash = row[Columns.parentHash]
+        unclesHash = row[Columns.unclesHash]
+        coinbase = row[Columns.coinbase]
+        stateRoot = row[Columns.stateRoot]
+        transactionsRoot = row[Columns.transactionsRoot]
+        receiptsRoot = row[Columns.receiptsRoot]
+        logsBloom = row[Columns.logsBloom]
+        difficulty = row[Columns.difficulty]
+        height = row[Columns.height]
+        gasLimit = row[Columns.gasLimit]
+        gasUsed = row[Columns.gasUsed]
+        timestamp = row[Columns.timestamp]
+        extraData = row[Columns.extraData]
+        mixHash = row[Columns.mixHash]
+        nonce = row[Columns.nonce]
+
+        super.init(row: row)
+    }
+
+    override func encode(to container: inout PersistenceContainer) {
+        container[Columns.hashHex] = hashHex
+        container[Columns.totalDifficulty] = totalDifficulty
+        container[Columns.parentHash] = parentHash
+        container[Columns.unclesHash] = unclesHash
+        container[Columns.coinbase] = coinbase
+        container[Columns.stateRoot] = stateRoot
+        container[Columns.transactionsRoot] = transactionsRoot
+        container[Columns.receiptsRoot] = receiptsRoot
+        container[Columns.logsBloom] = logsBloom
+        container[Columns.difficulty] = difficulty
+        container[Columns.height] = height
+        container[Columns.gasLimit] = gasLimit
+        container[Columns.gasUsed] = gasUsed
+        container[Columns.timestamp] = timestamp
+        container[Columns.extraData] = extraData
+        container[Columns.mixHash] = mixHash
+        container[Columns.nonce] = nonce
     }
 
     func toString() -> String {
