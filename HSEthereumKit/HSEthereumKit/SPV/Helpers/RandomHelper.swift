@@ -1,0 +1,23 @@
+import Foundation
+
+class RandomHelper: IRandomHelper {
+
+    func randomKey() -> ECKey {
+        return ECKey.randomKey()
+    }
+
+    func randomBytes(length: Range<Int>) -> Data {
+        return randomBytes(length: Int.random(in: length))
+    }
+
+    func randomBytes(length: Int) -> Data {
+        var bytes = Data(count: length)
+        let _ = bytes.withUnsafeMutableBytes {
+            (mutableBytes: UnsafeMutablePointer<UInt8>) -> Int32 in
+            SecRandomCopyBytes(kSecRandomDefault, length, mutableBytes)
+        }
+
+        return bytes
+    }
+
+}

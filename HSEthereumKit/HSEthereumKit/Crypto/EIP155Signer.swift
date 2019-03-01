@@ -9,11 +9,11 @@ public struct EIP155Signer {
     }
     
     public func sign(_ rawTransaction: RawTransaction, privateKey: Data) throws -> Data {
-        let transactionHash = try hash(rawTransaction: rawTransaction)
+        let transactionHash = hash(rawTransaction: rawTransaction)
         let signature = try CryptoKit.ellipticSign(transactionHash, privateKey: privateKey)
         
         let (r, s, v) = calculateRSV(signature: signature)
-        return try RLP.encode([
+        return RLP.encode([
             rawTransaction.nonce,
             rawTransaction.gasPrice,
             rawTransaction.gasLimit,
@@ -24,11 +24,11 @@ public struct EIP155Signer {
         ])
     }
     
-    public func hash(rawTransaction: RawTransaction) throws -> Data {
-        return CryptoKit.sha3(try encode(rawTransaction: rawTransaction))
+    public func hash(rawTransaction: RawTransaction) -> Data {
+        return CryptoKit.sha3(encode(rawTransaction: rawTransaction))
     }
     
-    public func encode(rawTransaction: RawTransaction) throws -> Data {
+    public func encode(rawTransaction: RawTransaction) -> Data {
         var toEncode: [Any] = [
             rawTransaction.nonce,
             rawTransaction.gasPrice,
@@ -39,7 +39,7 @@ public struct EIP155Signer {
         if chainID != 0 {
             toEncode.append(contentsOf: [chainID, 0, 0 ]) // EIP155
         }
-        return try RLP.encode(toEncode)
+        return RLP.encode(toEncode)
     }
 
     @available(*, deprecated, renamed: "calculateRSV(signature:)")
