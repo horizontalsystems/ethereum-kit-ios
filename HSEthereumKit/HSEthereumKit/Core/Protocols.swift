@@ -51,18 +51,21 @@ protocol IAddressValidator {
 
 protocol IStorage {
     var lastBlockHeight: Int? { get }
-    var gasPriceInWei: Int? { get }
 
     func balance(forAddress address: String) -> String?
-    func lastTransactionBlockHeight(erc20: Bool) -> Int?
     func transactionsSingle(fromHash: String?, limit: Int?, contractAddress: String?) -> Single<[EthereumTransaction]>
+
+    func clear()
+}
+
+protocol IApiStorage: IStorage {
+    var gasPriceInWei: Int? { get }
+    func lastTransactionBlockHeight(erc20: Bool) -> Int?
 
     func save(lastBlockHeight: Int)
     func save(gasPriceInWei: Int)
     func save(balance: String, address: String)
     func save(transactions: [EthereumTransaction])
-
-    func clear()
 }
 
 protocol IBlockchain {

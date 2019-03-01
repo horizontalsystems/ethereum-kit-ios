@@ -5,10 +5,10 @@ class PeerGroup {
     private var syncPeer: IPeer?
     private var address: Data
     private var connectionKey: ECKey
-    private var storage: ILightStorage
+    private var storage: ISPVStorage
     weak var delegate: IPeerGroupDelegate?
 
-    init(network: INetwork, storage: ILightStorage, connectionKey: ECKey, address: Data) {
+    init(network: INetwork, storage: ISPVStorage, connectionKey: ECKey, address: Data) {
         self.address = address
         self.connectionKey = connectionKey
         self.storage = storage

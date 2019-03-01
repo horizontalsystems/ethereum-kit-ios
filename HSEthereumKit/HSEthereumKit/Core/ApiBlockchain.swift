@@ -8,7 +8,7 @@ class ApiBlockchain {
 
     weak var delegate: IBlockchainDelegate?
 
-    private let storage: IStorage
+    private let storage: IApiStorage
     private let apiProvider: IApiProvider
     private let reachabilityManager: IReachabilityManager
 
@@ -26,7 +26,7 @@ class ApiBlockchain {
     let gasLimitEthereum = 21_000
     let gasLimitErc20 = 100_000
 
-    init(storage: IStorage, apiProvider: IApiProvider, reachabilityManager: IReachabilityManager, ethereumAddress: String) {
+    init(storage: IApiStorage, apiProvider: IApiProvider, reachabilityManager: IReachabilityManager, ethereumAddress: String) {
         self.storage = storage
         self.apiProvider = apiProvider
         self.reachabilityManager = reachabilityManager
@@ -298,7 +298,7 @@ extension ApiBlockchain {
 
 extension ApiBlockchain {
 
-    static func apiBlockchain(storage: IStorage, words: [String], testMode: Bool, infuraKey: String, etherscanKey: String, debugPrints: Bool = false) throws -> ApiBlockchain {
+    static func apiBlockchain(storage: IApiStorage, words: [String], testMode: Bool, infuraKey: String, etherscanKey: String, debugPrints: Bool = false) throws -> ApiBlockchain {
         let network: Network = testMode ? .ropsten : .mainnet
 
         let hdWallet = try Wallet(seed: Mnemonic.seed(mnemonic: words), network: network, debugPrints: debugPrints)

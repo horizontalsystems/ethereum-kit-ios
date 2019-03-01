@@ -3,7 +3,7 @@ import RxSwift
 import HSHDWalletKit
 import HSCryptoKit
 
-class LightBlockchain {
+class SPVBlockchain {
     var ethereumAddress: String
     var gasPriceInWei: Int = 0
     var gasLimitEthereum: Int = 0
@@ -13,9 +13,9 @@ class LightBlockchain {
 
     var peerGroup: IPeerGroup
     let reachabilityManager: ReachabilityManager
-    let storage: ILightStorage
+    let storage: ISPVStorage
 
-    init(storage: ILightStorage, words: [String], network: INetwork, debugPrints: Bool = false) {
+    init(storage: ISPVStorage, words: [String], network: INetwork, debugPrints: Bool = false) {
         let hdWallet = HDWallet(seed: Mnemonic.seed(mnemonic: words), coinType: network.coinType, xPrivKey: network.privateKeyPrefix.bigEndian, xPubKey: network.publicKeyPrefix.bigEndian)
 
         let addressKey = try! hdWallet.privateKey(account: 0, index: 0, chain: .external)
@@ -40,7 +40,7 @@ class LightBlockchain {
 
 }
 
-extension LightBlockchain: IBlockchain {
+extension SPVBlockchain: IBlockchain {
 
     func start() {
         peerGroup.start()
@@ -70,7 +70,7 @@ extension LightBlockchain: IBlockchain {
     }
 }
 
-extension LightBlockchain: IPeerGroupDelegate {
+extension SPVBlockchain: IPeerGroupDelegate {
 
     func onUpdate(state: AccountState) {
         delegate?.onUpdate(balance: state.balance.wei.asString(withBase: 10))

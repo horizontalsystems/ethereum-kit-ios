@@ -1,7 +1,7 @@
 import RxSwift
 import GRDB
 
-class GrdbStorage: IStorage {
+class ApiGrdbStorage {
     internal let dbPool: DatabasePool
 
     init(databaseFileName: String) {
@@ -63,6 +63,10 @@ class GrdbStorage: IStorage {
 
         return migrator
     }
+
+}
+
+extension ApiGrdbStorage: IApiStorage {
 
     var lastBlockHeight: Int? {
         return try! dbPool.read { db in
