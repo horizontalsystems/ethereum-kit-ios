@@ -7,11 +7,11 @@ class AnnounceMessage: IMessage {
     var bestBlockHeight = BInt(0)
     var reorganizationDepth = BInt(0)
 
-    required init?(data: Data) {
-        let rlp = RLP.decode(input: data)
+    required init(data: Data) throws  {
+        let rlpList = try RLP.decode(input: data).listValue()
 
-        guard rlp.isList() && rlp.listValue.count > 0 else {
-            return nil
+        guard rlpList.count > 0 else {
+            throw MessageDecodeError.notEnoughFields
         }
     }
 

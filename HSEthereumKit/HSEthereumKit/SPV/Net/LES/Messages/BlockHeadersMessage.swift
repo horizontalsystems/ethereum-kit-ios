@@ -3,23 +3,22 @@ import Foundation
 class BlockHeadersMessage: IMessage {
 
     var requestId: Int
-    var bv: Int
+    var bv: BInt
     var headers: [BlockHeader]
 
-    required init?(data: Data) {
-        let rlp = RLP.decode(input: data)
+    required init(data: Data) throws {
+        let rlpList = try RLP.decode(input: data).listValue()
 
-        guard rlp.isList() && rlp.listValue.count > 2 else {
-            return nil
+        guard rlpList.count > 2 else {
+            throw MessageDecodeError.notEnoughFields
         }
 
-        self.requestId = rlp.listValue[0].intValue
-        self.bv = rlp.listValue[1].intValue
+        self.requestId = try rlpList[0].intValue()
+        self.bv = try rlpList[1].bIntValue()
 
         var headers = [BlockHeader]()
-
-        for rlpHeader in rlp.listValue[2].listValue {
-            headers.append(BlockHeader(rlp: rlpHeader))
+        for rlpHeader in try rlpList[2].listValue() {
+            headers.append(try BlockHeader(rlp: rlpHeader))
         }
 
         self.headers = headers

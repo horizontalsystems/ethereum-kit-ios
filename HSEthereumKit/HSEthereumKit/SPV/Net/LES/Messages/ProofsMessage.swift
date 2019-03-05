@@ -1,5 +1,4 @@
 import Foundation
-import HSCryptoKit
 
 class ProofsMessage: IMessage {
 
@@ -16,27 +15,19 @@ class ProofsMessage: IMessage {
     let bv: Int
     var nodes: [TrieNode]
 
-    required init?(data: Data) {
-        let rlp = RLP.decode(input: data)
+    required init(data: Data) throws {
+        let rlpList = try RLP.decode(input: data).listValue()
 
-        guard rlp.isList() && rlp.listValue.count > 2 else {
-            return nil
+        guard rlpList.count > 2 else {
+            throw MessageDecodeError.notEnoughFields
         }
 
-        requestId = rlp.listValue[0].intValue
-        bv = rlp.listValue[1].intValue
+        requestId = try rlpList[0].intValue()
+        bv = try rlpList[1].intValue()
 
         nodes = [TrieNode]()
-
-        let rlpNodes: [RLPElement]
-        if rlp.listValue[2].isList() && rlp.listValue[2].listValue.count > 0 {
-            rlpNodes = rlp.listValue[2].listValue
-        } else {
-            rlpNodes = [RLPElement]()
-        }
-
-        for rlpNode in rlpNodes {
-            nodes.append(TrieNode(rlp: rlpNode))
+        for rlpNode in try rlpList[2].listValue() {
+            nodes.append(try TrieNode(rlp: rlpNode))
         }
     }
 
@@ -50,15 +41,15 @@ class ProofsMessage: IMessage {
             throw ProofError.stateNodeNotFound
         }
 
-        let rlpState = RLP.decode(input: lastNode.elements[1])
-        guard rlpState.isList() && rlpState.listValue.count == 4 else {
+        let rlpState = try RLP.decode(input: lastNode.elements[1]).listValue()
+        guard rlpState.count == 4 else {
             throw ProofError.wrongState
         }
 
-        let nonce = rlpState.listValue[0].intValue
-        let balance = Balance(wei: rlpState.listValue[1].bIntValue)
-        let storageRoot = rlpState.listValue[2].dataValue
-        let codeHash = rlpState.listValue[3].dataValue
+        let nonce = try rlpState[0].intValue()
+        let balance = Balance(wei: try rlpState[1].bIntValue())
+        let storageRoot = rlpState[2].dataValue
+        let codeHash = rlpState[3].dataValue
 
         var lastNodeKey = lastNode.hash
 
@@ -73,7 +64,7 @@ class ProofsMessage: IMessage {
             lastNodeKey = lastNode.hash
         }
 
-        let addressHash = CryptoKit.sha3(address)
+        let addressHash = CryptoUtils.shared.sha3(address)
 
         guard addressHash.toHexString() == path else {
             throw ProofError.pathDoesNotMatchAddressHash

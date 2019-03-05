@@ -6,12 +6,7 @@ class GetBlockBodiesMessage: IMessage {
     var transactions = [[Data]]() // In format described in Ethereum specification
     var receipts = [[Data]]() // In format described in Ethereum specification
 
-    required init?(data: Data) {
-        let rlp = RLP.decode(input: data)
-
-        guard rlp.isList() && rlp.listValue.count > 0 else {
-            return nil
-        }
+    required init(data: Data) throws {
     }
 
     func encoded() -> Data {

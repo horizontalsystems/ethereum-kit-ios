@@ -5,7 +5,7 @@ class GetTransactionStatusMessage: IMessage {
     var requestId = 0
     var transactionHashes = [Data]()
 
-    required init?(data: Data) {
+    required init(data: Data) throws {
     }
 
     func encoded() -> Data {

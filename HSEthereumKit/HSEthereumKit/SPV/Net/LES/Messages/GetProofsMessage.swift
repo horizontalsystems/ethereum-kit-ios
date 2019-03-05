@@ -1,5 +1,4 @@
 import Foundation
-import HSCryptoKit
 
 class GetProofsMessage: IMessage {
 
@@ -11,8 +10,9 @@ class GetProofsMessage: IMessage {
         self.proofRequests = [ProofRequest(blockHash: blockHash, key: key, key2: key2, fromLevel: fromLevel)]
     }
 
-    required init?(data: Data) {
-        return nil
+    required init(data: Data) throws {
+        requestId = 0
+        proofRequests = []
     }
 
     func encoded() -> Data {
@@ -37,9 +37,9 @@ class GetProofsMessage: IMessage {
 
         init(blockHash: Data, key: Data, key2: Data, fromLevel: Int) {
             self.blockHash = blockHash
-            self.keyHash = CryptoKit.sha3(key)
+            self.keyHash = CryptoUtils.shared.sha3(key)
             if key2.count > 0 {
-                self.key2Hash = CryptoKit.sha3(key2)
+                self.key2Hash = CryptoUtils.shared.sha3(key2)
             } else {
                 self.key2Hash = key2
             }

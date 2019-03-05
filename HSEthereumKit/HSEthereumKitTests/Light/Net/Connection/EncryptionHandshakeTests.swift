@@ -8,7 +8,7 @@ class EncryptionHandshakeTests: XCTestCase {
     private var ephemeralKey: ECKey!
     private var remoteKeyPoint: ECPoint!
     private var remoteEphemeralKeyPoint: ECPoint!
-    private var mockCrypto: MockICrypto!
+    private var mockCrypto: MockICryptoUtils!
     private var mockRandom: MockIRandomHelper!
     private var mockFactory: MockIFactory!
     private var authMessage: AuthMessage!
@@ -29,17 +29,17 @@ class EncryptionHandshakeTests: XCTestCase {
     override func setUp() {
         super.setUp()
 
-        myKey = ECKey.randomKey()
-        ephemeralKey = ECKey.randomKey()
-        remoteKeyPoint = ECKey.randomKey().publicKeyPoint
-        remoteEphemeralKeyPoint = ECKey.randomKey().publicKeyPoint
+        myKey = RandomHelper.shared.randomKey()
+        ephemeralKey = RandomHelper.shared.randomKey()
+        remoteKeyPoint = RandomHelper.shared.randomKey().publicKeyPoint
+        remoteEphemeralKeyPoint = RandomHelper.shared.randomKey().publicKeyPoint
         encodedAuthECIESMessage = authECIESMessage.encoded()
 
         authMessage = AuthMessage(signature: signature, publicKeyPoint: myKey.publicKeyPoint, nonce: nonce)
         encodedAuthAckMessage = RLP.encode([remoteEphemeralKeyPoint.x + remoteEphemeralKeyPoint.y, remoteNonce, 4])
-        authAckMessage = AuthAckMessage(data: encodedAuthAckMessage)!
+        authAckMessage = try! AuthAckMessage(data: encodedAuthAckMessage)
 
-        mockCrypto = MockICrypto()
+        mockCrypto = MockICryptoUtils()
         mockRandom = MockIRandomHelper()
         mockFactory = MockIFactory()
 
@@ -159,14 +159,14 @@ class EncryptionHandshakeTests: XCTestCase {
     func testExtractSecrets_NonDecodableMessage() {
         let eciesMessage = ECIESEncryptedMessage(prefixBytes: Data(), ephemeralPublicKey: Data(), initialVector: Data(), cipher: Data(), checksum: Data())
         stub(mockFactory) { mock in
-            when(mock.authAckMessage(data: any())).thenReturn(nil)
+            when(mock.authAckMessage(data: any())).thenThrow(MessageDecodeError.notEnoughFields)
         }
 
         do {
             _ = try encryptionHandshake.extractSecrets(from: eciesMessage)
             XCTFail("Expecting error")
-        } catch let error as EncryptionHandshake.HandshakeError {
-            XCTAssertEqual(error, EncryptionHandshake.HandshakeError.invalidAuthAckPayload)
+        } catch let error as MessageDecodeError {
+            XCTAssertEqual(error, MessageDecodeError.notEnoughFields)
         } catch {
             XCTFail("Unexpected error: \(error)")
         }

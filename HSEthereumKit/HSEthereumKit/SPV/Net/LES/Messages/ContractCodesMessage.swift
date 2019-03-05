@@ -3,14 +3,14 @@ import Foundation
 class ContractCodesMessage: IMessage {
 
     var requestId = 0
-    var bv = 0
+    var bv: BInt = 0
     var contractCodes = [Data]()
 
-    required init?(data: Data) {
-        let rlp = RLP.decode(input: data)
+    required init(data: Data) throws {
+        let rlpList = try RLP.decode(input: data).listValue()
 
-        guard rlp.isList() && rlp.listValue.count > 0 else {
-            return nil
+        guard rlpList.count > 0 else {
+            throw MessageDecodeError.notEnoughFields
         }
     }
 

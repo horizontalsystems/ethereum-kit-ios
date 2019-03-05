@@ -3,10 +3,10 @@ import Foundation
 class TransactionStatusMessage: IMessage {
 
     var requestId = 0
-    var bv = 0
+    var bv: BInt = 0
     var transactionStatuses = [Data: TransactionStatus]()
 
-    required init?(data: Data) {
+    required init(data: Data) throws {
     }
 
     func encoded() -> Data {

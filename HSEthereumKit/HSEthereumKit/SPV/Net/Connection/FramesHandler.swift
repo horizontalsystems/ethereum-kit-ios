@@ -7,7 +7,7 @@ class FrameHandler: IFrameHandler {
         case invalidPayload
     }
 
-    static let devP2PGreatestMessageCode = 0x10
+    static let devP2PMaxMessageCode = 0x10
     static let devP2PPacketTypesMap: [Int: IMessage.Type] = [
         0x00: HelloMessage.self,
         0x01: DisconnectMessage.self,
@@ -15,25 +15,20 @@ class FrameHandler: IFrameHandler {
         0x03: PongMessage.self
     ]
 
-    private var packetTypesMap: [Int: IMessage.Type] = FrameHandler.devP2PPacketTypesMap
     private var frames = [Frame]()
-    private var capabilities: [Capability] = []
+    private var packetTypesMap: [Int: IMessage.Type] = FrameHandler.devP2PPacketTypesMap
 
-    func register(capability: Capability) {
+    func register(capabilities: [Capability]) {
         self.packetTypesMap = FrameHandler.devP2PPacketTypesMap
+        var offset = FrameHandler.devP2PMaxMessageCode
 
-        capabilities.append(capability)
         let sortedCapabilities = capabilities.sorted(by: { $0.name < $1.name || ($0.name == $1.name && $0.version < $1.version)  })
-
-        var offsetMessageCode = FrameHandler.devP2PGreatestMessageCode
         for capability in sortedCapabilities {
             for (packetType, messageClass) in capability.packetTypesMap {
-                self.packetTypesMap[offsetMessageCode + packetType] = messageClass
+                self.packetTypesMap[offset + packetType] = messageClass
             }
 
-            if let offset = self.packetTypesMap.keys.sorted().last {
-                offsetMessageCode = offset
-            }
+            offset = self.packetTypesMap.keys.max() ?? offset
         }
     }
 
@@ -52,11 +47,11 @@ class FrameHandler: IFrameHandler {
             throw FrameHandlerError.unknownMessageType
         }
 
-        guard let message = messageClass.init(data: frame.payload) else {
+        do {
+            return try messageClass.init(data: frame.payload)
+        } catch {
             throw FrameHandlerError.invalidPayload
         }
-
-        return message
     }
 
     func getFrames(from message: IMessage) -> [Frame] {

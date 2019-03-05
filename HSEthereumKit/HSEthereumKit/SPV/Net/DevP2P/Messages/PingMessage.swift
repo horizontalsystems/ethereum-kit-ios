@@ -7,7 +7,7 @@ class PingMessage: IMessage {
     init() {
     }
 
-    required init?(data: Data) {
+    required init(data: Data) throws {
     }
 
     func encoded() -> Data {

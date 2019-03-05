@@ -1,7 +1,6 @@
 import Foundation
 import RxSwift
 import HSHDWalletKit
-import HSCryptoKit
 
 class SPVBlockchain {
     var ethereumAddress: String
@@ -20,7 +19,7 @@ class SPVBlockchain {
 
         let addressKey = try! hdWallet.privateKey(account: 0, index: 0, chain: .external)
         let publicKey = addressKey.publicKey(compressed: false).raw
-        let address = EIP55.encode(CryptoKit.sha3(publicKey.dropFirst()).suffix(20))
+        let address = EIP55.encode(CryptoUtils.shared.sha3(publicKey.dropFirst()).suffix(20))
         let addressData = Data(hex: String(address[address.index(address.startIndex, offsetBy: 2)...]))
 
         let connectionKey = try! hdWallet.privateKey(account: 100, index: 100, chain: .external)

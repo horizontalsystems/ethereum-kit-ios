@@ -7,7 +7,7 @@ class PongMessage: IMessage {
     init() {
     }
 
-    required init?(data: Data) {
+    required init(data: Data) throws {
     }
 
     func encoded() -> Data {
