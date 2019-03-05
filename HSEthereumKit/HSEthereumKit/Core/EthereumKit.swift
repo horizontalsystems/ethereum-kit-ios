@@ -196,10 +196,22 @@ extension EthereumKit: IBlockchainDelegate {
 extension EthereumKit {
 
     public static func ethereumKit(words: [String], walletId: String, testMode: Bool, infuraKey: String, etherscanKey: String, debugPrints: Bool = false) throws -> EthereumKit {
-//        let storage = SPVGrdbStorage(databaseFileName: "\(walletId)-\(testMode)")
-//        let blockchain = SPVBlockchain(storage: storage, words: words, network: Ropsten(), debugPrints: debugPrints)
         let storage = ApiGrdbStorage(databaseFileName: "\(walletId)-\(testMode)")
         let blockchain = try ApiBlockchain.apiBlockchain(storage: storage, words: words, testMode: testMode, infuraKey: infuraKey, etherscanKey: etherscanKey, debugPrints: debugPrints)
+        let addressValidator = AddressValidator()
+
+        let ethereumKit = EthereumKit(blockchain: blockchain, storage: storage, addressValidator: addressValidator)
+
+        blockchain.delegate = ethereumKit
+
+        return ethereumKit
+    }
+
+    public static func ethereumKitSpv(words: [String], walletId: String, testMode: Bool, minLogLevel: Logger.Level = .verbose) -> EthereumKit {
+        let logger = Logger(minLogLevel: minLogLevel)
+
+        let storage = SpvGrdbStorage(databaseFileName: "\(walletId)-\(testMode)")
+        let blockchain = SpvBlockchain.spvBlockchain(storage: storage, words: words, testMode: testMode, logger: logger)
         let addressValidator = AddressValidator()
 
         let ethereumKit = EthereumKit(blockchain: blockchain, storage: storage, addressValidator: addressValidator)

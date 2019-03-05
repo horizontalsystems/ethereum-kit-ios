@@ -13,7 +13,7 @@ DEPENDENCIES:
   - Alamofire (~> 4.8.0)
   - Cuckoo (~> 0.12.0)
   - GRDB.swift (~> 3.6.2)
-  - HSCryptoKit (~> 1.3.0)
+  - HSCryptoKit (from `https://github.com/horizontalsystems/crypto-kit-ios`)
   - HSHDWalletKit (~> 1.0.4)
   - RxSwift (~> 4.0)
 
@@ -22,10 +22,18 @@ SPEC REPOS:
     - Alamofire
     - Cuckoo
     - GRDB.swift
-    - HSCryptoKit
     - HSHDWalletKit
     - RxAtomic
     - RxSwift
+
+EXTERNAL SOURCES:
+  HSCryptoKit:
+    :git: https://github.com/horizontalsystems/crypto-kit-ios
+
+CHECKOUT OPTIONS:
+  HSCryptoKit:
+    :commit: 376f161f13c5d8facd58a8150722458c5ed77237
+    :git: https://github.com/horizontalsystems/crypto-kit-ios
 
 SPEC CHECKSUMS:
   Alamofire: 16ce2c353fb72865124ddae8a57c5942388f4f11
@@ -36,6 +44,6 @@ SPEC CHECKSUMS:
   RxAtomic: f8d6adc1ccb87a767811269e4875887bc74dbf19
   RxSwift: 92fcf68dfef21f3e2ab1965363d9e7b3d787597e
 
-PODFILE CHECKSUM: b53b70dbd1478faac93ba99f4355884464b785fb
+PODFILE CHECKSUM: 256303cf5ed48c02e30985c9a0a50a7189bbfd5f
 
 COCOAPODS: 1.5.3

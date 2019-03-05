@@ -39,11 +39,11 @@ class LESPeer {
     var statusReceived: Bool = false
 
 
-    init(network: INetwork, bestBlock: BlockHeader, key: ECKey, node: Node) {
+    init(network: INetwork, bestBlock: BlockHeader, key: ECKey, node: Node, logger: Logger? = nil) {
         self.network = network
         self.bestBlock = bestBlock
 
-        devP2PPeer = DevP2PPeer(key: key, node: node, capability: capability)
+        devP2PPeer = DevP2PPeer(key: key, node: node, capability: capability, logger: logger)
         devP2PPeer.delegate = self
     }
 

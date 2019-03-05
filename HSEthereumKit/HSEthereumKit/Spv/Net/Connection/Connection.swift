@@ -7,7 +7,7 @@ class Connection: NSObject {
         case encryptionHandshakeError
     }
 
-    private let bufferSize = 64
+    private let bufferSize = 4096
     private let interval = 1.0
 
     let nodeId: Data
@@ -20,6 +20,7 @@ class Connection: NSObject {
     private var frameCodec: FrameCodec?
     private let frameHandler: IFrameHandler
     private let factory: IFactory
+    private let logger: Logger?
 
     private var runLoop: RunLoop?
     private var readStream: Unmanaged<CFReadStream>?
@@ -37,13 +38,14 @@ class Connection: NSObject {
         return "\(nodeId.toHexString())@\(host):\(port)'"
     }
 
-    init(node: Node, factory: IFactory = Factory.shared) {
+    init(node: Node, factory: IFactory = Factory.shared, logger: Logger? = nil) {
         self.nodeId = node.id
         self.host = node.host
         self.port = UInt32(node.port)
         self.discPort = UInt32(node.discoveryPort)
 
         self.factory = factory
+        self.logger = logger
         frameHandler = FrameHandler()
     }
 
@@ -85,46 +87,41 @@ class Connection: NSObject {
             }
         }
 
-        if packets.count >= 0 {
-            if let handshake = handshake {
-                guard let eciesMessage = ECIESEncryptedMessage(data: packets) else {
-                    return
-                }
-
-                do {
-                    let secrets = try handshake.extractSecrets(from: eciesMessage)
-                    packets = Data(packets.dropFirst(eciesMessage.encoded().count))
-
-                    frameCodec = factory.frameCodec(secrets: secrets)
-                    self.handshake = nil
-
-                    delegate?.connectionEstablished()
-                } catch {
-                    disconnect(error: PeerConnectionError.encryptionHandshakeError)
-                }
-
+        if let handshake = handshake {
+            guard let eciesMessage = ECIESEncryptedMessage(data: packets) else {
                 return
             }
 
-            if let frameCode = frameCodec {
-                while (packets.count >= bufferSize) {
-                    do {
-                        guard let frame = try frameCode.readFrame(from: packets) else {
-                            return
-                        }
+            do {
+                let secrets = try handshake.extractSecrets(from: eciesMessage)
+                packets = Data(packets.dropFirst(eciesMessage.encoded().count))
 
-                        packets = Data(packets.dropFirst(frame.size))
-                        frameHandler.add(frame: frame)
+                frameCodec = factory.frameCodec(secrets: secrets)
+                self.handshake = nil
 
-                        while let message = try frameHandler.getMessage() {
-                            delegate?.connection(didReceiveMessage: message)
-                        }
-                    } catch {
-                        disconnect(error: error)
-                    }
-                }
+                delegate?.connectionEstablished()
+            } catch {
+                disconnect(error: PeerConnectionError.encryptionHandshakeError)
             }
 
+            return
+        }
+
+        guard let frameCodec = frameCodec else {
+            return
+        }
+
+        do {
+            while let frame = try frameCodec.readFrame(from: packets) {
+                packets = Data(packets.dropFirst(frame.size))
+                frameHandler.add(frame: frame)
+
+                if let message = try frameHandler.getMessage() {
+                    delegate?.connection(didReceiveMessage: message)
+                }
+            }
+        } catch {
+            disconnect(error: error)
         }
     }
 
@@ -198,7 +195,7 @@ extension Connection: IConnection {
 
         delegate?.connectionDidDisconnect(withError: error)
 
-        log("DISCONNECTED")
+        logger?.verbose("DISCONNECTED: \(error?.localizedDescription ?? "nil")")
     }
 
     func register(capabilities: [Capability]) {
@@ -206,7 +203,7 @@ extension Connection: IConnection {
     }
 
     func send(message: IMessage) {
-        log(">>> \(message.toString())")
+        logger?.verbose(">>> \(message.toString())")
 
         guard let frameCodec = self.frameCodec else {
             log("ERROR: trying to send message before RLPx handshake")
@@ -231,7 +228,7 @@ extension Connection: StreamDelegate {
         case let stream as InputStream:
             switch eventCode {
             case .openCompleted:
-                log("CONNECTION ESTABLISHED")
+                logger?.verbose("CONNECTION ESTABLISHED")
                 connected = true
                 break
             case .hasBytesAvailable:

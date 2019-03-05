@@ -1,16 +1,10 @@
-import Foundation
-
 class FrameCodec {
-
-    enum FrameCodecError: Error {
-        case macMismatch
-    }
-
     private let secrets: Secrets
     private let helper: IFrameCodecHelper
     private let encryptor: IAESCipher
     private let decryptor: IAESCipher  // AES in CTR encrypt gives the message back when you encrypt the cipher
 
+    private var previousDecryptedHeader: Data?
 
     init(secrets: Secrets, helper: IFrameCodecHelper, encryptor: IAESCipher, decryptor: IAESCipher) {
         self.secrets = secrets
@@ -18,24 +12,32 @@ class FrameCodec {
         self.encryptor = encryptor
         self.decryptor = decryptor
     }
-    
+
     func readFrame(from data: Data) throws -> Frame? {
-        guard data.count >= 64 else {
+        guard previousDecryptedHeader != nil || data.count >= Frame.minSize else {
             return nil
         }
 
-        let header = data.subdata(in: 0..<16)
-        let headerMac = data.subdata(in: 16..<32)
-        let updatedMac = helper.updateMac(mac: secrets.ingressMac, macKey: secrets.mac, data: header)
+        let decryptedHeader: Data
 
-        guard updatedMac == headerMac else {
-            throw FrameCodecError.macMismatch
+        if let previousDecryptedHeader = previousDecryptedHeader {
+            decryptedHeader = previousDecryptedHeader
+        } else {
+            let header = data.subdata(in: 0..<16)
+            let headerMac = data.subdata(in: 16..<32)
+            let updatedMac = helper.updateMac(mac: secrets.ingressMac, macKey: secrets.mac, data: header)
+
+            guard updatedMac == headerMac else {
+                throw FrameCodecError.macMismatch
+            }
+
+            decryptedHeader = decryptor.process(header)
+            previousDecryptedHeader = decryptedHeader
         }
 
-        let decryptedHeader = decryptor.process(header)
         let frameBodySize = helper.fromThreeBytes(data: decryptedHeader.subdata(in: 0..<3))
 
-        let rlpHeaderElements = try RLP.decode(input: decryptedHeader.subdata(in: 3..<16)).listValue()
+        let rlpHeaderElements = try RLP.decode(input: decryptedHeader.subdata(in: 3..<decryptedHeader.count)).listValue()
         var contextId = -1
         if rlpHeaderElements.count > 1 {
             contextId = try rlpHeaderElements[1].intValue()
@@ -55,6 +57,8 @@ class FrameCodec {
         guard data.count >= frameSize else {
             return nil
         }
+
+        previousDecryptedHeader = nil
 
         let frameBodyData = data.subdata(in: 32..<(frameSize - 16))
         let frameBodyMac = data.subdata(in: (frameSize - 16)..<frameSize)
@@ -111,6 +115,14 @@ class FrameCodec {
         let frameMac = helper.updateMac(mac: secrets.egressMac, macKey: secrets.mac, data: egressMac)
 
         return encryptedHeader + headerMac + encryptedFrameData + frameMac
+    }
+
+}
+
+extension FrameCodec {
+
+    enum FrameCodecError: Error {
+        case macMismatch
     }
 
 }
