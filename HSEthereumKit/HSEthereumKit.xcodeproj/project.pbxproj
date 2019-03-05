@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		11B3510467474AC4BFAFD764 /* EthereumBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3554DD0D3D4A6F7D9005C /* EthereumBalance.swift */; };
 		11B3518C1848401DE249961E /* ApiBlockchain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35AC255BE64FE27CB8220 /* ApiBlockchain.swift */; };
+		11B356030FB7878C2BD0C5A8 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B357626B809CC6A964D5B1 /* Logger.swift */; };
 		11B356BF054DFC99D8EB19E5 /* GeneratedMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B359F34D40C2E21B4CD620 /* GeneratedMocks.swift */; };
 		11B358F1C8520185D515F5C8 /* BlockchainState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B355F58513F030F5E8E201 /* BlockchainState.swift */; };
 		11B35A4116607D8C5B444E37 /* EthereumKitState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3567B8F9696AA05DFFADE /* EthereumKitState.swift */; };
@@ -144,6 +145,7 @@
 		11B3554DD0D3D4A6F7D9005C /* EthereumBalance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumBalance.swift; sourceTree = "<group>"; };
 		11B355F58513F030F5E8E201 /* BlockchainState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockchainState.swift; sourceTree = "<group>"; };
 		11B3567B8F9696AA05DFFADE /* EthereumKitState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumKitState.swift; sourceTree = "<group>"; };
+		11B357626B809CC6A964D5B1 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		11B359B70EC74CF5E6CFBC0C /* EthereumTransaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumTransaction.swift; sourceTree = "<group>"; };
 		11B359F34D40C2E21B4CD620 /* GeneratedMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GeneratedMocks.swift; sourceTree = "<group>"; };
 		11B35AC255BE64FE27CB8220 /* ApiBlockchain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApiBlockchain.swift; sourceTree = "<group>"; };
@@ -513,6 +515,7 @@
 				58AAA61E60AF6E31E1822ADE /* GethProvider.swift */,
 				58AAA69FB6E04728EDC5A525 /* Protocols.swift */,
 				58AAAD5B009D6666F3821F02 /* Signal.swift */,
+				11B357626B809CC6A964D5B1 /* Logger.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -1052,6 +1055,7 @@
 				2FA5DEE6CABB42698BCBE9A3 /* SPVGrdbStorage.swift in Sources */,
 				2FA5DF6C2109ECA26A3E224E /* SPVProtocols.swift in Sources */,
 				2FA5D7D60D389329C7C9354B /* MessageDecodeError.swift in Sources */,
+				11B356030FB7878C2BD0C5A8 /* Logger.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

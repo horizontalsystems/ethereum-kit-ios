@@ -2,7 +2,7 @@ import Foundation
 import RxSwift
 import GRDB
 
-class SPVGrdbStorage {
+class SpvGrdbStorage {
     internal let dbPool: DatabasePool
 
     init(databaseFileName: String) {
@@ -72,7 +72,7 @@ class SPVGrdbStorage {
 
 }
 
-extension SPVGrdbStorage: ISPVStorage {
+extension SpvGrdbStorage: ISpvStorage {
 
     var lastBlockHeight: Int? {
         return lastBlockHeader()?.height.toInt()

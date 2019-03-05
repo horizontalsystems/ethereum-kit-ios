@@ -12,17 +12,19 @@ class DevP2PPeer {
     private let myKey: ECKey
     private let myListenPort: UInt32 = 30303
     private let capability: Capability
+    private let logger: Logger?
 
     var helloSent: Bool = false
     var helloReceived: Bool = false
 
     private var queue = DispatchQueue(label: "DevP2P", qos: .userInitiated)
 
-    init(key: ECKey, node: Node, capability: Capability) {
+    init(key: ECKey, node: Node, capability: Capability, logger: Logger? = nil) {
         self.myKey = key
         self.capability = capability
+        self.logger = logger
 
-        connection = Connection(node: node)
+        connection = Connection(node: node, logger: logger)
         connection.delegate = self
     }
 
@@ -47,7 +49,7 @@ class DevP2PPeer {
     }
 
     private func handle(message: IMessage) throws {
-        print("<<< \(message.toString())")
+        logger?.verbose("<<< \(message.toString())")
 
         switch message {
         case let helloMessage as HelloMessage: handle(message: helloMessage)

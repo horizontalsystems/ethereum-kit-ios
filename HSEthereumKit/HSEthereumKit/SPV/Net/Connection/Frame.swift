@@ -1,6 +1,7 @@
 import Foundation
 
 class Frame {
+    static let minSize = 64
 
     let type: Int
     let payloadSize: Int

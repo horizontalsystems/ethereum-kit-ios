@@ -2,50 +2,35 @@ import Foundation
 import RxSwift
 import HSHDWalletKit
 
-class SPVBlockchain {
-    var ethereumAddress: String
+class SpvBlockchain {
+    weak var delegate: IBlockchainDelegate?
+
+    private let peerGroup: IPeerGroup
+
+    let ethereumAddress: String
+
     var gasPriceInWei: Int = 0
     var gasLimitEthereum: Int = 0
     var gasLimitErc20: Int = 0
-    var syncState: EthereumKit.SyncState = .synced
-    weak var delegate: IBlockchainDelegate?
 
-    var peerGroup: IPeerGroup
-    let reachabilityManager: ReachabilityManager
-    let storage: ISPVStorage
-
-    init(storage: ISPVStorage, words: [String], network: INetwork, debugPrints: Bool = false) {
-        let hdWallet = HDWallet(seed: Mnemonic.seed(mnemonic: words), coinType: network.coinType, xPrivKey: network.privateKeyPrefix.bigEndian, xPubKey: network.publicKeyPrefix.bigEndian)
-
-        let addressKey = try! hdWallet.privateKey(account: 0, index: 0, chain: .external)
-        let publicKey = addressKey.publicKey(compressed: false).raw
-        let address = EIP55.encode(CryptoUtils.shared.sha3(publicKey.dropFirst()).suffix(20))
-        let addressData = Data(hex: String(address[address.index(address.startIndex, offsetBy: 2)...]))
-
-        let connectionKey = try! hdWallet.privateKey(account: 100, index: 100, chain: .external)
-        let connectionPublicKey = Data(connectionKey.publicKey(compressed: false).raw.suffix(from: 1))
-        let connectionECKey = ECKey(
-                privateKey: connectionKey.raw,
-                publicKeyPoint: ECPoint(nodeId: connectionPublicKey)
-        )
-
-        peerGroup = PeerGroup(network: Ropsten(), storage: storage, connectionKey: connectionECKey, address: addressData)
-        reachabilityManager = ReachabilityManager()
-        self.ethereumAddress = address
-        self.storage = storage
-
-        peerGroup.delegate = self
+    private init(peerGroup: IPeerGroup, ethereumAddress: String) {
+        self.peerGroup = peerGroup
+        self.ethereumAddress = ethereumAddress
     }
 
 }
 
-extension SPVBlockchain: IBlockchain {
+extension SpvBlockchain: IBlockchain {
 
     func start() {
         peerGroup.start()
     }
 
     func clear() {
+    }
+
+    var syncState: EthereumKit.SyncState {
+        return EthereumKit.SyncState.synced
     }
 
     func syncState(contractAddress: String) -> EthereumKit.SyncState {
@@ -69,10 +54,40 @@ extension SPVBlockchain: IBlockchain {
     }
 }
 
-extension SPVBlockchain: IPeerGroupDelegate {
+extension SpvBlockchain: IPeerGroupDelegate {
 
     func onUpdate(state: AccountState) {
         delegate?.onUpdate(balance: state.balance.wei.asString(withBase: 10))
+    }
+
+}
+
+extension SpvBlockchain {
+
+    static func spvBlockchain(storage: ISpvStorage, words: [String], testMode: Bool, logger: Logger? = nil) -> SpvBlockchain {
+        let network = Ropsten()
+
+        let hdWallet = HDWallet(seed: Mnemonic.seed(mnemonic: words), coinType: network.coinType, xPrivKey: network.privateKeyPrefix.bigEndian, xPubKey: network.publicKeyPrefix.bigEndian)
+
+        let addressKey = try! hdWallet.privateKey(account: 0, index: 0, chain: .external)
+        let publicKey = addressKey.publicKey(compressed: false).raw
+        let address = EIP55.encode(CryptoUtils.shared.sha3(publicKey.dropFirst()).suffix(20))
+        let addressData = Data(hex: String(address[address.index(address.startIndex, offsetBy: 2)...]))
+
+        let connectionKey = try! hdWallet.privateKey(account: 100, index: 100, chain: .external)
+        let connectionPublicKey = Data(connectionKey.publicKey(compressed: false).raw.suffix(from: 1))
+        let connectionECKey = ECKey(
+                privateKey: connectionKey.raw,
+                publicKeyPoint: ECPoint(nodeId: connectionPublicKey)
+        )
+
+        let peerGroup = PeerGroup(network: Ropsten(), storage: storage, connectionKey: connectionECKey, address: addressData, logger: logger)
+
+        let spvBlockchain = SpvBlockchain(peerGroup: peerGroup, ethereumAddress: address)
+
+        peerGroup.delegate = spvBlockchain
+
+        return spvBlockchain
     }
 
 }

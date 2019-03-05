@@ -1,7 +1,7 @@
 import Foundation
 import HSCryptoKit
 
-protocol ISPVStorage: IStorage {
+protocol ISpvStorage: IStorage {
     func lastBlockHeader() -> BlockHeader?
     func save(blockHeaders: [BlockHeader])
 }

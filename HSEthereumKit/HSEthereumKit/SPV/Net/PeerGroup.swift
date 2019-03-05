@@ -1,17 +1,20 @@
 import Foundation
 
 class PeerGroup {
+    weak var delegate: IPeerGroupDelegate?
 
     private var syncPeer: IPeer?
     private var address: Data
     private var connectionKey: ECKey
-    private var storage: ISPVStorage
-    weak var delegate: IPeerGroupDelegate?
+    private var storage: ISpvStorage
 
-    init(network: INetwork, storage: ISPVStorage, connectionKey: ECKey, address: Data) {
+    private let logger: Logger?
+
+    init(network: INetwork, storage: ISpvStorage, connectionKey: ECKey, address: Data, logger: Logger? = nil) {
         self.address = address
         self.connectionKey = connectionKey
         self.storage = storage
+        self.logger = logger
 
         let node = Node(
                 id: Data(hex: "e679038c2e4f9f764acd788c3935cf526f7f630b55254a122452e63e2cfae3066ca6b6c44082c2dfbe9ddffc9df80546d40ef38a0e3dfc9c8720c732446ca8f3"),
@@ -20,7 +23,7 @@ class PeerGroup {
                 discoveryPort: 30301
         )
 
-        syncPeer = LESPeer(network: network, bestBlock: network.checkpointBlock, key: connectionKey, node: node)
+        syncPeer = LESPeer(network: network, bestBlock: network.checkpointBlock, key: connectionKey, node: node, logger: logger)
         syncPeer?.delegate = self
 
         if storage.lastBlockHeader() == nil {
@@ -51,7 +54,7 @@ extension PeerGroup: IPeerDelegate {
     }
 
     func blocksReceived(blockHeaders: [BlockHeader]) {
-        if blockHeaders.count < 2 {
+        if blockHeaders.count <= 1 {
             print("blocks synced!")
 
             if let lastBlock = storage.lastBlockHeader(), let syncPeer = syncPeer {
