@@ -1,5 +1,4 @@
 import Foundation
-import HSCryptoKit
 
 class FrameCodec {
 
@@ -9,11 +8,11 @@ class FrameCodec {
 
     private let secrets: Secrets
     private let helper: IFrameCodecHelper
-    private let encryptor: IAESEncryptor
-    private let decryptor: IAESEncryptor  // AES in CTR encrypt gives the message back when you encrypt the cipher
+    private let encryptor: IAESCipher
+    private let decryptor: IAESCipher  // AES in CTR encrypt gives the message back when you encrypt the cipher
 
 
-    init(secrets: Secrets, helper: IFrameCodecHelper, encryptor: IAESEncryptor, decryptor: IAESEncryptor) {
+    init(secrets: Secrets, helper: IFrameCodecHelper, encryptor: IAESCipher, decryptor: IAESCipher) {
         self.secrets = secrets
         self.helper = helper
         self.encryptor = encryptor
@@ -33,17 +32,17 @@ class FrameCodec {
             throw FrameCodecError.macMismatch
         }
 
-        let decryptedHeader = decryptor.encrypt(header)
+        let decryptedHeader = decryptor.process(header)
         let frameBodySize = helper.fromThreeBytes(data: decryptedHeader.subdata(in: 0..<3))
 
-        let rlpHeader = RLP.decode(input: decryptedHeader.subdata(in: 3..<16))
+        let rlpHeaderElements = try RLP.decode(input: decryptedHeader.subdata(in: 3..<16)).listValue()
         var contextId = -1
-        if rlpHeader.listValue.count > 1 {
-            contextId = rlpHeader.listValue[1].intValue
+        if rlpHeaderElements.count > 1 {
+            contextId = try rlpHeaderElements[1].intValue()
         }
         var allFramesTotalSize = -1
-        if rlpHeader.listValue.count > 2 {
-            allFramesTotalSize = rlpHeader.listValue[2].intValue
+        if rlpHeaderElements.count > 2 {
+            allFramesTotalSize = try rlpHeaderElements[2].intValue()
         }
 
         var paddingSize = 16 - (frameBodySize % 16)
@@ -61,10 +60,10 @@ class FrameCodec {
         let frameBodyMac = data.subdata(in: (frameSize - 16)..<frameSize)
         secrets.ingressMac.update(with: frameBodyData)
 
-        let decryptedFrame: Data = decryptor.encrypt(frameBodyData)
+        let decryptedFrame: Data = decryptor.process(frameBodyData)
 
-        let rlpPacketType = RLP.decode(input: decryptedFrame)
-        let packetType = rlpPacketType.intValue
+        let rlpPacketType = try RLP.decode(input: decryptedFrame)
+        let packetType = try rlpPacketType.intValue()
         let packetTypeLength = rlpPacketType.lengthOfLengthBytes + rlpPacketType.length
 
         let payload = decryptedFrame.subdata(in: packetTypeLength..<frameBodySize)
@@ -96,7 +95,7 @@ class FrameCodec {
         header += RLP.encode(headerDataElements)
         header += Data(repeating: 0, count: 16 - header.count)
 
-        let encryptedHeader = encryptor.encrypt(header)
+        let encryptedHeader = encryptor.process(header)
         let headerMac = helper.updateMac(mac: secrets.egressMac, macKey: secrets.mac, data: encryptedHeader)
 
         // Body
@@ -105,7 +104,7 @@ class FrameCodec {
             frameData += Data(repeating: 0, count: 16 - frameSize % 16)
         }
 
-        let encryptedFrameData = encryptor.encrypt(frameData)
+        let encryptedFrameData = encryptor.process(frameData)
         secrets.egressMac.update(with: encryptedFrameData)
 
         let egressMac = secrets.egressMac.digest()

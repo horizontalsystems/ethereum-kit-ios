@@ -87,7 +87,7 @@ class FrameHandlerTests: XCTestCase {
             0x00: TestMessage1.self,
             0x01: TestMessage2.self
         ])
-        frameHandler.register(capability: capability)
+        frameHandler.register(capabilities: [capability])
 
         let helloMessage = HelloMessage(peerId: Data(repeating: 0, count: 64), port: 0, capabilities: [])
         let testMessage = TestMessage1()
@@ -118,9 +118,7 @@ class FrameHandlerTests: XCTestCase {
         let capability3 = Capability(name: "bst", version: 2, packetTypesMap: [
             0x05: TestMessage3.self
         ])
-        frameHandler.register(capability: capability3)
-        frameHandler.register(capability: capability2)
-        frameHandler.register(capability: capability)
+        frameHandler.register(capabilities: [capability3, capability2, capability])
 
         let testMessage = TestMessage1()
         let testMessage2 = TestMessage2()
@@ -165,7 +163,7 @@ class FrameHandlerTests: XCTestCase {
         init() {
         }
 
-        required init?(data: Data) {
+        required init(data: Data) throws {
         }
 
         func encoded() -> Data {
@@ -181,7 +179,7 @@ class FrameHandlerTests: XCTestCase {
         init() {
         }
 
-        required init?(data: Data) {
+        required init(data: Data) throws {
         }
 
         func encoded() -> Data {
@@ -197,7 +195,7 @@ class FrameHandlerTests: XCTestCase {
         init() {
         }
 
-        required init?(data: Data) {
+        required init(data: Data) throws {
         }
 
         func encoded() -> Data {

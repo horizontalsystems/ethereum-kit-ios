@@ -5,7 +5,7 @@ class GetReceiptsMessage: IMessage {
     var requestId = 0
     var blockHashes = [Data]()
 
-    required init?(data: Data) {
+    required init(data: Data) throws {
     }
 
     func encoded() -> Data {

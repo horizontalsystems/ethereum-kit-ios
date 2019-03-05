@@ -6,16 +6,16 @@ class AuthAckMessage {
     let nonce: Data
     let version: Data
     
-    init?(data: Data) {
-        let rlp = RLP.decode(input: data)
+    required init(data: Data) throws {
+        let rlpList = try RLP.decode(input: data).listValue()
 
-        guard rlp.isList() && rlp.listValue.count > 2 else {
-            return nil
+        guard rlpList.count > 2 else {
+            throw MessageDecodeError.notEnoughFields
         }
-        
-        publicKeyPoint = ECPoint(nodeId: rlp.listValue[0].dataValue)
-        nonce = rlp.listValue[1].dataValue
-        version = rlp.listValue[2].dataValue
+
+        publicKeyPoint = ECPoint(nodeId: rlpList[0].dataValue)
+        nonce = rlpList[1].dataValue
+        version = rlpList[2].dataValue
     }
     
     func toString() -> String {

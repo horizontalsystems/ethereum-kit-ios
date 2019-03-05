@@ -1,5 +1,4 @@
 import Foundation
-import HSCryptoKit
 
 class ECKey {
 
@@ -9,11 +8,6 @@ class ECKey {
     init(privateKey: Data, publicKeyPoint: ECPoint) {
         self.privateKey = privateKey
         self.publicKeyPoint = publicKeyPoint
-    }
-
-    public static func randomKey() -> ECKey {
-        let key: _ECKey = _ECKey.random()
-        return ECKey(privateKey: key.privateKey, publicKeyPoint: ECPoint(nodeId: key.publicKey.subdata(in: 1..<65)))
     }
 
     public func toString() -> String {

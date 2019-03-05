@@ -1,5 +1,19 @@
 struct RLP {
 
+    enum DecodeError: Error {
+        case emptyData
+        case invalidElementLength
+        case invalidListValue
+        case invalidIntValue
+        case invalidBIntValue
+        case invalidStringValue
+    }
+
+    enum ElementType {
+        case string
+        case list
+    }
+
     static func encode(_ element: Any) -> Data {
         switch element {
         case let list as [Any]:
@@ -22,19 +36,19 @@ struct RLP {
         }
     }
 
-    static func decode(input: Data) -> RLPElement {
+    static func decode(input: Data) throws -> RLPElement {
         guard input.count > 0 else {
-            return RLPElement.emptyList
+            throw DecodeError.emptyData
         }
 
         guard let (offset, dataLen, type) = decode_length(input) else {
-            return RLPElement.emptyList
+            throw DecodeError.invalidElementLength
         }
 
         var output: RLPElement;
 
         if type == .string {
-            output = RLPElement(type: .string, length: dataLen, lengthOfLengthBytes: offset, dataValue: input.subdata(in: offset..<(offset + dataLen)), listValue: [])
+            output = RLPElement(type: .string, length: dataLen, lengthOfLengthBytes: offset, dataValue: input.subdata(in: offset..<(offset + dataLen)), listValue: nil)
         } else {
             var value = [RLPElement]()
 
@@ -42,7 +56,7 @@ struct RLP {
             var listDataOffset = 0
 
             while listDataOffset < listData.count {
-                let element = decode(input: Data(listData.suffix(from: listDataOffset)))
+                let element = try decode(input: Data(listData.suffix(from: listDataOffset)))
 
                 value.append(element)
                 listDataOffset += element.length + element.lengthOfLengthBytes
@@ -54,7 +68,7 @@ struct RLP {
         return output
     }
 
-    private static func decode_length(_ input: Data) -> (Int, Int, RLPElementType)? {
+    private static func decode_length(_ input: Data) -> (Int, Int, ElementType)? {
         let length = input.count
 
         guard input.count > 0 else {

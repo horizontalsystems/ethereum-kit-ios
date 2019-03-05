@@ -5,8 +5,8 @@ import HSCryptoKit
 
 class FrameCodecTests: XCTestCase {
     private var secrets: Secrets!
-    private var mockEncryptor: MockIAESEncryptor!
-    private var mockDecryptor: MockIAESEncryptor!
+    private var mockEncryptor: MockIAESCipher!
+    private var mockDecryptor: MockIAESCipher!
     private var mockHelper: MockIFrameCodecHelper!
 
     private let encryptedHeader = Data(repeating: 3, count: 16)
@@ -26,8 +26,8 @@ class FrameCodecTests: XCTestCase {
                 token: Data(repeating: 2, count: 32),
                 egressMac: KeccakDigest(), ingressMac: KeccakDigest()
         )
-        mockEncryptor = MockIAESEncryptor()
-        mockDecryptor = MockIAESEncryptor()
+        mockEncryptor = MockIAESCipher()
+        mockDecryptor = MockIAESCipher()
         mockHelper = MockIFrameCodecHelper()
 
         updatedEgressDigest.update(with: encryptedBody)
@@ -58,8 +58,8 @@ class FrameCodecTests: XCTestCase {
         let body = RLP.encode(frame.type) + frame.payload
 
         stub(mockEncryptor) { mock in
-            when(mock.encrypt(_: equal(to: header))).thenReturn(encryptedHeader)
-            when(mock.encrypt(_: equal(to: body))).thenReturn(encryptedBody)
+            when(mock.process(_: equal(to: header))).thenReturn(encryptedHeader)
+            when(mock.process(_: equal(to: body))).thenReturn(encryptedBody)
         }
 
         stub(mockHelper) { mock in
@@ -68,8 +68,8 @@ class FrameCodecTests: XCTestCase {
 
         let result = frameCodec.encodeFrame(frame: frame)
 
-        verify(mockEncryptor).encrypt(_: equal(to: header))
-        verify(mockEncryptor).encrypt(_: equal(to: body))
+        verify(mockEncryptor).process(_: equal(to: header))
+        verify(mockEncryptor).process(_: equal(to: body))
         verify(mockHelper).toThreeBytes(int: equal(to: frame.payloadSize + 1))
         verify(mockHelper).updateMac(mac: equal(to: secrets.egressMac), macKey: equal(to: secrets.mac), data: equal(to: encryptedHeader))
         verify(mockHelper).updateMac(mac: equal(to: secrets.egressMac), macKey: equal(to: secrets.mac), data: equal(to: updatedEgressDigest.digest()))
@@ -88,8 +88,8 @@ class FrameCodecTests: XCTestCase {
         let body = RLP.encode(frame.type) + frame.payload
 
         stub(mockEncryptor) { mock in
-            when(mock.encrypt(_: equal(to: header))).thenReturn(encryptedHeader)
-            when(mock.encrypt(_: equal(to: body))).thenReturn(encryptedBody)
+            when(mock.process(_: equal(to: header))).thenReturn(encryptedHeader)
+            when(mock.process(_: equal(to: body))).thenReturn(encryptedBody)
         }
 
         stub(mockHelper) { mock in
@@ -98,8 +98,8 @@ class FrameCodecTests: XCTestCase {
 
         let result = frameCodec.encodeFrame(frame: frame)
 
-        verify(mockEncryptor).encrypt(_: equal(to: header))
-        verify(mockEncryptor).encrypt(_: equal(to: body))
+        verify(mockEncryptor).process(_: equal(to: header))
+        verify(mockEncryptor).process(_: equal(to: body))
         verify(mockHelper).toThreeBytes(int: equal(to: frame.payloadSize + 1))
         verify(mockHelper).updateMac(mac: equal(to: secrets.egressMac), macKey: equal(to: secrets.mac), data: equal(to: encryptedHeader))
         verify(mockHelper).updateMac(mac: equal(to: secrets.egressMac), macKey: equal(to: secrets.mac), data: equal(to: updatedEgressDigest.digest()))
@@ -117,8 +117,8 @@ class FrameCodecTests: XCTestCase {
         let body = RLP.encode(frame.type) + frame.payload + Data(repeating: 0, count: 15)
 
         stub(mockEncryptor) { mock in
-            when(mock.encrypt(_: equal(to: header))).thenReturn(encryptedHeader)
-            when(mock.encrypt(_: equal(to: body))).thenReturn(encryptedBody)
+            when(mock.process(_: equal(to: header))).thenReturn(encryptedHeader)
+            when(mock.process(_: equal(to: body))).thenReturn(encryptedBody)
         }
 
         stub(mockHelper) { mock in
@@ -127,8 +127,8 @@ class FrameCodecTests: XCTestCase {
 
         let result = frameCodec.encodeFrame(frame: frame)
 
-        verify(mockEncryptor).encrypt(_: equal(to: header))
-        verify(mockEncryptor).encrypt(_: equal(to: body))
+        verify(mockEncryptor).process(_: equal(to: header))
+        verify(mockEncryptor).process(_: equal(to: body))
         verify(mockHelper).toThreeBytes(int: equal(to: frame.payloadSize + 1))
         verify(mockHelper).updateMac(mac: equal(to: secrets.egressMac), macKey: equal(to: secrets.mac), data: equal(to: encryptedHeader))
         verify(mockHelper).updateMac(mac: equal(to: secrets.egressMac), macKey: equal(to: secrets.mac), data: equal(to: updatedEgressDigest.digest()))
@@ -146,8 +146,8 @@ class FrameCodecTests: XCTestCase {
         let body = RLP.encode(frame.type) + frame.payload
 
         stub(mockDecryptor) { mock in
-            when(mock.encrypt(_: equal(to: encryptedHeader))).thenReturn(header)
-            when(mock.encrypt(_: equal(to: encryptedBody))).thenReturn(body)
+            when(mock.process(_: equal(to: encryptedHeader))).thenReturn(header)
+            when(mock.process(_: equal(to: encryptedBody))).thenReturn(body)
         }
 
         stub(mockHelper) { mock in
@@ -156,8 +156,8 @@ class FrameCodecTests: XCTestCase {
 
         let result = try! frameCodec.readFrame(from: encryptedHeader + headerMac + encryptedBody + bodyMac)!
 
-        verify(mockDecryptor).encrypt(_: equal(to: encryptedHeader))
-        verify(mockDecryptor).encrypt(_: equal(to: encryptedBody))
+        verify(mockDecryptor).process(_: equal(to: encryptedHeader))
+        verify(mockDecryptor).process(_: equal(to: encryptedBody))
         verify(mockHelper).fromThreeBytes(data: equal(to: frameSizeBytes))
         verify(mockHelper).updateMac(mac: equal(to: secrets.ingressMac), macKey: equal(to: secrets.mac), data: equal(to: encryptedHeader))
         verify(mockHelper).updateMac(mac: equal(to: secrets.ingressMac), macKey: equal(to: secrets.mac), data: equal(to: updatedEgressDigest.digest()))
@@ -180,8 +180,8 @@ class FrameCodecTests: XCTestCase {
         let body = RLP.encode(frame.type) + frame.payload
 
         stub(mockDecryptor) { mock in
-            when(mock.encrypt(_: equal(to: encryptedHeader))).thenReturn(header)
-            when(mock.encrypt(_: equal(to: encryptedBody))).thenReturn(body)
+            when(mock.process(_: equal(to: encryptedHeader))).thenReturn(header)
+            when(mock.process(_: equal(to: encryptedBody))).thenReturn(body)
         }
 
         stub(mockHelper) { mock in
@@ -190,8 +190,8 @@ class FrameCodecTests: XCTestCase {
 
         let result = try! frameCodec.readFrame(from: encryptedHeader + headerMac + encryptedBody + bodyMac)!
 
-        verify(mockDecryptor).encrypt(_: equal(to: encryptedHeader))
-        verify(mockDecryptor).encrypt(_: equal(to: encryptedBody))
+        verify(mockDecryptor).process(_: equal(to: encryptedHeader))
+        verify(mockDecryptor).process(_: equal(to: encryptedBody))
         verify(mockHelper).fromThreeBytes(data: equal(to: frameSizeBytes))
         verify(mockHelper).updateMac(mac: equal(to: secrets.ingressMac), macKey: equal(to: secrets.mac), data: equal(to: encryptedHeader))
         verify(mockHelper).updateMac(mac: equal(to: secrets.ingressMac), macKey: equal(to: secrets.mac), data: equal(to: updatedEgressDigest.digest()))
@@ -221,8 +221,8 @@ class FrameCodecTests: XCTestCase {
         }
 
         stub(mockDecryptor) { mock in
-            when(mock.encrypt(_: equal(to: encryptedHeader))).thenReturn(header)
-            when(mock.encrypt(_: equal(to: encryptedBody))).thenReturn(body)
+            when(mock.process(_: equal(to: encryptedHeader))).thenReturn(header)
+            when(mock.process(_: equal(to: encryptedBody))).thenReturn(body)
         }
 
         stub(mockHelper) { mock in
@@ -231,8 +231,8 @@ class FrameCodecTests: XCTestCase {
 
         let result = try! frameCodec.readFrame(from: encryptedHeader + headerMac + encryptedBody + bodyMac)!
 
-        verify(mockDecryptor).encrypt(_: equal(to: encryptedHeader))
-        verify(mockDecryptor).encrypt(_: equal(to: encryptedBody))
+        verify(mockDecryptor).process(_: equal(to: encryptedHeader))
+        verify(mockDecryptor).process(_: equal(to: encryptedBody))
         verify(mockHelper).fromThreeBytes(data: equal(to: frameSizeBytes))
         verify(mockHelper).updateMac(mac: equal(to: secrets.ingressMac), macKey: equal(to: secrets.mac), data: equal(to: encryptedHeader))
         verify(mockHelper).updateMac(mac: equal(to: secrets.ingressMac), macKey: equal(to: secrets.mac), data: equal(to: updatedEgressDigest.digest()))
@@ -259,7 +259,7 @@ class FrameCodecTests: XCTestCase {
         let header = frameSizeBytes + RLP.encode([0]) + Data(repeating: 0, count: 11)
 
         stub(mockDecryptor) { mock in
-            when(mock.encrypt(_: equal(to: encryptedHeader))).thenReturn(header)
+            when(mock.process(_: equal(to: encryptedHeader))).thenReturn(header)
         }
 
         stub(mockHelper) { mock in
@@ -269,7 +269,7 @@ class FrameCodecTests: XCTestCase {
         let result = try! frameCodec.readFrame(from: encryptedHeader + headerMac + encryptedBody + bodyMac)
 
         verify(mockHelper).fromThreeBytes(data: equal(to: frameSizeBytes))
-        verify(mockDecryptor).encrypt(_: equal(to: encryptedHeader))
+        verify(mockDecryptor).process(_: equal(to: encryptedHeader))
 
         XCTAssertNil(result)
     }
@@ -297,8 +297,8 @@ class FrameCodecTests: XCTestCase {
         let body = RLP.encode(frame.type) + frame.payload
 
         stub(mockDecryptor) { mock in
-            when(mock.encrypt(_: equal(to: encryptedHeader))).thenReturn(header)
-            when(mock.encrypt(_: equal(to: encryptedBody))).thenReturn(body)
+            when(mock.process(_: equal(to: encryptedHeader))).thenReturn(header)
+            when(mock.process(_: equal(to: encryptedBody))).thenReturn(body)
         }
 
         stub(mockHelper) { mock in
@@ -314,8 +314,8 @@ class FrameCodecTests: XCTestCase {
             XCTFail("Unexpected Error")
         }
 
-        verify(mockDecryptor).encrypt(_: equal(to: encryptedHeader))
-        verify(mockDecryptor).encrypt(_: equal(to: encryptedBody))
+        verify(mockDecryptor).process(_: equal(to: encryptedHeader))
+        verify(mockDecryptor).process(_: equal(to: encryptedBody))
         verify(mockHelper).fromThreeBytes(data: equal(to: frameSizeBytes))
         verify(mockHelper).updateMac(mac: equal(to: secrets.ingressMac), macKey: equal(to: secrets.mac), data: equal(to: encryptedHeader))
         verify(mockHelper).updateMac(mac: equal(to: secrets.ingressMac), macKey: equal(to: secrets.mac), data: equal(to: updatedEgressDigest.digest()))

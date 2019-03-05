@@ -6,7 +6,7 @@ class GetHelperTrieProofsMessage: IMessage {
     var proofRequests = [ProofRequest]()
     var auxData = [Data]()
 
-    required init?(data: Data) {
+    required init(data: Data) throws {
     }
 
     func encoded() -> Data {

@@ -14,8 +14,10 @@ protocol IRandomHelper: class {
 
 protocol IFactory: class {
     func authMessage(signature: Data, publicKeyPoint: ECPoint, nonce: Data) -> AuthMessage
-    func authAckMessage(data: Data) -> AuthAckMessage?
+    func authAckMessage(data: Data) throws -> AuthAckMessage
     func keccakDigest() -> KeccakDigest
+    func frameCodec(secrets: Secrets) -> FrameCodec
+    func encryptionHandshake(myKey: ECKey, publicKey: Data) -> EncryptionHandshake
 }
 
 protocol IFrameCodecHelper {
@@ -24,11 +26,11 @@ protocol IFrameCodecHelper {
     func fromThreeBytes(data: Data) -> Int
 }
 
-protocol IAESEncryptor {
-    func encrypt(_ data: Data) -> Data
+protocol IAESCipher {
+    func process(_ data: Data) -> Data
 }
 
-protocol IECIESCrypto {
+protocol IECIESCryptoUtils {
     func ecdhAgree(myKey: ECKey, remotePublicKeyPoint: ECPoint) -> Data
     func ecdhAgree(myPrivateKey: Data, remotePublicKeyPoint: Data) -> Data
     func concatKDF(_ data: Data) -> Data
@@ -37,7 +39,7 @@ protocol IECIESCrypto {
     func hmacSha256(_ data: Data, key: Data, iv: Data, macData: Data) -> Data
 }
 
-protocol ICrypto: class {
+protocol ICryptoUtils: class {
     func ecdhAgree(myKey: ECKey, remotePublicKeyPoint: ECPoint) -> Data
     func ellipticSign(_ messageToSign: Data, key: ECKey) throws -> Data
     func eciesDecrypt(privateKey: Data, message: ECIESEncryptedMessage) throws -> Data
@@ -86,7 +88,7 @@ protocol IConnection: class {
     var logName: String { get }
     func connect()
     func disconnect(error: Error?)
-    func register(capability: Capability)
+    func register(capabilities: [Capability])
     func send(message: IMessage)
 }
 
@@ -100,14 +102,14 @@ protocol INetwork {
 }
 
 protocol IFrameHandler {
-    func register(capability: Capability)
+    func register(capabilities: [Capability])
     func add(frame: Frame)
     func getMessage() throws -> IMessage?
     func getFrames(from message: IMessage) -> [Frame]
 }
 
 protocol IMessage {
-    init?(data: Data)
+    init (data: Data) throws
     func encoded() -> Data
     func toString() -> String
 }

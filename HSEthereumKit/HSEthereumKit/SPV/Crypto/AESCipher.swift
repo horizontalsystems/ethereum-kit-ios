@@ -2,7 +2,7 @@ import Foundation
 import HSCryptoKit
 
 // AES Encryptor that stores the vector state
-class AESEncryptor: IAESEncryptor {
+class AESCipher: IAESCipher {
 
     private let keySize: Int
     private let key: Data
@@ -19,7 +19,7 @@ class AESEncryptor: IAESEncryptor {
         }
     }
 
-    func encrypt(_ data: Data) -> Data {
+    func process(_ data: Data) -> Data {
         return _AES.encrypt(data, withKey: key, keySize: keySize, iv: vector)
     }
 

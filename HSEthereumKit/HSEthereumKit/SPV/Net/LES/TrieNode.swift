@@ -1,5 +1,4 @@
 import Foundation
-import HSCryptoKit
 
 class TrieNode {
 
@@ -18,15 +17,16 @@ class TrieNode {
 
     private let encodedPath: String
 
-    init(rlp: RLPElement) {
+    init(rlp: RLPElement) throws {
+        let rlpElements = try rlp.listValue()
         elements = [Data]()
-        for element in rlp.listValue {
+        for element in rlpElements {
             elements.append(element.dataValue)
         }
 
-        hash = CryptoKit.sha3(rlp.dataValue)
+        hash = CryptoUtils.shared.sha3(rlp.dataValue)
 
-        if rlp.listValue.count == 17 {
+        if rlpElements.count == 17 {
             nodeType = NodeType.BRANCH
             encodedPath = ""
         } else {

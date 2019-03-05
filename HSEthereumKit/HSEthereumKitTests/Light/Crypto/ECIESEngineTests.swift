@@ -3,14 +3,14 @@ import Cuckoo
 @testable import HSEthereumKit
 
 class ECIESEngineTests: XCTestCase {
-    private var mockCrypto: MockIECIESCrypto!
+    private var mockCrypto: MockIECIESCryptoUtils!
     private var mockRandom: MockIRandomHelper!
     private var eciesEngine: ECIESEngine!
 
-    private var myKey = ECKey.randomKey()
-    private var remotePublicKey = ECKey.randomKey().publicKeyPoint
+    private var myKey = RandomHelper.shared.randomKey()
+    private var remotePublicKey = RandomHelper.shared.randomKey().publicKeyPoint
     private var message = Data(repeating: 10, count: 40)
-    private var ephemeralKey = ECKey.randomKey()
+    private var ephemeralKey = RandomHelper.shared.randomKey()
     private var initialVector = Data(repeating: 0, count: 16)
     private var sharedSecret = Data(repeating: 1, count: 32)
     private var derivedKey = Data(repeating: 2, count: 32)
@@ -25,7 +25,7 @@ class ECIESEngineTests: XCTestCase {
         let prefix = UInt16(ECIESEngine.prefix + message.count)
         prefixBytes = Data(prefix.data.reversed())
 
-        mockCrypto = MockIECIESCrypto()
+        mockCrypto = MockIECIESCryptoUtils()
         mockRandom = MockIRandomHelper()
 
         stub(mockRandom) { mock in

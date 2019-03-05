@@ -1,9 +1,13 @@
 import Foundation
+import HSCryptoKit
 
 class RandomHelper: IRandomHelper {
 
+    static let shared = RandomHelper()
+
     func randomKey() -> ECKey {
-        return ECKey.randomKey()
+        let key: _ECKey = _ECKey.random()
+        return ECKey(privateKey: key.privateKey, publicKeyPoint: ECPoint(nodeId: key.publicKey.subdata(in: 1..<65)))
     }
 
     func randomBytes(length: Range<Int>) -> Data {

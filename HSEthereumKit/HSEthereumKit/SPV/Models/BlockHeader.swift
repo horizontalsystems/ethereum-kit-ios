@@ -1,10 +1,9 @@
 import Foundation
-import HSCryptoKit
 import GRDB
 
 class BlockHeader: Record {
 
-    static let EMPTY_TRIE_HASH = CryptoKit.sha3(RLP.encode([]))
+    static let EMPTY_TRIE_HASH = CryptoUtils.shared.sha3(RLP.encode([]))
 
     let hashHex: Data
     var totalDifficulty = Data() // Scalar value corresponding to the sum of difficulty values of all previous blocks
@@ -58,37 +57,39 @@ class BlockHeader: Record {
         super.init()
     }
 
-    init(rlp: RLPElement) {
-        self.parentHash = rlp.listValue[0].dataValue
-        self.unclesHash = rlp.listValue[1].dataValue
-        self.coinbase = rlp.listValue[2].dataValue
-        self.stateRoot = rlp.listValue[3].dataValue
+    init(rlp: RLPElement) throws {
+        let rlpList = try rlp.listValue()
 
-        let transactionsRoot = rlp.listValue[4].dataValue
+        self.parentHash = rlpList[0].dataValue
+        self.unclesHash = rlpList[1].dataValue
+        self.coinbase = rlpList[2].dataValue
+        self.stateRoot = rlpList[3].dataValue
+
+        let transactionsRoot = rlpList[4].dataValue
         if transactionsRoot.count == 0 {
             self.transactionsRoot = BlockHeader.EMPTY_TRIE_HASH
         } else {
             self.transactionsRoot = transactionsRoot
         }
 
-        let receiptsRoot = rlp.listValue[5].dataValue
+        let receiptsRoot = rlpList[5].dataValue
         if receiptsRoot.count == 0 {
             self.receiptsRoot = BlockHeader.EMPTY_TRIE_HASH
         } else {
             self.receiptsRoot = receiptsRoot
         }
 
-        self.logsBloom = rlp.listValue[6].dataValue
-        self.difficulty = rlp.listValue[7].dataValue
-        self.height = rlp.listValue[8].bIntValue
-        self.gasLimit = rlp.listValue[9].dataValue
-        self.gasUsed = rlp.listValue[10].intValue
-        self.timestamp = rlp.listValue[11].intValue
-        self.extraData = rlp.listValue[12].dataValue
-        self.mixHash = rlp.listValue[13].dataValue
-        self.nonce = rlp.listValue[14].dataValue
+        self.logsBloom = rlpList[6].dataValue
+        self.difficulty = rlpList[7].dataValue
+        self.height = try rlpList[8].bIntValue()
+        self.gasLimit = rlpList[9].dataValue
+        self.gasUsed = try rlpList[10].intValue()
+        self.timestamp = try rlpList[11].intValue()
+        self.extraData = rlpList[12].dataValue
+        self.mixHash = rlpList[13].dataValue
+        self.nonce = rlpList[14].dataValue
 
-        self.hashHex = CryptoKit.sha3(rlp.dataValue)
+        self.hashHex = CryptoUtils.shared.sha3(rlp.dataValue)
 
         super.init()
     }

@@ -1,16 +1,11 @@
 import Foundation
-import HSCryptoKit
 import Security
 
 class EncryptionHandshake {
 
-    enum HandshakeError: Error {
-        case invalidAuthAckPayload
-    }
-
     static let NONCE_SIZE: Int = 32
 
-    private let crypto: ICrypto
+    private let crypto: ICryptoUtils
     private let random: IRandomHelper
     private let factory: IFactory
     private let myKey: ECKey
@@ -19,7 +14,7 @@ class EncryptionHandshake {
     private let initiatorNonce: Data
     private var authMessagePacket = Data()
 
-    init(myKey: ECKey, publicKeyPoint: ECPoint, crypto: ICrypto, randomHelper: IRandomHelper, factory: IFactory) {
+    init(myKey: ECKey, publicKeyPoint: ECPoint, crypto: ICryptoUtils, randomHelper: IRandomHelper, factory: IFactory) {
         self.crypto = crypto
         self.random = randomHelper
         self.factory = factory
@@ -41,10 +36,7 @@ class EncryptionHandshake {
 
     func extractSecrets(from eciesMessage: ECIESEncryptedMessage) throws -> Secrets {
         let responseDecrypted = try crypto.eciesDecrypt(privateKey: myKey.privateKey, message: eciesMessage)
-
-        guard let message = factory.authAckMessage(data: responseDecrypted) else {
-            throw HandshakeError.invalidAuthAckPayload
-        }
+        let message = try factory.authAckMessage(data: responseDecrypted)
 
         return extractSecrets(message: message, authAckMessagePacket: eciesMessage.encoded())
     }

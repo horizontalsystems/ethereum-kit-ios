@@ -1,10 +1,11 @@
 import Foundation
 import HSCryptoKit
 
-class Crypto: ICrypto {
+class CryptoUtils: ICryptoUtils {
+
+    static let shared = CryptoUtils()
 
     let eciesEngine = ECIESEngine()
-    let random = RandomHelper()
 
     func ecdhAgree(myKey: ECKey, remotePublicKeyPoint: ECPoint) -> Data {
         return CryptoKit.ecdhAgree(privateKey: myKey.privateKey, withPublicKey: remotePublicKeyPoint.uncompressed())
@@ -19,7 +20,7 @@ class Crypto: ICrypto {
     }
 
     func eciesEncrypt(remotePublicKey: ECPoint, message: Data) -> ECIESEncryptedMessage {
-        return eciesEngine.encrypt(crypto: self, randomHelper: random, remotePublicKey: remotePublicKey, message: message)
+        return eciesEngine.encrypt(crypto: self, randomHelper: RandomHelper.shared, remotePublicKey: remotePublicKey, message: message)
     }
 
     func sha3(_ data: Data) -> Data {
@@ -33,7 +34,7 @@ class Crypto: ICrypto {
 
 }
 
-extension Crypto: IECIESCrypto {
+extension CryptoUtils: IECIESCryptoUtils {
 
     func concatKDF(_ data: Data) -> Data {
         return _Hash.concatKDF(data)
@@ -44,7 +45,7 @@ extension Crypto: IECIESCrypto {
     }
 
     func aesEncrypt(_ data: Data, withKey key: Data, keySize: Int, iv: Data) -> Data {
-        return AESEncryptor(keySize: keySize, key: key, initialVector: iv).encrypt(data)
+        return AESCipher(keySize: keySize, key: key, initialVector: iv).process(data)
     }
 
     func hmacSha256(_ data: Data, key: Data, iv: Data, macData: Data) -> Data {
@@ -54,4 +55,5 @@ extension Crypto: IECIESCrypto {
     func ecdhAgree(myPrivateKey: Data, remotePublicKeyPoint: Data) -> Data {
         return CryptoKit.ecdhAgree(privateKey: myPrivateKey, withPublicKey: remotePublicKeyPoint)
     }
+
 }

@@ -19,7 +19,7 @@ class Connection: NSObject {
     private var handshake: EncryptionHandshake?
     private var frameCodec: FrameCodec?
     private let frameHandler: IFrameHandler
-    private let crypto = Crypto()
+    private let factory: IFactory
 
     private var runLoop: RunLoop?
     private var readStream: Unmanaged<CFReadStream>?
@@ -37,12 +37,13 @@ class Connection: NSObject {
         return "\(nodeId.toHexString())@\(host):\(port)'"
     }
 
-    init(node: Node) {
+    init(node: Node, factory: IFactory = Factory.shared) {
         self.nodeId = node.id
         self.host = node.host
         self.port = UInt32(node.port)
         self.discPort = UInt32(node.discoveryPort)
 
+        self.factory = factory
         frameHandler = FrameHandler()
     }
 
@@ -94,15 +95,11 @@ class Connection: NSObject {
                     let secrets = try handshake.extractSecrets(from: eciesMessage)
                     packets = Data(packets.dropFirst(eciesMessage.encoded().count))
 
-                    frameCodec = FrameCodec(
-                            secrets: secrets, helper: FrameCodecHelper(crypto: crypto),
-                            encryptor: AESEncryptor(keySize: 256, key: secrets.aes), decryptor: AESEncryptor(keySize: 256, key: secrets.aes)
-                    )
+                    frameCodec = factory.frameCodec(secrets: secrets)
                     self.handshake = nil
 
                     delegate?.connectionEstablished()
                 } catch {
-                    print(error)
                     disconnect(error: PeerConnectionError.encryptionHandshakeError)
                 }
 
@@ -111,27 +108,18 @@ class Connection: NSObject {
 
             if let frameCode = frameCodec {
                 while (packets.count >= bufferSize) {
-                    let frame: Frame!
                     do {
-                        frame = try frameCode.readFrame(from: packets)
-                    } catch {
-                        disconnect(error: error)
-                        return
-                    }
+                        guard let frame = try frameCode.readFrame(from: packets) else {
+                            return
+                        }
 
-                    if frame == nil {
-                        return
-                    }
+                        packets = Data(packets.dropFirst(frame.size))
+                        frameHandler.add(frame: frame)
 
-                    packets = Data(packets.dropFirst(frame.size))
-                    frameHandler.add(frame: frame)
-
-                    do {
                         while let message = try frameHandler.getMessage() {
                             delegate?.connection(didReceiveMessage: message)
                         }
                     } catch {
-                        log("ERROR: Frame handling error: \(error)")
                         disconnect(error: error)
                     }
                 }
@@ -151,7 +139,7 @@ class Connection: NSObject {
         }
 
         handshakeSent = true
-        let handshake = EncryptionHandshake(myKey: delegate.connectionKey(), publicKeyPoint: ECPoint(nodeId: nodeId), crypto: crypto, randomHelper: crypto.random, factory: Factory())
+        let handshake = factory.encryptionHandshake(myKey: delegate.connectionKey(), publicKey: nodeId)
 
         let authMessagePacket: Data!
         do {
@@ -213,8 +201,8 @@ extension Connection: IConnection {
         log("DISCONNECTED")
     }
 
-    func register(capability: Capability) {
-        frameHandler.register(capability: capability)
+    func register(capabilities: [Capability]) {
+        frameHandler.register(capabilities: capabilities)
     }
 
     func send(message: IMessage) {

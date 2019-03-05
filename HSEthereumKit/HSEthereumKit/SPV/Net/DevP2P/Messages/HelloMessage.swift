@@ -16,18 +16,18 @@ class HelloMessage: IMessage {
         self.peerId = peerId
     }
 
-    required init?(data: Data) {
-        let rlp = RLP.decode(input: data)
+    required init(data: Data) throws {
+        let rlpList = try RLP.decode(input: data).listValue()
 
-        guard rlp.isList() && rlp.listValue.count > 4 else {
-            return nil
+        guard rlpList.count > 4 else {
+            throw MessageDecodeError.notEnoughFields
         }
 
-        p2pVersion = rlp.listValue[0].intValue
-        clientId = rlp.listValue[1].stringValue
-        capabilities = rlp.listValue[2].listValue.map{ Capability(name: $0.listValue[0].stringValue, version: $0.listValue[1].intValue) }
-        port = rlp.listValue[3].intValue
-        peerId = rlp.listValue[4].dataValue
+        p2pVersion = try rlpList[0].intValue()
+        clientId = try rlpList[1].stringValue()
+        capabilities = try rlpList[2].listValue().map{ Capability(name: try $0.listValue()[0].stringValue(), version: try $0.listValue()[1].intValue()) }
+        port = try rlpList[3].intValue()
+        peerId = rlpList[4].dataValue
     }
 
     func encoded() -> Data {

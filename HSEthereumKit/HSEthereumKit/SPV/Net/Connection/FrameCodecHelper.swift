@@ -3,9 +3,9 @@ import HSCryptoKit
 
 class FrameCodecHelper: IFrameCodecHelper {
 
-    private let crypto: ICrypto
+    private let crypto: ICryptoUtils
 
-    init(crypto: ICrypto) {
+    init(crypto: ICryptoUtils) {
         self.crypto = crypto
     }
 

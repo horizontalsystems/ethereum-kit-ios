@@ -4,7 +4,7 @@ import HSCryptoKit
 @testable import HSEthereumKit
 
 class FrameCodecHelperTests: XCTestCase {
-    private var mockCrypto: MockICrypto!
+    private var mockCrypto: MockICryptoUtils!
     private var helper: FrameCodecHelper!
 
     private let keccak = KeccakDigest()
@@ -16,7 +16,7 @@ class FrameCodecHelperTests: XCTestCase {
     override func setUp() {
         super.setUp()
 
-        mockCrypto = MockICrypto()
+        mockCrypto = MockICryptoUtils()
         stub(mockCrypto) { mock in
             when(mock.aesEncrypt(_: equal(to: keccak.digest()), withKey: equal(to: key), keySize: equal(to: 256))).thenReturn(encryptedMacDigest)
         }

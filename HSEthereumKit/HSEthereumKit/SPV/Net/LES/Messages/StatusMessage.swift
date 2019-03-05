@@ -18,23 +18,23 @@ class StatusMessage: IMessage {
         self.bestBlockHeight = bestBlockHeight
     }
 
-    required init?(data: Data) {
-        let rlp = RLP.decode(input: data)
+    required init(data: Data) throws {
+        let rlpList = try RLP.decode(input: data).listValue()
 
-        guard rlp.isList() && rlp.listValue.count > 5 else {
-            return nil
+        guard rlpList.count > 5 else {
+            throw MessageDecodeError.notEnoughFields
         }
 
-        for rlpElement in rlp.listValue {
-            let name = rlpElement.listValue[0].stringValue
-            let valueElement = rlpElement.listValue[1]
+        for rlpElement in rlpList {
+            let name = try rlpElement.listValue()[0].stringValue()
+            let valueElement = try rlpElement.listValue()[1]
 
             switch name {
-            case "protocolVersion": protocolVersion = UInt8(valueElement.intValue)
-            case "networkId": networkId = valueElement.intValue
+            case "protocolVersion": protocolVersion = UInt8(try valueElement.intValue())
+            case "networkId": networkId = try valueElement.intValue()
             case "headTd": bestBlockTotalDifficulty = valueElement.dataValue
             case "headHash": bestBlockHash = valueElement.dataValue
-            case "headNum": bestBlockHeight = valueElement.bIntValue
+            case "headNum": bestBlockHeight = try valueElement.bIntValue()
             case "genesisHash": genesisHash = valueElement.dataValue
             default: ()
             }

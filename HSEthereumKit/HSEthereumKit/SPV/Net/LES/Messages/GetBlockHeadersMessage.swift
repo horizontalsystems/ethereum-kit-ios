@@ -16,7 +16,7 @@ class GetBlockHeadersMessage: IMessage {
         self.reverse = reverse
     }
 
-    required init?(data: Data) {
+    required init(data: Data) throws {
         self.requestId = 0
         self.blockHash = Data()
         self.skip = 0

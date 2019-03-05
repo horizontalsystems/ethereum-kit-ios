@@ -9,8 +9,8 @@ class SendTransactionMessage: IMessage {
         self.transaction = transaction
     }
 
-    required init?(data: Data) {
-        return nil
+    required init(data: Data) throws {
+        throw MessageDecodeError.notEnoughFields
     }
 
     func encoded() -> Data {

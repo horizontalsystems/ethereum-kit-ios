@@ -25,14 +25,14 @@ class DisconnectMessage: IMessage {
         self.reason = reason
     }
 
-    required init?(data: Data) {
-        let rlp = RLP.decode(input: data)
+    required init(data: Data) throws {
+        let rlpList = try RLP.decode(input: data).listValue()
 
-        guard rlp.isList() && rlp.listValue.count > 0 else {
-            return nil
+        guard rlpList.count > 0 else {
+            throw MessageDecodeError.notEnoughFields
         }
 
-        if let reason = ReasonCode(rawValue: rlp.listValue[0].intValue) {
+        if let reason = ReasonCode(rawValue: try rlpList[0].intValue()) {
             self.reason = reason
         } else {
             self.reason = ReasonCode.unknown
