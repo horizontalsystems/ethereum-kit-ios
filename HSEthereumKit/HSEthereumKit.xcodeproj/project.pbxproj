@@ -304,7 +304,7 @@
 		3A19DECD216F4422009109F2 /* HSEthereumKitTests */ = {
 			isa = PBXGroup;
 			children = (
-				D0F03E7B22200D5100E217F5 /* Light */,
+				D0F03E7B22200D5100E217F5 /* Spv */,
 				11B3526164D70BCFA52E80FF /* Core */,
 				3A19DED8216F455A009109F2 /* Helpers */,
 				11B359F34D40C2E21B4CD620 /* GeneratedMocks.swift */,
@@ -704,13 +704,13 @@
 			path = Messages;
 			sourceTree = "<group>";
 		};
-		D0F03E7B22200D5100E217F5 /* Light */ = {
+		D0F03E7B22200D5100E217F5 /* Spv */ = {
 			isa = PBXGroup;
 			children = (
 				D0F03E7C22200D5F00E217F5 /* Crypto */,
 				D045FC1F221C19DB0009BEF6 /* Net */,
 			);
-			path = Light;
+			path = Spv;
 			sourceTree = "<group>";
 		};
 		D0F03E7C22200D5F00E217F5 /* Crypto */ = {
