@@ -1,16 +1,13 @@
-import Foundation
-
 class ECKey {
-
-    var privateKey: Data
-    var publicKeyPoint: ECPoint
+    let privateKey: Data
+    let publicKeyPoint: ECPoint
 
     init(privateKey: Data, publicKeyPoint: ECPoint) {
         self.privateKey = privateKey
         self.publicKeyPoint = publicKeyPoint
     }
 
-    public func toString() -> String {
+    func toString() -> String {
         return "[privateKey: \(privateKey.toHexString()); publicKey: \(publicKeyPoint.toString())]"
     }
 

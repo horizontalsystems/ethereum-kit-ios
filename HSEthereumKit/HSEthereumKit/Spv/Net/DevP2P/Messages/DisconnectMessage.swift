@@ -1,6 +1,4 @@
-import Foundation
-
-class DisconnectMessage: IMessage {
+class DisconnectMessage: IDisconnectMessage {
 
     enum ReasonCode: Int {
         case requested = 0x00

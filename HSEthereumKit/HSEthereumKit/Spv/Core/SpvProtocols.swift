@@ -63,16 +63,15 @@ protocol IPeerDelegate: class {
 }
 
 protocol IDevP2PPeerDelegate: class {
-    func connectionEstablished()
-    func connectionDidDisconnect(withError error: Error?)
-    func connection(didReceiveMessage message: IMessage)
+    func didEstablishConnection()
+    func didDisconnect(error: Error?)
+    func didReceive(message: IMessage)
 }
 
 protocol IConnectionDelegate: class {
-    func connectionEstablished()
-    func connectionKey() -> ECKey
-    func connectionDidDisconnect(withError error: Error?)
-    func connection(didReceiveMessage message: IMessage)
+    func didEstablishConnection()
+    func didDisconnect(error: Error?)
+    func didReceive(message: IMessage)
 }
 
 protocol IPeer: class {
@@ -108,12 +107,6 @@ protocol IFrameHandler {
     func getFrames(from message: IMessage) -> [Frame]
 }
 
-protocol IMessage {
-    init (data: Data) throws
-    func encoded() -> Data
-    func toString() -> String
-}
-
 protocol IPeerGroupDelegate: class {
     func onUpdate(state: AccountState)
 }
@@ -121,4 +114,28 @@ protocol IPeerGroupDelegate: class {
 protocol IPeerGroup {
     var delegate: IPeerGroupDelegate? { get set }
     func start()
+}
+
+protocol IMessageFactory {
+    func helloMessage(key: ECKey, capabilities: [Capability]) -> IHelloMessage
+    func pongMessage() -> IPongMessage
+}
+
+protocol IMessage {
+    init(data: Data) throws
+    func encoded() -> Data
+    func toString() -> String
+}
+
+protocol IHelloMessage: IMessage {
+    var capabilities: [Capability] { get }
+}
+
+protocol IPingMessage: IMessage {
+}
+
+protocol IPongMessage: IMessage {
+}
+
+protocol IDisconnectMessage: IMessage {
 }
