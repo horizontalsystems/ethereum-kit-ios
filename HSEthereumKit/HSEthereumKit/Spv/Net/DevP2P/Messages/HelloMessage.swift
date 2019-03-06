@@ -1,6 +1,6 @@
 import Foundation
 
-class HelloMessage: IMessage {
+class HelloMessage: IHelloMessage {
 
     let p2pVersion: Int
     let clientId: String
@@ -8,11 +8,11 @@ class HelloMessage: IMessage {
     let port: Int
     let peerId: Data
 
-    init(peerId: Data, port: UInt32, capabilities: [Capability]) {
+    init(peerId: Data, port: Int, capabilities: [Capability]) {
         self.p2pVersion = 4
         self.clientId = "EthereumKit"
         self.capabilities = capabilities
-        self.port = Int(port)
+        self.port = port
         self.peerId = peerId
     }
 

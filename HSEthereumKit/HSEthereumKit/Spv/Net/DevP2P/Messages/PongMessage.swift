@@ -1,6 +1,4 @@
-import Foundation
-
-class PongMessage: IMessage {
+class PongMessage: IPongMessage {
 
     static let payload = Data(bytes: [UInt8(0xc0)])
 

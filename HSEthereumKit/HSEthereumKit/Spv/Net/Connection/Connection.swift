@@ -10,6 +10,8 @@ class Connection: NSObject {
     private let bufferSize = 4096
     private let interval = 1.0
 
+    private let connectionKey: ECKey
+
     let nodeId: Data
     let host: String
     let port: UInt32
@@ -38,7 +40,8 @@ class Connection: NSObject {
         return "\(nodeId.toHexString())@\(host):\(port)'"
     }
 
-    init(node: Node, factory: IFactory = Factory.shared, logger: Logger? = nil) {
+    init(connectionKey: ECKey, node: Node, factory: IFactory = Factory.shared, logger: Logger? = nil) {
+        self.connectionKey = connectionKey
         self.nodeId = node.id
         self.host = node.host
         self.port = UInt32(node.port)
@@ -99,7 +102,7 @@ class Connection: NSObject {
                 frameCodec = factory.frameCodec(secrets: secrets)
                 self.handshake = nil
 
-                delegate?.connectionEstablished()
+                delegate?.didEstablishConnection()
             } catch {
                 disconnect(error: PeerConnectionError.encryptionHandshakeError)
             }
@@ -117,7 +120,7 @@ class Connection: NSObject {
                 frameHandler.add(frame: frame)
 
                 if let message = try frameHandler.getMessage() {
-                    delegate?.connection(didReceiveMessage: message)
+                    delegate?.didReceive(message: message)
                 }
             }
         } catch {
@@ -130,13 +133,8 @@ class Connection: NSObject {
             return
         }
 
-        guard let delegate = self.delegate else {
-            log("Can't initiate handshake without delegate")
-            return
-        }
-
         handshakeSent = true
-        let handshake = factory.encryptionHandshake(myKey: delegate.connectionKey(), publicKey: nodeId)
+        let handshake = factory.encryptionHandshake(myKey: connectionKey, publicKey: nodeId)
 
         let authMessagePacket: Data!
         do {
@@ -193,7 +191,7 @@ extension Connection: IConnection {
         runLoop = nil
         connected = false
 
-        delegate?.connectionDidDisconnect(withError: error)
+        delegate?.didDisconnect(error: error)
 
         logger?.verbose("DISCONNECTED: \(error?.localizedDescription ?? "nil")")
     }

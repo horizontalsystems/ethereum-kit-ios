@@ -1,7 +1,4 @@
-import Foundation
-
 class Capability: Equatable {
-    
     let name: String
     let version: Int
     let packetTypesMap: [Int: IMessage.Type]

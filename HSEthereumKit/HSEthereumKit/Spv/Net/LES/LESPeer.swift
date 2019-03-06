@@ -43,7 +43,7 @@ class LESPeer {
         self.network = network
         self.bestBlock = bestBlock
 
-        devP2PPeer = DevP2PPeer(key: key, node: node, capability: capability, logger: logger)
+        devP2PPeer = DevP2PPeer.instance(key: key, node: node, capability: capability, logger: logger)
         devP2PPeer.delegate = self
     }
 
@@ -140,15 +140,14 @@ extension LESPeer: IPeer {
 
 extension LESPeer: IDevP2PPeerDelegate {
 
-    func connectionEstablished() {
+    func didEstablishConnection() {
         proceedHandshake()
     }
 
-    func connectionDidDisconnect(withError error: Error?) {
-        //        print("Disconnected ...")
+    func didDisconnect(error: Error?) {
     }
 
-    func connection(didReceiveMessage message: IMessage) {
+    func didReceive(message: IMessage) {
         do {
             try self.handle(message: message)
         } catch {

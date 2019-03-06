@@ -1,6 +1,4 @@
-import Foundation
-
-class PingMessage: IMessage {
+class PingMessage: IPingMessage {
 
     static let payload = Data(bytes: [UInt8(0xc0)])
 
