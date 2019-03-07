@@ -1,7 +1,4 @@
-import Foundation
-
 class GetProofsMessage: IMessage {
-
     let requestId: Int
     var proofRequests: [ProofRequest]
 

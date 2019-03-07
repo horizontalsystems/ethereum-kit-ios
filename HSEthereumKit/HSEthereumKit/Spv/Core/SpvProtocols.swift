@@ -57,38 +57,68 @@ public protocol IEthereumKitDelegate: class {
 
 
 protocol IPeerDelegate: class {
-    func connected()
-    func blocksReceived(blockHeaders: [BlockHeader])
-    func proofReceived(message: ProofsMessage)
+    func didConnect()
+    func didReceive(blockHeaders: [BlockHeader])
+    func didReceive(proofMessage: ProofsMessage)
 }
 
 protocol IDevP2PPeerDelegate: class {
-    func didEstablishConnection()
+    func didConnect()
     func didDisconnect(error: Error?)
     func didReceive(message: IMessage)
 }
 
 protocol IConnectionDelegate: class {
-    func didEstablishConnection()
+    func didConnect()
     func didDisconnect(error: Error?)
-    func didReceive(message: IMessage)
+    func didReceive(frame: Frame)
 }
 
 protocol IPeer: class {
     var delegate: IPeerDelegate? { get set }
     func connect()
     func disconnect(error: Error?)
-    func downloadBlocksFrom(block: BlockHeader)
-    func getBalance(forAddress address: Data, inBlockWithHash blockHash: Data)
+    func requestBlockHeaders(fromBlockHash blockHash: Data)
+    func requestProofs(forAddress address: Data, inBlockWithHash blockHash: Data)
 }
 
 protocol IConnection: class {
     var delegate: IConnectionDelegate? { get set }
-    var logName: String { get }
+
     func connect()
     func disconnect(error: Error?)
-    func register(capabilities: [Capability])
+    func send(frame: Frame)
+}
+
+protocol IFrameConnection: class {
+    var delegate: IFrameConnectionDelegate? { get set }
+
+    func connect()
+    func disconnect(error: Error?)
+    func send(packetType: Int, payload: Data)
+}
+
+protocol IFrameConnectionDelegate: class {
+    func didConnect()
+    func didDisconnect(error: Error?)
+    func didReceive(packetType: Int, payload: Data)
+}
+
+protocol IDevP2PConnection: class {
+    var delegate: IDevP2PConnectionDelegate? { get set }
+
+    var myCapabilities: [Capability] { get }
+    func register(nodeCapabilities: [Capability]) throws
+
+    func connect()
+    func disconnect(error: Error?)
     func send(message: IMessage)
+}
+
+protocol IDevP2PConnectionDelegate: class {
+    func didConnect()
+    func didDisconnect(error: Error?)
+    func didReceive(message: IMessage)
 }
 
 protocol INetwork {
@@ -100,11 +130,11 @@ protocol INetwork {
     var publicKeyPrefix: UInt32 { get }
 }
 
-protocol IFrameHandler {
-    func register(capabilities: [Capability])
-    func add(frame: Frame)
-    func getMessage() throws -> IMessage?
-    func getFrames(from message: IMessage) -> [Frame]
+protocol IMessageHandler {
+    var capabilities: [Capability] { get }
+    func register(capabilities: [Capability]) throws
+    func getMessage(packetType: Int, payload: Data) throws -> IMessage
+    func getData(from message: IMessage) -> (packetType: Int, payload: Data)?
 }
 
 protocol IPeerGroupDelegate: class {
@@ -116,9 +146,18 @@ protocol IPeerGroup {
     func start()
 }
 
+protocol IDevP2PPeer {
+    func connect()
+    func disconnect(error: Error?)
+    func send(message: IMessage)
+}
+
 protocol IMessageFactory {
-    func helloMessage(key: ECKey, capabilities: [Capability]) -> IHelloMessage
-    func pongMessage() -> IPongMessage
+    func helloMessage(key: ECKey, capabilities: [Capability]) -> HelloMessage
+    func pongMessage() -> PongMessage
+    func getBlockHeadersMessage(blockHash: Data) -> GetBlockHeadersMessage
+    func getProofsMessage(address: Data, blockHash: Data) -> GetProofsMessage
+    func statusMessage(network: INetwork, blockHeader: BlockHeader) -> StatusMessage
 }
 
 protocol IMessage {
@@ -127,15 +166,9 @@ protocol IMessage {
     func toString() -> String
 }
 
-protocol IHelloMessage: IMessage {
-    var capabilities: [Capability] { get }
-}
+protocol IStatusHandler {
+    var network: INetwork { get }
+    var blockHeader: BlockHeader { get }
 
-protocol IPingMessage: IMessage {
-}
-
-protocol IPongMessage: IMessage {
-}
-
-protocol IDisconnectMessage: IMessage {
+    func validate(message: StatusMessage) throws
 }

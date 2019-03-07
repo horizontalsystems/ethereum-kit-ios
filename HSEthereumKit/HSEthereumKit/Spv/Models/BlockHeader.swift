@@ -1,4 +1,3 @@
-import Foundation
 import GRDB
 
 class BlockHeader: Record {

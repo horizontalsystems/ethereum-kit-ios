@@ -1,4 +1,4 @@
-class PongMessage: IPongMessage {
+class PongMessage: IMessage {
 
     static let payload = Data(bytes: [UInt8(0xc0)])
 
@@ -9,7 +9,7 @@ class PongMessage: IPongMessage {
     }
 
     func encoded() -> Data {
-        return PingMessage.payload
+        return PongMessage.payload
     }
 
     func toString() -> String {

@@ -1,7 +1,4 @@
-import Foundation
-
 class GetBlockHeadersMessage: IMessage {
-
     static let maxHeaders = 50
 
     var requestId: Int

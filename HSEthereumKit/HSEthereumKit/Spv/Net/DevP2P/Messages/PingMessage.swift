@@ -1,4 +1,4 @@
-class PingMessage: IPingMessage {
+class PingMessage: IMessage {
 
     static let payload = Data(bytes: [UInt8(0xc0)])
 

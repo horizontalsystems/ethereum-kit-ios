@@ -1,5 +1,3 @@
-import Foundation
-
 class PeerGroup {
     weak var delegate: IPeerGroupDelegate?
 
@@ -23,17 +21,22 @@ class PeerGroup {
                 discoveryPort: 30301
         )
 
-        syncPeer = LESPeer(network: network, bestBlock: network.checkpointBlock, key: connectionKey, node: node, logger: logger)
-        syncPeer?.delegate = self
+        let lastBlockHeader: BlockHeader
 
-        if storage.lastBlockHeader() == nil {
+        if let storedLastBlockHeader = storage.lastBlockHeader() {
+            lastBlockHeader = storedLastBlockHeader
+        } else {
             storage.save(blockHeaders: [network.checkpointBlock])
+            lastBlockHeader = network.checkpointBlock
         }
+
+        syncPeer = LESPeer.instance(network: network, lastBlockHeader: lastBlockHeader, key: connectionKey, node: node, logger: logger)
+        syncPeer?.delegate = self
     }
 
     func syncBlocks() {
-        if let lastBlock = storage.lastBlockHeader(), let syncPeer = syncPeer {
-            syncPeer.downloadBlocksFrom(block: lastBlock)
+        if let lastBlockHeader = storage.lastBlockHeader() {
+            syncPeer?.requestBlockHeaders(fromBlockHash: lastBlockHeader.hashHex)
         }
     }
 
@@ -49,29 +52,30 @@ extension PeerGroup: IPeerGroup {
 
 extension PeerGroup: IPeerDelegate {
 
-    func connected() {
+    func didConnect() {
         syncBlocks()
     }
 
-    func blocksReceived(blockHeaders: [BlockHeader]) {
+    func didReceive(blockHeaders: [BlockHeader]) {
         if blockHeaders.count <= 1 {
-            print("blocks synced!")
+            print("BLOCKS SYNCED")
 
-            if let lastBlock = storage.lastBlockHeader(), let syncPeer = syncPeer {
-                syncPeer.getBalance(forAddress: address, inBlockWithHash: lastBlock.hashHex)
+            if let lastBlock = storage.lastBlockHeader() {
+                syncPeer?.requestProofs(forAddress: address, inBlockWithHash: lastBlock.hashHex)
             }
 
             return
         }
 
         storage.save(blockHeaders: blockHeaders)
-        self.syncBlocks()
+
+        syncBlocks()
     }
 
-    func proofReceived(message: ProofsMessage) {
+    func didReceive(proofMessage: ProofsMessage) {
         if let lastBlock = storage.lastBlockHeader() {
             do {
-                let state = try message.getValidatedState(stateRoot: lastBlock.stateRoot, address: address)
+                let state = try proofMessage.getValidatedState(stateRoot: lastBlock.stateRoot, address: address)
                 delegate?.onUpdate(state: state)
             } catch {
                 print("proof result: \(error)")

@@ -1,72 +1,63 @@
 class DevP2PPeer {
     weak var delegate: IDevP2PPeerDelegate?
 
-    private let connection: IConnection
-    private let key: ECKey
-    private let capability: Capability
+    private let devP2PConnection: IDevP2PConnection
     private let messageFactory: IMessageFactory
+    private let key: ECKey
     private let logger: Logger?
 
-    init(connection: IConnection, key: ECKey, capability: Capability, messageFactory: IMessageFactory, logger: Logger? = nil) {
-        self.connection = connection
-        self.key = key
-        self.capability = capability
+    init(devP2PConnection: IDevP2PConnection, messageFactory: IMessageFactory, key: ECKey, logger: Logger? = nil) {
+        self.devP2PConnection = devP2PConnection
         self.messageFactory = messageFactory
+        self.key = key
         self.logger = logger
     }
 
-    private func handle(message: IHelloMessage) {
+    private func handle(message: HelloMessage) {
         do {
-            try validatePeer(helloMessage: message)
-            connection.register(capabilities: [capability])
-            delegate?.didEstablishConnection()
+            try devP2PConnection.register(nodeCapabilities: message.capabilities)
+            delegate?.didConnect()
         } catch {
             disconnect(error: error)
         }
 
     }
 
-    private func handle(message: IDisconnectMessage) {
-        disconnect(error: DevP2PPeerError.disconnectMessageReceived)
+    private func handle(message: DisconnectMessage) {
+        disconnect(error: DisconnectError.disconnectMessageReceived)
     }
 
-    private func handle(message: IPingMessage) {
+    private func handle(message: PingMessage) {
         let pongMessage = messageFactory.pongMessage()
-        connection.send(message: pongMessage)
+        send(message: pongMessage)
     }
 
-    private func handle(message: IPongMessage) {
-    }
-
-    private func validatePeer(helloMessage: IHelloMessage) throws {
-        guard helloMessage.capabilities.contains(capability) else {
-            throw DevP2PPeerError.peerDoesNotSupportCapability
-        }
+    private func handle(message: PongMessage) {
     }
 
 }
 
-extension DevP2PPeer {
+extension DevP2PPeer: IDevP2PPeer {
 
     func connect() {
-        connection.connect()
+        devP2PConnection.connect()
     }
 
     func disconnect(error: Error? = nil) {
-        connection.disconnect(error: error)
+        devP2PConnection.disconnect(error: error)
     }
 
     func send(message: IMessage) {
-        connection.send(message: message)
+        devP2PConnection.send(message: message)
     }
 
 }
 
-extension DevP2PPeer: IConnectionDelegate {
+extension DevP2PPeer: IDevP2PConnectionDelegate {
 
-    func didEstablishConnection() {
-        let helloMessage = messageFactory.helloMessage(key: key, capabilities: [capability])
-        connection.send(message: helloMessage)
+    func didConnect() {
+        let helloMessage = messageFactory.helloMessage(key: key, capabilities: devP2PConnection.myCapabilities)
+        send(message: helloMessage)
     }
 
     func didDisconnect(error: Error?) {
@@ -77,10 +68,10 @@ extension DevP2PPeer: IConnectionDelegate {
         logger?.verbose("<<< \(message.toString())")
 
         switch message {
-        case let message as IHelloMessage: handle(message: message)
-        case let message as IDisconnectMessage: handle(message: message)
-        case let message as IPingMessage: handle(message: message)
-        case let message as IPongMessage: handle(message: message)
+        case let message as HelloMessage: handle(message: message)
+        case let message as DisconnectMessage: handle(message: message)
+        case let message as PingMessage: handle(message: message)
+        case let message as PongMessage: handle(message: message)
         default: delegate?.didReceive(message: message)
         }
     }
@@ -89,11 +80,11 @@ extension DevP2PPeer: IConnectionDelegate {
 
 extension DevP2PPeer {
 
-    static func instance(key: ECKey, node: Node, capability: Capability, logger: Logger? = nil) -> DevP2PPeer {
-        let connection: IConnection = Connection(connectionKey: key, node: node, logger: logger)
-        let peer = DevP2PPeer(connection: connection, key: key, capability: capability, messageFactory: MessageFactory(), logger: logger)
+    static func instance(key: ECKey, node: Node, capabilities: [Capability], logger: Logger? = nil) -> DevP2PPeer {
+        let devP2PConnection = DevP2PConnection.instance(myCapabilities: capabilities, connectionKey: key, node: node, logger: logger)
+        let peer = DevP2PPeer(devP2PConnection: devP2PConnection, messageFactory: MessageFactory(), key: key, logger: logger)
 
-        connection.delegate = peer
+        devP2PConnection.delegate = peer
 
         return peer
     }
@@ -102,8 +93,7 @@ extension DevP2PPeer {
 
 extension DevP2PPeer {
 
-    enum DevP2PPeerError: Error {
-        case peerDoesNotSupportCapability
+    enum DisconnectError: Error {
         case disconnectMessageReceived
     }
 
