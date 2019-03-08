@@ -1,10 +1,13 @@
-import Foundation
-
 class BlockHeadersMessage: IMessage {
+    let requestId: Int
+    let bv: BInt
+    let headers: [BlockHeader]
 
-    var requestId: Int
-    var bv: BInt
-    var headers: [BlockHeader]
+    init(requestId: Int, bv: BInt, headers: [BlockHeader]) {
+        self.requestId = requestId
+        self.bv = bv
+        self.headers = headers
+    }
 
     required init(data: Data) throws {
         let rlpList = try RLP.decode(input: data).listValue()

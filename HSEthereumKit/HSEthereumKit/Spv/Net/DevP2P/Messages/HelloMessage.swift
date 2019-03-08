@@ -1,6 +1,4 @@
-import Foundation
-
-class HelloMessage: IHelloMessage {
+class HelloMessage: IMessage {
 
     let p2pVersion: Int
     let clientId: String

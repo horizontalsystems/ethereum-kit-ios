@@ -3,7 +3,7 @@ import Cuckoo
 @testable import HSEthereumKit
 
 class DevP2PPeerTests: XCTestCase {
-    private var mockConnection: MockIConnection!
+    private var mockConnection: MockIDevP2PConnection!
     private var mockFactory: MockIMessageFactory!
     private var mockDelegate: MockIDevP2PPeerDelegate!
     private var peer: DevP2PPeer!
@@ -14,11 +14,11 @@ class DevP2PPeerTests: XCTestCase {
     override func setUp() {
         super.setUp()
 
-        mockConnection = MockIConnection()
+        mockConnection = MockIDevP2PConnection()
         mockFactory = MockIMessageFactory()
         mockDelegate = MockIDevP2PPeerDelegate()
 
-        peer = DevP2PPeer(connection: mockConnection, key: key, capability: capability, messageFactory: mockFactory)
+        peer = DevP2PPeer(devP2PConnection: mockConnection, messageFactory: mockFactory, key: key)
         peer.delegate = mockDelegate
     }
 
@@ -26,7 +26,6 @@ class DevP2PPeerTests: XCTestCase {
         mockConnection = nil
         mockFactory = nil
         mockDelegate = nil
-
         peer = nil
 
         super.tearDown()
@@ -43,8 +42,6 @@ class DevP2PPeerTests: XCTestCase {
     }
 
     func testDisconnect() {
-        class TestError: Error {}
-
         let error = TestError()
 
         stub(mockConnection) { mock in
@@ -68,23 +65,23 @@ class DevP2PPeerTests: XCTestCase {
         verify(mockConnection).send(message: equal(to: message, type: MockIMessage.self))
     }
 
-    func testDidEstablishConnection() {
-        let mockHelloMessage = MockIHelloMessage(data: Data())
+    func testDidConnect() {
+        let helloMessage = HelloMessage()
 
         stub(mockFactory) { mock in
-            when(mock.helloMessage(key: equal(to: key), capabilities: equal(to: [capability]))).thenReturn(mockHelloMessage)
+            when(mock.helloMessage(key: equal(to: key), capabilities: equal(to: [capability]))).thenReturn(helloMessage)
         }
         stub(mockConnection) { mock in
+            when(mock.myCapabilities.get).thenReturn([capability])
             when(mock.send(message: any())).thenDoNothing()
         }
 
-        peer.didEstablishConnection()
+        peer.didConnect()
 
-        verify(mockConnection).send(message: equal(to: mockHelloMessage, type: MockIHelloMessage.self))
+        verify(mockConnection).send(message: equal(to: helloMessage, type: HelloMessage.self))
     }
 
     func testDidDisconnect() {
-        class TestError: Error {}
         let error = TestError()
 
         stub(mockDelegate) { mock in
@@ -97,78 +94,57 @@ class DevP2PPeerTests: XCTestCase {
     }
 
     func testDidReceive_helloMessage() {
-        let mockHelloMessage = MockIHelloMessage(data: Data())
-        let anotherCapability = Capability(name: "anotherCapability", version: 2)
+        let helloMessage = HelloMessage(capabilities: [capability])
 
-        stub(mockHelloMessage) { mock in
-            when(mock.capabilities.get).thenReturn([anotherCapability, capability])
-        }
         stub(mockConnection) { mock in
-            when(mock.register(capabilities: any())).thenDoNothing()
+            when(mock.register(nodeCapabilities: any())).thenDoNothing()
         }
         stub(mockDelegate) { mock in
-            when(mock.didEstablishConnection()).thenDoNothing()
+            when(mock.didConnect()).thenDoNothing()
         }
 
-        peer.didReceive(message: mockHelloMessage)
+        peer.didReceive(message: helloMessage)
 
-        verify(mockConnection).register(capabilities: equal(to: [capability]))
-        verify(mockDelegate).didEstablishConnection()
+        verify(mockConnection).register(nodeCapabilities: equal(to: [capability]))
+        verify(mockDelegate).didConnect()
     }
 
-    func testDidReceive_helloMessage_noCapability() {
-        let mockHelloMessage = MockIHelloMessage(data: Data())
-        let anotherCapability = Capability(name: "anotherCapability", version: 2)
+    func testDidReceive_disconnectMessage() {
+        let disconnectMessage = DisconnectMessage()
 
-        stub(mockHelloMessage) { mock in
-            when(mock.capabilities.get).thenReturn([anotherCapability])
-        }
         stub(mockConnection) { mock in
             when(mock.disconnect(error: any())).thenDoNothing()
         }
 
-        peer.didReceive(message: mockHelloMessage)
+        peer.didReceive(message: disconnectMessage)
 
-        let expectedError: Error = DevP2PPeer.DevP2PPeerError.peerDoesNotSupportCapability
-        verify(mockConnection).disconnect(error: equal(to: expectedError, equalWhen: { $0 as! DevP2PPeer.DevP2PPeerError == $1 as! DevP2PPeer.DevP2PPeerError }))
+        let expectedError: Error = DevP2PPeer.DisconnectError.disconnectMessageReceived
+        verify(mockConnection).disconnect(error: equal(to: expectedError, equalWhen: { $0 as! DevP2PPeer.DisconnectError == $1 as! DevP2PPeer.DisconnectError }))
     }
 
     func testDidReceive_pingMessage() {
-        let mockPingMessage = MockIPingMessage(data: Data())
-        let mockPongMessage = MockIPongMessage(data: Data())
+        let pingMessage = PingMessage()
+        let pongMessage = PongMessage()
 
         stub(mockFactory) { mock in
-            when(mock.pongMessage()).thenReturn(mockPongMessage)
+            when(mock.pongMessage()).thenReturn(pongMessage)
         }
         stub(mockConnection) { mock in
             when(mock.send(message: any())).thenDoNothing()
         }
 
-        peer.didReceive(message: mockPingMessage)
+        peer.didReceive(message: pingMessage)
 
-        verify(mockConnection).send(message: equal(to: mockPongMessage, type: MockIPongMessage.self))
+        verify(mockConnection).send(message: equal(to: pongMessage, type: PongMessage.self))
     }
 
     func testDidReceive_pongMessage() {
-        let mockPongMessage = MockIPongMessage(data: Data())
+        let pongMessage = PongMessage()
 
-        peer.didReceive(message: mockPongMessage)
+        peer.didReceive(message: pongMessage)
 
         verifyNoMoreInteractions(mockConnection)
         verifyNoMoreInteractions(mockDelegate)
-    }
-
-    func testDidReceive_disconnectMessage() {
-        let mockDisconnectMessage = MockIDisconnectMessage(data: Data())
-
-        stub(mockConnection) { mock in
-            when(mock.disconnect(error: any())).thenDoNothing()
-        }
-
-        peer.didReceive(message: mockDisconnectMessage)
-
-        let expectedError: Error = DevP2PPeer.DevP2PPeerError.disconnectMessageReceived
-        verify(mockConnection).disconnect(error: equal(to: expectedError, equalWhen: { $0 as! DevP2PPeer.DevP2PPeerError == $1 as! DevP2PPeer.DevP2PPeerError }))
     }
 
 }

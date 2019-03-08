@@ -20,7 +20,6 @@ class Connection: NSObject {
     weak var delegate: IConnectionDelegate?
     private var handshake: EncryptionHandshake?
     private var frameCodec: FrameCodec?
-    private let frameHandler: IFrameHandler
     private let factory: IFactory
     private let logger: Logger?
 
@@ -49,7 +48,6 @@ class Connection: NSObject {
 
         self.factory = factory
         self.logger = logger
-        frameHandler = FrameHandler()
     }
 
     deinit {
@@ -102,7 +100,7 @@ class Connection: NSObject {
                 frameCodec = factory.frameCodec(secrets: secrets)
                 self.handshake = nil
 
-                delegate?.didEstablishConnection()
+                delegate?.didConnect()
             } catch {
                 disconnect(error: PeerConnectionError.encryptionHandshakeError)
             }
@@ -117,11 +115,7 @@ class Connection: NSObject {
         do {
             while let frame = try frameCodec.readFrame(from: packets) {
                 packets = Data(packets.dropFirst(frame.size))
-                frameHandler.add(frame: frame)
-
-                if let message = try frameHandler.getMessage() {
-                    delegate?.didReceive(message: message)
-                }
+                delegate?.didReceive(frame: frame)
             }
         } catch {
             disconnect(error: error)
@@ -196,24 +190,14 @@ extension Connection: IConnection {
         logger?.verbose("DISCONNECTED: \(error?.localizedDescription ?? "nil")")
     }
 
-    func register(capabilities: [Capability]) {
-        frameHandler.register(capabilities: capabilities)
-    }
-
-    func send(message: IMessage) {
-        logger?.verbose(">>> \(message.toString())")
-
+    func send(frame: Frame) {
         guard let frameCodec = self.frameCodec else {
-            log("ERROR: trying to send message before RLPx handshake")
+            log("ERROR: trying to send frames before RLPx handshake")
             return
         }
 
-        let frames = frameHandler.getFrames(from: message)
-
-        for frame in frames {
-            let encodedFrame = frameCodec.encodeFrame(frame: frame)
-            sendPackets(data: encodedFrame)
-        }
+        let encodedFrame = frameCodec.encodeFrame(frame: frame)
+        sendPackets(data: encodedFrame)
     }
 
 }
