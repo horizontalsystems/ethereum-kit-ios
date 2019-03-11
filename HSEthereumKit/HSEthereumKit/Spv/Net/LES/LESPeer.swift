@@ -1,15 +1,19 @@
 class LESPeer {
-    weak var delegate: IPeerDelegate?
+    weak var delegate: ILESPeerDelegate?
 
     private let devP2PPeer: IDevP2PPeer
     private let messageFactory: IMessageFactory
-    private let statusHandler: IStatusHandler
+    private let validator: ILESPeerValidator
+    private let network: INetwork
+    private let lastBlockHeader: BlockHeader
     private let logger: Logger?
 
-    init(devP2PPeer: IDevP2PPeer, messageFactory: IMessageFactory, statusHandler: IStatusHandler, logger: Logger? = nil) {
+    init(devP2PPeer: IDevP2PPeer, messageFactory: IMessageFactory, validator: ILESPeerValidator, network: INetwork, lastBlockHeader: BlockHeader, logger: Logger? = nil) {
         self.devP2PPeer = devP2PPeer
         self.messageFactory = messageFactory
-        self.statusHandler = statusHandler
+        self.validator = validator
+        self.network = network
+        self.lastBlockHeader = lastBlockHeader
         self.logger = logger
     }
 
@@ -24,7 +28,7 @@ class LESPeer {
 
     private func handle(message: StatusMessage) {
         do {
-            try statusHandler.validate(message: message)
+            try validator.validate(message: message, network: network, blockHeader: lastBlockHeader)
             delegate?.didConnect()
         } catch {
             disconnect(error: error)
@@ -41,7 +45,7 @@ class LESPeer {
 
 }
 
-extension LESPeer: IPeer {
+extension LESPeer: ILESPeer {
 
     func connect() {
         devP2PPeer.connect()
@@ -66,7 +70,7 @@ extension LESPeer: IPeer {
 extension LESPeer: IDevP2PPeerDelegate {
 
     func didConnect() {
-        let statusMessage = messageFactory.statusMessage(network: statusHandler.network, blockHeader: statusHandler.blockHeader)
+        let statusMessage = messageFactory.statusMessage(network: network, blockHeader: lastBlockHeader)
         devP2PPeer.send(message: statusMessage)
     }
 
@@ -108,8 +112,7 @@ extension LESPeer {
         ])
 
         let devP2PPeer = DevP2PPeer.instance(key: key, node: node, capabilities: [capability], logger: logger)
-        let statusHandler = StatusHandler(network: network, blockHeader: lastBlockHeader)
-        let peer = LESPeer(devP2PPeer: devP2PPeer, messageFactory: MessageFactory(), statusHandler: statusHandler, logger: logger)
+        let peer = LESPeer(devP2PPeer: devP2PPeer, messageFactory: MessageFactory(), validator: LESPeerValidator(), network: network, lastBlockHeader: lastBlockHeader, logger: logger)
 
         devP2PPeer.delegate = peer
 
@@ -120,10 +123,9 @@ extension LESPeer {
 
 extension LESPeer {
 
-    enum ValidationError: Error {
-        case peerBestBlockIsLessThanOne
-        case peerHasExpiredBlockChain(localHeight: BInt, peerHeight: BInt)
+    enum ValidationError: Error, Equatable {
         case wrongNetwork
+        case peerHasExpiredBlockChain(localHeight: BInt, peerHeight: BInt)
     }
 
 }

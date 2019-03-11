@@ -59,14 +59,14 @@ extension GetProofsMessage {
 
 extension StatusMessage {
 
-    convenience init() {
+    convenience init(networkId: Int = 0, genesisHash: Data = Data(), headHeight: BInt = 0) {
         self.init(
                 protocolVersion: 0,
-                networkId: 0,
-                genesisHash: Data(),
+                networkId: networkId,
+                genesisHash: genesisHash,
                 headTotalDifficulty: Data(),
                 headHash: Data(),
-                headHeight: 0
+                headHeight: headHeight
         )
     }
 

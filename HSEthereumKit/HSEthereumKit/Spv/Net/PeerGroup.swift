@@ -1,17 +1,19 @@
 class PeerGroup {
     weak var delegate: IPeerGroupDelegate?
 
-    private var syncPeer: IPeer?
-    private var address: Data
-    private var connectionKey: ECKey
-    private var storage: ISpvStorage
-
+    private let network: INetwork
+    private let storage: ISpvStorage
+    private let connectionKey: ECKey
+    private let address: Data
     private let logger: Logger?
 
+    private var syncPeer: ILESPeer?
+
     init(network: INetwork, storage: ISpvStorage, connectionKey: ECKey, address: Data, logger: Logger? = nil) {
-        self.address = address
-        self.connectionKey = connectionKey
+        self.network = network
         self.storage = storage
+        self.connectionKey = connectionKey
+        self.address = address
         self.logger = logger
 
         let node = Node(
@@ -23,7 +25,7 @@ class PeerGroup {
 
         let lastBlockHeader: BlockHeader
 
-        if let storedLastBlockHeader = storage.lastBlockHeader() {
+        if let storedLastBlockHeader = storage.lastBlockHeader {
             lastBlockHeader = storedLastBlockHeader
         } else {
             storage.save(blockHeaders: [network.checkpointBlock])
@@ -35,9 +37,13 @@ class PeerGroup {
     }
 
     func syncBlocks() {
-        if let lastBlockHeader = storage.lastBlockHeader() {
+        if let lastBlockHeader = storage.lastBlockHeader {
             syncPeer?.requestBlockHeaders(fromBlockHash: lastBlockHeader.hashHex)
         }
+    }
+
+    private var lastBlockHeader: BlockHeader {
+        return storage.lastBlockHeader ?? network.checkpointBlock
     }
 
 }
@@ -50,7 +56,7 @@ extension PeerGroup: IPeerGroup {
 
 }
 
-extension PeerGroup: IPeerDelegate {
+extension PeerGroup: ILESPeerDelegate {
 
     func didConnect() {
         syncBlocks()
@@ -60,7 +66,7 @@ extension PeerGroup: IPeerDelegate {
         if blockHeaders.count <= 1 {
             print("BLOCKS SYNCED")
 
-            if let lastBlock = storage.lastBlockHeader() {
+            if let lastBlock = storage.lastBlockHeader {
                 syncPeer?.requestProofs(forAddress: address, inBlockWithHash: lastBlock.hashHex)
             }
 
@@ -73,7 +79,7 @@ extension PeerGroup: IPeerDelegate {
     }
 
     func didReceive(proofMessage: ProofsMessage) {
-        if let lastBlock = storage.lastBlockHeader() {
+        if let lastBlock = storage.lastBlockHeader {
             do {
                 let state = try proofMessage.getValidatedState(stateRoot: lastBlock.stateRoot, address: address)
                 delegate?.onUpdate(state: state)
