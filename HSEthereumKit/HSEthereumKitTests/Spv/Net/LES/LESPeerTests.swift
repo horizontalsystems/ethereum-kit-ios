@@ -5,26 +5,31 @@ import Cuckoo
 class LESPeerTests: XCTestCase {
     private var mockDevP2PPeer: MockIDevP2PPeer!
     private var mockFactory: MockIMessageFactory!
-    private var mockStatusHandler: MockIStatusHandler!
-    private var mockDelegate: MockIPeerDelegate!
+    private var mockValidator: MockILESPeerValidator!
+    private var mockNetwork: MockINetwork!
+    private var mockDelegate: MockILESPeerDelegate!
     private var peer: LESPeer!
+
+    private let blockHeader = BlockHeader()
 
     override func setUp() {
         super.setUp()
 
         mockDevP2PPeer = MockIDevP2PPeer()
         mockFactory = MockIMessageFactory()
-        mockStatusHandler = MockIStatusHandler()
-        mockDelegate = MockIPeerDelegate()
+        mockValidator = MockILESPeerValidator()
+        mockNetwork = MockINetwork()
+        mockDelegate = MockILESPeerDelegate()
 
-        peer = LESPeer(devP2PPeer: mockDevP2PPeer, messageFactory: mockFactory, statusHandler: mockStatusHandler)
+        peer = LESPeer(devP2PPeer: mockDevP2PPeer, messageFactory: mockFactory, validator: mockValidator, network: mockNetwork, lastBlockHeader: blockHeader)
         peer.delegate = mockDelegate
     }
 
     override func tearDown() {
         mockDevP2PPeer = nil
         mockFactory = nil
-        mockStatusHandler = nil
+        mockValidator = nil
+        mockNetwork = nil
         mockDelegate = nil
 
         peer = nil
@@ -88,16 +93,10 @@ class LESPeerTests: XCTestCase {
     }
 
     func testDidConnect() {
-        let mockNetwork = MockINetwork()
-        let blockHeader = BlockHeader()
         let statusMessage = StatusMessage()
 
         stub(mockFactory) { mock in
             when(mock.statusMessage(network: equal(to: mockNetwork, type: MockINetwork.self), blockHeader: equal(to: blockHeader))).thenReturn(statusMessage)
-        }
-        stub(mockStatusHandler) { mock in
-            when(mock.network.get).thenReturn(mockNetwork)
-            when(mock.blockHeader.get).thenReturn(blockHeader)
         }
         stub(mockDevP2PPeer) { mock in
             when(mock.send(message: any())).thenDoNothing()
@@ -111,8 +110,8 @@ class LESPeerTests: XCTestCase {
     func testDidReceive_statusMessage() {
         let statusMessage = StatusMessage()
 
-        stub(mockStatusHandler) { mock in
-            when(mock.validate(message: equal(to: statusMessage))).thenDoNothing()
+        stub(mockValidator) { mock in
+            when(mock.validate(message: equal(to: statusMessage), network: equal(to: mockNetwork, type: MockINetwork.self), blockHeader: equal(to: blockHeader))).thenDoNothing()
         }
         stub(mockDelegate) { mock in
             when(mock.didConnect()).thenDoNothing()
@@ -127,8 +126,8 @@ class LESPeerTests: XCTestCase {
         let error = TestError()
         let statusMessage = StatusMessage()
 
-        stub(mockStatusHandler) { mock in
-            when(mock.validate(message: equal(to: statusMessage))).thenThrow(error)
+        stub(mockValidator) { mock in
+            when(mock.validate(message: equal(to: statusMessage), network: equal(to: mockNetwork, type: MockINetwork.self), blockHeader: equal(to: blockHeader))).thenThrow(error)
         }
         stub(mockDevP2PPeer) { mock in
             when(mock.disconnect(error: any())).thenDoNothing()
@@ -136,6 +135,7 @@ class LESPeerTests: XCTestCase {
 
         peer.didReceive(message: statusMessage)
 
+        verify(mockDelegate, never()).didConnect()
         verify(mockDevP2PPeer).disconnect(error: equal(to: error, type: TestError.self))
     }
 

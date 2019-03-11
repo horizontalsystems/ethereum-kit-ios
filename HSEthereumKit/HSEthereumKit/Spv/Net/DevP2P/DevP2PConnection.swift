@@ -25,22 +25,22 @@ class DevP2PConnection {
 extension DevP2PConnection: IDevP2PConnection {
 
     func register(nodeCapabilities: [Capability]) throws {
-        var commonCapabilities = [Capability]()
+        var sharedCapabilities = [Capability]()
 
         for myCapability in myCapabilities {
             if nodeCapabilities.contains(myCapability) {
-                commonCapabilities.append(myCapability)
+                sharedCapabilities.append(myCapability)
             }
         }
 
-        guard !commonCapabilities.isEmpty else {
+        guard !sharedCapabilities.isEmpty else {
             throw CapabilityError.noCommonCapabilities
         }
 
         packetTypesMap = DevP2PConnection.devP2PPacketTypesMap
         var offset = DevP2PConnection.devP2PMaxMessageCode
 
-        let sortedCapabilities = commonCapabilities.sorted(by: { $0.name < $1.name || ($0.name == $1.name && $0.version < $1.version)  })
+        let sortedCapabilities = sharedCapabilities.sorted(by: { $0.name < $1.name || ($0.name == $1.name && $0.version < $1.version)  })
         for capability in sortedCapabilities {
             for (packetType, messageClass) in capability.packetTypesMap {
                 packetTypesMap[offset + packetType] = messageClass

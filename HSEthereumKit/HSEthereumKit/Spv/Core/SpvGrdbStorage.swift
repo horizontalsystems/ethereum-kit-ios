@@ -75,7 +75,7 @@ class SpvGrdbStorage {
 extension SpvGrdbStorage: ISpvStorage {
 
     var lastBlockHeight: Int? {
-        return lastBlockHeader()?.height.toInt()
+        return lastBlockHeader?.height.toInt()
     }
 
     func balance(forAddress address: String) -> String? {
@@ -116,7 +116,7 @@ extension SpvGrdbStorage: ISpvStorage {
         }
     }
 
-    func lastBlockHeader() -> BlockHeader? {
+    var lastBlockHeader: BlockHeader? {
         return try! dbPool.read { db in
             try BlockHeader.order(Column("height").desc).fetchOne(db)
         }

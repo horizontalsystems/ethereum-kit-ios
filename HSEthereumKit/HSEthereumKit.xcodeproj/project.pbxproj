@@ -11,10 +11,11 @@
 		11B3515D132B5DCC500CF100 /* DevP2PConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35CC13BE2809A1D47FC37 /* DevP2PConnection.swift */; };
 		11B35169E195D2801E57AD81 /* FrameConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B353E4C00F4D12A5401C6F /* FrameConnection.swift */; };
 		11B3518C1848401DE249961E /* ApiBlockchain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35AC255BE64FE27CB8220 /* ApiBlockchain.swift */; };
-		11B353716EEB792560D2DE84 /* StatusHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35FC33FE2FC2B40761194 /* StatusHandler.swift */; };
+		11B353716EEB792560D2DE84 /* LESPeerValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35FC33FE2FC2B40761194 /* LESPeerValidator.swift */; };
 		11B356030FB7878C2BD0C5A8 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B357626B809CC6A964D5B1 /* Logger.swift */; };
 		11B356BF054DFC99D8EB19E5 /* GeneratedMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B359F34D40C2E21B4CD620 /* GeneratedMocks.swift */; };
 		11B357A9F601F30BBAB3300E /* MessageFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35CF122F4E8C0F42C7959 /* MessageFactory.swift */; };
+		11B3584364EAA1B1795155FD /* LESPeerValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35541EB395B9CEB463FDA /* LESPeerValidatorTests.swift */; };
 		11B358F1C8520185D515F5C8 /* BlockchainState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B355F58513F030F5E8E201 /* BlockchainState.swift */; };
 		11B35A4116607D8C5B444E37 /* EthereumKitState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3567B8F9696AA05DFFADE /* EthereumKitState.swift */; };
 		11B35CEF617BCF783C3D1DCA /* EthereumTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B359B70EC74CF5E6CFBC0C /* EthereumTransaction.swift */; };
@@ -148,6 +149,7 @@
 /* Begin PBXFileReference section */
 		11B350977535A5956D227887 /* EthereumKitTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumKitTests.swift; sourceTree = "<group>"; };
 		11B353E4C00F4D12A5401C6F /* FrameConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FrameConnection.swift; sourceTree = "<group>"; };
+		11B35541EB395B9CEB463FDA /* LESPeerValidatorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LESPeerValidatorTests.swift; sourceTree = "<group>"; };
 		11B3554DD0D3D4A6F7D9005C /* EthereumBalance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumBalance.swift; sourceTree = "<group>"; };
 		11B355F58513F030F5E8E201 /* BlockchainState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockchainState.swift; sourceTree = "<group>"; };
 		11B3567B8F9696AA05DFFADE /* EthereumKitState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumKitState.swift; sourceTree = "<group>"; };
@@ -159,7 +161,7 @@
 		11B35CC13BE2809A1D47FC37 /* DevP2PConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DevP2PConnection.swift; sourceTree = "<group>"; };
 		11B35CF122F4E8C0F42C7959 /* MessageFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessageFactory.swift; sourceTree = "<group>"; };
 		11B35E9EFA334E9433C71CD4 /* ApiGrdbStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApiGrdbStorage.swift; sourceTree = "<group>"; };
-		11B35FC33FE2FC2B40761194 /* StatusHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatusHandler.swift; sourceTree = "<group>"; };
+		11B35FC33FE2FC2B40761194 /* LESPeerValidator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LESPeerValidator.swift; sourceTree = "<group>"; };
 		11B35FFC4D818569376084A3 /* LESPeerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LESPeerTests.swift; sourceTree = "<group>"; };
 		2FA5D05F4E0D54E432282958 /* Ropsten.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ropsten.swift; sourceTree = "<group>"; };
 		2FA5D1166DD8433574C3A3CF /* FrameCodecTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FrameCodecTests.swift; sourceTree = "<group>"; };
@@ -323,6 +325,7 @@
 			isa = PBXGroup;
 			children = (
 				11B35FFC4D818569376084A3 /* LESPeerTests.swift */,
+				11B35541EB395B9CEB463FDA /* LESPeerValidatorTests.swift */,
 			);
 			path = LES;
 			sourceTree = "<group>";
@@ -630,7 +633,7 @@
 				D0DE28D12211693800FA428C /* Messages */,
 				2FA5DB45240D5ABA8611298A /* LESPeer.swift */,
 				2FA5D7631B05C28AD14CB208 /* TrieNode.swift */,
-				11B35FC33FE2FC2B40761194 /* StatusHandler.swift */,
+				11B35FC33FE2FC2B40761194 /* LESPeerValidator.swift */,
 			);
 			path = LES;
 			sourceTree = "<group>";
@@ -975,6 +978,7 @@
 				2FA5DB895FCE9F2D5F647471 /* FrameCodecTests.swift in Sources */,
 				11B35EB873DF5DDFC6B5207C /* DevP2PPeerTests.swift in Sources */,
 				11B35EAEAEC58D077071352A /* LESPeerTests.swift in Sources */,
+				11B3584364EAA1B1795155FD /* LESPeerValidatorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1091,7 +1095,7 @@
 				11B357A9F601F30BBAB3300E /* MessageFactory.swift in Sources */,
 				11B35169E195D2801E57AD81 /* FrameConnection.swift in Sources */,
 				11B3515D132B5DCC500CF100 /* DevP2PConnection.swift in Sources */,
-				11B353716EEB792560D2DE84 /* StatusHandler.swift in Sources */,
+				11B353716EEB792560D2DE84 /* LESPeerValidator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

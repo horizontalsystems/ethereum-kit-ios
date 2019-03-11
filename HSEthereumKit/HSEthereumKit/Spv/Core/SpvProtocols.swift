@@ -2,7 +2,7 @@ import Foundation
 import HSCryptoKit
 
 protocol ISpvStorage: IStorage {
-    func lastBlockHeader() -> BlockHeader?
+    var lastBlockHeader: BlockHeader? { get }
     func save(blockHeaders: [BlockHeader])
 }
 
@@ -56,7 +56,7 @@ public protocol IEthereumKitDelegate: class {
 }
 
 
-protocol IPeerDelegate: class {
+protocol ILESPeerDelegate: class {
     func didConnect()
     func didReceive(blockHeaders: [BlockHeader])
     func didReceive(proofMessage: ProofsMessage)
@@ -74,8 +74,8 @@ protocol IConnectionDelegate: class {
     func didReceive(frame: Frame)
 }
 
-protocol IPeer: class {
-    var delegate: IPeerDelegate? { get set }
+protocol ILESPeer: class {
+    var delegate: ILESPeerDelegate? { get set }
     func connect()
     func disconnect(error: Error?)
     func requestBlockHeaders(fromBlockHash blockHash: Data)
@@ -130,13 +130,6 @@ protocol INetwork {
     var publicKeyPrefix: UInt32 { get }
 }
 
-protocol IMessageHandler {
-    var capabilities: [Capability] { get }
-    func register(capabilities: [Capability]) throws
-    func getMessage(packetType: Int, payload: Data) throws -> IMessage
-    func getData(from message: IMessage) -> (packetType: Int, payload: Data)?
-}
-
 protocol IPeerGroupDelegate: class {
     func onUpdate(state: AccountState)
 }
@@ -166,9 +159,6 @@ protocol IMessage {
     func toString() -> String
 }
 
-protocol IStatusHandler {
-    var network: INetwork { get }
-    var blockHeader: BlockHeader { get }
-
-    func validate(message: StatusMessage) throws
+protocol ILESPeerValidator {
+    func validate(message: StatusMessage, network: INetwork, blockHeader: BlockHeader) throws
 }
