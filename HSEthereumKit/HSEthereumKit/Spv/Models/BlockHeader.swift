@@ -7,7 +7,6 @@ class BlockHeader: Record {
     let hashHex: Data
     var totalDifficulty = Data() // Scalar value corresponding to the sum of difficulty values of all previous blocks
 
-
     let parentHash: Data         // 256-bit Keccak-256 hash of parent block
     let unclesHash: Data         // 256-bit Keccak-256 hash of uncles portion of this block
     let coinbase: Data           // 160-bit address for fees collected from successful mining

@@ -2,16 +2,16 @@ class LESPeer {
     weak var delegate: ILESPeerDelegate?
 
     private let devP2PPeer: IDevP2PPeer
-    private let messageFactory: IMessageFactory
-    private let validator: ILESPeerValidator
+    private let requestHolder: LESPeerRequestHolder
+    private let randomHelper: IRandomHelper
     private let network: INetwork
     private let lastBlockHeader: BlockHeader
     private let logger: Logger?
 
-    init(devP2PPeer: IDevP2PPeer, messageFactory: IMessageFactory, validator: ILESPeerValidator, network: INetwork, lastBlockHeader: BlockHeader, logger: Logger? = nil) {
+    init(devP2PPeer: IDevP2PPeer, requestHolder: LESPeerRequestHolder = LESPeerRequestHolder(), randomHelper: IRandomHelper = RandomHelper.shared, network: INetwork, lastBlockHeader: BlockHeader, logger: Logger? = nil) {
         self.devP2PPeer = devP2PPeer
-        self.messageFactory = messageFactory
-        self.validator = validator
+        self.requestHolder = requestHolder
+        self.randomHelper = randomHelper
         self.network = network
         self.lastBlockHeader = lastBlockHeader
         self.logger = logger
@@ -19,28 +19,48 @@ class LESPeer {
 
     private func handle(message: IMessage) throws {
         switch message {
-        case let message as StatusMessage: handle(message: message)
-        case let message as BlockHeadersMessage: handle(message: message)
-        case let message as ProofsMessage: handle(message: message)
-        default: break
+        case let message as StatusMessage: try handle(message: message)
+        case let message as BlockHeadersMessage: try handle(message: message)
+        case let message as ProofsMessage: try handle(message: message)
+        default: ()
         }
     }
 
-    private func handle(message: StatusMessage) {
-        do {
-            try validator.validate(message: message, network: network, blockHeader: lastBlockHeader)
-            delegate?.didConnect()
-        } catch {
-            disconnect(error: error)
+    private func handle(message: StatusMessage) throws {
+        guard message.protocolVersion == LESPeer.capability.version else {
+            throw LESPeer.ValidationError.invalidProtocolVersion
         }
+
+        guard message.networkId == network.id else {
+            throw LESPeer.ValidationError.wrongNetwork
+        }
+
+        guard message.genesisHash == network.genesisBlockHash else {
+            throw LESPeer.ValidationError.wrongNetwork
+        }
+
+        guard message.headHeight >= lastBlockHeader.height else {
+            throw LESPeer.ValidationError.expiredBestBlockHeight
+        }
+
+        delegate?.didConnect()
     }
 
-    private func handle(message: BlockHeadersMessage) {
-        delegate?.didReceive(blockHeaders: message.headers)
+    private func handle(message: BlockHeadersMessage) throws {
+        guard let request = requestHolder.removeBlockHeaderRequest(id: message.requestId) else {
+            throw LESPeer.ConsistencyError.unexpectedMessage
+        }
+
+        delegate?.didReceive(blockHeaders: message.headers, blockHash: request.blockHash)
     }
 
-    private func handle(message: ProofsMessage) {
-        delegate?.didReceive(proofMessage: message)
+    private func handle(message: ProofsMessage) throws {
+        guard let request = requestHolder.removeAccountStateRequest(id: message.requestId) else {
+            throw LESPeer.ConsistencyError.unexpectedMessage
+        }
+
+        let accountState = try request.accountState(proofsMessage: message)
+        delegate?.didReceive(accountState: accountState, address: request.address, blockHeader: request.blockHeader)
     }
 
 }
@@ -55,13 +75,21 @@ extension LESPeer: ILESPeer {
         devP2PPeer.disconnect(error: error)
     }
 
-    func requestBlockHeaders(fromBlockHash blockHash: Data) {
-        let message = messageFactory.getBlockHeadersMessage(blockHash: blockHash)
+    func requestBlockHeaders(blockHash: Data) {
+        let requestId = randomHelper.randomInt
+        let request = BlockHeaderRequest(blockHash: blockHash)
+        let message = GetBlockHeadersMessage(requestId: requestId, blockHash: blockHash)
+
+        requestHolder.set(blockHeaderRequest: request, id: requestId)
         devP2PPeer.send(message: message)
     }
 
-    func requestProofs(forAddress address: Data, inBlockWithHash blockHash: Data) {
-        let message = messageFactory.getProofsMessage(address: address, blockHash: blockHash)
+    func requestAccountState(address: Data, blockHeader: BlockHeader) {
+        let requestId = randomHelper.randomInt
+        let request = AccountStateRequest(address: address, blockHeader: blockHeader)
+        let message = GetProofsMessage(requestId: requestId, blockHash: blockHeader.hashHex, key: address)
+
+        requestHolder.set(accountStateRequest: request, id: requestId)
         devP2PPeer.send(message: message)
     }
 
@@ -70,8 +98,17 @@ extension LESPeer: ILESPeer {
 extension LESPeer: IDevP2PPeerDelegate {
 
     func didConnect() {
-        let statusMessage = messageFactory.statusMessage(network: network, blockHeader: lastBlockHeader)
+        let statusMessage = StatusMessage(
+                protocolVersion: LESPeer.capability.version,
+                networkId: network.id,
+                genesisHash: network.genesisBlockHash,
+                headTotalDifficulty: lastBlockHeader.totalDifficulty,
+                headHash: lastBlockHeader.hashHex,
+                headHeight: lastBlockHeader.height
+        )
+
         devP2PPeer.send(message: statusMessage)
+
     }
 
     func didDisconnect(error: Error?) {
@@ -80,9 +117,9 @@ extension LESPeer: IDevP2PPeerDelegate {
 
     func didReceive(message: IMessage) {
         do {
-            try self.handle(message: message)
+            try handle(message: message)
         } catch {
-            self.disconnect(error: error)
+            disconnect(error: error)
         }
     }
 
@@ -90,29 +127,29 @@ extension LESPeer: IDevP2PPeerDelegate {
 
 extension LESPeer {
 
-    static func instance(network: INetwork, lastBlockHeader: BlockHeader, key: ECKey, node: Node, logger: Logger? = nil) -> LESPeer {
-        let capability = Capability(name: "les", version: 2, packetTypesMap: [
-            0x00: StatusMessage.self,
-            0x01: AnnounceMessage.self,
-            0x02: GetBlockHeadersMessage.self,
-            0x03: BlockHeadersMessage.self,
-            0x04: GetBlockBodiesMessage.self,
-            0x05: BlockBodiesMessage.self,
-            0x06: GetReceiptsMessage.self,
-            0x07: ReceiptsMessage.self,
-            0x0a: GetContractCodesMessage.self,
-            0x0b: ContractCodesMessage.self,
-            0x0f: GetProofsMessage.self,
-            0x10: ProofsMessage.self,
-            0x11: GetHelperTrieProofsMessage.self,
-            0x12: HelperTrieProofsMessage.self,
-            0x13: SendTransactionMessage.self,
-            0x14: GetTransactionStatusMessage.self,
-            0x15: TransactionStatusMessage.self
-        ])
+    static let capability = Capability(name: "les", version: 2, packetTypesMap: [
+        0x00: StatusMessage.self,
+        0x01: AnnounceMessage.self,
+        0x02: GetBlockHeadersMessage.self,
+        0x03: BlockHeadersMessage.self,
+        0x04: GetBlockBodiesMessage.self,
+        0x05: BlockBodiesMessage.self,
+        0x06: GetReceiptsMessage.self,
+        0x07: ReceiptsMessage.self,
+        0x0a: GetContractCodesMessage.self,
+        0x0b: ContractCodesMessage.self,
+        0x0f: GetProofsMessage.self,
+        0x10: ProofsMessage.self,
+        0x11: GetHelperTrieProofsMessage.self,
+        0x12: HelperTrieProofsMessage.self,
+        0x13: SendTransactionMessage.self,
+        0x14: GetTransactionStatusMessage.self,
+        0x15: TransactionStatusMessage.self
+    ])
 
+    static func instance(network: INetwork, lastBlockHeader: BlockHeader, key: ECKey, node: Node, logger: Logger? = nil) -> LESPeer {
         let devP2PPeer = DevP2PPeer.instance(key: key, node: node, capabilities: [capability], logger: logger)
-        let peer = LESPeer(devP2PPeer: devP2PPeer, messageFactory: MessageFactory(), validator: LESPeerValidator(), network: network, lastBlockHeader: lastBlockHeader, logger: logger)
+        let peer = LESPeer(devP2PPeer: devP2PPeer, network: network, lastBlockHeader: lastBlockHeader, logger: logger)
 
         devP2PPeer.delegate = peer
 
@@ -124,8 +161,13 @@ extension LESPeer {
 extension LESPeer {
 
     enum ValidationError: Error, Equatable {
+        case invalidProtocolVersion
         case wrongNetwork
-        case peerHasExpiredBlockChain(localHeight: BInt, peerHeight: BInt)
+        case expiredBestBlockHeight
+    }
+
+    enum ConsistencyError: Error, Equatable {
+        case unexpectedMessage
     }
 
 }

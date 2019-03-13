@@ -28,12 +28,14 @@ class GetProofsMessage: IMessage {
     class ProofRequest {
 
         let blockHash: Data
+        let key: Data
         let keyHash: Data
         let key2Hash: Data
         let fromLevel: Int
 
         init(blockHash: Data, key: Data, key2: Data, fromLevel: Int) {
             self.blockHash = blockHash
+            self.key = key
             self.keyHash = CryptoUtils.shared.sha3(key)
             if key2.count > 0 {
                 self.key2Hash = CryptoUtils.shared.sha3(key2)

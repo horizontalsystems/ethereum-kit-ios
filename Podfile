@@ -31,5 +31,7 @@ end
 
 target :HSEthereumKitTests do
   project 'HSEthereumKit/HSEthereumKit'
-  pod "Cuckoo", '~> 0.12.0'
+  pod 'Cuckoo'
+  pod 'Quick'
+  pod 'Nimble'
 end
