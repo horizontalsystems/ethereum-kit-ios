@@ -18,7 +18,7 @@ class LESPeerTests: QuickSpec {
         let protocolVersion = LESPeer.capability.version
         let networkId = 1
         let genesisHash = Data(repeating: 1, count: 10)
-        let blockTotalDifficulty = Data(repeating: 2, count: 10)
+        let blockTotalDifficulty: BInt = 12345
         let blockHash = Data(repeating: 3, count: 10)
         let blockHeight: BInt = 100
 
@@ -341,6 +341,24 @@ class LESPeerTests: QuickSpec {
                     it("does not notify delegate") {
                         verify(mockDelegate, never()).didReceive(accountState: any(), address: any(), blockHeader: any())
                     }
+                }
+            }
+
+            context("when message is AnnounceMessage") {
+                let blockHash = Data(repeating: 111, count: 4)
+                let blockHeight: BInt = 1234
+                let message = AnnounceMessage(lastBlockHash: blockHash, lastBlockHeight: blockHeight)
+
+                beforeEach {
+                    stub(mockDelegate) { mock in
+                        when(mock.didAnnounce(blockHash: any(), blockHeight: any())).thenDoNothing()
+                    }
+
+                    peer.didReceive(message: message)
+                }
+
+                it("notifies delegate") {
+                    verify(mockDelegate).didAnnounce(blockHash: equal(to: blockHash), blockHeight: equal(to: blockHeight))
                 }
             }
         }

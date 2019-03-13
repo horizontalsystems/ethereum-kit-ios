@@ -62,6 +62,7 @@ protocol ILESPeerDelegate: class {
 
     func didReceive(blockHeaders: [BlockHeader], blockHash: Data)
     func didReceive(accountState: AccountState, address: Data, blockHeader: BlockHeader)
+    func didAnnounce(blockHash: Data, blockHeight: BInt)
 }
 
 protocol IDevP2PPeerDelegate: class {

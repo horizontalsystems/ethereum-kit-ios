@@ -68,7 +68,7 @@ extension StatusMessage {
                 protocolVersion: protocolVersion,
                 networkId: networkId,
                 genesisHash: genesisHash,
-                headTotalDifficulty: Data(),
+                headTotalDifficulty: 0,
                 headHash: Data(),
                 headHeight: headHeight
         )
@@ -92,9 +92,17 @@ extension ProofsMessage {
 
 }
 
+extension AnnounceMessage {
+
+    convenience init(lastBlockHash: Data = Data(), lastBlockHeight: BInt = 0) {
+        self.init(blockHash: lastBlockHash, blockTotalDifficulty: 0, blockHeight: lastBlockHeight, reorganizationDepth: 0)
+    }
+
+}
+
 extension BlockHeader: Equatable {
 
-    convenience init(hashHex: Data = Data(repeating: 7, count: 10), totalDifficulty: Data = Data(), height: BInt = 0) {
+    convenience init(hashHex: Data = Data(repeating: 7, count: 10), totalDifficulty: BInt = 0, height: BInt = 0) {
         self.init(
                 hashHex: hashHex,
                 totalDifficulty: totalDifficulty,
@@ -105,9 +113,9 @@ extension BlockHeader: Equatable {
                 transactionsRoot: Data(),
                 receiptsRoot: Data(),
                 logsBloom: Data(),
-                difficulty: Data(),
+                difficulty: 0,
                 height: height,
-                gasLimit: Data(),
+                gasLimit: 0,
                 gasUsed: 0,
                 timestamp: 0,
                 extraData: Data(),

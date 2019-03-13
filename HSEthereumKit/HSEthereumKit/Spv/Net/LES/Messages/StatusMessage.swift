@@ -1,12 +1,12 @@
 class StatusMessage: IMessage {
     var protocolVersion: Int
     var networkId: Int
-    var headTotalDifficulty: Data
+    var headTotalDifficulty: BInt
     var headHash: Data
     var headHeight: BInt
     var genesisHash: Data
 
-    init(protocolVersion: Int, networkId: Int, genesisHash: Data, headTotalDifficulty: Data, headHash: Data, headHeight: BInt) {
+    init(protocolVersion: Int, networkId: Int, genesisHash: Data, headTotalDifficulty: BInt, headHash: Data, headHeight: BInt) {
         self.protocolVersion = protocolVersion
         self.networkId = networkId
         self.genesisHash = genesisHash
@@ -20,7 +20,7 @@ class StatusMessage: IMessage {
 
         protocolVersion = try StatusMessage.valueElement(rlpList: rlpList, name: "protocolVersion").intValue()
         networkId = try StatusMessage.valueElement(rlpList: rlpList, name: "networkId").intValue()
-        headTotalDifficulty = try StatusMessage.valueElement(rlpList: rlpList, name: "headTd").dataValue
+        headTotalDifficulty = try StatusMessage.valueElement(rlpList: rlpList, name: "headTd").bIntValue()
         headHash = try StatusMessage.valueElement(rlpList: rlpList, name: "headHash").dataValue
         headHeight = try StatusMessage.valueElement(rlpList: rlpList, name: "headNum").bIntValue()
         genesisHash = try StatusMessage.valueElement(rlpList: rlpList, name: "genesisHash").dataValue
@@ -41,7 +41,7 @@ class StatusMessage: IMessage {
     }
 
     func toString() -> String {
-        return "STATUS [protocolVersion: \(protocolVersion); networkId: \(networkId); totalDifficulty: \(headTotalDifficulty.toHexString()); " + 
+        return "STATUS [protocolVersion: \(protocolVersion); networkId: \(networkId); totalDifficulty: \(headTotalDifficulty); " + 
                 "bestHash: \(headHash.toHexString()); bestNum: \(headHeight); genesisHash: \(genesisHash.toHexString())]"
     }
 
