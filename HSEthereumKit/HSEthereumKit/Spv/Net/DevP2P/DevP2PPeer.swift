@@ -47,7 +47,7 @@ extension DevP2PPeer: IDevP2PPeer {
         devP2PConnection.disconnect(error: error)
     }
 
-    func send(message: IMessage) {
+    func send(message: IOutMessage) {
         devP2PConnection.send(message: message)
     }
 
@@ -64,7 +64,7 @@ extension DevP2PPeer: IDevP2PConnectionDelegate {
         delegate?.didDisconnect(error: error)
     }
 
-    func didReceive(message: IMessage) {
+    func didReceive(message: IInMessage) {
         logger?.verbose("<<< \(message.toString())")
 
         switch message {

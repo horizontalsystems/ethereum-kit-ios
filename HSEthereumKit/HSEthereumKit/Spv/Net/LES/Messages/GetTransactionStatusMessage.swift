@@ -1,12 +1,5 @@
-import Foundation
-
-class GetTransactionStatusMessage: IMessage {
-
+class GetTransactionStatusMessage: IOutMessage {
     var requestId = 0
-    var transactionHashes = [Data]()
-
-    required init(data: Data) throws {
-    }
 
     func encoded() -> Data {
         return Data()

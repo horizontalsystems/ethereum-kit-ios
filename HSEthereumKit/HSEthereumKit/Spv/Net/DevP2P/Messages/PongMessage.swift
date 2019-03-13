@@ -1,6 +1,5 @@
-class PongMessage: IMessage {
-
-    static let payload = Data(bytes: [UInt8(0xc0)])
+class PongMessage: IInMessage, IOutMessage {
+    private static let payload = Data(bytes: [UInt8(0xc0)])
 
     init() {
     }

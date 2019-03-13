@@ -1,15 +1,10 @@
-class GetProofsMessage: IMessage {
+class GetProofsMessage: IOutMessage {
     let requestId: Int
     var proofRequests: [ProofRequest]
 
     init(requestId: Int, blockHash: Data, key: Data, key2: Data = Data(), fromLevel: Int = 0) {
         self.requestId = requestId
         self.proofRequests = [ProofRequest(blockHash: blockHash, key: key, key2: key2, fromLevel: fromLevel)]
-    }
-
-    required init(data: Data) throws {
-        requestId = 0
-        proofRequests = []
     }
 
     func encoded() -> Data {

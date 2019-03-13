@@ -1,4 +1,4 @@
-class ProofsMessage: IMessage {
+class ProofsMessage: IInMessage {
     let requestId: Int
     let bv: Int
     var nodes: [TrieNode]

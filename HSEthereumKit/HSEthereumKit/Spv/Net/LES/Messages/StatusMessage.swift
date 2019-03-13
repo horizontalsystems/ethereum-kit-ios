@@ -1,4 +1,4 @@
-class StatusMessage: IMessage {
+class StatusMessage: IInMessage, IOutMessage {
     var protocolVersion: Int
     var networkId: Int
     var headTotalDifficulty: BInt

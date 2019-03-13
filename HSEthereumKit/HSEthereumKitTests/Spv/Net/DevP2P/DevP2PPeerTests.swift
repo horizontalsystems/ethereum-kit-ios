@@ -54,7 +54,7 @@ class DevP2PPeerTests: XCTestCase {
     }
 
     func testSendMessage() {
-        let message = MockIMessage(data: Data())
+        let message = MockIOutMessage()
 
         stub(mockConnection) { mock in
             when(mock.send(message: any())).thenDoNothing()
@@ -62,7 +62,7 @@ class DevP2PPeerTests: XCTestCase {
 
         peer.send(message: message)
 
-        verify(mockConnection).send(message: equal(to: message, type: MockIMessage.self))
+        verify(mockConnection).send(message: equal(to: message, type: MockIOutMessage.self))
     }
 
     func testDidConnect() {

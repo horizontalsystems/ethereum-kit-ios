@@ -1,18 +1,8 @@
-import Foundation
-
-class HelperTrieProofsMessage: IMessage {
-
+class HelperTrieProofsMessage: IInMessage {
     var requestId = 0
     var bv: BInt = 0
 
-    var nodes = [Data]()
-    var auxData = [Data]()
-
     required init(data: Data) throws {
-    }
-
-    func encoded() -> Data {
-        return Data()
     }
 
     func toString() -> String {

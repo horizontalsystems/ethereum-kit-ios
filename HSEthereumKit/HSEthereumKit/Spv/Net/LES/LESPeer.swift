@@ -17,7 +17,7 @@ class LESPeer {
         self.logger = logger
     }
 
-    private func handle(message: IMessage) throws {
+    private func handle(message: IInMessage) throws {
         switch message {
         case let message as StatusMessage: try handle(message: message)
         case let message as BlockHeadersMessage: try handle(message: message)
@@ -120,7 +120,7 @@ extension LESPeer: IDevP2PPeerDelegate {
         logger?.debug("Disconnected with error: \(error?.localizedDescription ?? "nil")")
     }
 
-    func didReceive(message: IMessage) {
+    func didReceive(message: IInMessage) {
         do {
             try handle(message: message)
         } catch {

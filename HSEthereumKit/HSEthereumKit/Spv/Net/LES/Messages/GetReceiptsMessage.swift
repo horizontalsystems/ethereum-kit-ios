@@ -1,12 +1,5 @@
-import Foundation
-
-class GetReceiptsMessage: IMessage {
-
+class GetReceiptsMessage: IOutMessage {
     var requestId = 0
-    var blockHashes = [Data]()
-
-    required init(data: Data) throws {
-    }
 
     func encoded() -> Data {
         return Data()

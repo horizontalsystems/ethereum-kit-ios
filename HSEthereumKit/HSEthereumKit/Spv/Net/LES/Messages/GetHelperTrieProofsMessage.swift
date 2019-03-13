@@ -1,13 +1,5 @@
-import Foundation
-
-class GetHelperTrieProofsMessage: IMessage {
-
+class GetHelperTrieProofsMessage: IOutMessage {
     var requestId = 0
-    var proofRequests = [ProofRequest]()
-    var auxData = [Data]()
-
-    required init(data: Data) throws {
-    }
 
     func encoded() -> Data {
         return Data()

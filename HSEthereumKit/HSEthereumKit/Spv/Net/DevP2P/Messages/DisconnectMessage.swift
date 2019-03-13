@@ -1,4 +1,4 @@
-class DisconnectMessage: IMessage {
+class DisconnectMessage: IInMessage {
 
     enum ReasonCode: Int {
         case requested = 0x00

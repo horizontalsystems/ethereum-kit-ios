@@ -1,4 +1,4 @@
-class GetBlockHeadersMessage: IMessage {
+class GetBlockHeadersMessage: IOutMessage {
     static let maxHeaders = 50
 
     var requestId: Int
@@ -11,13 +11,6 @@ class GetBlockHeadersMessage: IMessage {
         self.blockHash = blockHash
         self.skip = skip
         self.reverse = reverse
-    }
-
-    required init(data: Data) throws {
-        self.requestId = 0
-        self.blockHash = Data()
-        self.skip = 0
-        self.reverse = 0
     }
 
     func encoded() -> Data {

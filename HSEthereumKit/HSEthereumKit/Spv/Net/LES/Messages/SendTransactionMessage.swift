@@ -1,16 +1,9 @@
-import Foundation
-
-class SendTransactionMessage: IMessage {
-
+class SendTransactionMessage: IOutMessage {
     var requestId = 0
     var transaction: Transaction
 
     init(transaction: Transaction) {
         self.transaction = transaction
-    }
-
-    required init(data: Data) throws {
-        throw MessageDecodeError.notEnoughFields
     }
 
     func encoded() -> Data {
