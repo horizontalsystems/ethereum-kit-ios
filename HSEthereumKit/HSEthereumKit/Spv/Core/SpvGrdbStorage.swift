@@ -46,7 +46,7 @@ class SpvGrdbStorage {
         migrator.registerMigration("createBlockHeaders") { db in
             try db.create(table: BlockHeader.databaseTableName) { t in
                 t.column(BlockHeader.Columns.hashHex.name, .blob).notNull()
-                t.column(BlockHeader.Columns.totalDifficulty.name, .blob).notNull()
+                t.column(BlockHeader.Columns.totalDifficulty.name, .text).notNull()
                 t.column(BlockHeader.Columns.parentHash.name, .blob).notNull()
                 t.column(BlockHeader.Columns.unclesHash.name, .blob).notNull()
                 t.column(BlockHeader.Columns.coinbase.name, .blob).notNull()
@@ -54,9 +54,9 @@ class SpvGrdbStorage {
                 t.column(BlockHeader.Columns.transactionsRoot.name, .blob).notNull()
                 t.column(BlockHeader.Columns.receiptsRoot.name, .blob).notNull()
                 t.column(BlockHeader.Columns.logsBloom.name, .blob).notNull()
-                t.column(BlockHeader.Columns.difficulty.name, .blob).notNull()
+                t.column(BlockHeader.Columns.difficulty.name, .text).notNull()
                 t.column(BlockHeader.Columns.height.name, .text).notNull()
-                t.column(BlockHeader.Columns.gasLimit.name, .blob).notNull()
+                t.column(BlockHeader.Columns.gasLimit.name, .integer).notNull()
                 t.column(BlockHeader.Columns.gasUsed.name, .integer).notNull()
                 t.column(BlockHeader.Columns.timestamp.name, .integer).notNull()
                 t.column(BlockHeader.Columns.extraData.name, .blob).notNull()

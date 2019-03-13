@@ -82,4 +82,7 @@ extension PeerGroup: ILESPeerDelegate {
         delegate?.onUpdate(state: accountState)
     }
 
+    func didAnnounce(blockHash: Data, blockHeight: BInt) {
+    }
+
 }

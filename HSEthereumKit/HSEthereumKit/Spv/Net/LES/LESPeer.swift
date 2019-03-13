@@ -22,7 +22,8 @@ class LESPeer {
         case let message as StatusMessage: try handle(message: message)
         case let message as BlockHeadersMessage: try handle(message: message)
         case let message as ProofsMessage: try handle(message: message)
-        default: ()
+        case let message as AnnounceMessage: try handle(message: message)
+        default: logger?.warning("Unknown message: \(message)")
         }
     }
 
@@ -61,6 +62,10 @@ class LESPeer {
 
         let accountState = try request.accountState(proofsMessage: message)
         delegate?.didReceive(accountState: accountState, address: request.address, blockHeader: request.blockHeader)
+    }
+
+    private func handle(message: AnnounceMessage) throws {
+        delegate?.didAnnounce(blockHash: message.blockHash, blockHeight: message.blockHeight)
     }
 
 }
