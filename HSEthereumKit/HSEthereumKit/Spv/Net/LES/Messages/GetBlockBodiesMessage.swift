@@ -1,13 +1,5 @@
-import Foundation
-
-class GetBlockBodiesMessage: IMessage {
-
+class GetBlockBodiesMessage: IOutMessage {
     var requestId = 0
-    var transactions = [[Data]]() // In format described in Ethereum specification
-    var receipts = [[Data]]() // In format described in Ethereum specification
-
-    required init(data: Data) throws {
-    }
 
     func encoded() -> Data {
         return Data()

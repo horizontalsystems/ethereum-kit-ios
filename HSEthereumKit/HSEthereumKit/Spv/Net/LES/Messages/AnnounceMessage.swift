@@ -1,4 +1,4 @@
-class AnnounceMessage: IMessage {
+class AnnounceMessage: IInMessage {
     let blockHash: Data
     let blockTotalDifficulty: BInt
     let blockHeight: BInt

@@ -1,5 +1,4 @@
-class HelloMessage: IMessage {
-
+class HelloMessage: IInMessage, IOutMessage {
     let p2pVersion: Int
     let clientId: String
     let capabilities: [Capability]

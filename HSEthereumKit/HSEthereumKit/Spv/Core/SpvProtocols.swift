@@ -68,7 +68,7 @@ protocol ILESPeerDelegate: class {
 protocol IDevP2PPeerDelegate: class {
     func didConnect()
     func didDisconnect(error: Error?)
-    func didReceive(message: IMessage)
+    func didReceive(message: IInMessage)
 }
 
 protocol IConnectionDelegate: class {
@@ -117,13 +117,13 @@ protocol IDevP2PConnection: class {
 
     func connect()
     func disconnect(error: Error?)
-    func send(message: IMessage)
+    func send(message: IOutMessage)
 }
 
 protocol IDevP2PConnectionDelegate: class {
     func didConnect()
     func didDisconnect(error: Error?)
-    func didReceive(message: IMessage)
+    func didReceive(message: IInMessage)
 }
 
 protocol INetwork {
@@ -147,7 +147,7 @@ protocol IPeerGroup {
 protocol IDevP2PPeer {
     func connect()
     func disconnect(error: Error?)
-    func send(message: IMessage)
+    func send(message: IOutMessage)
 }
 
 protocol IMessageFactory {
@@ -159,9 +159,15 @@ protocol IMessageFactory {
 }
 
 protocol IMessage {
-    init(data: Data) throws
-    func encoded() -> Data
     func toString() -> String
+}
+
+protocol IInMessage: IMessage {
+    init(data: Data) throws
+}
+
+protocol IOutMessage: IMessage {
+    func encoded() -> Data
 }
 
 protocol ILESPeerValidator {

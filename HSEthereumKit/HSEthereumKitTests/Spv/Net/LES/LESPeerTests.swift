@@ -91,7 +91,7 @@ class LESPeerTests: QuickSpec {
             }
 
             it("sends message to devP2P peer") {
-                let argumentCaptor = ArgumentCaptor<IMessage>()
+                let argumentCaptor = ArgumentCaptor<IOutMessage>()
                 verify(mockDevP2PPeer).send(message: argumentCaptor.capture())
                 let message = argumentCaptor.value as! GetBlockHeadersMessage
 
@@ -130,7 +130,7 @@ class LESPeerTests: QuickSpec {
             }
 
             it("sends message to devP2P peer") {
-                let argumentCaptor = ArgumentCaptor<IMessage>()
+                let argumentCaptor = ArgumentCaptor<IOutMessage>()
                 verify(mockDevP2PPeer).send(message: argumentCaptor.capture())
                 let message = argumentCaptor.value as! GetProofsMessage
 
@@ -142,7 +142,7 @@ class LESPeerTests: QuickSpec {
         }
 
         describe("#didConnect") {
-            let argumentCaptor = ArgumentCaptor<IMessage>()
+            let argumentCaptor = ArgumentCaptor<IOutMessage>()
 
             beforeEach {
                 stub(mockDevP2PPeer) { mock in

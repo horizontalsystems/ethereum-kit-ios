@@ -1,4 +1,4 @@
-class BlockHeadersMessage: IMessage {
+class BlockHeadersMessage: IInMessage {
     let requestId: Int
     let bv: BInt
     let headers: [BlockHeader]

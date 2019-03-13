@@ -1,13 +1,5 @@
-import Foundation
-
-class GetContractCodesMessage: IMessage {
-
+class GetContractCodesMessage: IOutMessage {
     var requestId = 0
-    var blockHash = Data()
-    var key = Data()
-
-    required init(data: Data) throws {
-    }
 
     func encoded() -> Data {
         return Data()

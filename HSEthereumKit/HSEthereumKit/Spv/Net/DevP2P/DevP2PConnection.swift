@@ -58,7 +58,7 @@ extension DevP2PConnection: IDevP2PConnection {
         frameConnection.disconnect(error: error)
     }
 
-    func send(message: IMessage) {
+    func send(message: IOutMessage) {
         for (packetType, messageClass) in packetTypesMap {
             if (messageClass == type(of: message)) {
                 logger?.verbose(">>> \(message.toString())")
@@ -87,8 +87,13 @@ extension DevP2PConnection: IFrameConnectionDelegate {
             return
         }
 
+        guard let inMessageClass = messageClass as? IInMessage.Type else {
+            disconnect(error: DeserializeError.inMessageNotSupported)
+            return
+        }
+
         do {
-            let message = try messageClass.init(data: payload)
+            let message = try inMessageClass.init(data: payload)
             delegate?.didReceive(message: message)
         } catch {
             disconnect(error: DeserializeError.invalidPayload)
@@ -101,6 +106,7 @@ extension DevP2PConnection {
 
     enum DeserializeError: Error {
         case unknownMessageType
+        case inMessageNotSupported
         case invalidPayload
     }
 
