@@ -9,6 +9,10 @@ func equal<T, T2: AnyObject>(to value: T, type: T2.Type) -> ParameterMatcher<T> 
     return equal(to: value) { $0 as! T2 === $1 as! T2 }
 }
 
+func equal<T, T2: Equatable>(to value: T, type: T2.Type) -> ParameterMatcher<T> {
+    return equal(to: value) { $0 as! T2 == $1 as! T2 }
+}
+
 extension ECPoint: Equatable {
 
     public static func == (lhs: ECPoint, rhs: ECPoint) -> Bool {
@@ -59,9 +63,9 @@ extension GetProofsMessage {
 
 extension StatusMessage {
 
-    convenience init(networkId: Int = 0, genesisHash: Data = Data(), headHeight: BInt = 0) {
+    convenience init(protocolVersion: Int = 0, networkId: Int = 0, genesisHash: Data = Data(), headHeight: BInt = 0) {
         self.init(
-                protocolVersion: 0,
+                protocolVersion: protocolVersion,
                 networkId: networkId,
                 genesisHash: genesisHash,
                 headTotalDifficulty: Data(),
@@ -74,8 +78,16 @@ extension StatusMessage {
 
 extension BlockHeadersMessage {
 
-    convenience init(headers: [BlockHeader] = []) {
-        self.init(requestId: 0, bv: 0, headers: headers)
+    convenience init(requestId: Int = 0, headers: [BlockHeader] = []) {
+        self.init(requestId: requestId, bv: 0, headers: headers)
+    }
+
+}
+
+extension ProofsMessage {
+
+    convenience init(requestId: Int = 0) {
+        self.init(requestId: requestId, bv: 0, nodes: [])
     }
 
 }
@@ -106,6 +118,14 @@ extension BlockHeader: Equatable {
 
     public static func == (lhs: BlockHeader, rhs: BlockHeader) -> Bool {
         return lhs.hashHex == rhs.hashHex
+    }
+
+}
+
+extension AccountState {
+
+    convenience init() {
+        self.init(address: Data(), nonce: 0, balance: Balance(wei: 0), storageHash: Data(), codeHash: Data())
     }
 
 }

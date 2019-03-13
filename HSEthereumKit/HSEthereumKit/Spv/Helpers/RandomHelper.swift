@@ -2,8 +2,11 @@ import Foundation
 import HSCryptoKit
 
 class RandomHelper: IRandomHelper {
-
     static let shared = RandomHelper()
+
+    var randomInt: Int {
+        return Int.random(in: 0..<Int.max)
+    }
 
     func randomKey() -> ECKey {
         let key: _ECKey = _ECKey.random()

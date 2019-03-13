@@ -1,12 +1,12 @@
 class StatusMessage: IMessage {
-    var protocolVersion: UInt8 = 0
-    var networkId: Int = 0
-    var headTotalDifficulty = Data()
-    var headHash = Data()
-    var headHeight = BInt(0)
-    var genesisHash = Data()
+    var protocolVersion: Int
+    var networkId: Int
+    var headTotalDifficulty: Data
+    var headHash: Data
+    var headHeight: BInt
+    var genesisHash: Data
 
-    init(protocolVersion: UInt8, networkId: Int, genesisHash: Data, headTotalDifficulty: Data, headHash: Data, headHeight: BInt) {
+    init(protocolVersion: Int, networkId: Int, genesisHash: Data, headTotalDifficulty: Data, headHash: Data, headHeight: BInt) {
         self.protocolVersion = protocolVersion
         self.networkId = networkId
         self.genesisHash = genesisHash
@@ -18,29 +18,17 @@ class StatusMessage: IMessage {
     required init(data: Data) throws {
         let rlpList = try RLP.decode(input: data).listValue()
 
-        guard rlpList.count > 5 else {
-            throw MessageDecodeError.notEnoughFields
-        }
-
-        for rlpElement in rlpList {
-            let name = try rlpElement.listValue()[0].stringValue()
-            let valueElement = try rlpElement.listValue()[1]
-
-            switch name {
-            case "protocolVersion": protocolVersion = UInt8(try valueElement.intValue())
-            case "networkId": networkId = try valueElement.intValue()
-            case "headTd": headTotalDifficulty = valueElement.dataValue
-            case "headHash": headHash = valueElement.dataValue
-            case "headNum": headHeight = try valueElement.bIntValue()
-            case "genesisHash": genesisHash = valueElement.dataValue
-            default: ()
-            }
-        }
+        protocolVersion = try StatusMessage.valueElement(rlpList: rlpList, name: "protocolVersion").intValue()
+        networkId = try StatusMessage.valueElement(rlpList: rlpList, name: "networkId").intValue()
+        headTotalDifficulty = try StatusMessage.valueElement(rlpList: rlpList, name: "headTd").dataValue
+        headHash = try StatusMessage.valueElement(rlpList: rlpList, name: "headHash").dataValue
+        headHeight = try StatusMessage.valueElement(rlpList: rlpList, name: "headNum").bIntValue()
+        genesisHash = try StatusMessage.valueElement(rlpList: rlpList, name: "genesisHash").dataValue
     }
 
     func encoded() -> Data {
         let toEncode: [Any] = [
-            ["protocolVersion", Int(protocolVersion)],
+            ["protocolVersion", protocolVersion],
             ["networkId", networkId],
             ["headTd", headTotalDifficulty],
             ["headHash", headHash],
@@ -56,4 +44,20 @@ class StatusMessage: IMessage {
         return "STATUS [protocolVersion: \(protocolVersion); networkId: \(networkId); totalDifficulty: \(headTotalDifficulty.toHexString()); " + 
                 "bestHash: \(headHash.toHexString()); bestNum: \(headHeight); genesisHash: \(genesisHash.toHexString())]"
     }
+
+}
+
+extension StatusMessage {
+
+    static func valueElement(rlpList: [RLPElement], name: String) throws -> RLPElement {
+        for rlpElement in rlpList {
+            let list = try rlpElement.listValue()
+            if name == (try list[0].stringValue()) {
+                return list[1]
+            }
+        }
+
+        throw MessageDecodeError.fieldNotFound
+    }
+
 }

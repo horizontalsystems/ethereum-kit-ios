@@ -1,7 +1,4 @@
-import Foundation
-
 class AccountState {
-
     let address: Data
     let nonce: Int
     let balance: Balance

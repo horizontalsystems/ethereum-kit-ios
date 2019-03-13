@@ -7,6 +7,7 @@ protocol ISpvStorage: IStorage {
 }
 
 protocol IRandomHelper: class {
+    var randomInt: Int { get }
     func randomKey() -> ECKey
     func randomBytes(length: Int) -> Data
     func randomBytes(length: Range<Int>) -> Data
@@ -58,8 +59,9 @@ public protocol IEthereumKitDelegate: class {
 
 protocol ILESPeerDelegate: class {
     func didConnect()
-    func didReceive(blockHeaders: [BlockHeader])
-    func didReceive(proofMessage: ProofsMessage)
+
+    func didReceive(blockHeaders: [BlockHeader], blockHash: Data)
+    func didReceive(accountState: AccountState, address: Data, blockHeader: BlockHeader)
 }
 
 protocol IDevP2PPeerDelegate: class {
@@ -76,10 +78,12 @@ protocol IConnectionDelegate: class {
 
 protocol ILESPeer: class {
     var delegate: ILESPeerDelegate? { get set }
+
     func connect()
     func disconnect(error: Error?)
-    func requestBlockHeaders(fromBlockHash blockHash: Data)
-    func requestProofs(forAddress address: Data, inBlockWithHash blockHash: Data)
+
+    func requestBlockHeaders(blockHash: Data)
+    func requestAccountState(address: Data, blockHeader: BlockHeader)
 }
 
 protocol IConnection: class {

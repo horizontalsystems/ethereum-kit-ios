@@ -38,7 +38,7 @@ class PeerGroup {
 
     func syncBlocks() {
         if let lastBlockHeader = storage.lastBlockHeader {
-            syncPeer?.requestBlockHeaders(fromBlockHash: lastBlockHeader.hashHex)
+            syncPeer?.requestBlockHeaders(blockHash: lastBlockHeader.hashHex)
         }
     }
 
@@ -62,12 +62,12 @@ extension PeerGroup: ILESPeerDelegate {
         syncBlocks()
     }
 
-    func didReceive(blockHeaders: [BlockHeader]) {
+    func didReceive(blockHeaders: [BlockHeader], blockHash: Data) {
         if blockHeaders.count <= 1 {
             print("BLOCKS SYNCED")
 
-            if let lastBlock = storage.lastBlockHeader {
-                syncPeer?.requestProofs(forAddress: address, inBlockWithHash: lastBlock.hashHex)
+            if let lastBlockHeader = storage.lastBlockHeader {
+                syncPeer?.requestAccountState(address: address, blockHeader: lastBlockHeader)
             }
 
             return
@@ -78,15 +78,8 @@ extension PeerGroup: ILESPeerDelegate {
         syncBlocks()
     }
 
-    func didReceive(proofMessage: ProofsMessage) {
-        if let lastBlock = storage.lastBlockHeader {
-            do {
-                let state = try proofMessage.getValidatedState(stateRoot: lastBlock.stateRoot, address: address)
-                delegate?.onUpdate(state: state)
-            } catch {
-                print("proof result: \(error)")
-            }
-        }
+    func didReceive(accountState: AccountState, address: Data, blockHeader: BlockHeader) {
+        delegate?.onUpdate(state: accountState)
     }
 
 }
