@@ -32,7 +32,8 @@ class BlockHeadersMessage: IInMessage {
     }
 
     func toString() -> String {
-        return "HEADERS [requestId: \(requestId); bv: \(bv); headers: [\(headers.map{ $0.toString() }.joined(separator: ","))]]"
+//        return "HEADERS [requestId: \(requestId); bv: \(bv); headers: [\(headers.map{ $0.toString() }.joined(separator: ","))]]"
+        return "HEADERS [requestId: \(requestId); bv: \(bv); headersCount: \(headers.count); first: \(headers.first?.toString() ?? "none"); last: \(headers.last?.toString() ?? "none")]"
     }
 
 }

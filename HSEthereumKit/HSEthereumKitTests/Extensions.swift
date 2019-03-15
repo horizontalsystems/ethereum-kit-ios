@@ -32,7 +32,7 @@ extension KeccakDigest: Equatable {
 extension HelloMessage {
 
     convenience init(capabilities: [Capability] = []) {
-        self.init(peerId: Data(), port: 0, capabilities: capabilities)
+        self.init(nodeId: Data(), port: 0, capabilities: capabilities)
     }
 
 }
