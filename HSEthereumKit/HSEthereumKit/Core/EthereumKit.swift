@@ -79,7 +79,7 @@ extension EthereumKit {
 
     public func fee(gasPriceInWei: Int? = nil) -> Decimal {
         // only for standard transactions without data
-        return Decimal(gasPriceInWei ?? blockchain.gasPriceInWei) * Decimal(blockchain.gasLimitEthereum)
+        return Decimal(gasPriceInWei ?? blockchain.gasPriceInWei.mediumPriority) * Decimal(blockchain.gasLimitEthereum)
     }
 
     public func transactionsSingle(fromHash: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {
@@ -107,7 +107,7 @@ extension EthereumKit {
 
     public func feeErc20(gasPriceInWei: Int? = nil) -> Decimal {
         // only for erc20 coin maximum fee
-        return Decimal(gasPriceInWei ?? blockchain.gasPriceInWei) * Decimal(blockchain.gasLimitErc20)
+        return Decimal(gasPriceInWei ?? blockchain.gasPriceInWei.mediumPriority) * Decimal(blockchain.gasLimitErc20)
     }
 
     public func balanceErc20(contractAddress: String) -> String? {

@@ -9,7 +9,7 @@ class SpvBlockchain {
 
     let ethereumAddress: String
 
-    var gasPriceInWei: Int = 0
+    var gasPriceInWei: GasPrice = GasPrice.defaultGasPrice
     var gasLimitEthereum: Int = 0
     var gasLimitErc20: Int = 0
 

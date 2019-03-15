@@ -55,9 +55,20 @@ class ApiGrdbStorage {
             try db.create(table: BlockchainState.databaseTableName) { t in
                 t.column(BlockchainState.Columns.primaryKey.name, .text).notNull()
                 t.column(BlockchainState.Columns.lastBlockHeight.name, .integer)
-                t.column(BlockchainState.Columns.gasPriceInWei.name, .integer)
 
                 t.primaryKey([BlockchainState.Columns.primaryKey.name], onConflict: .replace)
+            }
+        }
+
+        migrator.registerMigration("createGasPrice") { db in
+            try db.create(table: GasPrice.databaseTableName) { t in
+                t.column(GasPrice.Columns.primaryKey.name, .text).notNull()
+                t.column(GasPrice.Columns.lowPriority.name, .integer)
+                t.column(GasPrice.Columns.mediumPriority.name, .integer)
+                t.column(GasPrice.Columns.highPriority.name, .integer)
+                t.column(GasPrice.Columns.date.name, .datetime)
+
+                t.primaryKey([GasPrice.Columns.primaryKey.name], onConflict: .replace)
             }
         }
 
@@ -74,9 +85,9 @@ extension ApiGrdbStorage: IApiStorage {
         }
     }
 
-    var gasPriceInWei: Int? {
+    var gasPriceInWei: GasPrice? {
         return try! dbPool.read { db in
-            try BlockchainState.fetchOne(db)?.gasPriceInWei
+            try GasPrice.fetchOne(db)
         }
     }
 
@@ -123,11 +134,9 @@ extension ApiGrdbStorage: IApiStorage {
         }
     }
 
-    func save(gasPriceInWei: Int) {
+    func save(gasPriceInWei: GasPrice) {
         _ = try? dbPool.write { db in
-            let state = try BlockchainState.fetchOne(db) ?? BlockchainState()
-            state.gasPriceInWei = gasPriceInWei
-            try state.insert(db)
+            try gasPriceInWei.insert(db)
         }
     }
 

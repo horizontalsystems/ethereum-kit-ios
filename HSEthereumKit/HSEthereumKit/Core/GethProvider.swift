@@ -42,16 +42,12 @@ class GethProvider {
 
 extension GethProvider: IApiProvider {
 
-    func gasPriceInWeiSingle() -> Single<Int> {
+    func gasPriceInWeiSingle() -> Single<GasPrice> {
         return Single.create { [unowned geth] observer in
             geth.getGasPrice() { result in
                 switch result {
-                case .success(let gasPriceWei):
-                    if let gasPriceInWei = gasPriceWei.toInt() {
-                        observer(.success(gasPriceInWei))
-                    } else {
-                        observer(.error(EthereumKitError.convertError(.failedToConvert(gasPriceWei))))
-                    }
+                case .success(let gasPrice):
+                    observer(.success(gasPrice))
                 case .failure(let error):
                     observer(.error(error))
                 }

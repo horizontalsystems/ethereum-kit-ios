@@ -226,7 +226,7 @@ class EthereumKitTests: XCTestCase {
     }
 
     func testFee() {
-        let gasPriceInWei = 12345
+        let gasPriceInWei = GasPrice(lowPriority: 123, mediumPriority: 12345, highPriority: 999999, date: Date())
         let gasLimit = 21_000
 
         stub(mockBlockchain) { mock in
@@ -234,7 +234,7 @@ class EthereumKitTests: XCTestCase {
             when(mock.gasLimitEthereum.get).thenReturn(gasLimit)
         }
 
-        let expectedFee = Decimal(gasPriceInWei) * Decimal(gasLimit)
+        let expectedFee = Decimal(gasPriceInWei.mediumPriority) * Decimal(gasLimit)
 
         XCTAssertEqual(kit.fee(), expectedFee)
     }
@@ -253,7 +253,7 @@ class EthereumKitTests: XCTestCase {
     }
 
     func testFeeErc20() {
-        let gasPriceInWei = 12345
+        let gasPriceInWei = GasPrice(lowPriority: 123, mediumPriority: 12345, highPriority: 999999, date: Date())
         let gasLimit = 21_000
 
         stub(mockBlockchain) { mock in
@@ -261,7 +261,7 @@ class EthereumKitTests: XCTestCase {
             when(mock.gasLimitErc20.get).thenReturn(gasLimit)
         }
 
-        let expectedFee = Decimal(gasPriceInWei) * Decimal(gasLimit)
+        let expectedFee = Decimal(gasPriceInWei.mediumPriority) * Decimal(gasLimit)
 
         XCTAssertEqual(kit.feeErc20(), expectedFee)
     }

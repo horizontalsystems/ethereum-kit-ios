@@ -12,7 +12,7 @@ protocol IApiConfigProvider {
 }
 
 protocol IApiProvider {
-    func gasPriceInWeiSingle() -> Single<Int>
+    func gasPriceInWeiSingle() -> Single<GasPrice>
     func lastBlockHeightSingle() -> Single<Int>
     func transactionCountSingle(address: String) -> Single<Int>
 
@@ -59,18 +59,18 @@ protocol IStorage {
 }
 
 protocol IApiStorage: IStorage {
-    var gasPriceInWei: Int? { get }
+    var gasPriceInWei: GasPrice? { get }
     func lastTransactionBlockHeight(erc20: Bool) -> Int?
 
     func save(lastBlockHeight: Int)
-    func save(gasPriceInWei: Int)
+    func save(gasPriceInWei: GasPrice)
     func save(balance: String, address: String)
     func save(transactions: [EthereumTransaction])
 }
 
 protocol IBlockchain {
     var ethereumAddress: String { get }
-    var gasPriceInWei: Int { get }
+    var gasPriceInWei: GasPrice { get }
     var gasLimitEthereum: Int { get }
     var gasLimitErc20: Int { get }
 

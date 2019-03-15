@@ -3,6 +3,7 @@ import HSHDWalletKit
 
 class ApiBlockchain {
     private let refreshInterval: TimeInterval = 30
+    private let ipfsRefreshInterval: TimeInterval = 60 * 3
 
     private var disposeBag = DisposeBag()
 
@@ -22,9 +23,11 @@ class ApiBlockchain {
     }
 
     let ethereumAddress: String
-    private(set) var gasPriceInWei: Int = 10_000_000_000
+    private(set) var gasPriceInWei: GasPrice = GasPrice.defaultGasPrice
     let gasLimitEthereum = 21_000
     let gasLimitErc20 = 100_000
+
+    var tryRatesOneMoreTime = true
 
     init(storage: IApiStorage, apiProvider: IApiProvider, reachabilityManager: IReachabilityManager, ethereumAddress: String) {
         self.storage = storage
@@ -43,10 +46,18 @@ class ApiBlockchain {
                 })
                 .disposed(by: disposeBag)
 
+        Observable<Int>.interval(ipfsRefreshInterval, scheduler: ConcurrentDispatchQueueScheduler(qos: .background))
+                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+                .subscribe(onNext: { [weak self] _ in
+                    self?.refreshGasPrice()
+                })
+                .disposed(by: disposeBag)
+
         reachabilityManager.reachabilitySignal
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(onNext: { [weak self] in
                     self?.refreshAll()
+                    self?.refreshGasPrice()
                 })
                 .disposed(by: disposeBag)
     }
@@ -69,13 +80,11 @@ class ApiBlockchain {
 
         Single.zip(
                         apiProvider.lastBlockHeightSingle(),
-                        apiProvider.gasPriceInWeiSingle(),
                         apiProvider.balanceSingle(address: ethereumAddress)
                 )
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                .subscribe(onSuccess: { [weak self] lastBlockHeight, gasPriceInWei, balance in
+                .subscribe(onSuccess: { [weak self] lastBlockHeight, balance in
                     self?.update(lastBlockHeight: lastBlockHeight)
-                    self?.update(gasPriceInWei: gasPriceInWei)
                     self?.update(balance: balance)
 
                     self?.refreshTransactions()
@@ -132,6 +141,22 @@ class ApiBlockchain {
         }
     }
 
+    private func refreshGasPrice() {
+        apiProvider.gasPriceInWeiSingle()
+                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+                .subscribe(onSuccess: { [weak self] gasPrice in
+                    self?.tryRatesOneMoreTime = true
+                    self?.update(gasPriceInWei: gasPrice)
+                }, onError: { [weak self] error in
+                    if self?.tryRatesOneMoreTime ?? false {
+                        self?.tryRatesOneMoreTime = false
+                        self?.refreshGasPrice()
+                    }
+                })
+                .disposed(by: disposeBag)
+
+    }
+
     private func changeAllSyncStates(syncState: EthereumKit.SyncState) {
         self.syncState = syncState
         erc20Contracts.keys.forEach {
@@ -153,7 +178,7 @@ class ApiBlockchain {
         delegate?.onUpdate(lastBlockHeight: lastBlockHeight)
     }
 
-    private func update(gasPriceInWei: Int) {
+    private func update(gasPriceInWei: GasPrice) {
         self.gasPriceInWei = gasPriceInWei
         storage.save(gasPriceInWei: gasPriceInWei)
     }
@@ -202,7 +227,7 @@ class ApiBlockchain {
                 to: address,
                 nonce: nonce,
                 amount: amount,
-                gasPriceInWei: gasPriceInWei ?? self.gasPriceInWei,
+                gasPriceInWei: gasPriceInWei ?? self.gasPriceInWei.mediumPriority,
                 gasLimit: gasLimitEthereum
         )
     }
@@ -217,7 +242,7 @@ class ApiBlockchain {
                 from: ethereumAddress, to: address,
                 nonce: nonce,
                 amount: amount,
-                gasPriceInWei: gasPriceInWei ?? self.gasPriceInWei,
+                gasPriceInWei: gasPriceInWei ?? self.gasPriceInWei.mediumPriority,
                 gasLimit: gasLimitErc20
         )
     }
@@ -228,6 +253,7 @@ extension ApiBlockchain: IBlockchain {
 
     func start() {
         refreshAll()
+        refreshGasPrice()
     }
 
     func clear() {
