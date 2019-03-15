@@ -3,14 +3,14 @@ class HelloMessage: IInMessage, IOutMessage {
     let clientId: String
     let capabilities: [Capability]
     let port: Int
-    let peerId: Data
+    let nodeId: Data
 
-    init(peerId: Data, port: Int, capabilities: [Capability]) {
+    init(nodeId: Data, port: Int, capabilities: [Capability]) {
         self.p2pVersion = 4
         self.clientId = "EthereumKit"
         self.capabilities = capabilities
         self.port = port
-        self.peerId = peerId
+        self.nodeId = nodeId
     }
 
     required init(data: Data) throws {
@@ -24,7 +24,7 @@ class HelloMessage: IInMessage, IOutMessage {
         clientId = try rlpList[1].stringValue()
         capabilities = try rlpList[2].listValue().map{ Capability(name: try $0.listValue()[0].stringValue(), version: try $0.listValue()[1].intValue()) }
         port = try rlpList[3].intValue()
-        peerId = rlpList[4].dataValue
+        nodeId = rlpList[4].dataValue
     }
 
     func encoded() -> Data {
@@ -33,14 +33,14 @@ class HelloMessage: IInMessage, IOutMessage {
             clientId,
             capabilities.map{ $0.toArray() },
             port,
-            peerId
+            nodeId
         ]
 
         return RLP.encode(toEncode)
     }
 
     func toString() -> String {
-        return "HELLO [version: \(p2pVersion); clientId: \(clientId); capabilities: \(capabilities.map { $0.toString() }.joined(separator: ", ")); peerId: \(peerId.toHexString()); port: \(port)]"
+        return "HELLO [version: \(p2pVersion); clientId: \(clientId); capabilities: \(capabilities.map { $0.toString() }.joined(separator: ", ")); nodeId: \(nodeId.toHexString()); port: \(port)]"
     }
 
 }

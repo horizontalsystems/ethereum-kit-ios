@@ -14,11 +14,12 @@
 		11B3518C1848401DE249961E /* ApiBlockchain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35AC255BE64FE27CB8220 /* ApiBlockchain.swift */; };
 		11B353DA20E3DD02F8C8D4D4 /* LESPeerRequestHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35434455A2AF945B2BD1B /* LESPeerRequestHolder.swift */; };
 		11B356030FB7878C2BD0C5A8 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B357626B809CC6A964D5B1 /* Logger.swift */; };
+		11B3563CCAB1B50D85984C7E /* CapabilityHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B351D958CC3C4A60EEEC9D /* CapabilityHelperTests.swift */; };
 		11B356BF054DFC99D8EB19E5 /* GeneratedMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B359F34D40C2E21B4CD620 /* GeneratedMocks.swift */; };
-		11B357A9F601F30BBAB3300E /* MessageFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35CF122F4E8C0F42C7959 /* MessageFactory.swift */; };
 		11B358F1C8520185D515F5C8 /* BlockchainState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B355F58513F030F5E8E201 /* BlockchainState.swift */; };
 		11B35A0D90F7DDB2DE3D2FEC /* BlockHeaderRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B359DA0DDE45734AB73E25 /* BlockHeaderRequest.swift */; };
 		11B35A4116607D8C5B444E37 /* EthereumKitState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3567B8F9696AA05DFFADE /* EthereumKitState.swift */; };
+		11B35C62ACE0870699401F3F /* CapabilityHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35074A6F5AB51D13B06BE /* CapabilityHelper.swift */; };
 		11B35CEF617BCF783C3D1DCA /* EthereumTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B359B70EC74CF5E6CFBC0C /* EthereumTransaction.swift */; };
 		11B35EAEAEC58D077071352A /* LESPeerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35FFC4D818569376084A3 /* LESPeerTests.swift */; };
 		11B35EB873DF5DDFC6B5207C /* DevP2PPeerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35A34A00570C3752F1EBC /* DevP2PPeerTests.swift */; };
@@ -148,7 +149,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		11B35074A6F5AB51D13B06BE /* CapabilityHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CapabilityHelper.swift; sourceTree = "<group>"; };
 		11B350977535A5956D227887 /* EthereumKitTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumKitTests.swift; sourceTree = "<group>"; };
+		11B351D958CC3C4A60EEEC9D /* CapabilityHelperTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CapabilityHelperTests.swift; sourceTree = "<group>"; };
 		11B353E4C00F4D12A5401C6F /* FrameConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FrameConnection.swift; sourceTree = "<group>"; };
 		11B35434455A2AF945B2BD1B /* LESPeerRequestHolder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LESPeerRequestHolder.swift; sourceTree = "<group>"; };
 		11B3554DD0D3D4A6F7D9005C /* EthereumBalance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumBalance.swift; sourceTree = "<group>"; };
@@ -161,7 +164,6 @@
 		11B35A34A00570C3752F1EBC /* DevP2PPeerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DevP2PPeerTests.swift; sourceTree = "<group>"; };
 		11B35AC255BE64FE27CB8220 /* ApiBlockchain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApiBlockchain.swift; sourceTree = "<group>"; };
 		11B35CC13BE2809A1D47FC37 /* DevP2PConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DevP2PConnection.swift; sourceTree = "<group>"; };
-		11B35CF122F4E8C0F42C7959 /* MessageFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessageFactory.swift; sourceTree = "<group>"; };
 		11B35E9EFA334E9433C71CD4 /* ApiGrdbStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApiGrdbStorage.swift; sourceTree = "<group>"; };
 		11B35FF015ED96B91156834F /* AccountStateRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountStateRequest.swift; sourceTree = "<group>"; };
 		11B35FFC4D818569376084A3 /* LESPeerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LESPeerTests.swift; sourceTree = "<group>"; };
@@ -328,6 +330,7 @@
 			isa = PBXGroup;
 			children = (
 				11B35A34A00570C3752F1EBC /* DevP2PPeerTests.swift */,
+				11B351D958CC3C4A60EEEC9D /* CapabilityHelperTests.swift */,
 			);
 			path = DevP2P;
 			sourceTree = "<group>";
@@ -622,6 +625,7 @@
 				D07C3ED2221ACBDA0081DCD2 /* Capability.swift */,
 				2FA5DF7C44A0AC245CB295B8 /* DevP2PPeer.swift */,
 				11B35CC13BE2809A1D47FC37 /* DevP2PConnection.swift */,
+				11B35074A6F5AB51D13B06BE /* CapabilityHelper.swift */,
 			);
 			path = DevP2P;
 			sourceTree = "<group>";
@@ -667,7 +671,6 @@
 				2FA5DC4BD52779213E1952A6 /* PeerGroup.swift */,
 				2FA5D05F4E0D54E432282958 /* Ropsten.swift */,
 				2FA5D51BD89CC6356F1E6138 /* Node.swift */,
-				11B35CF122F4E8C0F42C7959 /* MessageFactory.swift */,
 			);
 			path = Net;
 			sourceTree = "<group>";
@@ -995,6 +998,7 @@
 				2FA5DB895FCE9F2D5F647471 /* FrameCodecTests.swift in Sources */,
 				11B35EB873DF5DDFC6B5207C /* DevP2PPeerTests.swift in Sources */,
 				11B35EAEAEC58D077071352A /* LESPeerTests.swift in Sources */,
+				11B3563CCAB1B50D85984C7E /* CapabilityHelperTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1108,12 +1112,12 @@
 				2FA5DF6C2109ECA26A3E224E /* SpvProtocols.swift in Sources */,
 				2FA5D7D60D389329C7C9354B /* MessageDecodeError.swift in Sources */,
 				11B356030FB7878C2BD0C5A8 /* Logger.swift in Sources */,
-				11B357A9F601F30BBAB3300E /* MessageFactory.swift in Sources */,
 				11B35169E195D2801E57AD81 /* FrameConnection.swift in Sources */,
 				11B3515D132B5DCC500CF100 /* DevP2PConnection.swift in Sources */,
 				11B35A0D90F7DDB2DE3D2FEC /* BlockHeaderRequest.swift in Sources */,
 				11B3505A666E165C2588FE0B /* AccountStateRequest.swift in Sources */,
 				11B353DA20E3DD02F8C8D4D4 /* LESPeerRequestHolder.swift in Sources */,
+				11B35C62ACE0870699401F3F /* CapabilityHelper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

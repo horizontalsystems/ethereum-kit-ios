@@ -125,7 +125,6 @@ extension SpvGrdbStorage: ISpvStorage {
     func save(blockHeaders: [BlockHeader]) {
         _ = try? dbPool.write { db in
             for header in blockHeaders {
-                print(header.toString())
                 try header.insert(db)
             }
         }

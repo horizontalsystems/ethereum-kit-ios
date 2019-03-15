@@ -112,8 +112,7 @@ protocol IFrameConnectionDelegate: class {
 protocol IDevP2PConnection: class {
     var delegate: IDevP2PConnectionDelegate? { get set }
 
-    var myCapabilities: [Capability] { get }
-    func register(nodeCapabilities: [Capability]) throws
+    func register(sharedCapabilities: [Capability])
 
     func connect()
     func disconnect(error: Error?)
@@ -150,14 +149,6 @@ protocol IDevP2PPeer {
     func send(message: IOutMessage)
 }
 
-protocol IMessageFactory {
-    func helloMessage(key: ECKey, capabilities: [Capability]) -> HelloMessage
-    func pongMessage() -> PongMessage
-    func getBlockHeadersMessage(blockHash: Data) -> GetBlockHeadersMessage
-    func getProofsMessage(address: Data, blockHash: Data) -> GetProofsMessage
-    func statusMessage(network: INetwork, blockHeader: BlockHeader) -> StatusMessage
-}
-
 protocol IMessage {
     func toString() -> String
 }
@@ -170,6 +161,6 @@ protocol IOutMessage: IMessage {
     func encoded() -> Data
 }
 
-protocol ILESPeerValidator {
-    func validate(message: StatusMessage, network: INetwork, blockHeader: BlockHeader) throws
+protocol ICapabilityHelper {
+    func sharedCapabilities(myCapabilities: [Capability], nodeCapabilities: [Capability]) -> [Capability]
 }

@@ -13,35 +13,38 @@ class DevP2PConnection {
     private let logger: Logger?
     private var packetTypesMap: [Int: IMessage.Type] = DevP2PConnection.devP2PPacketTypesMap
 
-    let myCapabilities: [Capability]
-
-    init(frameConnection: IFrameConnection, myCapabilities: [Capability], logger: Logger? = nil) {
+    init(frameConnection: IFrameConnection, logger: Logger? = nil) {
         self.frameConnection = frameConnection
-        self.myCapabilities = myCapabilities
         self.logger = logger
     }
+
+    private func handle(packetType: Int, payload: Data) throws {
+        guard let messageClass = packetTypesMap[packetType] else {
+            throw DeserializeError.unknownMessageType
+        }
+
+        guard let inMessageClass = messageClass as? IInMessage.Type else {
+            throw DeserializeError.inMessageNotSupported
+        }
+
+        do {
+            let message = try inMessageClass.init(data: payload)
+            delegate?.didReceive(message: message)
+        } catch {
+            throw DeserializeError.invalidPayload
+        }
+
+    }
+
 }
 
 extension DevP2PConnection: IDevP2PConnection {
 
-    func register(nodeCapabilities: [Capability]) throws {
-        var sharedCapabilities = [Capability]()
-
-        for myCapability in myCapabilities {
-            if nodeCapabilities.contains(myCapability) {
-                sharedCapabilities.append(myCapability)
-            }
-        }
-
-        guard !sharedCapabilities.isEmpty else {
-            throw CapabilityError.noCommonCapabilities
-        }
-
+    func register(sharedCapabilities: [Capability]) {
         packetTypesMap = DevP2PConnection.devP2PPacketTypesMap
         var offset = DevP2PConnection.devP2PMaxMessageCode
 
-        let sortedCapabilities = sharedCapabilities.sorted(by: { $0.name < $1.name || ($0.name == $1.name && $0.version < $1.version)  })
-        for capability in sortedCapabilities {
+        for capability in sharedCapabilities {
             for (packetType, messageClass) in capability.packetTypesMap {
                 packetTypesMap[offset + packetType] = messageClass
             }
@@ -82,21 +85,10 @@ extension DevP2PConnection: IFrameConnectionDelegate {
     }
 
     func didReceive(packetType: Int, payload: Data) {
-        guard let messageClass = packetTypesMap[packetType] else {
-            disconnect(error: DeserializeError.unknownMessageType)
-            return
-        }
-
-        guard let inMessageClass = messageClass as? IInMessage.Type else {
-            disconnect(error: DeserializeError.inMessageNotSupported)
-            return
-        }
-
         do {
-            let message = try inMessageClass.init(data: payload)
-            delegate?.didReceive(message: message)
+            try handle(packetType: packetType, payload: payload)
         } catch {
-            disconnect(error: DeserializeError.invalidPayload)
+            disconnect(error: error)
         }
     }
 
@@ -110,17 +102,13 @@ extension DevP2PConnection {
         case invalidPayload
     }
 
-    enum CapabilityError: Error {
-        case noCommonCapabilities
-    }
-
 }
 
 extension DevP2PConnection {
 
-    static func instance(myCapabilities: [Capability], connectionKey: ECKey, node: Node, logger: Logger? = nil) -> DevP2PConnection {
+    static func instance(connectionKey: ECKey, node: Node, logger: Logger? = nil) -> DevP2PConnection {
         let frameConnection = FrameConnection.instance(connectionKey: connectionKey, node: node, logger: logger)
-        let devP2PConnection = DevP2PConnection(frameConnection: frameConnection, myCapabilities: myCapabilities, logger: logger)
+        let devP2PConnection = DevP2PConnection(frameConnection: frameConnection, logger: logger)
 
         frameConnection.delegate = devP2PConnection
 
