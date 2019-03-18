@@ -1,6 +1,15 @@
 import Foundation
 import GRDB
 
+public enum FeePriority {
+    case lowest
+    case low
+    case medium
+    case high
+    case highest
+    case custom(gasPriceInWei: Int)
+}
+
 public class GasPrice: Record, Decodable {
     static let defaultGasPrice = GasPrice(
             lowPriority: 1_000_000_000,

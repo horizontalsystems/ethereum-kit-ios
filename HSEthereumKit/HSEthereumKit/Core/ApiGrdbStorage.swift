@@ -85,7 +85,7 @@ extension ApiGrdbStorage: IApiStorage {
         }
     }
 
-    var gasPriceInWei: GasPrice? {
+    var gasPriceData: GasPrice? {
         return try! dbPool.read { db in
             try GasPrice.fetchOne(db)
         }
@@ -134,9 +134,9 @@ extension ApiGrdbStorage: IApiStorage {
         }
     }
 
-    func save(gasPriceInWei: GasPrice) {
+    func save(gasPriceData: GasPrice) {
         _ = try? dbPool.write { db in
-            try gasPriceInWei.insert(db)
+            try gasPriceData.insert(db)
         }
     }
 

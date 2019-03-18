@@ -9,7 +9,6 @@ class SpvBlockchain {
 
     let ethereumAddress: String
 
-    var gasPriceInWei: GasPrice = GasPrice.defaultGasPrice
     var gasLimitEthereum: Int = 0
     var gasLimitErc20: Int = 0
 
@@ -29,6 +28,10 @@ extension SpvBlockchain: IBlockchain {
     func clear() {
     }
 
+    func gasPriceInWei(priority: FeePriority) -> Int {
+        return GasPrice.defaultGasPrice.mediumPriority
+    }
+
     var syncState: EthereumKit.SyncState {
         return EthereumKit.SyncState.synced
     }
@@ -43,12 +46,12 @@ extension SpvBlockchain: IBlockchain {
     func unregister(contractAddress: String) {
     }
 
-    func sendSingle(to address: String, amount: String, gasPriceInWei: Int?) -> Single<EthereumTransaction> {
+    func sendSingle(to address: String, amount: String, priority: FeePriority) -> Single<EthereumTransaction> {
         let stubTransaction = EthereumTransaction(hash: "", nonce: 0, from: "", to: "", amount: "", gasLimit: 0, gasPriceInWei: 0)
         return Single.just(stubTransaction)
     }
 
-    func sendErc20Single(to address: String, contractAddress: String, amount: String, gasPriceInWei: Int?) -> Single<EthereumTransaction> {
+    func sendErc20Single(to address: String, contractAddress: String, amount: String, priority: FeePriority) -> Single<EthereumTransaction> {
         let stubTransaction = EthereumTransaction(hash: "", nonce: 0, from: "", to: "", amount: "", gasLimit: 0, gasPriceInWei: 0)
         return Single.just(stubTransaction)
     }

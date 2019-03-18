@@ -42,7 +42,7 @@ class GethProvider {
 
 extension GethProvider: IApiProvider {
 
-    func gasPriceInWeiSingle() -> Single<GasPrice> {
+    func gasPriceDataSingle() -> Single<GasPrice> {
         return Single.create { [unowned geth] observer in
             geth.getGasPrice() { result in
                 switch result {
