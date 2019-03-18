@@ -6,6 +6,14 @@ class StatusMessage: IInMessage, IOutMessage {
     var headHeight: BInt
     var genesisHash: Data
 
+    var serveHeaders = false
+    var serveChainSince: BInt?
+    var serveStateSince: BInt?
+
+    var flowControlBL: Int = 0
+    var flowControlMRR: Int = 0
+    var flowControlMRC: [MaxCost] = []
+
     init(protocolVersion: Int, networkId: Int, genesisHash: Data, headTotalDifficulty: BInt, headHash: Data, headHeight: BInt) {
         self.protocolVersion = protocolVersion
         self.networkId = networkId
@@ -24,6 +32,16 @@ class StatusMessage: IInMessage, IOutMessage {
         headHash = try StatusMessage.valueElement(rlpList: rlpList, name: "headHash").dataValue
         headHeight = try StatusMessage.valueElement(rlpList: rlpList, name: "headNum").bIntValue()
         genesisHash = try StatusMessage.valueElement(rlpList: rlpList, name: "genesisHash").dataValue
+
+        serveHeaders = try StatusMessage.optionalValueElement(rlpList: rlpList, name: "serveHeaders") != nil
+        serveChainSince = try StatusMessage.optionalValueElement(rlpList: rlpList, name: "serveChainSince")?.bIntValue()
+        serveStateSince = try StatusMessage.optionalValueElement(rlpList: rlpList, name: "serveStateSince")?.bIntValue()
+
+        flowControlBL = try StatusMessage.valueElement(rlpList: rlpList, name: "flowControl/BL").intValue()
+        flowControlMRR = try StatusMessage.valueElement(rlpList: rlpList, name: "flowControl/MRR").intValue()
+
+        let maxCostTable = try StatusMessage.valueElement(rlpList: rlpList, name: "flowControl/MRC").listValue()
+        flowControlMRC = try maxCostTable.map { try MaxCost(rlp: $0) }
     }
 
     func encoded() -> Data {
@@ -42,7 +60,9 @@ class StatusMessage: IInMessage, IOutMessage {
 
     func toString() -> String {
         return "STATUS [protocolVersion: \(protocolVersion); networkId: \(networkId); totalDifficulty: \(headTotalDifficulty); " + 
-                "bestHash: \(headHash.toHexString()); bestNum: \(headHeight); genesisHash: \(genesisHash.toHexString())]"
+                "bestHash: \(headHash.toHexString()); bestNum: \(headHeight); genesisHash: \(genesisHash.toHexString()); serveHeaders: \(serveHeaders); " +
+                "serveChainSince: \(serveChainSince.map { "\($0)" } ?? "nil"); serveStateSince: \(serveStateSince.map { "\($0)" } ?? "nil"); " +
+                "flowControlBL: \(flowControlBL.flowControlLog); flowControlMRR: \(flowControlMRR.flowControlLog); flowControlMRC: [\(flowControlMRC.map { "\n" + $0.toString() }.joined(separator: ", "))]]"
     }
 
 }
@@ -52,12 +72,25 @@ extension StatusMessage {
     static func valueElement(rlpList: [RLPElement], name: String) throws -> RLPElement {
         for rlpElement in rlpList {
             let list = try rlpElement.listValue()
-            if name == (try list[0].stringValue()) {
+            let elementName = try list[0].stringValue()
+            if elementName == name {
                 return list[1]
             }
         }
 
         throw MessageDecodeError.fieldNotFound
+    }
+
+    static func optionalValueElement(rlpList: [RLPElement], name: String) throws -> RLPElement? {
+        for rlpElement in rlpList {
+            let list = try rlpElement.listValue()
+            let elementName = try list[0].stringValue()
+            if elementName == name {
+                return list.count > 1 ? list[1] : nil
+            }
+        }
+
+        return nil
     }
 
 }

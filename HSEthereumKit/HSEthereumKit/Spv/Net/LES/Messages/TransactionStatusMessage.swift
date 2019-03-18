@@ -1,6 +1,6 @@
 class TransactionStatusMessage: IInMessage {
     var requestId = 0
-    var bv: BInt = 0
+    var bv: Int = 0
     var transactionStatuses = [Data: TransactionStatus]()
 
     required init(data: Data) throws {

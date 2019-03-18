@@ -31,6 +31,7 @@ class DevP2PConnection {
             let message = try inMessageClass.init(data: payload)
             delegate?.didReceive(message: message)
         } catch {
+            logger?.debug("Could not create message \(inMessageClass): \(error)")
             throw DeserializeError.invalidPayload
         }
 

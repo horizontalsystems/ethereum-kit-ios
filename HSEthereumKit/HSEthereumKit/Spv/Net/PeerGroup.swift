@@ -16,10 +16,16 @@ class PeerGroup {
         self.address = address
         self.logger = logger
 
+//        let node = Node(
+//                id: Data(hex: "f9a9a1b2f68dc119b0f44ba579cbc40da1f817ddbdb1045a57fa8159c51eb0f826786ce9e8b327d04c9ad075f2c52da90e9f84ee4dde3a2a911bb1270ef23f6d"),
+//                host: "eth-testnet.horizontalsystems.xyz",
+//                port: 20303,
+//                discoveryPort: 30301
+//        )
         let node = Node(
-                id: Data(hex: "f9a9a1b2f68dc119b0f44ba579cbc40da1f817ddbdb1045a57fa8159c51eb0f826786ce9e8b327d04c9ad075f2c52da90e9f84ee4dde3a2a911bb1270ef23f6d"),
-                host: "eth-testnet.horizontalsystems.xyz",
-                port: 20303,
+                id: Data(hex: "e679038c2e4f9f764acd788c3935cf526f7f630b55254a122452e63e2cfae3066ca6b6c44082c2dfbe9ddffc9df80546d40ef38a0e3dfc9c8720c732446ca8f3"),
+                host: "192.168.4.39",
+                port: 30303,
                 discoveryPort: 30301
         )
 

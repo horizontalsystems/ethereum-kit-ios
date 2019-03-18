@@ -26,11 +26,11 @@ class RLPElement {
             return 0
         }
 
-        guard let int = Int(dataValue.toHexString(), radix: 16) else {
+        guard let uInt = UInt(dataValue.toHexString(), radix: 16) else {
             throw RLP.DecodeError.invalidIntValue
         }
 
-        return int
+        return Int(bitPattern: uInt)
     }
 
     func bIntValue() throws -> BInt {
