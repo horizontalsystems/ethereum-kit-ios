@@ -30,7 +30,7 @@ class ProofsMessage: IInMessage {
     }
 
     func toString() -> String {
-        return "PROOFS [requestId: \(requestId); bv: \(bv); headers: [\(nodes.map{ $0.toString() }.joined(separator: ","))]]"
+        return "PROOFS [requestId: \(requestId); bv: \(bv.flowControlLog); nodesCount: \(nodes.count)]"
     }
 
 }

@@ -1,9 +1,9 @@
 class BlockHeadersMessage: IInMessage {
     let requestId: Int
-    let bv: BInt
+    let bv: Int
     let headers: [BlockHeader]
 
-    init(requestId: Int, bv: BInt, headers: [BlockHeader]) {
+    init(requestId: Int, bv: Int, headers: [BlockHeader]) {
         self.requestId = requestId
         self.bv = bv
         self.headers = headers
@@ -17,7 +17,7 @@ class BlockHeadersMessage: IInMessage {
         }
 
         self.requestId = try rlpList[0].intValue()
-        self.bv = try rlpList[1].bIntValue()
+        self.bv = try rlpList[1].intValue()
 
         var headers = [BlockHeader]()
         for rlpHeader in try rlpList[2].listValue() {
@@ -33,7 +33,7 @@ class BlockHeadersMessage: IInMessage {
 
     func toString() -> String {
 //        return "HEADERS [requestId: \(requestId); bv: \(bv); headers: [\(headers.map{ $0.toString() }.joined(separator: ","))]]"
-        return "HEADERS [requestId: \(requestId); bv: \(bv); headersCount: \(headers.count); first: \(headers.first?.toString() ?? "none"); last: \(headers.last?.toString() ?? "none")]"
+        return "HEADERS [requestId: \(requestId); bv: \(bv.flowControlLog); headersCount: \(headers.count); first: \(headers.first?.toString() ?? "none"); last: \(headers.last?.toString() ?? "none")]"
     }
 
 }

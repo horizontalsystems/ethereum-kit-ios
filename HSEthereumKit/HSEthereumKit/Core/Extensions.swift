@@ -30,3 +30,11 @@ extension Data {
     }
 
 }
+
+extension Int {
+
+    var flowControlLog: String {
+        return "\(Double(self) / 1_000_000)"
+    }
+
+}

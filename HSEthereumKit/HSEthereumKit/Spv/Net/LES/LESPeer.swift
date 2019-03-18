@@ -117,7 +117,7 @@ extension LESPeer: IDevP2PPeerDelegate {
     }
 
     func didDisconnect(error: Error?) {
-        logger?.debug("Disconnected with error: \(error?.localizedDescription ?? "nil")")
+        logger?.debug("Disconnected with error: \(error.map { "\($0)" } ?? "nil")")
     }
 
     func didReceive(message: IInMessage) {

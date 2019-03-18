@@ -187,7 +187,7 @@ extension Connection: IConnection {
 
         delegate?.didDisconnect(error: error)
 
-        logger?.verbose("DISCONNECTED: \(error?.localizedDescription ?? "nil")")
+//        logger?.verbose("DISCONNECTED: \(error?.localizedDescription ?? "nil")")
     }
 
     func send(frame: Frame) {

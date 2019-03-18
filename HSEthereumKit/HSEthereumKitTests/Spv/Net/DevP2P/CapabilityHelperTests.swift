@@ -10,7 +10,6 @@ class CapabilityHelperTests: QuickSpec {
         let les1 = Capability(name: "les", version: 1)
         let les2 = Capability(name: "les", version: 2)
         let eth1 = Capability(name: "eth", version: 1)
-        let eth2 = Capability(name: "eth", version: 2)
         let pip1 = Capability(name: "pip", version: 1)
 
         let helper = CapabilityHelper()
