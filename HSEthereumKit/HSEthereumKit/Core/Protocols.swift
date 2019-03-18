@@ -12,7 +12,7 @@ protocol IApiConfigProvider {
 }
 
 protocol IApiProvider {
-    func gasPriceInWeiSingle() -> Single<Int>
+    func gasPriceDataSingle() -> Single<GasPrice>
     func lastBlockHeightSingle() -> Single<Int>
     func transactionCountSingle(address: String) -> Single<Int>
 
@@ -59,18 +59,17 @@ protocol IStorage {
 }
 
 protocol IApiStorage: IStorage {
-    var gasPriceInWei: Int? { get }
+    var gasPriceData: GasPrice? { get }
     func lastTransactionBlockHeight(erc20: Bool) -> Int?
 
     func save(lastBlockHeight: Int)
-    func save(gasPriceInWei: Int)
+    func save(gasPriceData: GasPrice)
     func save(balance: String, address: String)
     func save(transactions: [EthereumTransaction])
 }
 
 protocol IBlockchain {
     var ethereumAddress: String { get }
-    var gasPriceInWei: Int { get }
     var gasLimitEthereum: Int { get }
     var gasLimitErc20: Int { get }
 
@@ -79,14 +78,16 @@ protocol IBlockchain {
     func start()
     func clear()
 
+    func gasPriceInWei(priority: FeePriority) -> Int
+
     var syncState: EthereumKit.SyncState { get }
     func syncState(contractAddress: String) -> EthereumKit.SyncState
 
     func register(contractAddress: String)
     func unregister(contractAddress: String)
 
-    func sendSingle(to address: String, amount: String, gasPriceInWei: Int?) -> Single<EthereumTransaction>
-    func sendErc20Single(to address: String, contractAddress: String, amount: String, gasPriceInWei: Int?) -> Single<EthereumTransaction>
+    func sendSingle(to address: String, amount: String, priority: FeePriority) -> Single<EthereumTransaction>
+    func sendErc20Single(to address: String, contractAddress: String, amount: String, priority: FeePriority) -> Single<EthereumTransaction>
 }
 
 protocol IBlockchainDelegate: class {

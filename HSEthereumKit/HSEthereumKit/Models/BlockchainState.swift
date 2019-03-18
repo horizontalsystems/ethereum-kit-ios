@@ -6,7 +6,6 @@ class BlockchainState: Record {
 
     private let primaryKey: String = BlockchainState.primaryKey
     var lastBlockHeight: Int?
-    var gasPriceInWei: Int?
 
     override init() {
         super.init()
@@ -19,12 +18,10 @@ class BlockchainState: Record {
     enum Columns: String, ColumnExpression {
         case primaryKey
         case lastBlockHeight
-        case gasPriceInWei
     }
 
     required init(row: Row) {
         lastBlockHeight = row[Columns.lastBlockHeight]
-        gasPriceInWei = row[Columns.gasPriceInWei]
 
         super.init(row: row)
     }
@@ -32,7 +29,6 @@ class BlockchainState: Record {
     override func encode(to container: inout PersistenceContainer) {
         container[Columns.primaryKey] = primaryKey
         container[Columns.lastBlockHeight] = lastBlockHeight
-        container[Columns.gasPriceInWei] = gasPriceInWei
     }
 
 }

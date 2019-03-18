@@ -1,9 +1,9 @@
 /// Geth is responsible for interacting with Ethereum blockchain
 public final class Geth {
-    
+
     private let configuration: Configuration
     private let httpClient: HTTPClient
-    
+
     /// init initialize Geth instance
     ///
     /// - Parameter configuration: configuration to use in http client
@@ -11,17 +11,9 @@ public final class Geth {
         self.configuration = configuration
         self.httpClient = HTTPClient(configuration: configuration)
     }
-    
+
     // MARK: - JSONRPC APIs
-    
-    /// getGasPrice returns currenct gas price
-    ///
-    /// - Parameters:
-    ///   - completionHandler:
-    public func getGasPrice(completionHandler: @escaping (Result<Wei>) -> Void) {
-        httpClient.send(JSONRPC.GetGasPrice(), completionHandler: completionHandler)
-    }
-    
+
     /// getBalance returns currenct balance of specified address.
     ///
     /// - Parameters:
@@ -31,7 +23,7 @@ public final class Geth {
     public func getBalance(of address: String, blockParameter: BlockParameter = .latest, completionHandler: @escaping (Result<Balance>) -> Void) {
         httpClient.send(JSONRPC.GetBalance(address: address, blockParameter: blockParameter), completionHandler: completionHandler)
     }
-    
+
     /// getTransactionCount returns the current nonce of specified address
     ///
     /// - Parameters:
@@ -41,7 +33,7 @@ public final class Geth {
     public func getTransactionCount(of address: String, blockParameter: BlockParameter = .latest, completionHandler: @escaping (Result<Int>) -> Void) {
         httpClient.send(JSONRPC.GetTransactionCount(address: address, blockParameter: blockParameter), completionHandler: completionHandler)
     }
-    
+
     /// sendRawTransaction sends the raw transaction string
     ///
     /// - Parameters:
@@ -50,14 +42,14 @@ public final class Geth {
     public func sendRawTransaction(rawTransaction: String, completionHandler: @escaping (Result<SentTransaction>) -> Void) {
         httpClient.send(JSONRPC.SendRawTransaction(rawTransaction: rawTransaction), completionHandler: completionHandler)
     }
-    
+
     /// getBlockNumber returns the latest block number
     ///
     /// - Parameter completionHandler:
     public func getBlockNumber(completionHandler: @escaping (Result<Int>) -> Void) {
         httpClient.send(JSONRPC.GetBlockNumber(), completionHandler: completionHandler)
     }
-    
+
     /// call sends transaction to a contract method
     ///
     /// - Parameters:
@@ -79,10 +71,10 @@ public final class Geth {
             data: data,
             blockParameter: blockParameter
         )
-        
+
         httpClient.send(request, completionHandler: completionHandler)
     }
-    
+
     /// getEstimateGas returns estimated gas for the tx
     ///
     /// - Parameters:
@@ -102,12 +94,12 @@ public final class Geth {
             value: value,
             data: data
         )
-        
+
         httpClient.send(request, completionHandler: completionHandler)
     }
-    
+
     // MARK: - Etherscan APIs
-    
+
     /// getTransactions returns the list of transaction for the specified address.
     ///
     /// - Parameters:
@@ -137,4 +129,12 @@ public final class Geth {
         )
         httpClient.send(request, completionHandler: completionHandler)
     }
+
+    // MARK: - IPFS APIs
+
+    public func getGasPrice(completionHandler: @escaping (Result<GasPrice>) -> Void) {
+        let request = IPFS.GetGasPrices(configuration: .init(baseURL: configuration.ipfsURL))
+        httpClient.send(request, completionHandler: completionHandler)
+    }
+
 }
