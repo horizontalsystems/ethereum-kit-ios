@@ -45,14 +45,6 @@ extension DisconnectMessage {
 
 }
 
-extension GetBlockHeadersMessage {
-
-    convenience init() {
-        self.init(requestId: 0, blockHash: Data(), maxHeaders: 0)
-    }
-
-}
-
 extension GetProofsMessage {
 
     convenience init() {

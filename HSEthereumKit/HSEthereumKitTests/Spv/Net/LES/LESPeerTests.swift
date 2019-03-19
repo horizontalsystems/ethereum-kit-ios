@@ -66,7 +66,7 @@ class LESPeerTests: QuickSpec {
 
         describe("#requestBlockHeaders") {
             let requestId = 123
-            let blockHash = Data(repeating: 1, count: 10)
+            let blockHeight: BInt = 123456
             let limit = 100
 
             beforeEach {
@@ -80,7 +80,7 @@ class LESPeerTests: QuickSpec {
                     when(mock.send(message: any())).thenDoNothing()
                 }
 
-                peer.requestBlockHeaders(blockHash: blockHash, limit: limit)
+                peer.requestBlockHeaders(blockHeight: blockHeight, limit: limit)
             }
 
             it("sets request to holder") {
@@ -88,7 +88,7 @@ class LESPeerTests: QuickSpec {
                 verify(mockRequestHolder).set(blockHeaderRequest: argumentCaptor.capture(), id: requestId)
                 let request = argumentCaptor.value!
 
-                expect(request.blockHash).to(equal(blockHash))
+                expect(request.blockHeight).to(equal(blockHeight))
             }
 
             it("sends message to devP2P peer") {
@@ -97,7 +97,7 @@ class LESPeerTests: QuickSpec {
                 let message = argumentCaptor.value as! GetBlockHeadersMessage
 
                 expect(message.requestId).to(equal(requestId))
-                expect(message.blockHash).to(equal(blockHash))
+                expect(message.blockHeight).to(equal(blockHeight))
                 expect(message.maxHeaders).to(equal(limit))
             }
         }
@@ -258,23 +258,23 @@ class LESPeerTests: QuickSpec {
                 let message = BlockHeadersMessage(requestId: requestId, headers: blockHeaders)
 
                 context("when request exists in holder") {
-                    let blockHash = Data(repeating: 123, count: 10)
+                    let blockHeight: BInt = 123456
 
                     beforeEach {
-                        let request = BlockHeaderRequest(blockHash: blockHash)
+                        let request = BlockHeaderRequest(blockHeight: blockHeight)
 
                         stub(mockRequestHolder) { mock in
                             when(mock.removeBlockHeaderRequest(id: requestId)).thenReturn(request)
                         }
                         stub(mockDelegate) { mock in
-                            when(mock.didReceive(blockHeaders: any(), blockHash: any())).thenDoNothing()
+                            when(mock.didReceive(blockHeaders: any(), blockHeight: any())).thenDoNothing()
                         }
 
                         peer.didReceive(message: message)
                     }
 
                     it("notifies delegate") {
-                        verify(mockDelegate).didReceive(blockHeaders: equal(to: blockHeaders), blockHash: equal(to: blockHash))
+                        verify(mockDelegate).didReceive(blockHeaders: equal(to: blockHeaders), blockHeight: equal(to: blockHeight))
                     }
                 }
 
@@ -292,7 +292,7 @@ class LESPeerTests: QuickSpec {
                     }
 
                     it("does not notify delegate") {
-                        verify(mockDelegate, never()).didReceive(blockHeaders: any(), blockHash: any())
+                        verify(mockDelegate, never()).didReceive(blockHeaders: any(), blockHeight: any())
                     }
                 }
             }

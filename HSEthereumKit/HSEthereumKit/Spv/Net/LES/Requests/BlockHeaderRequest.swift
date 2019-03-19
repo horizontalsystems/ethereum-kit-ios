@@ -1,8 +1,8 @@
 class BlockHeaderRequest {
-    let blockHash: Data
+    let blockHeight: BInt
 
-    init(blockHash: Data) {
-        self.blockHash = blockHash
+    init(blockHeight: BInt) {
+        self.blockHeight = blockHeight
     }
 
 }

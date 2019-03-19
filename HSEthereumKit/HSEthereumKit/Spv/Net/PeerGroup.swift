@@ -55,7 +55,7 @@ class PeerGroup {
 
     func syncBlocks() {
         if let lastBlockHeader = storage.lastBlockHeader {
-            syncPeer?.requestBlockHeaders(blockHash: lastBlockHeader.hashHex, limit: headersLimit)
+            syncPeer?.requestBlockHeaders(blockHeight: lastBlockHeader.height, limit: headersLimit)
         }
     }
 
@@ -80,7 +80,7 @@ extension PeerGroup: ILESPeerDelegate {
         syncBlocks()
     }
 
-    func didReceive(blockHeaders: [BlockHeader], blockHash: Data) {
+    func didReceive(blockHeaders: [BlockHeader], blockHeight: BInt) {
         storage.save(blockHeaders: blockHeaders)
 
         if blockHeaders.count < headersLimit {

@@ -63,7 +63,7 @@ class SpvGrdbStorage {
                 t.column(BlockHeader.Columns.mixHash.name, .blob).notNull()
                 t.column(BlockHeader.Columns.nonce.name, .blob).notNull()
 
-                t.primaryKey([BlockHeader.Columns.hashHex.name], onConflict: .replace)
+                t.primaryKey([BlockHeader.Columns.height.name], onConflict: .replace)
             }
         }
 
@@ -119,6 +119,12 @@ extension SpvGrdbStorage: ISpvStorage {
     var lastBlockHeader: BlockHeader? {
         return try! dbPool.read { db in
             try BlockHeader.order(Column("height").desc).fetchOne(db)
+        }
+    }
+
+    func blockHeader(height: BInt) -> BlockHeader? {
+        return try! dbPool.read { db in
+            try BlockHeader.filter(BlockHeader.Columns.height == height).fetchOne(db)
         }
     }
 

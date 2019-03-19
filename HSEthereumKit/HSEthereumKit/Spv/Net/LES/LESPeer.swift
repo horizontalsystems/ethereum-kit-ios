@@ -52,7 +52,7 @@ class LESPeer {
             throw LESPeer.ConsistencyError.unexpectedMessage
         }
 
-        delegate?.didReceive(blockHeaders: message.headers, blockHash: request.blockHash)
+        delegate?.didReceive(blockHeaders: message.headers, blockHeight: request.blockHeight)
     }
 
     private func handle(message: ProofsMessage) throws {
@@ -80,10 +80,10 @@ extension LESPeer: ILESPeer {
         devP2PPeer.disconnect(error: error)
     }
 
-    func requestBlockHeaders(blockHash: Data, limit: Int) {
+    func requestBlockHeaders(blockHeight: BInt, limit: Int) {
         let requestId = randomHelper.randomInt
-        let request = BlockHeaderRequest(blockHash: blockHash)
-        let message = GetBlockHeadersMessage(requestId: requestId, blockHash: blockHash, maxHeaders: limit)
+        let request = BlockHeaderRequest(blockHeight: blockHeight)
+        let message = GetBlockHeadersMessage(requestId: requestId, blockHeight: blockHeight, maxHeaders: limit)
 
         requestHolder.set(blockHeaderRequest: request, id: requestId)
         devP2PPeer.send(message: message)

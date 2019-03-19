@@ -3,6 +3,7 @@ import HSCryptoKit
 
 protocol ISpvStorage: IStorage {
     var lastBlockHeader: BlockHeader? { get }
+    func blockHeader(height: BInt) -> BlockHeader?
     func save(blockHeaders: [BlockHeader])
 }
 
@@ -60,7 +61,7 @@ public protocol IEthereumKitDelegate: class {
 protocol ILESPeerDelegate: class {
     func didConnect()
 
-    func didReceive(blockHeaders: [BlockHeader], blockHash: Data)
+    func didReceive(blockHeaders: [BlockHeader], blockHeight: BInt)
     func didReceive(accountState: AccountState, address: Data, blockHeader: BlockHeader)
     func didAnnounce(blockHash: Data, blockHeight: BInt)
 }
@@ -83,7 +84,7 @@ protocol ILESPeer: class {
     func connect()
     func disconnect(error: Error?)
 
-    func requestBlockHeaders(blockHash: Data, limit: Int)
+    func requestBlockHeaders(blockHeight: BInt, limit: Int)
     func requestAccountState(address: Data, blockHeader: BlockHeader)
 }
 
