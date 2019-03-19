@@ -1,14 +1,14 @@
 class GetBlockHeadersMessage: IOutMessage {
-    static let maxHeaders = 50
-
     var requestId: Int
     var blockHash: Data
+    var maxHeaders: Int
     var skip: Int
     var reverse: Int  // 0 or 1
 
-    init(requestId: Int, blockHash: Data, skip: Int = 0, reverse: Int = 0) {
+    init(requestId: Int, blockHash: Data, maxHeaders: Int, skip: Int = 0, reverse: Int = 0) {
         self.requestId = requestId
         self.blockHash = blockHash
+        self.maxHeaders = maxHeaders
         self.skip = skip
         self.reverse = reverse
     }
@@ -18,7 +18,7 @@ class GetBlockHeadersMessage: IOutMessage {
             requestId,
             [
                 blockHash,
-                GetBlockHeadersMessage.maxHeaders,
+                maxHeaders,
                 skip,
                 reverse
             ]
@@ -28,7 +28,7 @@ class GetBlockHeadersMessage: IOutMessage {
     }
 
     func toString() -> String {
-        return "GET_HEADERS [requestId: \(requestId); blockHash: \(blockHash.toHexString()); maxHeaders: \(GetBlockHeadersMessage.maxHeaders); skip: \(skip); reverse: \(reverse)]"
+        return "GET_HEADERS [requestId: \(requestId); blockHash: \(blockHash.toHexString()); maxHeaders: \(maxHeaders); skip: \(skip); reverse: \(reverse)]"
     }
 
 }

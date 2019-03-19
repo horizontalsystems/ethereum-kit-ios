@@ -48,7 +48,7 @@ extension DisconnectMessage {
 extension GetBlockHeadersMessage {
 
     convenience init() {
-        self.init(requestId: 0, blockHash: Data())
+        self.init(requestId: 0, blockHash: Data(), maxHeaders: 0)
     }
 
 }

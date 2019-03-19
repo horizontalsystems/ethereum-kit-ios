@@ -1,4 +1,6 @@
 class PeerGroup {
+    private let headersLimit = 50
+
     weak var delegate: IPeerGroupDelegate?
 
     private let network: INetwork
@@ -8,6 +10,7 @@ class PeerGroup {
     private let logger: Logger?
 
     private var syncPeer: ILESPeer?
+    private var syncing = false
 
     init(network: INetwork, storage: ISpvStorage, connectionKey: ECKey, address: Data, logger: Logger? = nil) {
         self.network = network
@@ -16,18 +19,26 @@ class PeerGroup {
         self.address = address
         self.logger = logger
 
-//        let node = Node(
-//                id: Data(hex: "f9a9a1b2f68dc119b0f44ba579cbc40da1f817ddbdb1045a57fa8159c51eb0f826786ce9e8b327d04c9ad075f2c52da90e9f84ee4dde3a2a911bb1270ef23f6d"),
-//                host: "eth-testnet.horizontalsystems.xyz",
-//                port: 20303,
-//                discoveryPort: 30301
-//        )
         let node = Node(
-                id: Data(hex: "e679038c2e4f9f764acd788c3935cf526f7f630b55254a122452e63e2cfae3066ca6b6c44082c2dfbe9ddffc9df80546d40ef38a0e3dfc9c8720c732446ca8f3"),
-                host: "192.168.4.39",
-                port: 30303,
+                id: Data(hex: "f9a9a1b2f68dc119b0f44ba579cbc40da1f817ddbdb1045a57fa8159c51eb0f826786ce9e8b327d04c9ad075f2c52da90e9f84ee4dde3a2a911bb1270ef23f6d"),
+                host: "eth-testnet.horizontalsystems.xyz",
+                port: 20303,
                 discoveryPort: 30301
         )
+
+//        let node = Node(
+//                id: Data(hex: "053d2f57829e5785d10697fa6c5333e4d98cc564dbadd87805fd4fedeb09cbcb642306e3a73bd4191b27f821fb442fcf964317d6a520b29651e7dd09d1beb0ec"),
+//                host: "79.98.29.154",
+//                port: 30303,
+//                discoveryPort: 30301
+//        )
+
+//        let node = Node(
+//                id: Data(hex: "2d86877fbb2fcc3c27a4fa14fa8c5041ba711ce9682c38a95786c4c948f8e0420c7676316a18fc742154aa1df79cfaf6c59536bd61a9e63c6cc4b0e0b7ef7ec4"),
+//                host: "13.83.92.81",
+//                port: 30303,
+//                discoveryPort: 30301
+//        )
 
         let lastBlockHeader: BlockHeader
 
@@ -44,7 +55,7 @@ class PeerGroup {
 
     func syncBlocks() {
         if let lastBlockHeader = storage.lastBlockHeader {
-            syncPeer?.requestBlockHeaders(blockHash: lastBlockHeader.hashHex)
+            syncPeer?.requestBlockHeaders(blockHash: lastBlockHeader.hashHex, limit: headersLimit)
         }
     }
 
@@ -65,12 +76,17 @@ extension PeerGroup: IPeerGroup {
 extension PeerGroup: ILESPeerDelegate {
 
     func didConnect() {
+        syncing = true
         syncBlocks()
     }
 
     func didReceive(blockHeaders: [BlockHeader], blockHash: Data) {
-        if blockHeaders.count <= 1 {
+        storage.save(blockHeaders: blockHeaders)
+
+        if blockHeaders.count < headersLimit {
             print("BLOCKS SYNCED")
+
+            syncing = false
 
             if let lastBlockHeader = storage.lastBlockHeader {
                 syncPeer?.requestAccountState(address: address, blockHeader: lastBlockHeader)
@@ -78,8 +94,6 @@ extension PeerGroup: ILESPeerDelegate {
 
             return
         }
-
-        storage.save(blockHeaders: blockHeaders)
 
         syncBlocks()
     }
@@ -89,6 +103,12 @@ extension PeerGroup: ILESPeerDelegate {
     }
 
     func didAnnounce(blockHash: Data, blockHeight: BInt) {
+        guard !syncing else {
+            return
+        }
+
+        syncing = true
+        syncBlocks()
     }
 
 }

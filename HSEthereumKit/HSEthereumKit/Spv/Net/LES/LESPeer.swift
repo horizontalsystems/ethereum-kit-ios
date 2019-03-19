@@ -80,10 +80,10 @@ extension LESPeer: ILESPeer {
         devP2PPeer.disconnect(error: error)
     }
 
-    func requestBlockHeaders(blockHash: Data) {
+    func requestBlockHeaders(blockHash: Data, limit: Int) {
         let requestId = randomHelper.randomInt
         let request = BlockHeaderRequest(blockHash: blockHash)
-        let message = GetBlockHeadersMessage(requestId: requestId, blockHash: blockHash)
+        let message = GetBlockHeadersMessage(requestId: requestId, blockHash: blockHash, maxHeaders: limit)
 
         requestHolder.set(blockHeaderRequest: request, id: requestId)
         devP2PPeer.send(message: message)

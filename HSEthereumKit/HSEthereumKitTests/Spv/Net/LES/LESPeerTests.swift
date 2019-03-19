@@ -67,6 +67,7 @@ class LESPeerTests: QuickSpec {
         describe("#requestBlockHeaders") {
             let requestId = 123
             let blockHash = Data(repeating: 1, count: 10)
+            let limit = 100
 
             beforeEach {
                 stub(mockRandomHelper) { mock in
@@ -79,7 +80,7 @@ class LESPeerTests: QuickSpec {
                     when(mock.send(message: any())).thenDoNothing()
                 }
 
-                peer.requestBlockHeaders(blockHash: blockHash)
+                peer.requestBlockHeaders(blockHash: blockHash, limit: limit)
             }
 
             it("sets request to holder") {
@@ -97,6 +98,7 @@ class LESPeerTests: QuickSpec {
 
                 expect(message.requestId).to(equal(requestId))
                 expect(message.blockHash).to(equal(blockHash))
+                expect(message.maxHeaders).to(equal(limit))
             }
         }
 
