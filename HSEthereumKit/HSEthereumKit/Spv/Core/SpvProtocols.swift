@@ -83,7 +83,7 @@ protocol ILESPeer: class {
     func connect()
     func disconnect(error: Error?)
 
-    func requestBlockHeaders(blockHash: Data)
+    func requestBlockHeaders(blockHash: Data, limit: Int)
     func requestAccountState(address: Data, blockHeader: BlockHeader)
 }
 
