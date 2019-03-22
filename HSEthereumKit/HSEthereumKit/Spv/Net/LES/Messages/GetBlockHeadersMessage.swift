@@ -1,13 +1,13 @@
 class GetBlockHeadersMessage: IOutMessage {
     var requestId: Int
-    var blockHash: Data
+    var blockHeight: Int
     var maxHeaders: Int
     var skip: Int
     var reverse: Int  // 0 or 1
 
-    init(requestId: Int, blockHash: Data, maxHeaders: Int, skip: Int = 0, reverse: Int = 0) {
+    init(requestId: Int, blockHeight: Int, maxHeaders: Int, skip: Int = 0, reverse: Int = 0) {
         self.requestId = requestId
-        self.blockHash = blockHash
+        self.blockHeight = blockHeight
         self.maxHeaders = maxHeaders
         self.skip = skip
         self.reverse = reverse
@@ -17,7 +17,7 @@ class GetBlockHeadersMessage: IOutMessage {
         let toEncode: [Any] = [
             requestId,
             [
-                blockHash,
+                blockHeight,
                 maxHeaders,
                 skip,
                 reverse
@@ -28,7 +28,7 @@ class GetBlockHeadersMessage: IOutMessage {
     }
 
     func toString() -> String {
-        return "GET_HEADERS [requestId: \(requestId); blockHash: \(blockHash.toHexString()); maxHeaders: \(maxHeaders); skip: \(skip); reverse: \(reverse)]"
+        return "GET_HEADERS [requestId: \(requestId); blockHeight: \(blockHeight); maxHeaders: \(maxHeaders); skip: \(skip); reverse: \(reverse)]"
     }
 
 }

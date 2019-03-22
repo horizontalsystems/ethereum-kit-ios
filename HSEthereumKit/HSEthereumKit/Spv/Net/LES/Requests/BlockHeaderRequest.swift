@@ -1,8 +1,10 @@
 class BlockHeaderRequest {
-    let blockHash: Data
+    let blockHeader: BlockHeader
+    let reverse: Bool
 
-    init(blockHash: Data) {
-        self.blockHash = blockHash
+    init(blockHeader: BlockHeader, reverse: Bool) {
+        self.blockHeader = blockHeader
+        self.reverse = reverse
     }
 
 }

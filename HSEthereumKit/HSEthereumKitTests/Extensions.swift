@@ -45,14 +45,6 @@ extension DisconnectMessage {
 
 }
 
-extension GetBlockHeadersMessage {
-
-    convenience init() {
-        self.init(requestId: 0, blockHash: Data(), maxHeaders: 0)
-    }
-
-}
-
 extension GetProofsMessage {
 
     convenience init() {
@@ -63,7 +55,7 @@ extension GetProofsMessage {
 
 extension StatusMessage {
 
-    convenience init(protocolVersion: Int = 0, networkId: Int = 0, genesisHash: Data = Data(), headHeight: BInt = 0) {
+    convenience init(protocolVersion: Int = 0, networkId: Int = 0, genesisHash: Data = Data(), headHeight: Int = 0) {
         self.init(
                 protocolVersion: protocolVersion,
                 networkId: networkId,
@@ -94,7 +86,7 @@ extension ProofsMessage {
 
 extension AnnounceMessage {
 
-    convenience init(lastBlockHash: Data = Data(), lastBlockHeight: BInt = 0) {
+    convenience init(lastBlockHash: Data = Data(), lastBlockHeight: Int = 0) {
         self.init(blockHash: lastBlockHash, blockTotalDifficulty: 0, blockHeight: lastBlockHeight, reorganizationDepth: 0)
     }
 
@@ -102,7 +94,7 @@ extension AnnounceMessage {
 
 extension BlockHeader: Equatable {
 
-    convenience init(hashHex: Data = Data(repeating: 7, count: 10), totalDifficulty: BInt = 0, height: BInt = 0) {
+    convenience init(hashHex: Data = Data(repeating: 7, count: 10), parentHash: Data = Data(repeating: 8, count: 10), totalDifficulty: BInt = 0, height: Int = 0) {
         self.init(
                 hashHex: hashHex,
                 totalDifficulty: totalDifficulty,

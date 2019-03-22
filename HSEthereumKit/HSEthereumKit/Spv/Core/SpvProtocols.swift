@@ -3,6 +3,8 @@ import HSCryptoKit
 
 protocol ISpvStorage: IStorage {
     var lastBlockHeader: BlockHeader? { get }
+    func blockHeader(height: Int) -> BlockHeader?
+    func reversedLastBlockHeaders(from height: Int, limit: Int) -> [BlockHeader]
     func save(blockHeaders: [BlockHeader])
 }
 
@@ -57,12 +59,13 @@ public protocol IEthereumKitDelegate: class {
 }
 
 
-protocol ILESPeerDelegate: class {
+protocol IPeerDelegate: class {
     func didConnect()
+    func didDisconnect(error: Error?)
 
-    func didReceive(blockHeaders: [BlockHeader], blockHash: Data)
+    func didReceive(blockHeaders: [BlockHeader], blockHeader: BlockHeader, reverse: Bool)
     func didReceive(accountState: AccountState, address: Data, blockHeader: BlockHeader)
-    func didAnnounce(blockHash: Data, blockHeight: BInt)
+    func didAnnounce(blockHash: Data, blockHeight: Int)
 }
 
 protocol IDevP2PPeerDelegate: class {
@@ -77,13 +80,13 @@ protocol IConnectionDelegate: class {
     func didReceive(frame: Frame)
 }
 
-protocol ILESPeer: class {
-    var delegate: ILESPeerDelegate? { get set }
+protocol IPeer: class {
+    var delegate: IPeerDelegate? { get set }
 
     func connect()
     func disconnect(error: Error?)
 
-    func requestBlockHeaders(blockHash: Data, limit: Int)
+    func requestBlockHeaders(blockHeader: BlockHeader, limit: Int, reverse: Bool)
     func requestAccountState(address: Data, blockHeader: BlockHeader)
 }
 
@@ -135,11 +138,15 @@ protocol INetwork {
 }
 
 protocol IPeerGroupDelegate: class {
-    func onUpdate(state: AccountState)
+    func onUpdate(syncState: EthereumKit.SyncState)
+    func onUpdate(accountState: AccountState)
 }
 
 protocol IPeerGroup {
     var delegate: IPeerGroupDelegate? { get set }
+
+    var syncState: EthereumKit.SyncState { get }
+
     func start()
 }
 
@@ -163,4 +170,12 @@ protocol IOutMessage: IMessage {
 
 protocol ICapabilityHelper {
     func sharedCapabilities(myCapabilities: [Capability], nodeCapabilities: [Capability]) -> [Capability]
+}
+
+protocol IPeerProvider {
+    func peer() -> IPeer
+}
+
+protocol IBlockHelper {
+    var lastBlockHeader: BlockHeader { get }
 }

@@ -3,18 +3,18 @@ class StatusMessage: IInMessage, IOutMessage {
     var networkId: Int
     var headTotalDifficulty: BInt
     var headHash: Data
-    var headHeight: BInt
+    var headHeight: Int
     var genesisHash: Data
 
     var serveHeaders = false
-    var serveChainSince: BInt?
-    var serveStateSince: BInt?
+    var serveChainSince: Int?
+    var serveStateSince: Int?
 
     var flowControlBL: Int = 0
     var flowControlMRR: Int = 0
     var flowControlMRC: [MaxCost] = []
 
-    init(protocolVersion: Int, networkId: Int, genesisHash: Data, headTotalDifficulty: BInt, headHash: Data, headHeight: BInt) {
+    init(protocolVersion: Int, networkId: Int, genesisHash: Data, headTotalDifficulty: BInt, headHash: Data, headHeight: Int) {
         self.protocolVersion = protocolVersion
         self.networkId = networkId
         self.genesisHash = genesisHash
@@ -30,12 +30,12 @@ class StatusMessage: IInMessage, IOutMessage {
         networkId = try StatusMessage.valueElement(rlpList: rlpList, name: "networkId").intValue()
         headTotalDifficulty = try StatusMessage.valueElement(rlpList: rlpList, name: "headTd").bIntValue()
         headHash = try StatusMessage.valueElement(rlpList: rlpList, name: "headHash").dataValue
-        headHeight = try StatusMessage.valueElement(rlpList: rlpList, name: "headNum").bIntValue()
+        headHeight = try StatusMessage.valueElement(rlpList: rlpList, name: "headNum").intValue()
         genesisHash = try StatusMessage.valueElement(rlpList: rlpList, name: "genesisHash").dataValue
 
         serveHeaders = try StatusMessage.optionalValueElement(rlpList: rlpList, name: "serveHeaders") != nil
-        serveChainSince = try StatusMessage.optionalValueElement(rlpList: rlpList, name: "serveChainSince")?.bIntValue()
-        serveStateSince = try StatusMessage.optionalValueElement(rlpList: rlpList, name: "serveStateSince")?.bIntValue()
+        serveChainSince = try StatusMessage.optionalValueElement(rlpList: rlpList, name: "serveChainSince")?.intValue()
+        serveStateSince = try StatusMessage.optionalValueElement(rlpList: rlpList, name: "serveStateSince")?.intValue()
 
         flowControlBL = try StatusMessage.valueElement(rlpList: rlpList, name: "flowControl/BL").intValue()
         flowControlMRR = try StatusMessage.valueElement(rlpList: rlpList, name: "flowControl/MRR").intValue()

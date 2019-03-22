@@ -4,10 +4,10 @@ class BlockHeader: Record {
 
     static let EMPTY_TRIE_HASH = CryptoUtils.shared.sha3(RLP.encode([]))
 
-    let hashHex: Data
+    var hashHex: Data
     var totalDifficulty: BInt = 0 // Scalar value corresponding to the sum of difficulty values of all previous blocks
 
-    let parentHash: Data         // 256-bit Keccak-256 hash of parent block
+    var parentHash: Data         // 256-bit Keccak-256 hash of parent block
     let unclesHash: Data         // 256-bit Keccak-256 hash of uncles portion of this block
     let coinbase: Data           // 160-bit address for fees collected from successful mining
     let stateRoot: Data          // 256-bit state trie root hash
@@ -19,7 +19,7 @@ class BlockHeader: Record {
     let difficulty: BInt         /* A scalar value corresponding to the difficulty level of this block.
                                   * This can be calculated from the previous block’s difficulty level
                                   * and the timestamp */
-    let height: BInt
+    var height: Int
     let gasLimit: Int           // A scalar value equal to the current limit of gas expenditure per block
     let gasUsed: Int             // A scalar value equal to the total gas used in transactions in this block
     let timestamp: Int           // A scalar value equal to the reasonable output of Unix's time() at this block's inception
@@ -32,7 +32,7 @@ class BlockHeader: Record {
 
     init(hashHex: Data, totalDifficulty: BInt, parentHash: Data, unclesHash: Data, coinbase: Data,
          stateRoot: Data, transactionsRoot: Data, receiptsRoot: Data, logsBloom: Data,
-         difficulty: BInt, height: BInt, gasLimit: Int, gasUsed: Int, timestamp: Int,
+         difficulty: BInt, height: Int, gasLimit: Int, gasUsed: Int, timestamp: Int,
          extraData: Data, mixHash: Data, nonce: Data) {
         self.hashHex = hashHex
         self.totalDifficulty = totalDifficulty
@@ -79,7 +79,7 @@ class BlockHeader: Record {
 
         self.logsBloom = rlpList[6].dataValue
         self.difficulty = try rlpList[7].bIntValue()
-        self.height = try rlpList[8].bIntValue()
+        self.height = try rlpList[8].intValue()
         self.gasLimit = try rlpList[9].intValue()
         self.gasUsed = try rlpList[10].intValue()
         self.timestamp = try rlpList[11].intValue()

@@ -1,10 +1,10 @@
 class AnnounceMessage: IInMessage {
     let blockHash: Data
     let blockTotalDifficulty: BInt
-    let blockHeight: BInt
-    let reorganizationDepth: BInt
+    let blockHeight: Int
+    let reorganizationDepth: Int
 
-    init(blockHash: Data, blockTotalDifficulty: BInt, blockHeight: BInt, reorganizationDepth: BInt) {
+    init(blockHash: Data, blockTotalDifficulty: BInt, blockHeight: Int, reorganizationDepth: Int) {
         self.blockHash = blockHash
         self.blockTotalDifficulty = blockTotalDifficulty
         self.blockHeight = blockHeight
@@ -19,9 +19,9 @@ class AnnounceMessage: IInMessage {
         }
 
         blockHash = rlpList[0].dataValue
-        blockHeight = try rlpList[1].bIntValue()
+        blockHeight = try rlpList[1].intValue()
         blockTotalDifficulty = try rlpList[2].bIntValue()
-        reorganizationDepth = try rlpList[3].bIntValue()
+        reorganizationDepth = try rlpList[3].intValue()
     }
 
     func encoded() -> Data {
