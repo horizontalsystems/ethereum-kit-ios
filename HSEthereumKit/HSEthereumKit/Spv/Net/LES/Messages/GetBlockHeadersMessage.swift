@@ -1,11 +1,11 @@
 class GetBlockHeadersMessage: IOutMessage {
     var requestId: Int
-    var blockHeight: BInt
+    var blockHeight: Int
     var maxHeaders: Int
     var skip: Int
     var reverse: Int  // 0 or 1
 
-    init(requestId: Int, blockHeight: BInt, maxHeaders: Int, skip: Int = 0, reverse: Int = 0) {
+    init(requestId: Int, blockHeight: Int, maxHeaders: Int, skip: Int = 0, reverse: Int = 0) {
         self.requestId = requestId
         self.blockHeight = blockHeight
         self.maxHeaders = maxHeaders

@@ -55,7 +55,7 @@ class SpvGrdbStorage {
                 t.column(BlockHeader.Columns.receiptsRoot.name, .blob).notNull()
                 t.column(BlockHeader.Columns.logsBloom.name, .blob).notNull()
                 t.column(BlockHeader.Columns.difficulty.name, .text).notNull()
-                t.column(BlockHeader.Columns.height.name, .text).notNull()
+                t.column(BlockHeader.Columns.height.name, .integer).notNull()
                 t.column(BlockHeader.Columns.gasLimit.name, .integer).notNull()
                 t.column(BlockHeader.Columns.gasUsed.name, .integer).notNull()
                 t.column(BlockHeader.Columns.timestamp.name, .integer).notNull()
@@ -75,7 +75,7 @@ class SpvGrdbStorage {
 extension SpvGrdbStorage: ISpvStorage {
 
     var lastBlockHeight: Int? {
-        return lastBlockHeader?.height.toInt()
+        return lastBlockHeader?.height
     }
 
     func balance(forAddress address: String) -> String? {
@@ -122,9 +122,15 @@ extension SpvGrdbStorage: ISpvStorage {
         }
     }
 
-    func blockHeader(height: BInt) -> BlockHeader? {
+    func blockHeader(height: Int) -> BlockHeader? {
         return try! dbPool.read { db in
             try BlockHeader.filter(BlockHeader.Columns.height == height).fetchOne(db)
+        }
+    }
+
+    func reversedLastBlockHeaders(from height: Int, limit: Int) -> [BlockHeader] {
+        return try! dbPool.read { db in
+            try BlockHeader.filter(BlockHeader.Columns.height <= height).order(Column("height").desc).limit(limit).fetchAll(db)
         }
     }
 

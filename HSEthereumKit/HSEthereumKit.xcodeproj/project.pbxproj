@@ -13,15 +13,21 @@
 		11B35169E195D2801E57AD81 /* FrameConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B353E4C00F4D12A5401C6F /* FrameConnection.swift */; };
 		11B3518C1848401DE249961E /* ApiBlockchain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35AC255BE64FE27CB8220 /* ApiBlockchain.swift */; };
 		11B353DA20E3DD02F8C8D4D4 /* LESPeerRequestHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35434455A2AF945B2BD1B /* LESPeerRequestHolder.swift */; };
+		11B35405B7E0C4928E078F76 /* PeerGroupState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3563AB847E272EE94FECD /* PeerGroupState.swift */; };
+		11B354A47ED18CDC0599ED49 /* PeerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35C30343C696F41F7EC66 /* PeerProvider.swift */; };
 		11B356030FB7878C2BD0C5A8 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B357626B809CC6A964D5B1 /* Logger.swift */; };
 		11B3563CCAB1B50D85984C7E /* CapabilityHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B351D958CC3C4A60EEEC9D /* CapabilityHelperTests.swift */; };
 		11B356BF054DFC99D8EB19E5 /* GeneratedMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B359F34D40C2E21B4CD620 /* GeneratedMocks.swift */; };
 		11B358F1C8520185D515F5C8 /* BlockchainState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B355F58513F030F5E8E201 /* BlockchainState.swift */; };
 		11B3592A8ADE33386B8D5783 /* MaxCost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35CF0B3192008B47AAACB /* MaxCost.swift */; };
+		11B359FF9CFC6CEFEECFBEAC /* BlockValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3559A823FD2E479FB53EB /* BlockValidatorTests.swift */; };
 		11B35A0D90F7DDB2DE3D2FEC /* BlockHeaderRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B359DA0DDE45734AB73E25 /* BlockHeaderRequest.swift */; };
 		11B35A4116607D8C5B444E37 /* EthereumKitState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3567B8F9696AA05DFFADE /* EthereumKitState.swift */; };
+		11B35AA6B3D4826B649A4985 /* BlockValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B358B81C30D5D2AAD8B85C /* BlockValidator.swift */; };
+		11B35B0D2D815D5A08BE4C54 /* BlockHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B356EE4167A9EF2D429826 /* BlockHelper.swift */; };
 		11B35C62ACE0870699401F3F /* CapabilityHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35074A6F5AB51D13B06BE /* CapabilityHelper.swift */; };
 		11B35CEF617BCF783C3D1DCA /* EthereumTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B359B70EC74CF5E6CFBC0C /* EthereumTransaction.swift */; };
+		11B35D680CDB83B30D29187F /* PeerGroupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B351260B945ADB1196EA18 /* PeerGroupTests.swift */; };
 		11B35EAEAEC58D077071352A /* LESPeerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35FFC4D818569376084A3 /* LESPeerTests.swift */; };
 		11B35EB873DF5DDFC6B5207C /* DevP2PPeerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35A34A00570C3752F1EBC /* DevP2PPeerTests.swift */; };
 		11B35F9251133330AD1C5F38 /* ApiGrdbStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35E9EFA334E9433C71CD4 /* ApiGrdbStorage.swift */; };
@@ -154,18 +160,24 @@
 /* Begin PBXFileReference section */
 		11B35074A6F5AB51D13B06BE /* CapabilityHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CapabilityHelper.swift; sourceTree = "<group>"; };
 		11B350977535A5956D227887 /* EthereumKitTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumKitTests.swift; sourceTree = "<group>"; };
+		11B351260B945ADB1196EA18 /* PeerGroupTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerGroupTests.swift; sourceTree = "<group>"; };
 		11B351D958CC3C4A60EEEC9D /* CapabilityHelperTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CapabilityHelperTests.swift; sourceTree = "<group>"; };
 		11B353E4C00F4D12A5401C6F /* FrameConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FrameConnection.swift; sourceTree = "<group>"; };
 		11B35434455A2AF945B2BD1B /* LESPeerRequestHolder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LESPeerRequestHolder.swift; sourceTree = "<group>"; };
 		11B3554DD0D3D4A6F7D9005C /* EthereumBalance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumBalance.swift; sourceTree = "<group>"; };
+		11B3559A823FD2E479FB53EB /* BlockValidatorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockValidatorTests.swift; sourceTree = "<group>"; };
 		11B355F58513F030F5E8E201 /* BlockchainState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockchainState.swift; sourceTree = "<group>"; };
+		11B3563AB847E272EE94FECD /* PeerGroupState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerGroupState.swift; sourceTree = "<group>"; };
 		11B3567B8F9696AA05DFFADE /* EthereumKitState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumKitState.swift; sourceTree = "<group>"; };
+		11B356EE4167A9EF2D429826 /* BlockHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockHelper.swift; sourceTree = "<group>"; };
 		11B357626B809CC6A964D5B1 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		11B358B81C30D5D2AAD8B85C /* BlockValidator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockValidator.swift; sourceTree = "<group>"; };
 		11B359B70EC74CF5E6CFBC0C /* EthereumTransaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumTransaction.swift; sourceTree = "<group>"; };
 		11B359DA0DDE45734AB73E25 /* BlockHeaderRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockHeaderRequest.swift; sourceTree = "<group>"; };
 		11B359F34D40C2E21B4CD620 /* GeneratedMocks.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GeneratedMocks.swift; sourceTree = "<group>"; };
 		11B35A34A00570C3752F1EBC /* DevP2PPeerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DevP2PPeerTests.swift; sourceTree = "<group>"; };
 		11B35AC255BE64FE27CB8220 /* ApiBlockchain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApiBlockchain.swift; sourceTree = "<group>"; };
+		11B35C30343C696F41F7EC66 /* PeerProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerProvider.swift; sourceTree = "<group>"; };
 		11B35CC13BE2809A1D47FC37 /* DevP2PConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DevP2PConnection.swift; sourceTree = "<group>"; };
 		11B35CF0B3192008B47AAACB /* MaxCost.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MaxCost.swift; sourceTree = "<group>"; };
 		11B35E9EFA334E9433C71CD4 /* ApiGrdbStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApiGrdbStorage.swift; sourceTree = "<group>"; };
@@ -602,6 +614,8 @@
 				D045FC20221C19F20009BEF6 /* Connection */,
 				11B35F4F299FD99CFF8E479E /* DevP2P */,
 				11B35F50E72AC9C4CF5AFADD /* LES */,
+				11B351260B945ADB1196EA18 /* PeerGroupTests.swift */,
+				11B3559A823FD2E479FB53EB /* BlockValidatorTests.swift */,
 			);
 			path = Net;
 			sourceTree = "<group>";
@@ -680,6 +694,10 @@
 				2FA5DC4BD52779213E1952A6 /* PeerGroup.swift */,
 				2FA5D05F4E0D54E432282958 /* Ropsten.swift */,
 				2FA5D51BD89CC6356F1E6138 /* Node.swift */,
+				11B35C30343C696F41F7EC66 /* PeerProvider.swift */,
+				11B3563AB847E272EE94FECD /* PeerGroupState.swift */,
+				11B358B81C30D5D2AAD8B85C /* BlockValidator.swift */,
+				11B356EE4167A9EF2D429826 /* BlockHelper.swift */,
 			);
 			path = Net;
 			sourceTree = "<group>";
@@ -910,6 +928,8 @@
 				"$(SRCROOT)/HSEthereumKit/Spv/Core/SpvProtocols.swift",
 				"$(SRCROOT)/HSEthereumKit/Spv/Net/LES/LESPeerRequestHolder.swift",
 				"$(SRCROOT)/HSEthereumKit/Spv/Net/LES/Requests/AccountStateRequest.swift",
+				"$(SRCROOT)/HSEthereumKit/Spv/Net/PeerGroupState.swift",
+				"$(SRCROOT)/HSEthereumKit/Spv/Net/BlockValidator.swift",
 			);
 			name = Cuckoo;
 			outputPaths = (
@@ -1008,6 +1028,8 @@
 				11B35EB873DF5DDFC6B5207C /* DevP2PPeerTests.swift in Sources */,
 				11B35EAEAEC58D077071352A /* LESPeerTests.swift in Sources */,
 				11B3563CCAB1B50D85984C7E /* CapabilityHelperTests.swift in Sources */,
+				11B35D680CDB83B30D29187F /* PeerGroupTests.swift in Sources */,
+				11B359FF9CFC6CEFEECFBEAC /* BlockValidatorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1130,6 +1152,10 @@
 				11B3592A8ADE33386B8D5783 /* MaxCost.swift in Sources */,
 				1A564FD1E7912DE963C79EB8 /* GasPrice.swift in Sources */,
 				1A564C0DCC46C4B225F37BDA /* IPFS.swift in Sources */,
+				11B354A47ED18CDC0599ED49 /* PeerProvider.swift in Sources */,
+				11B35405B7E0C4928E078F76 /* PeerGroupState.swift in Sources */,
+				11B35AA6B3D4826B649A4985 /* BlockValidator.swift in Sources */,
+				11B35B0D2D815D5A08BE4C54 /* BlockHelper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,114 +1,135 @@
 class PeerGroup {
-    private let headersLimit = 50
-
     weak var delegate: IPeerGroupDelegate?
 
-    private let network: INetwork
     private let storage: ISpvStorage
-    private let connectionKey: ECKey
+    private let peerProvider: IPeerProvider
+    private let validator: BlockValidator
+    private let blockHelper: IBlockHelper
+    private let state: PeerGroupState
     private let address: Data
+    private let headersLimit: Int
     private let logger: Logger?
 
-    private var syncPeer: ILESPeer?
-    private var syncing = false
-
-    init(network: INetwork, storage: ISpvStorage, connectionKey: ECKey, address: Data, logger: Logger? = nil) {
-        self.network = network
+    init(
+            storage: ISpvStorage,
+            peerProvider: IPeerProvider,
+            validator: BlockValidator,
+            blockHelper: IBlockHelper,
+            state: PeerGroupState = PeerGroupState(),
+            address: Data,
+            headersLimit: Int = 50,
+            logger: Logger? = nil
+    ) {
         self.storage = storage
-        self.connectionKey = connectionKey
+        self.peerProvider = peerProvider
+        self.validator = validator
+        self.blockHelper = blockHelper
+        self.state = state
         self.address = address
+        self.headersLimit = headersLimit
         self.logger = logger
+    }
 
-        let node = Node(
-                id: Data(hex: "f9a9a1b2f68dc119b0f44ba579cbc40da1f817ddbdb1045a57fa8159c51eb0f826786ce9e8b327d04c9ad075f2c52da90e9f84ee4dde3a2a911bb1270ef23f6d"),
-                host: "eth-testnet.horizontalsystems.xyz",
-                port: 20303,
-                discoveryPort: 30301
-        )
+    private func handle(blockHeaders: [BlockHeader], blockHeader: BlockHeader) throws {
+        try validator.validate(blockHeaders: blockHeaders, from: blockHeader)
 
-//        let node = Node(
-//                id: Data(hex: "053d2f57829e5785d10697fa6c5333e4d98cc564dbadd87805fd4fedeb09cbcb642306e3a73bd4191b27f821fb442fcf964317d6a520b29651e7dd09d1beb0ec"),
-//                host: "79.98.29.154",
-//                port: 30303,
-//                discoveryPort: 30301
-//        )
+        storage.save(blockHeaders: blockHeaders)
 
-//        let node = Node(
-//                id: Data(hex: "2d86877fbb2fcc3c27a4fa14fa8c5041ba711ce9682c38a95786c4c948f8e0420c7676316a18fc742154aa1df79cfaf6c59536bd61a9e63c6cc4b0e0b7ef7ec4"),
-//                host: "13.83.92.81",
-//                port: 30303,
-//                discoveryPort: 30301
-//        )
+        guard let lastBlockHeader = blockHeaders.last else {
+            return
+        }
 
-        let lastBlockHeader: BlockHeader
-
-        if let storedLastBlockHeader = storage.lastBlockHeader {
-            lastBlockHeader = storedLastBlockHeader
+        if blockHeaders.count < headersLimit {
+            state.syncPeer?.requestAccountState(address: address, blockHeader: lastBlockHeader)
         } else {
-            storage.save(blockHeaders: [network.checkpointBlock])
-            lastBlockHeader = network.checkpointBlock
-        }
-
-        syncPeer = LESPeer.instance(network: network, lastBlockHeader: lastBlockHeader, key: connectionKey, node: node, logger: logger)
-        syncPeer?.delegate = self
-    }
-
-    func syncBlocks() {
-        if let lastBlockHeader = storage.lastBlockHeader {
-            syncPeer?.requestBlockHeaders(blockHeight: lastBlockHeader.height, limit: headersLimit)
+            state.syncPeer?.requestBlockHeaders(blockHeader: lastBlockHeader, limit: headersLimit, reverse: false)
         }
     }
 
-    private var lastBlockHeader: BlockHeader {
-        return storage.lastBlockHeader ?? network.checkpointBlock
+    private func handleFork(blockHeaders: [BlockHeader], blockHeader: BlockHeader) throws {
+        logger?.debug("Received reversed block headers")
+
+        let storedBlockHeaders = storage.reversedLastBlockHeaders(from: blockHeader.height, limit: blockHeaders.count)
+
+        guard let forkedBlock = storedBlockHeaders.first(where: { storedBlockHeader in
+            blockHeaders.contains { $0.hashHex == storedBlockHeader.hashHex && $0.height == storedBlockHeader.height }
+        }) else {
+            throw PeerError.invalidForkedPeer
+        }
+
+        logger?.debug("Found forked block header: \(forkedBlock.height)")
+
+        state.syncPeer?.requestBlockHeaders(blockHeader: forkedBlock, limit: headersLimit, reverse: false)
     }
 
 }
 
 extension PeerGroup: IPeerGroup {
 
+    var syncState: EthereumKit.SyncState {
+        return state.syncState
+    }
+
     func start() {
-        syncPeer?.connect()
+        state.syncState = .syncing
+        delegate?.onUpdate(syncState: .syncing)
+
+        let peer = peerProvider.peer()
+        peer.delegate = self
+
+        state.syncPeer = peer
+        peer.connect()
     }
 
 }
 
-extension PeerGroup: ILESPeerDelegate {
+extension PeerGroup: IPeerDelegate {
 
     func didConnect() {
-        syncing = true
-        syncBlocks()
+        state.syncPeer?.requestBlockHeaders(blockHeader: blockHelper.lastBlockHeader, limit: headersLimit, reverse: false)
     }
 
-    func didReceive(blockHeaders: [BlockHeader], blockHeight: BInt) {
-        storage.save(blockHeaders: blockHeaders)
+    func didDisconnect(error: Error?) {
+        state.syncPeer = nil
+    }
 
-        if blockHeaders.count < headersLimit {
-            print("BLOCKS SYNCED")
-
-            syncing = false
-
-            if let lastBlockHeader = storage.lastBlockHeader {
-                syncPeer?.requestAccountState(address: address, blockHeader: lastBlockHeader)
+    func didReceive(blockHeaders: [BlockHeader], blockHeader: BlockHeader, reverse: Bool) {
+        do {
+            if reverse {
+                try handleFork(blockHeaders: blockHeaders, blockHeader: blockHeader)
+            } else {
+                try handle(blockHeaders: blockHeaders, blockHeader: blockHeader)
             }
+        } catch BlockValidator.ValidationError.forkDetected {
+            logger?.debug("Fork detected! Requesting reversed headers for block \(blockHeader.height)")
 
-            return
+            state.syncPeer?.requestBlockHeaders(blockHeader: blockHeader, limit: headersLimit, reverse: true)
+        } catch {
+            state.syncPeer?.disconnect(error: error)
         }
-
-        syncBlocks()
     }
 
     func didReceive(accountState: AccountState, address: Data, blockHeader: BlockHeader) {
-        delegate?.onUpdate(state: accountState)
+        delegate?.onUpdate(accountState: accountState)
+
+        state.syncState = .synced
+        delegate?.onUpdate(syncState: .synced)
     }
 
-    func didAnnounce(blockHash: Data, blockHeight: BInt) {
-        guard !syncing else {
+    func didAnnounce(blockHash: Data, blockHeight: Int) {
+        guard state.syncState == .synced else {
             return
         }
 
-        syncing = true
-        syncBlocks()
+        state.syncPeer?.requestBlockHeaders(blockHeader: blockHelper.lastBlockHeader, limit: headersLimit, reverse: false)
+    }
+
+}
+
+extension PeerGroup {
+
+    enum PeerError: Error {
+        case invalidForkedPeer
     }
 
 }

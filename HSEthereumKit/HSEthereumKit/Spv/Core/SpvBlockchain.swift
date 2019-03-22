@@ -33,7 +33,7 @@ extension SpvBlockchain: IBlockchain {
     }
 
     var syncState: EthereumKit.SyncState {
-        return EthereumKit.SyncState.synced
+        return peerGroup.syncState
     }
 
     func syncState(contractAddress: String) -> EthereumKit.SyncState {
@@ -59,8 +59,12 @@ extension SpvBlockchain: IBlockchain {
 
 extension SpvBlockchain: IPeerGroupDelegate {
 
-    func onUpdate(state: AccountState) {
-        delegate?.onUpdate(balance: state.balance.wei.asString(withBase: 10))
+    func onUpdate(syncState: EthereumKit.SyncState) {
+        delegate?.onUpdate(syncState: syncState)
+    }
+
+    func onUpdate(accountState: AccountState) {
+        delegate?.onUpdate(balance: accountState.balance.wei.asString(withBase: 10))
     }
 
 }
@@ -84,7 +88,11 @@ extension SpvBlockchain {
                 publicKeyPoint: ECPoint(nodeId: connectionPublicKey)
         )
 
-        let peerGroup = PeerGroup(network: Ropsten(), storage: storage, connectionKey: connectionECKey, address: addressData, logger: logger)
+        let peerProvider = PeerProvider(network: network, storage: storage, connectionKey: connectionECKey, logger: logger)
+        let validator = BlockValidator()
+        let blockHelper = BlockHelper(storage: storage, network: network)
+
+        let peerGroup = PeerGroup(storage: storage, peerProvider: peerProvider, validator: validator, blockHelper: blockHelper, address: addressData, logger: logger)
 
         let spvBlockchain = SpvBlockchain(peerGroup: peerGroup, ethereumAddress: address)
 

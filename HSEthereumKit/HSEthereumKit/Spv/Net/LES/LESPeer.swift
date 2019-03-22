@@ -1,5 +1,5 @@
 class LESPeer {
-    weak var delegate: ILESPeerDelegate?
+    weak var delegate: IPeerDelegate?
 
     private let devP2PPeer: IDevP2PPeer
     private let requestHolder: LESPeerRequestHolder
@@ -52,7 +52,7 @@ class LESPeer {
             throw LESPeer.ConsistencyError.unexpectedMessage
         }
 
-        delegate?.didReceive(blockHeaders: message.headers, blockHeight: request.blockHeight)
+        delegate?.didReceive(blockHeaders: message.headers, blockHeader: request.blockHeader, reverse: request.reverse)
     }
 
     private func handle(message: ProofsMessage) throws {
@@ -70,7 +70,7 @@ class LESPeer {
 
 }
 
-extension LESPeer: ILESPeer {
+extension LESPeer: IPeer {
 
     func connect() {
         devP2PPeer.connect()
@@ -80,10 +80,10 @@ extension LESPeer: ILESPeer {
         devP2PPeer.disconnect(error: error)
     }
 
-    func requestBlockHeaders(blockHeight: BInt, limit: Int) {
+    func requestBlockHeaders(blockHeader: BlockHeader, limit: Int, reverse: Bool) {
         let requestId = randomHelper.randomInt
-        let request = BlockHeaderRequest(blockHeight: blockHeight)
-        let message = GetBlockHeadersMessage(requestId: requestId, blockHeight: blockHeight, maxHeaders: limit)
+        let request = BlockHeaderRequest(blockHeader: blockHeader, reverse: reverse)
+        let message = GetBlockHeadersMessage(requestId: requestId, blockHeight: blockHeader.height, maxHeaders: limit, reverse: reverse ? 1 : 0)
 
         requestHolder.set(blockHeaderRequest: request, id: requestId)
         devP2PPeer.send(message: message)
@@ -118,6 +118,8 @@ extension LESPeer: IDevP2PPeerDelegate {
 
     func didDisconnect(error: Error?) {
         logger?.debug("Disconnected with error: \(error.map { "\($0)" } ?? "nil")")
+
+        delegate?.didDisconnect(error: error)
     }
 
     func didReceive(message: IInMessage) {
