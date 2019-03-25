@@ -49,16 +49,12 @@ protocol IAddressValidator {
     func validate(address: String) throws
 }
 
-protocol IStorage {
+protocol IApiStorage {
     var lastBlockHeight: Int? { get }
 
     func balance(forAddress address: String) -> String?
     func transactionsSingle(fromHash: String?, limit: Int?, contractAddress: String?) -> Single<[EthereumTransaction]>
 
-    func clear()
-}
-
-protocol IApiStorage: IStorage {
     var gasPriceData: GasPrice? { get }
     func lastTransactionBlockHeight(erc20: Bool) -> Int?
 
@@ -66,6 +62,8 @@ protocol IApiStorage: IStorage {
     func save(gasPriceData: GasPrice)
     func save(balance: String, address: String)
     func save(transactions: [EthereumTransaction])
+
+    func clear()
 }
 
 protocol IBlockchain {
@@ -79,6 +77,10 @@ protocol IBlockchain {
     func clear()
 
     func gasPriceInWei(priority: FeePriority) -> Int
+
+    var lastBlockHeight: Int? { get }
+    func balance(forAddress address: String) -> String?
+    func transactionsSingle(fromHash: String?, limit: Int?, contractAddress: String?) -> Single<[EthereumTransaction]>
 
     var syncState: EthereumKit.SyncState { get }
     func syncState(contractAddress: String) -> EthereumKit.SyncState

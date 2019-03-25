@@ -147,6 +147,35 @@ class LESPeerTests: QuickSpec {
             }
         }
 
+        describe("#sendTransaction") {
+            let requestId = 123
+            let rawTransaction = RawTransaction()
+            let signature: (v: BInt, r: BInt, s: BInt) = (0, 0, 0)
+
+            beforeEach {
+                stub(mockRandomHelper) { mock in
+                    when(mock.randomInt.get).thenReturn(requestId)
+                }
+                stub(mockDevP2PPeer) { mock in
+                    when(mock.send(message: any())).thenDoNothing()
+                }
+
+                peer.send(rawTransaction: rawTransaction, signature: signature)
+            }
+
+            it("sends message to devP2P peer") {
+                let argumentCaptor = ArgumentCaptor<IOutMessage>()
+                verify(mockDevP2PPeer).send(message: argumentCaptor.capture())
+                let message = argumentCaptor.value as! SendTransactionMessage
+
+                expect(message.requestId).to(equal(requestId))
+                expect(message.rawTransaction).to(beIdenticalTo(rawTransaction))
+                expect(message.signature.v).to(equal(signature.v))
+                expect(message.signature.r).to(equal(signature.r))
+                expect(message.signature.s).to(equal(signature.s))
+            }
+        }
+
         describe("#didConnect") {
             let argumentCaptor = ArgumentCaptor<IOutMessage>()
 

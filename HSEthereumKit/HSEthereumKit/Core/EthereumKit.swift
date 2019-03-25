@@ -7,20 +7,18 @@ public class EthereumKit {
     public weak var delegate: IEthereumKitDelegate?
 
     private let blockchain: IBlockchain
-    private let storage: IStorage
     private let addressValidator: IAddressValidator
     private let state: EthereumKitState
     private let delegateQueue: DispatchQueue
 
-    init(blockchain: IBlockchain, storage: IStorage, addressValidator: IAddressValidator, state: EthereumKitState = EthereumKitState(), delegateQueue: DispatchQueue = .main) {
+    init(blockchain: IBlockchain, addressValidator: IAddressValidator, state: EthereumKitState = EthereumKitState(), delegateQueue: DispatchQueue = .main) {
         self.blockchain = blockchain
-        self.storage = storage
         self.addressValidator = addressValidator
         self.state = state
         self.delegateQueue = delegateQueue
 
-        state.balance = storage.balance(forAddress: blockchain.ethereumAddress)
-        state.lastBlockHeight = storage.lastBlockHeight
+        state.balance = blockchain.balance(forAddress: blockchain.ethereumAddress)
+        state.lastBlockHeight = blockchain.lastBlockHeight
     }
 
 }
@@ -37,7 +35,6 @@ extension EthereumKit {
         delegate = nil
 
         blockchain.clear()
-        storage.clear()
         state.clear()
     }
 
@@ -63,7 +60,7 @@ extension EthereumKit {
         }
 
         state.add(contractAddress: contractAddress, delegate: delegate)
-        state.set(balance: storage.balance(forAddress: contractAddress), contractAddress: contractAddress)
+        state.set(balance: blockchain.balance(forAddress: contractAddress), contractAddress: contractAddress)
 
         blockchain.register(contractAddress: contractAddress)
     }
@@ -83,7 +80,7 @@ extension EthereumKit {
     }
 
     public func transactionsSingle(fromHash: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {
-        return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: nil)
+        return blockchain.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: nil)
     }
 
     public func sendSingle(to address: String, amount: String, priority: FeePriority = .medium) -> Single<EthereumTransaction> {
@@ -119,7 +116,7 @@ extension EthereumKit {
     }
 
     public func transactionsErc20Single(contractAddress: String, fromHash: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {
-        return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: contractAddress)
+        return blockchain.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: contractAddress)
     }
 
     public func sendErc20Single(to address: String, contractAddress: String, amount: String, priority: FeePriority = .medium) -> Single<EthereumTransaction> {
@@ -200,7 +197,7 @@ extension EthereumKit {
         let blockchain = try ApiBlockchain.apiBlockchain(storage: storage, words: words, testMode: testMode, infuraKey: infuraKey, etherscanKey: etherscanKey, debugPrints: debugPrints)
         let addressValidator = AddressValidator()
 
-        let ethereumKit = EthereumKit(blockchain: blockchain, storage: storage, addressValidator: addressValidator)
+        let ethereumKit = EthereumKit(blockchain: blockchain, addressValidator: addressValidator)
 
         blockchain.delegate = ethereumKit
 
@@ -214,7 +211,7 @@ extension EthereumKit {
         let blockchain = SpvBlockchain.spvBlockchain(storage: storage, words: words, testMode: testMode, logger: logger)
         let addressValidator = AddressValidator()
 
-        let ethereumKit = EthereumKit(blockchain: blockchain, storage: storage, addressValidator: addressValidator)
+        let ethereumKit = EthereumKit(blockchain: blockchain, addressValidator: addressValidator)
 
         blockchain.delegate = ethereumKit
 

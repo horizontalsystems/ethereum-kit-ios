@@ -250,6 +250,7 @@ extension ApiBlockchain: IBlockchain {
 
     func clear() {
         erc20Contracts = [:]
+        storage.clear()
     }
 
     func gasPriceInWei(priority: FeePriority) -> Int {
@@ -267,6 +268,18 @@ extension ApiBlockchain: IBlockchain {
         case .custom(let value):
             return value
         }
+    }
+
+    var lastBlockHeight: Int? {
+        return storage.lastBlockHeight
+    }
+
+    func balance(forAddress address: String) -> String? {
+        return storage.balance(forAddress: address)
+    }
+
+    func transactionsSingle(fromHash: String?, limit: Int?, contractAddress: String?) -> Single<[EthereumTransaction]> {
+        return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: contractAddress)
     }
 
     func syncState(contractAddress: String) -> EthereumKit.SyncState {

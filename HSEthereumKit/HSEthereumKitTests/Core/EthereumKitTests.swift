@@ -6,7 +6,6 @@ import Cuckoo
 class EthereumKitTests: XCTestCase {
     private var mockDelegate: MockIEthereumKitDelegate!
     private var mockBlockchain: MockIBlockchain!
-    private var mockStorage: MockIStorage!
     private var mockAddressValidator: MockIAddressValidator!
     private var mockState: MockEthereumKitState!
 
@@ -19,14 +18,11 @@ class EthereumKitTests: XCTestCase {
 
         mockDelegate = MockIEthereumKitDelegate()
         mockBlockchain = MockIBlockchain()
-        mockStorage = MockIStorage()
         mockAddressValidator = MockIAddressValidator()
         mockState = MockEthereumKitState()
 
         stub(mockBlockchain) { mock in
             when(mock.ethereumAddress.get).thenReturn(ethereumAddress)
-        }
-        stub(mockStorage) { mock in
             when(mock.balance(forAddress: ethereumAddress)).thenReturn(nil)
             when(mock.lastBlockHeight.get).thenReturn(nil)
         }
@@ -40,7 +36,7 @@ class EthereumKitTests: XCTestCase {
     }
 
     private func createKit() -> EthereumKit {
-        return EthereumKit(blockchain: mockBlockchain, storage: mockStorage, addressValidator: mockAddressValidator, state: mockState)
+        return EthereumKit(blockchain: mockBlockchain, addressValidator: mockAddressValidator, state: mockState)
     }
 
     override func tearDown() {
@@ -48,7 +44,6 @@ class EthereumKitTests: XCTestCase {
 
         mockDelegate = nil
         mockBlockchain = nil
-        mockStorage = nil
         mockAddressValidator = nil
         mockState = nil
 
@@ -59,7 +54,7 @@ class EthereumKitTests: XCTestCase {
         let balance = "12345"
         let lastBlockHeight = 123
 
-        stub(mockStorage) { mock in
+        stub(mockBlockchain) { mock in
             when(mock.balance(forAddress: ethereumAddress)).thenReturn(balance)
             when(mock.lastBlockHeight.get).thenReturn(lastBlockHeight)
         }
@@ -81,9 +76,6 @@ class EthereumKitTests: XCTestCase {
     }
 
     func testClear() {
-        stub(mockStorage) { mock in
-            when(mock.clear()).thenDoNothing()
-        }
         stub(mockState) { mock in
             when(mock.clear()).thenDoNothing()
         }
@@ -94,7 +86,6 @@ class EthereumKitTests: XCTestCase {
         kit.clear()
 
         verify(mockBlockchain).clear()
-        verify(mockStorage).clear()
         verify(mockState).clear()
     }
 
@@ -120,8 +111,6 @@ class EthereumKitTests: XCTestCase {
         }
         stub(mockBlockchain) { mock in
             when(mock.register(contractAddress: any())).thenDoNothing()
-        }
-        stub(mockStorage) { mock in
             when(mock.balance(forAddress: contractAddress)).thenReturn(balance)
         }
 

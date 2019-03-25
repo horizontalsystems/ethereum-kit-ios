@@ -67,6 +67,18 @@ class SpvGrdbStorage {
             }
         }
 
+        migrator.registerMigration("createAccountStates") { db in
+            try db.create(table: AccountState.databaseTableName) { t in
+                t.column(AccountState.Columns.address.name, .blob).notNull()
+                t.column(AccountState.Columns.nonce.name, .integer).notNull()
+                t.column(AccountState.Columns.balance.name, .text).notNull()
+                t.column(AccountState.Columns.storageHash.name, .blob).notNull()
+                t.column(AccountState.Columns.codeHash.name, .blob).notNull()
+
+                t.primaryKey([AccountState.Columns.address.name], onConflict: .replace)
+            }
+        }
+
         return migrator
     }
 
@@ -74,13 +86,49 @@ class SpvGrdbStorage {
 
 extension SpvGrdbStorage: ISpvStorage {
 
-    var lastBlockHeight: Int? {
-        return lastBlockHeader?.height
+    // BlockHeader
+
+    var lastBlockHeader: BlockHeader? {
+        return try! dbPool.read { db in
+            try BlockHeader.order(Column("height").desc).fetchOne(db)
+        }
     }
 
-    func balance(forAddress address: String) -> String? {
-        return nil
+    func blockHeader(height: Int) -> BlockHeader? {
+        return try! dbPool.read { db in
+            try BlockHeader.filter(BlockHeader.Columns.height == height).fetchOne(db)
+        }
     }
+
+    func reversedLastBlockHeaders(from height: Int, limit: Int) -> [BlockHeader] {
+        return try! dbPool.read { db in
+            try BlockHeader.filter(BlockHeader.Columns.height <= height).order(Column("height").desc).limit(limit).fetchAll(db)
+        }
+    }
+
+    func save(blockHeaders: [BlockHeader]) {
+        _ = try? dbPool.write { db in
+            for header in blockHeaders {
+                try header.insert(db)
+            }
+        }
+    }
+
+    // AccountState
+
+    var accountState: AccountState? {
+        return try! dbPool.read { db in
+            try AccountState.fetchOne(db)
+        }
+    }
+
+    func save(accountState: AccountState) {
+        _ = try? dbPool.write { db in
+            try accountState.insert(db)
+        }
+    }
+
+    // Transactions
 
     func transactionsSingle(fromHash: String?, limit: Int?, contractAddress: String?) -> Single<[EthereumTransaction]> {
         return Single.create { [weak self] observer in
@@ -109,36 +157,21 @@ extension SpvGrdbStorage: ISpvStorage {
         }
     }
 
+    func save(transactions: [EthereumTransaction]) {
+        _ = try? dbPool.write { db in
+            for transaction in transactions {
+                try transaction.insert(db)
+            }
+        }
+    }
+
+    // Misc
+
     func clear() {
         _ = try? dbPool.write { db in
             try EthereumTransaction.deleteAll(db)
             try BlockHeader.deleteAll(db)
-        }
-    }
-
-    var lastBlockHeader: BlockHeader? {
-        return try! dbPool.read { db in
-            try BlockHeader.order(Column("height").desc).fetchOne(db)
-        }
-    }
-
-    func blockHeader(height: Int) -> BlockHeader? {
-        return try! dbPool.read { db in
-            try BlockHeader.filter(BlockHeader.Columns.height == height).fetchOne(db)
-        }
-    }
-
-    func reversedLastBlockHeaders(from height: Int, limit: Int) -> [BlockHeader] {
-        return try! dbPool.read { db in
-            try BlockHeader.filter(BlockHeader.Columns.height <= height).order(Column("height").desc).limit(limit).fetchAll(db)
-        }
-    }
-
-    func save(blockHeaders: [BlockHeader]) {
-        _ = try? dbPool.write { db in
-            for header in blockHeaders {
-                try header.insert(db)
-            }
+            try AccountState.deleteAll(db)
         }
     }
 

@@ -81,6 +81,10 @@ extension PeerGroup: IPeerGroup {
         peer.connect()
     }
 
+    func send(rawTransaction: RawTransaction, signature: (v: BInt, r: BInt, s: BInt)) {
+        state.syncPeer?.send(rawTransaction: rawTransaction, signature: signature)
+    }
+
 }
 
 extension PeerGroup: IPeerDelegate {
@@ -110,6 +114,8 @@ extension PeerGroup: IPeerDelegate {
     }
 
     func didReceive(accountState: AccountState, address: Data, blockHeader: BlockHeader) {
+        logger?.verbose("ACCOUNT STATE: \(accountState.toString())")
+
         delegate?.onUpdate(accountState: accountState)
 
         state.syncState = .synced
