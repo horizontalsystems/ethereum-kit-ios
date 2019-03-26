@@ -87,6 +87,31 @@ class PeerGroupTests: QuickSpec {
             }
         }
 
+        describe("#sendTransaction") {
+            let mockPeer = MockIPeer()
+            let rawTransaction = RawTransaction()
+            let signature: (v: BInt, r: BInt, s: BInt) = (0, 0, 0)
+
+            beforeEach {
+                stub(mockState) { mock in
+                    when(mock.syncPeer.get).thenReturn(mockPeer)
+                }
+                stub(mockPeer) { mock in
+                    when(mock.send(rawTransaction: any(), signature: any())).thenDoNothing()
+                }
+
+                peerGroup.send(rawTransaction: rawTransaction, signature: signature)
+            }
+
+            afterEach {
+                reset(mockPeer)
+            }
+
+            it("sends transaction to sync peer") {
+                verify(mockPeer).send(rawTransaction: sameInstance(as: rawTransaction), signature: any())
+            }
+        }
+
         describe("#didConnect") {
             let mockPeer = MockIPeer()
             let lastBlockHeader = BlockHeader()

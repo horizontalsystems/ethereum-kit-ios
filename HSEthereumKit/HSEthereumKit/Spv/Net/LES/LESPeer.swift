@@ -23,6 +23,7 @@ class LESPeer {
         case let message as BlockHeadersMessage: try handle(message: message)
         case let message as ProofsMessage: try handle(message: message)
         case let message as AnnounceMessage: try handle(message: message)
+        case let message as TransactionStatusMessage: try handle(message: message)
         default: logger?.warning("Unknown message: \(message)")
         }
     }
@@ -68,6 +69,9 @@ class LESPeer {
         delegate?.didAnnounce(blockHash: message.blockHash, blockHeight: message.blockHeight)
     }
 
+    private func handle(message: TransactionStatusMessage) throws {
+    }
+
 }
 
 extension LESPeer: IPeer {
@@ -98,6 +102,13 @@ extension LESPeer: IPeer {
         devP2PPeer.send(message: message)
     }
 
+    func send(rawTransaction: RawTransaction, signature: (v: BInt, r: BInt, s: BInt)) {
+        let requestId = randomHelper.randomInt
+        let message = SendTransactionMessage(requestId: requestId, rawTransaction: rawTransaction, signature: signature)
+
+        devP2PPeer.send(message: message)
+    }
+
 }
 
 extension LESPeer: IDevP2PPeerDelegate {
@@ -113,7 +124,6 @@ extension LESPeer: IDevP2PPeerDelegate {
         )
 
         devP2PPeer.send(message: statusMessage)
-
     }
 
     func didDisconnect(error: Error?) {

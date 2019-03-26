@@ -1,11 +1,19 @@
-import Foundation
+import RxSwift
 import HSCryptoKit
 
-protocol ISpvStorage: IStorage {
+protocol ISpvStorage {
     var lastBlockHeader: BlockHeader? { get }
     func blockHeader(height: Int) -> BlockHeader?
     func reversedLastBlockHeaders(from height: Int, limit: Int) -> [BlockHeader]
     func save(blockHeaders: [BlockHeader])
+
+    var accountState: AccountState? { get }
+    func save(accountState: AccountState)
+
+    func transactionsSingle(fromHash: String?, limit: Int?, contractAddress: String?) -> Single<[EthereumTransaction]>
+    func save(transactions: [EthereumTransaction])
+
+    func clear()
 }
 
 protocol IRandomHelper: class {
@@ -88,6 +96,8 @@ protocol IPeer: class {
 
     func requestBlockHeaders(blockHeader: BlockHeader, limit: Int, reverse: Bool)
     func requestAccountState(address: Data, blockHeader: BlockHeader)
+
+    func send(rawTransaction: RawTransaction, signature: (v: BInt, r: BInt, s: BInt))
 }
 
 protocol IConnection: class {
@@ -148,6 +158,8 @@ protocol IPeerGroup {
     var syncState: EthereumKit.SyncState { get }
 
     func start()
+
+    func send(rawTransaction: RawTransaction, signature: (v: BInt, r: BInt, s: BInt))
 }
 
 protocol IDevP2PPeer {

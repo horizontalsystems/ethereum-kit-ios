@@ -124,8 +124,8 @@ extension BlockHeader: Equatable {
 
 extension AccountState {
 
-    convenience init() {
-        self.init(address: Data(), nonce: 0, balance: Balance(wei: 0), storageHash: Data(), codeHash: Data())
+    convenience init(address: Data = Data()) {
+        self.init(address: address, nonce: 0, balance: 0, storageHash: Data(), codeHash: Data())
     }
 
 }
@@ -142,4 +142,12 @@ extension FeePriority: Equatable {
         default: return false
         }
     }
+}
+
+extension RawTransaction {
+
+    convenience init(wei: String = "1") {
+        self.init(wei: wei, to: "", gasPrice: 0, gasLimit: 0, nonce: 0)
+    }
+
 }

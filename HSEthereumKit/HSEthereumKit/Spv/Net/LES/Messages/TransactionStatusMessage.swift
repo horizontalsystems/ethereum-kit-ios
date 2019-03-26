@@ -1,21 +1,55 @@
 class TransactionStatusMessage: IInMessage {
-    var requestId = 0
-    var bv: Int = 0
-    var transactionStatuses = [Data: TransactionStatus]()
+    let requestId: Int
+    let bv: Int
+    let statuses: [TransactionStatus]
 
     required init(data: Data) throws {
+        let rlpList = try RLP.decode(input: data).listValue()
+
+        guard rlpList.count >= 3 else {
+            throw MessageDecodeError.notEnoughFields
+        }
+
+        requestId = try rlpList[0].intValue()
+        bv = try rlpList[1].intValue()
+
+        statuses = try rlpList[2].listValue().map { statusData -> TransactionStatus in
+            let statusList = try statusData.listValue()
+
+            let statusCode = try statusList[0].intValue()
+
+            switch statusCode {
+            case 1: return .queued
+            case 2: return .pending
+            case 3:
+                let dataList = try statusList[1].listValue()
+
+                return .included(
+                        blockHash: dataList[0].dataValue,
+                        blockNumber: try dataList[1].intValue(),
+                        transactionIndex: try dataList[2].intValue()
+                )
+            case 4:
+                return .error(message: try statusList[1].stringValue())
+            default: return .unknown
+            }
+        }
     }
 
     func toString() -> String {
-        return "TX_STATUS []"
+        return "TX_STATUS [requestId: \(requestId), bv: \(bv), statuses: \(statuses)]"
     }
 
-    enum TransactionStatus: Int {
-        case unknown = 0   // transaction is unknown
-        case queued = 1    // transaction is queued (not processable yet)
-        case pending = 2   // transaction is pending (processable)
-        case included = 3  // transaction is already included in the canonical chain. data contains an RLP-encoded [blockHash: B_32, blockNumber: P, txIndex: P] structure
-        case error = 4     // transaction sending failed. data contains a text error message
+}
+
+extension TransactionStatusMessage {
+
+    enum TransactionStatus {
+        case unknown
+        case queued
+        case pending
+        case included(blockHash: Data, blockNumber: Int, transactionIndex: Int)
+        case error(message: String)
     }
 
 }
