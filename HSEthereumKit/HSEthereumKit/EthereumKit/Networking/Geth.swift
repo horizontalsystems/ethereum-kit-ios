@@ -130,11 +130,4 @@ public final class Geth {
         httpClient.send(request, completionHandler: completionHandler)
     }
 
-    // MARK: - IPFS APIs
-
-    public func getGasPrice(completionHandler: @escaping (Result<GasPrice>) -> Void) {
-        let request = IPFS.GetGasPrices(configuration: .init(baseURL: configuration.ipfsURL))
-        httpClient.send(request, completionHandler: completionHandler)
-    }
-
 }

@@ -10,20 +10,17 @@ class SpvBlockchain {
     private let network: INetwork
     private let transactionSigner: TransactionSigner
 
-    let ethereumAddress: String
-
-    let gasLimitEthereum = 21_000
-    let gasLimitErc20 = 100_000
+    let address: String
 
     private init(peerGroup: IPeerGroup, storage: ISpvStorage, network: INetwork, transactionSigner: TransactionSigner, ethereumAddress: String) {
         self.peerGroup = peerGroup
         self.storage = storage
         self.network = network
         self.transactionSigner = transactionSigner
-        self.ethereumAddress = ethereumAddress
+        self.address = ethereumAddress
     }
 
-    private func send(to address: String, amount: String, gasPrice: Int) throws -> EthereumTransaction {
+    private func send(to address: String, amount: String, gasPrice: Int, gasLimit: Int) throws -> EthereumTransaction {
         guard let accountState = storage.accountState else {
             throw SendError.noAccountState
         }
@@ -34,7 +31,7 @@ class SpvBlockchain {
                 wei: amount,
                 to: address,
                 gasPrice: gasPrice,
-                gasLimit: gasLimitEthereum,
+                gasLimit: gasLimit,
                 nonce: nonce
         )
 
@@ -45,10 +42,10 @@ class SpvBlockchain {
         let transaction = EthereumTransaction(
                 hash: transactionHash.toHexString(),
                 nonce: nonce,
-                from: ethereumAddress,
+                from: address,
                 to: address,
                 amount: amount,
-                gasLimit: gasLimitEthereum,
+                gasLimit: gasLimit,
                 gasPriceInWei: gasPrice
         )
 
@@ -71,40 +68,38 @@ extension SpvBlockchain: IBlockchain {
         storage.clear()
     }
 
-    func gasPriceInWei(priority: FeePriority) -> Int {
-        return GasPrice.defaultGasPrice.mediumPriority
+    var syncState: EthereumKit.SyncState {
+        return peerGroup.syncState
+    }
+
+    func syncStateErc20(contractAddress: String) -> EthereumKit.SyncState {
+        return EthereumKit.SyncState.synced
     }
 
     var lastBlockHeight: Int? {
         return storage.lastBlockHeader?.height
     }
 
-    func balance(forAddress address: String) -> String? {
+    var balance: String? {
         return storage.accountState?.balance.asString(withBase: 10)
     }
 
-    func transactionsSingle(fromHash: String?, limit: Int?, contractAddress: String?) -> Single<[EthereumTransaction]> {
+    func balanceErc20(contractAddress: String) -> String? {
+        return nil
+    }
+
+    func transactionsSingle(fromHash: String?, limit: Int?) -> Single<[EthereumTransaction]> {
+        return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: nil)
+    }
+
+    func transactionsErc20Single(contractAddress: String, fromHash: String?, limit: Int?) -> Single<[EthereumTransaction]> {
         return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: contractAddress)
     }
 
-    var syncState: EthereumKit.SyncState {
-        return peerGroup.syncState
-    }
-
-    func syncState(contractAddress: String) -> EthereumKit.SyncState {
-        return EthereumKit.SyncState.synced
-    }
-
-    func register(contractAddress: String) {
-    }
-
-    func unregister(contractAddress: String) {
-    }
-
-    func sendSingle(to address: String, amount: String, priority: FeePriority) -> Single<EthereumTransaction> {
+    func sendSingle(to toAddress: String, amount: String, gasPrice: Int, gasLimit: Int) -> Single<EthereumTransaction> {
         return Single.create { [unowned self] observer in
             do {
-                let transaction = try self.send(to: address, amount: amount, gasPrice: GasPrice.defaultGasPrice.mediumPriority)
+                let transaction = try self.send(to: toAddress, amount: amount, gasPrice: gasPrice, gasLimit: gasLimit)
                 observer(.success(transaction))
             } catch {
                 observer(.error(error))
@@ -114,10 +109,17 @@ extension SpvBlockchain: IBlockchain {
         }
     }
 
-    func sendErc20Single(to address: String, contractAddress: String, amount: String, priority: FeePriority) -> Single<EthereumTransaction> {
+    func sendErc20Single(contractAddress: String, to toAddress: String, amount: String, gasPrice: Int, gasLimit: Int) -> Single<EthereumTransaction> {
         let stubTransaction = EthereumTransaction(hash: "", nonce: 0, from: "", to: "", amount: "", gasLimit: 0, gasPriceInWei: 0)
         return Single.just(stubTransaction)
     }
+
+    func register(contractAddress: String) {
+    }
+
+    func unregister(contractAddress: String) {
+    }
+
 }
 
 extension SpvBlockchain: IPeerGroupDelegate {

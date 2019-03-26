@@ -42,21 +42,6 @@ class GethProvider {
 
 extension GethProvider: IApiProvider {
 
-    func gasPriceDataSingle() -> Single<GasPrice> {
-        return Single.create { [unowned geth] observer in
-            geth.getGasPrice() { result in
-                switch result {
-                case .success(let gasPrice):
-                    observer(.success(gasPrice))
-                case .failure(let error):
-                    observer(.error(error))
-                }
-            }
-
-            return Disposables.create()
-        }
-    }
-
     func lastBlockHeightSingle() -> Single<Int> {
         return Single.create { [unowned geth] observer in
             geth.getBlockNumber() { result in

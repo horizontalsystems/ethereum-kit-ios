@@ -22,20 +22,13 @@ class ApiBlockchain {
         }
     }
 
-    let ethereumAddress: String
-    private(set) var gasPriceData: GasPrice = GasPrice.defaultGasPrice
-    let gasLimitEthereum = 21_000
-    let gasLimitErc20 = 100_000
+    let address: String
 
     init(storage: IApiStorage, apiProvider: IApiProvider, reachabilityManager: IReachabilityManager, ethereumAddress: String) {
         self.storage = storage
         self.apiProvider = apiProvider
         self.reachabilityManager = reachabilityManager
-        self.ethereumAddress = ethereumAddress
-
-        if let storedGasPriceData = storage.gasPriceData {
-            gasPriceData = storedGasPriceData
-        }
+        self.address = ethereumAddress
 
         Observable<Int>.interval(refreshInterval, scheduler: ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
@@ -44,18 +37,10 @@ class ApiBlockchain {
                 })
                 .disposed(by: disposeBag)
 
-        Observable<Int>.interval(ipfsRefreshInterval, scheduler: ConcurrentDispatchQueueScheduler(qos: .background))
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                .subscribe(onNext: { [weak self] _ in
-                    self?.refreshGasPrice()
-                })
-                .disposed(by: disposeBag)
-
         reachabilityManager.reachabilitySignal
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(onNext: { [weak self] in
                     self?.refreshAll()
-                    self?.refreshGasPrice()
                 })
                 .disposed(by: disposeBag)
     }
@@ -78,7 +63,7 @@ class ApiBlockchain {
 
         Single.zip(
                         apiProvider.lastBlockHeightSingle(),
-                        apiProvider.balanceSingle(address: ethereumAddress)
+                        apiProvider.balanceSingle(address: address)
                 )
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(onSuccess: { [weak self] lastBlockHeight, balance in
@@ -96,7 +81,7 @@ class ApiBlockchain {
     private func refreshTransactions() {
         let lastTransactionBlockHeight = storage.lastTransactionBlockHeight(erc20: false) ?? 0
 
-        apiProvider.transactionsSingle(address: ethereumAddress, startBlock: Int64(lastTransactionBlockHeight + 1))
+        apiProvider.transactionsSingle(address: address, startBlock: Int64(lastTransactionBlockHeight + 1))
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(onSuccess: { [weak self] transactions in
                     self?.update(transactions: transactions)
@@ -112,7 +97,7 @@ class ApiBlockchain {
 
         let erc20LastTransactionBlockHeight = storage.lastTransactionBlockHeight(erc20: true) ?? 0
 
-        apiProvider.transactionsErc20Single(address: ethereumAddress, startBlock: Int64(erc20LastTransactionBlockHeight + 1))
+        apiProvider.transactionsErc20Single(address: address, startBlock: Int64(erc20LastTransactionBlockHeight + 1))
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(onSuccess: { [weak self] transactions in
                     self?.updateErc20(transactions: transactions)
@@ -127,7 +112,7 @@ class ApiBlockchain {
 
     private func refreshErc20Balances() {
         erc20Contracts.values.forEach { contract in
-            apiProvider.balanceErc20Single(address: ethereumAddress, contractAddress: contract.address)
+            apiProvider.balanceErc20Single(address: address, contractAddress: contract.address)
                     .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                     .subscribe(onSuccess: { [weak self] balance in
                         self?.updateErc20(balance: balance, contractAddress: contract.address)
@@ -137,16 +122,6 @@ class ApiBlockchain {
                     })
                     .disposed(by: disposeBag)
         }
-    }
-
-    private func refreshGasPrice() {
-        apiProvider.gasPriceDataSingle()
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                .subscribe(onSuccess: { [weak self] gasPrice in
-                    self?.update(gasPriceData: gasPrice)
-                })
-                .disposed(by: disposeBag)
-
     }
 
     private func changeAllSyncStates(syncState: EthereumKit.SyncState) {
@@ -170,13 +145,8 @@ class ApiBlockchain {
         delegate?.onUpdate(lastBlockHeight: lastBlockHeight)
     }
 
-    private func update(gasPriceData: GasPrice) {
-        self.gasPriceData = gasPriceData
-        storage.save(gasPriceData: gasPriceData)
-    }
-
     private func update(balance: String) {
-        storage.save(balance: balance, address: ethereumAddress)
+        storage.save(balance: balance, address: address)
         delegate?.onUpdate(balance: balance)
     }
 
@@ -213,29 +183,30 @@ class ApiBlockchain {
         }
     }
 
-    private func sendSingle(to address: String, nonce: Int, amount: String, priority: FeePriority) -> Single<EthereumTransaction> {
+    private func sendSingle(to toAddress: String, nonce: Int, amount: String, gasPrice: Int, gasLimit: Int) -> Single<EthereumTransaction> {
         return apiProvider.sendSingle(
-                from: ethereumAddress,
-                to: address,
+                from: address,
+                to: toAddress,
                 nonce: nonce,
                 amount: amount,
-                gasPriceInWei: gasPriceInWei(priority: priority),
-                gasLimit: gasLimitEthereum
+                gasPriceInWei: gasPrice,
+                gasLimit: gasLimit
         )
     }
 
-    private func sendErc20Single(to address: String, contractAddress: String, nonce: Int, amount: String, priority: FeePriority) -> Single<EthereumTransaction> {
+    private func sendErc20Single(contractAddress: String, to toAddress: String, nonce: Int, amount: String, gasPrice: Int, gasLimit: Int) -> Single<EthereumTransaction> {
         guard let erc20Contract = erc20Contracts[contractAddress] else {
             return Single.error(ApiError.contractNotRegistered)
         }
 
         return apiProvider.sendErc20Single(
                 contractAddress: erc20Contract.address,
-                from: ethereumAddress, to: address,
+                from: address,
+                to: toAddress,
                 nonce: nonce,
                 amount: amount,
-                gasPriceInWei: gasPriceInWei(priority: priority),
-                gasLimit: gasLimitErc20
+                gasPriceInWei: gasPrice,
+                gasLimit: gasLimit
         )
     }
 
@@ -245,7 +216,6 @@ extension ApiBlockchain: IBlockchain {
 
     func start() {
         refreshAll()
-        refreshGasPrice()
     }
 
     func clear() {
@@ -253,37 +223,56 @@ extension ApiBlockchain: IBlockchain {
         storage.clear()
     }
 
-    func gasPriceInWei(priority: FeePriority) -> Int {
-        switch priority {
-        case .lowest:
-            return gasPriceData.lowPriority
-        case .low:
-            return (gasPriceData.lowPriority + gasPriceData.mediumPriority) / 2
-        case .medium:
-            return gasPriceData.mediumPriority
-        case .high:
-            return (gasPriceData.mediumPriority + gasPriceData.highPriority) / 2
-        case .highest:
-            return gasPriceData.highPriority
-        case .custom(let value):
-            return value
-        }
+    func syncStateErc20(contractAddress: String) -> EthereumKit.SyncState {
+        return erc20Contracts[contractAddress]?.syncState ?? .notSynced
     }
 
     var lastBlockHeight: Int? {
         return storage.lastBlockHeight
     }
 
-    func balance(forAddress address: String) -> String? {
+    var balance: String? {
         return storage.balance(forAddress: address)
     }
 
-    func transactionsSingle(fromHash: String?, limit: Int?, contractAddress: String?) -> Single<[EthereumTransaction]> {
+    func balanceErc20(contractAddress: String) -> String? {
+        return storage.balance(forAddress: contractAddress)
+    }
+
+    func transactionsSingle(fromHash: String?, limit: Int?) -> Single<[EthereumTransaction]> {
+        return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: nil)
+    }
+
+    func transactionsErc20Single(contractAddress: String, fromHash: String?, limit: Int?) -> Single<[EthereumTransaction]> {
         return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: contractAddress)
     }
 
-    func syncState(contractAddress: String) -> EthereumKit.SyncState {
-        return erc20Contracts[contractAddress]?.syncState ?? .notSynced
+    func sendSingle(to toAddress: String, amount: String, gasPrice: Int, gasLimit: Int) -> Single<EthereumTransaction> {
+        return apiProvider.transactionCountSingle(address: address)
+                .flatMap { [weak self] nonce -> Single<EthereumTransaction> in
+                    guard let weakSelf = self else {
+                        return Single.error(ApiError.internalError)
+                    }
+
+                    return weakSelf.sendSingle(to: toAddress, nonce: nonce, amount: amount, gasPrice: gasPrice, gasLimit: gasLimit)
+                }
+                .do(onSuccess: { [weak self] transaction in
+                    self?.update(transactions: [transaction])
+                })
+    }
+
+    func sendErc20Single(contractAddress: String, to toAddress: String, amount: String, gasPrice: Int, gasLimit: Int) -> Single<EthereumTransaction> {
+        return apiProvider.transactionCountSingle(address: address)
+                .flatMap { [weak self] nonce -> Single<EthereumTransaction> in
+                    guard let weakSelf = self else {
+                        return Single.error(ApiError.internalError)
+                    }
+
+                    return weakSelf.sendErc20Single(contractAddress: contractAddress, to: toAddress, nonce: nonce, amount: amount, gasPrice: gasPrice, gasLimit: gasLimit)
+                }
+                .do(onSuccess: { [weak self] transaction in
+                    self?.updateErc20(transactions: [transaction])
+                })
     }
 
     func register(contractAddress: String) {
@@ -298,34 +287,6 @@ extension ApiBlockchain: IBlockchain {
 
     func unregister(contractAddress: String) {
         erc20Contracts.removeValue(forKey: contractAddress)
-    }
-
-    func sendSingle(to address: String, amount: String, priority: FeePriority) -> Single<EthereumTransaction> {
-        return apiProvider.transactionCountSingle(address: ethereumAddress)
-                .flatMap { [weak self] nonce -> Single<EthereumTransaction> in
-                    guard let weakSelf = self else {
-                        return Single.error(ApiError.internalError)
-                    }
-
-                    return weakSelf.sendSingle(to: address, nonce: nonce, amount: amount, priority: priority)
-                }
-                .do(onSuccess: { [weak self] transaction in
-                    self?.update(transactions: [transaction])
-                })
-    }
-
-    func sendErc20Single(to address: String, contractAddress: String, amount: String, priority: FeePriority) -> Single<EthereumTransaction> {
-        return apiProvider.transactionCountSingle(address: ethereumAddress)
-                .flatMap { [weak self] nonce -> Single<EthereumTransaction> in
-                    guard let weakSelf = self else {
-                        return Single.error(ApiError.internalError)
-                    }
-
-                    return weakSelf.sendErc20Single(to: address, contractAddress: contractAddress, nonce: nonce, amount: amount, priority: priority)
-                }
-                .do(onSuccess: { [weak self] transaction in
-                    self?.updateErc20(transactions: [transaction])
-                })
     }
 
 }

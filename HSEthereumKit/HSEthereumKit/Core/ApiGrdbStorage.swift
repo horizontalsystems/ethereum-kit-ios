@@ -60,18 +60,6 @@ class ApiGrdbStorage {
             }
         }
 
-        migrator.registerMigration("createGasPrice") { db in
-            try db.create(table: GasPrice.databaseTableName) { t in
-                t.column(GasPrice.Columns.primaryKey.name, .text).notNull()
-                t.column(GasPrice.Columns.lowPriority.name, .integer)
-                t.column(GasPrice.Columns.mediumPriority.name, .integer)
-                t.column(GasPrice.Columns.highPriority.name, .integer)
-                t.column(GasPrice.Columns.date.name, .datetime)
-
-                t.primaryKey([GasPrice.Columns.primaryKey.name], onConflict: .replace)
-            }
-        }
-
         return migrator
     }
 
@@ -82,12 +70,6 @@ extension ApiGrdbStorage: IApiStorage {
     var lastBlockHeight: Int? {
         return try! dbPool.read { db in
             try BlockchainState.fetchOne(db)?.lastBlockHeight
-        }
-    }
-
-    var gasPriceData: GasPrice? {
-        return try! dbPool.read { db in
-            try GasPrice.fetchOne(db)
         }
     }
 
@@ -131,12 +113,6 @@ extension ApiGrdbStorage: IApiStorage {
             let state = try BlockchainState.fetchOne(db) ?? BlockchainState()
             state.lastBlockHeight = lastBlockHeight
             try state.insert(db)
-        }
-    }
-
-    func save(gasPriceData: GasPrice) {
-        _ = try? dbPool.write { db in
-            try gasPriceData.insert(db)
         }
     }
 

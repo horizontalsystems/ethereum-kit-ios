@@ -18,7 +18,7 @@ class EthereumAdapter: BaseAdapter {
     }
 
     override func sendSingle(to address: String, amount: String) -> Single<Void> {
-        return ethereumKit.sendSingle(to: address, amount: amount).map { _ in ()}
+        return ethereumKit.sendSingle(to: address, amount: amount, gasPrice: 5_000_000_000).map { _ in ()}
     }
 
     override func transactionsObservable(hashFrom: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {

@@ -130,20 +130,6 @@ extension AccountState {
 
 }
 
-extension FeePriority: Equatable {
-    public static func == (lhs: FeePriority, rhs: FeePriority) -> Bool {
-        switch (lhs, rhs) {
-        case (.lowest, .lowest): return true
-        case (.low, .low): return true
-        case (.medium, .medium): return true
-        case (.high, .high): return true
-        case (.highest, .highest): return true
-        case (.custom(let lhsGasPriceInWei), .custom(let rhsGasPriceInWei)): return lhsGasPriceInWei == rhsGasPriceInWei
-        default: return false
-        }
-    }
-}
-
 extension RawTransaction {
 
     convenience init(wei: String = "1") {
