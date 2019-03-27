@@ -27,9 +27,8 @@ class SpvGrdbStorage {
                 t.column(EthereumTransaction.Columns.to.name, .text).notNull()
                 t.column(EthereumTransaction.Columns.amount.name, .text).notNull()
                 t.column(EthereumTransaction.Columns.gasLimit.name, .integer).notNull()
-                t.column(EthereumTransaction.Columns.gasPriceInWei.name, .integer).notNull()
+                t.column(EthereumTransaction.Columns.gasPrice.name, .integer).notNull()
                 t.column(EthereumTransaction.Columns.timestamp.name, .double).notNull()
-                t.column(EthereumTransaction.Columns.contractAddress.name, .text).notNull()
                 t.column(EthereumTransaction.Columns.blockHash.name, .text)
                 t.column(EthereumTransaction.Columns.blockNumber.name, .integer)
                 t.column(EthereumTransaction.Columns.confirmations.name, .integer)
@@ -39,7 +38,7 @@ class SpvGrdbStorage {
                 t.column(EthereumTransaction.Columns.transactionIndex.name, .integer)
                 t.column(EthereumTransaction.Columns.txReceiptStatus.name, .boolean)
 
-                t.primaryKey([EthereumTransaction.Columns.hash.name, EthereumTransaction.Columns.contractAddress.name], onConflict: .replace)
+                t.primaryKey([EthereumTransaction.Columns.hash.name], onConflict: .replace)
             }
         }
 
@@ -135,11 +134,11 @@ extension SpvGrdbStorage: ISpvStorage {
             try? self?.dbPool.read { db in
                 var request = EthereumTransaction.all()
 
-                if let contractAddress = contractAddress {
-                    request = request.filter(EthereumTransaction.Columns.contractAddress == contractAddress)
-                } else {
-                    request = request.filter(EthereumTransaction.Columns.contractAddress == "" && EthereumTransaction.Columns.input == "0x")
-                }
+//                if let contractAddress = contractAddress {
+//                    request = request.filter(EthereumTransaction.Columns.contractAddress == contractAddress)
+//                } else {
+//                    request = request.filter(EthereumTransaction.Columns.contractAddress == "" && EthereumTransaction.Columns.input == "0x")
+//                }
 
                 if let fromHash = fromHash, let fromTransaction = try request.filter(EthereumTransaction.Columns.hash == fromHash).fetchOne(db) {
                     request = request.filter(EthereumTransaction.Columns.timestamp < fromTransaction.timestamp)

@@ -6,7 +6,7 @@ class PeerGroup {
     private let validator: BlockValidator
     private let blockHelper: IBlockHelper
     private let state: PeerGroupState
-    private let address: Data
+    private let addressData: Data
     private let headersLimit: Int
     private let logger: Logger?
 
@@ -16,7 +16,7 @@ class PeerGroup {
             validator: BlockValidator,
             blockHelper: IBlockHelper,
             state: PeerGroupState = PeerGroupState(),
-            address: Data,
+            addressData: Data,
             headersLimit: Int = 50,
             logger: Logger? = nil
     ) {
@@ -25,7 +25,7 @@ class PeerGroup {
         self.validator = validator
         self.blockHelper = blockHelper
         self.state = state
-        self.address = address
+        self.addressData = addressData
         self.headersLimit = headersLimit
         self.logger = logger
     }
@@ -40,7 +40,7 @@ class PeerGroup {
         }
 
         if blockHeaders.count < headersLimit {
-            state.syncPeer?.requestAccountState(address: address, blockHeader: lastBlockHeader)
+            state.syncPeer?.requestAccountState(address: addressData, blockHeader: lastBlockHeader)
         } else {
             state.syncPeer?.requestBlockHeaders(blockHeader: lastBlockHeader, limit: headersLimit, reverse: false)
         }
@@ -81,8 +81,8 @@ extension PeerGroup: IPeerGroup {
         peer.connect()
     }
 
-    func send(rawTransaction: RawTransaction, signature: (v: BInt, r: BInt, s: BInt)) {
-        state.syncPeer?.send(rawTransaction: rawTransaction, signature: signature)
+    func send(rawTransaction: RawTransaction, nonce: Int, signature: Signature) {
+        state.syncPeer?.send(rawTransaction: rawTransaction, nonce: nonce, signature: signature)
     }
 
 }

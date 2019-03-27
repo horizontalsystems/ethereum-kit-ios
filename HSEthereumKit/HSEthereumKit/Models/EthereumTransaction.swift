@@ -8,10 +8,8 @@ public class EthereumTransaction: Record {
     public let to: String
     public let amount: String
     public let gasLimit: Int
-    public let gasPriceInWei: Int
+    public let gasPrice: Int
     public let timestamp: TimeInterval
-
-    public var contractAddress: String?
 
     public var blockHash: String?
     public var blockNumber: Int?
@@ -22,7 +20,7 @@ public class EthereumTransaction: Record {
     public var transactionIndex: Int?
     public var txReceiptStatus: Bool?
 
-    public init(hash: String, nonce: Int, input: String = "0x", from: String, to: String, amount: String, gasLimit: Int, gasPriceInWei: Int, timestamp: TimeInterval? = nil, contractAddress: String? = nil) {
+    public init(hash: String, nonce: Int, input: String = "0x", from: String, to: String, amount: String, gasLimit: Int, gasPrice: Int, timestamp: TimeInterval? = nil) {
         self.hash = hash
         self.nonce = nonce
         self.input = input
@@ -30,9 +28,8 @@ public class EthereumTransaction: Record {
         self.to = to
         self.amount = amount
         self.gasLimit = gasLimit
-        self.gasPriceInWei = gasPriceInWei
+        self.gasPrice = gasPrice
         self.timestamp = timestamp ?? Date().timeIntervalSince1970
-        self.contractAddress = contractAddress
 
         super.init()
     }
@@ -49,9 +46,8 @@ public class EthereumTransaction: Record {
         case to
         case amount
         case gasLimit
-        case gasPriceInWei
+        case gasPrice
         case timestamp
-        case contractAddress
         case blockHash
         case blockNumber
         case confirmations
@@ -70,9 +66,8 @@ public class EthereumTransaction: Record {
         to = row[Columns.to]
         amount = row[Columns.amount]
         gasLimit = row[Columns.gasLimit]
-        gasPriceInWei = row[Columns.gasPriceInWei]
+        gasPrice = row[Columns.gasPrice]
         timestamp = row[Columns.timestamp]
-        contractAddress = row[Columns.contractAddress] == "" ? nil : row[Columns.contractAddress]
         blockHash = row[Columns.blockHash]
         blockNumber = row[Columns.blockNumber]
         confirmations = row[Columns.confirmations]
@@ -93,9 +88,8 @@ public class EthereumTransaction: Record {
         container[Columns.to] = to
         container[Columns.amount] = amount
         container[Columns.gasLimit] = gasLimit
-        container[Columns.gasPriceInWei] = gasPriceInWei
+        container[Columns.gasPrice] = gasPrice
         container[Columns.timestamp] = timestamp
-        container[Columns.contractAddress] = contractAddress ?? ""
         container[Columns.blockHash] = blockHash
         container[Columns.blockNumber] = blockNumber
         container[Columns.confirmations] = confirmations

@@ -19,13 +19,13 @@ class GethProvider {
                 to: EIP55.format(gethTransaction.to),
                 amount: gethTransaction.value,
                 gasLimit: Int(gethTransaction.gas) ?? 0,
-                gasPriceInWei: Int(gethTransaction.gasPrice) ?? 0,
+                gasPrice: Int(gethTransaction.gasPrice) ?? 0,
                 timestamp: TimeInterval(gethTransaction.timeStamp)
         )
 
-        if !gethTransaction.contractAddress.isEmpty {
-            transaction.contractAddress = EIP55.format(gethTransaction.contractAddress)
-        }
+//        if !gethTransaction.contractAddress.isEmpty {
+//            transaction.contractAddress = EIP55.format(gethTransaction.contractAddress)
+//        }
 
         transaction.blockHash = gethTransaction.blockHash
         transaction.blockNumber = Int(gethTransaction.blockNumber) ?? 0
@@ -40,7 +40,7 @@ class GethProvider {
     }
 }
 
-extension GethProvider: IApiProvider {
+extension GethProvider {
 
     func lastBlockHeightSingle() -> Single<Int> {
         return Single.create { [unowned geth] observer in
@@ -135,77 +135,77 @@ extension GethProvider: IApiProvider {
         }
     }
 
-    func sendSingle(from: String, to: String, nonce: Int, amount: String, gasPriceInWei: Int, gasLimit: Int) -> Single<EthereumTransaction> {
-        return Single.create { [unowned self] observer in
-            do {
-                let rawTransaction = RawTransaction(wei: amount, to: to, gasPrice: gasPriceInWei, gasLimit: gasLimit, nonce: nonce)
+//    func sendSingle(from: String, to: String, nonce: Int, amount: String, gasPriceInWei: Int, gasLimit: Int) -> Single<EthereumTransaction> {
+//        return Single.create { [unowned self] observer in
+//            do {
+//                let rawTransaction = RawTransaction(wei: amount, to: to, gasPrice: gasPriceInWei, gasLimit: gasLimit, nonce: nonce)
+//
+//                let signedTransaction = try self.hdWallet.sign(rawTransaction: rawTransaction)
+//
+//                self.geth.sendRawTransaction(rawTransaction: signedTransaction) { result in
+//                    switch result {
+//                    case .success(let sentTransaction):
+//                        let transaction = EthereumTransaction(
+//                                hash: sentTransaction.id,
+//                                nonce: nonce,
+//                                from: from,
+//                                to: to,
+//                                amount: amount,
+//                                gasLimit: gasLimit,
+//                                gasPriceInWei: gasPriceInWei
+//                        )
+//                        observer(.success(transaction))
+//                    case .failure(let error):
+//                        observer(.error(error))
+//                    }
+//                }
+//            } catch {
+//                observer(.error(error))
+//            }
+//
+//            return Disposables.create()
+//        }
+//    }
 
-                let signedTransaction = try self.hdWallet.sign(rawTransaction: rawTransaction)
-
-                self.geth.sendRawTransaction(rawTransaction: signedTransaction) { result in
-                    switch result {
-                    case .success(let sentTransaction):
-                        let transaction = EthereumTransaction(
-                                hash: sentTransaction.id,
-                                nonce: nonce,
-                                from: from,
-                                to: to,
-                                amount: amount,
-                                gasLimit: gasLimit,
-                                gasPriceInWei: gasPriceInWei
-                        )
-                        observer(.success(transaction))
-                    case .failure(let error):
-                        observer(.error(error))
-                    }
-                }
-            } catch {
-                observer(.error(error))
-            }
-
-            return Disposables.create()
-        }
-    }
-
-    func sendErc20Single(contractAddress: String, from: String, to: String, nonce: Int, amount: String, gasPriceInWei: Int, gasLimit: Int) -> Single<EthereumTransaction> {
-        return Single.create { [unowned self] observer in
-            do {
-                // check value
-                guard let bIntValue = BInt(number: amount, withBase: 10) else {
-                    throw EthereumKitError.convertError(.failedToConvert(amount))
-                }
-
-                // check right contract parameters create
-                let params = ERC20.ContractFunctions.transfer(address: to, amount: bIntValue).data
-                let rawTransaction = RawTransaction(wei: "0", to: contractAddress, gasPrice: gasPriceInWei, gasLimit: gasLimit, nonce: nonce, data: params)
-
-                let signedTransaction = try self.hdWallet.sign(rawTransaction: rawTransaction)
-
-                self.geth.sendRawTransaction(rawTransaction: signedTransaction) { result in
-                    switch result {
-                    case .success(let sentTransaction):
-                        let transaction = EthereumTransaction(
-                                hash: sentTransaction.id,
-                                nonce: nonce,
-                                input: params.toHexString().addHexPrefix(),
-                                from: from,
-                                to: to,
-                                amount: amount,
-                                gasLimit: gasLimit,
-                                gasPriceInWei: gasPriceInWei,
-                                contractAddress: contractAddress
-                        )
-                        observer(.success(transaction))
-                    case .failure(let error):
-                        observer(.error(error))
-                    }
-                }
-            } catch {
-                observer(.error(error))
-            }
-
-            return Disposables.create()
-        }
-    }
+//    func sendErc20Single(contractAddress: String, from: String, to: String, nonce: Int, amount: String, gasPriceInWei: Int, gasLimit: Int) -> Single<EthereumTransaction> {
+//        return Single.create { [unowned self] observer in
+//            do {
+//                // check value
+//                guard let bIntValue = BInt(number: amount, withBase: 10) else {
+//                    throw EthereumKitError.convertError(.failedToConvert(amount))
+//                }
+//
+//                // check right contract parameters create
+//                let params = ERC20.ContractFunctions.transfer(address: to, amount: bIntValue).data
+//                let rawTransaction = RawTransaction(wei: "0", to: contractAddress, gasPrice: gasPriceInWei, gasLimit: gasLimit, nonce: nonce, data: params)
+//
+//                let signedTransaction = try self.hdWallet.sign(rawTransaction: rawTransaction)
+//
+//                self.geth.sendRawTransaction(rawTransaction: signedTransaction) { result in
+//                    switch result {
+//                    case .success(let sentTransaction):
+//                        let transaction = EthereumTransaction(
+//                                hash: sentTransaction.id,
+//                                nonce: nonce,
+//                                input: params.toHexString().addHexPrefix(),
+//                                from: from,
+//                                to: to,
+//                                amount: amount,
+//                                gasLimit: gasLimit,
+//                                gasPriceInWei: gasPriceInWei,
+//                                contractAddress: contractAddress
+//                        )
+//                        observer(.success(transaction))
+//                    case .failure(let error):
+//                        observer(.error(error))
+//                    }
+//                }
+//            } catch {
+//                observer(.error(error))
+//            }
+//
+//            return Disposables.create()
+//        }
+//    }
 
 }

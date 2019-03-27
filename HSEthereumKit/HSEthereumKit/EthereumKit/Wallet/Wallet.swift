@@ -51,11 +51,11 @@ extension Wallet {
     /// - Parameter rawTransaction: raw transaction to hash
     /// - Returns: signiture in hex format
     /// - Throws: EthereumKitError.failedToEncode when failed to encode
-    public func sign(rawTransaction: RawTransaction) throws -> String {
-        let signer = EIP155Signer(chainID: network.chainID)
-        let rawData = try signer.sign(rawTransaction, privateKey: key.raw)
-        let hash = rawData.toHexString().addHexPrefix()
-
-        return hash
-    }
+//    public func sign(rawTransaction: RawTransaction) throws -> String {
+//        let signer = EIP155Signer(chainID: network.chainID)
+//        let rawData = try signer.sign(rawTransaction, privateKey: key.raw)
+//        let hash = rawData.toHexString().addHexPrefix()
+//
+//        return hash
+//    }
 }

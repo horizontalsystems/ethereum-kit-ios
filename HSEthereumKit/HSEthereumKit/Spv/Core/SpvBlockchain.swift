@@ -1,6 +1,4 @@
-import Foundation
 import RxSwift
-import HSHDWalletKit
 
 class SpvBlockchain {
     weak var delegate: IBlockchainDelegate?
@@ -9,51 +7,25 @@ class SpvBlockchain {
     private let storage: ISpvStorage
     private let network: INetwork
     private let transactionSigner: TransactionSigner
+    private let transactionBuilder: TransactionBuilder
 
-    let address: String
+    let address: Address
 
-    private init(peerGroup: IPeerGroup, storage: ISpvStorage, network: INetwork, transactionSigner: TransactionSigner, ethereumAddress: String) {
+    private init(peerGroup: IPeerGroup, storage: ISpvStorage, network: INetwork, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, address: Address) {
         self.peerGroup = peerGroup
         self.storage = storage
         self.network = network
         self.transactionSigner = transactionSigner
-        self.address = ethereumAddress
+        self.transactionBuilder = transactionBuilder
+        self.address = address
     }
 
-    private func send(to address: String, amount: String, gasPrice: Int, gasLimit: Int) throws -> EthereumTransaction {
-        guard let accountState = storage.accountState else {
-            throw SendError.noAccountState
-        }
+    private func sendSingle(rawTransaction: RawTransaction, nonce: Int) throws -> EthereumTransaction {
+        let signature = try transactionSigner.sign(rawTransaction: rawTransaction, nonce: nonce)
 
-        let nonce = accountState.nonce
+        peerGroup.send(rawTransaction: rawTransaction, nonce: nonce, signature: signature)
 
-        let rawTransaction = RawTransaction(
-                wei: amount,
-                to: address,
-                gasPrice: gasPrice,
-                gasLimit: gasLimit,
-                nonce: nonce
-        )
-
-        let signature = try transactionSigner.sign(rawTransaction: rawTransaction)
-
-        let transactionHash = transactionSigner.hash(rawTransaction: rawTransaction, signature: signature)
-
-        let transaction = EthereumTransaction(
-                hash: transactionHash.toHexString(),
-                nonce: nonce,
-                from: address,
-                to: address,
-                amount: amount,
-                gasLimit: gasLimit,
-                gasPriceInWei: gasPrice
-        )
-
-        storage.save(transactions: [transaction])
-
-        peerGroup.send(rawTransaction: rawTransaction, signature: signature)
-
-        return transaction
+        return transactionBuilder.transaction(rawTransaction: rawTransaction, nonce: nonce, signature: signature, address: address)
     }
 
 }
@@ -96,10 +68,15 @@ extension SpvBlockchain: IBlockchain {
         return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: contractAddress)
     }
 
-    func sendSingle(to toAddress: String, amount: String, gasPrice: Int, gasLimit: Int) -> Single<EthereumTransaction> {
-        return Single.create { [unowned self] observer in
+    func sendSingle(rawTransaction: RawTransaction) -> Single<EthereumTransaction> {
+        let single: Single<EthereumTransaction> = Single.create { [unowned self] observer in
             do {
-                let transaction = try self.send(to: toAddress, amount: amount, gasPrice: gasPrice, gasLimit: gasLimit)
+                guard let accountState = self.storage.accountState else {
+                    throw SendError.noAccountState
+                }
+
+                let transaction = try self.sendSingle(rawTransaction: rawTransaction, nonce: accountState.nonce)
+
                 observer(.success(transaction))
             } catch {
                 observer(.error(error))
@@ -107,11 +84,11 @@ extension SpvBlockchain: IBlockchain {
 
             return Disposables.create()
         }
-    }
 
-    func sendErc20Single(contractAddress: String, to toAddress: String, amount: String, gasPrice: Int, gasLimit: Int) -> Single<EthereumTransaction> {
-        let stubTransaction = EthereumTransaction(hash: "", nonce: 0, from: "", to: "", amount: "", gasLimit: 0, gasPriceInWei: 0)
-        return Single.just(stubTransaction)
+        return single.do(onSuccess: { [weak self] transaction in
+            self?.storage.save(transactions: [transaction])
+            self?.delegate?.onUpdate(transactions: [transaction])
+        })
     }
 
     func register(contractAddress: String) {
@@ -146,30 +123,13 @@ extension SpvBlockchain {
 
 extension SpvBlockchain {
 
-    static func spvBlockchain(storage: ISpvStorage, words: [String], testMode: Bool, logger: Logger? = nil) -> SpvBlockchain {
-        let network = Ropsten()
-
-        let hdWallet = HDWallet(seed: Mnemonic.seed(mnemonic: words), coinType: network.coinType, xPrivKey: network.privateKeyPrefix.bigEndian, xPubKey: network.publicKeyPrefix.bigEndian)
-
-        let privateKey = try! hdWallet.privateKey(account: 0, index: 0, chain: .external)
-        let publicKey = privateKey.publicKey(compressed: false).raw
-        let address = EIP55.encode(CryptoUtils.shared.sha3(publicKey.dropFirst()).suffix(20))
-        let addressData = Data(hex: String(address[address.index(address.startIndex, offsetBy: 2)...]))
-
-        let connectionPrivateKey = try! hdWallet.privateKey(account: 100, index: 100, chain: .external)
-        let connectionPublicKey = Data(connectionPrivateKey.publicKey(compressed: false).raw.suffix(from: 1))
-        let connectionECKey = ECKey(
-                privateKey: connectionPrivateKey.raw,
-                publicKeyPoint: ECPoint(nodeId: connectionPublicKey)
-        )
-
-        let peerProvider = PeerProvider(network: network, storage: storage, connectionKey: connectionECKey, logger: logger)
+    static func spvBlockchain(storage: ISpvStorage, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, network: INetwork, address: Address, nodeKey: ECKey, logger: Logger? = nil) -> SpvBlockchain {
+        let peerProvider = PeerProvider(network: network, storage: storage, connectionKey: nodeKey, logger: logger)
         let validator = BlockValidator()
         let blockHelper = BlockHelper(storage: storage, network: network)
-        let peerGroup = PeerGroup(storage: storage, peerProvider: peerProvider, validator: validator, blockHelper: blockHelper, address: addressData, logger: logger)
-        let transactionSigner = TransactionSigner(network: network, rawPrivateKey: privateKey.raw)
+        let peerGroup = PeerGroup(storage: storage, peerProvider: peerProvider, validator: validator, blockHelper: blockHelper, addressData: address.data, logger: logger)
 
-        let spvBlockchain = SpvBlockchain(peerGroup: peerGroup, storage: storage, network: network, transactionSigner: transactionSigner, ethereumAddress: address)
+        let spvBlockchain = SpvBlockchain(peerGroup: peerGroup, storage: storage, network: network, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, address: address)
 
         peerGroup.delegate = spvBlockchain
 

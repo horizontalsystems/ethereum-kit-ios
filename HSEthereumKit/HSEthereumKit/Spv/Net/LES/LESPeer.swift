@@ -33,7 +33,7 @@ class LESPeer {
             throw LESPeer.ValidationError.invalidProtocolVersion
         }
 
-        guard message.networkId == network.id else {
+        guard message.networkId == network.chainId else {
             throw LESPeer.ValidationError.wrongNetwork
         }
 
@@ -102,9 +102,9 @@ extension LESPeer: IPeer {
         devP2PPeer.send(message: message)
     }
 
-    func send(rawTransaction: RawTransaction, signature: (v: BInt, r: BInt, s: BInt)) {
+    func send(rawTransaction: RawTransaction, nonce: Int, signature: Signature) {
         let requestId = randomHelper.randomInt
-        let message = SendTransactionMessage(requestId: requestId, rawTransaction: rawTransaction, signature: signature)
+        let message = SendTransactionMessage(requestId: requestId, rawTransaction: rawTransaction, nonce: nonce, signature: signature)
 
         devP2PPeer.send(message: message)
     }
@@ -116,7 +116,7 @@ extension LESPeer: IDevP2PPeerDelegate {
     func didConnect() {
         let statusMessage = StatusMessage(
                 protocolVersion: LESPeer.capability.version,
-                networkId: network.id,
+                networkId: network.chainId,
                 genesisHash: network.genesisBlockHash,
                 headTotalDifficulty: lastBlockHeader.totalDifficulty,
                 headHash: lastBlockHeader.hashHex,
