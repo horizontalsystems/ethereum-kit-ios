@@ -25,7 +25,7 @@ public class TransactionInfo {
         hash = transaction.hash.toHexString()
         nonce = transaction.nonce
         input = transaction.input.toHexString()
-        from = transaction.from.toHexString()
+        from = transaction.from.toEIP55Address()
         gasLimit = transaction.gasLimit
         gasPrice = transaction.gasPrice
         timestamp = transaction.timestamp
@@ -41,11 +41,11 @@ public class TransactionInfo {
         let data = transaction.input
 
         if data.count == 68 && data[0...3].toRawHexString() == "a9059cbb" {
-            to = data[4...35].toHexString()
+            to = data[4...35].toEIP55Address()
             value = BInt(number: data[36...67].toRawHexString(), withBase: 16)!.asString(withBase: 10)
-            contractAddress = transaction.to.toHexString()
+            contractAddress = transaction.to.toEIP55Address()
         } else {
-            to = transaction.to.toHexString()
+            to = transaction.to.toEIP55Address()
             value = transaction.value.asString(withBase: 10)
             contractAddress = nil
         }
