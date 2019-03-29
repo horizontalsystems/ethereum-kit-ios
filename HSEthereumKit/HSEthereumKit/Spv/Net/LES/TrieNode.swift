@@ -36,19 +36,19 @@ class TrieNode {
             switch nibble {
             case 0:
                 nodeType = NodeType.EXTENSION
-                encodedPath = first.subdata(in: 1..<first.count).toHexString()
+                encodedPath = first.subdata(in: 1..<first.count).toRawHexString()
 
             case 1:
                 nodeType = NodeType.EXTENSION
-                encodedPath = TrieNode.secondCharacter(ofByteInHex: first[0]) + first.subdata(in: 1..<first.count).toHexString()
+                encodedPath = TrieNode.secondCharacter(ofByteInHex: first[0]) + first.subdata(in: 1..<first.count).toRawHexString()
 
             case 2:
                 nodeType = NodeType.LEAF
-                encodedPath = first.subdata(in: 1..<first.count).toHexString()
+                encodedPath = first.subdata(in: 1..<first.count).toRawHexString()
 
             case 3:
                 nodeType = NodeType.LEAF
-                encodedPath = TrieNode.secondCharacter(ofByteInHex: first[0]) + first.subdata(in: 1..<first.count).toHexString()
+                encodedPath = TrieNode.secondCharacter(ofByteInHex: first[0]) + first.subdata(in: 1..<first.count).toRawHexString()
 
             default:
                 nodeType = NodeType.NULL

@@ -14,7 +14,7 @@ class TransactionSigner {
             nonce,
             rawTransaction.gasPrice,
             rawTransaction.gasLimit,
-            rawTransaction.to.data,
+            rawTransaction.to,
             rawTransaction.value,
             rawTransaction.data
         ]
@@ -34,8 +34,8 @@ class TransactionSigner {
     private func calculateVRS(signature: Data) -> Signature {
         return Signature(
                 v: Int(signature[64]) + (chainId == 0 ? 27 : (35 + 2 * chainId)),
-                r: BInt(str: signature[..<32].toHexString(), radix: 16)!,
-                s: BInt(str: signature[32..<64].toHexString(), radix: 16)!
+                r: BInt(signature[..<32].toRawHexString(), radix: 16)!,
+                s: BInt(signature[32..<64].toRawHexString(), radix: 16)!
         )
     }
 

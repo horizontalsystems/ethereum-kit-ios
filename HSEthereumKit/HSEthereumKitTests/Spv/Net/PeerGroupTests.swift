@@ -16,7 +16,7 @@ class PeerGroupTests: QuickSpec {
         let address = Data(repeating: 1, count: 20)
         let limit = 2
 
-        let peerGroup = PeerGroup(storage: mockStorage, peerProvider: mockPeerProvider, validator: mockValidator, blockHelper: mockBlockHelper, state: mockState, addressData: address, headersLimit: limit)
+        let peerGroup = PeerGroup(storage: mockStorage, peerProvider: mockPeerProvider, validator: mockValidator, blockHelper: mockBlockHelper, state: mockState, address: address, headersLimit: limit)
         peerGroup.delegate = mockDelegate
 
         beforeEach {

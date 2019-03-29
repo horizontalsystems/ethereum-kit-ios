@@ -12,7 +12,7 @@ class ECPoint {
     }
 
     func uncompressed() -> Data {
-        return Data(hex: "04") + x + y
+        return Data(bytes: [4]) + x + y
     }
 
 }

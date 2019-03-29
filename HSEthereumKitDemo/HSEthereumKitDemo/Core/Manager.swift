@@ -3,8 +3,8 @@ import HSEthereumKit
 import HSHDWalletKit
 
 class Manager {
-    private let infuraKey = "2a1306f1d12f4c109a4d4fb9be46b02e"
-    private let etherscanKey = "GKNHXT22ED7PRVCKZATFZQD1YI7FK9AAYE"
+    private let infuraProjectId = "2a1306f1d12f4c109a4d4fb9be46b02e"
+    private let etherscanApiKey = "GKNHXT22ED7PRVCKZATFZQD1YI7FK9AAYE"
     private let contractAddress = "0x583cbBb8a8443B38aBcC0c956beCe47340ea1367"
     private let contractDecimal = 18
 
@@ -43,10 +43,11 @@ class Manager {
         let hdWallet = HDWallet(seed: Mnemonic.seed(mnemonic: words), coinType: coinType, xPrivKey: 0, xPubKey: 0)
 
         let privateKey = try! hdWallet.privateKey(account: 0, index: 0, chain: .external).raw
-        let nodePrivateKey = try! hdWallet.privateKey(account: 100, index: 100, chain: .external).raw
 
-        ethereumKit = EthereumKit.instance(privateKey: privateKey, syncMode: .spv(nodePrivateKey: nodePrivateKey), networkType: networkType)
-//        ethereumKit = EthereumKit.instance(privateKey: privateKey, syncMode: .api(infuraKey: infuraKey, etherscanKey: etherscanKey), networkType: networkType)
+//        let nodePrivateKey = try! hdWallet.privateKey(account: 100, index: 100, chain: .external).raw
+//        ethereumKit = EthereumKit.instance(privateKey: privateKey, syncMode: .spv(nodePrivateKey: nodePrivateKey), networkType: networkType)
+
+        ethereumKit = EthereumKit.instance(privateKey: privateKey, syncMode: .api(infuraProjectId: infuraProjectId, etherscanApiKey: etherscanApiKey), networkType: networkType)
 
         ethereumAdapter = EthereumAdapter(ethereumKit: ethereumKit)
         erc20Adapter = Erc20Adapter(ethereumKit: ethereumKit, contractAddress: contractAddress, decimal: contractDecimal)

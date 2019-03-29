@@ -1,41 +1,48 @@
 import RxSwift
 
+protocol IStorage {
+    func transactionsSingle(fromHash: Data?, limit: Int?, contractAddress: Data?) -> Single<[Transaction]>
+    func save(transactions: [Transaction])
+
+    func clear()
+}
+
 protocol IBlockchain {
     var delegate: IBlockchainDelegate? { get set }
 
-    var address: Address { get }
+    var address: Data { get }
 
     func start()
     func clear()
 
     var syncState: EthereumKit.SyncState { get }
-    func syncStateErc20(contractAddress: String) -> EthereumKit.SyncState
+    func syncStateErc20(contractAddress: Data) -> EthereumKit.SyncState
 
     var lastBlockHeight: Int? { get }
 
-    var balance: String? { get }
-    func balanceErc20(contractAddress: String) -> String?
+    var balance: BInt? { get }
+    func balanceErc20(contractAddress: Data) -> BInt?
 
-    func transactionsSingle(fromHash: String?, limit: Int?) -> Single<[EthereumTransaction]>
-    func transactionsErc20Single(contractAddress: String, fromHash: String?, limit: Int?) -> Single<[EthereumTransaction]>
+    func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[Transaction]>
+    func transactionsErc20Single(contractAddress: Data, fromHash: Data?, limit: Int?) -> Single<[Transaction]>
 
-    func sendSingle(rawTransaction: RawTransaction) -> Single<EthereumTransaction>
+    func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction>
 
-    func register(contractAddress: String)
-    func unregister(contractAddress: String)
+    func register(contractAddress: Data)
+    func unregister(contractAddress: Data)
 }
 
 protocol IBlockchainDelegate: class {
     func onUpdate(lastBlockHeight: Int)
 
-    func onUpdate(balance: String)
-    func onUpdateErc20(balance: String, contractAddress: String)
+    func onUpdate(balance: BInt)
+    func onUpdateErc20(balance: BInt, contractAddress: Data)
 
     func onUpdate(syncState: EthereumKit.SyncState)
-    func onUpdateErc20(syncState: EthereumKit.SyncState, contractAddress: String)
+    func onUpdateErc20(syncState: EthereumKit.SyncState, contractAddress: Data)
 
-    func onUpdate(transactions: [EthereumTransaction])
-    func onUpdateErc20(transactions: [EthereumTransaction], contractAddress: String)
+    func onUpdate(transactions: [Transaction])
+    func onUpdateErc20(transactions: [Transaction], contractAddress: Data)
 }
 
 protocol IAddressValidator {

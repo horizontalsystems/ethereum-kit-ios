@@ -1,11 +1,11 @@
 class RawTransaction {
     let gasPrice: Int
     let gasLimit: Int
-    let to: Address
+    let to: Data
     let value: BInt
     let data: Data
 
-    init(gasPrice: Int, gasLimit: Int, to: Address, value: BInt, data: Data = Data()) {
+    init(gasPrice: Int, gasLimit: Int, to: Data, value: BInt, data: Data = Data()) {
         self.gasPrice = gasPrice
         self.gasLimit = gasLimit
         self.to = to

@@ -2,28 +2,23 @@ import RxSwift
 
 protocol IApiProvider {
     func lastBlockHeightSingle() -> Single<Int>
-    func transactionCountSingle(address: String) -> Single<Int>
+    func transactionCountSingle(address: Data) -> Single<Int>
 
-    func balanceSingle(address: String) -> Single<String>
-    func balanceErc20Single(address: String, contractAddress: String) -> Single<String>
+    func balanceSingle(address: Data) -> Single<BInt>
+    func balanceErc20Single(address: Data, contractAddress: Data) -> Single<BInt>
 
-    func transactionsSingle(address: String, startBlock: Int64) -> Single<[EthereumTransaction]>
-    func transactionsErc20Single(address: String, startBlock: Int64) -> Single<[EthereumTransaction]>
+    func transactionsSingle(address: Data, startBlock: Int) -> Single<[Transaction]>
+    func transactionsErc20Single(address: Data, startBlock: Int) -> Single<[Transaction]>
 
-    func sendSingle(signedTransactionHex: String) -> Single<Void>
+    func sendSingle(signedTransaction: Data) -> Single<Void>
 }
 
-protocol IApiStorage {
+protocol IApiStorage: IStorage {
     var lastBlockHeight: Int? { get }
+    func save(lastBlockHeight: Int)
 
-    func balance(forAddress address: String) -> String?
-    func transactionsSingle(fromHash: String?, limit: Int?, contractAddress: String?) -> Single<[EthereumTransaction]>
+    func balance(forAddress address: Data) -> BInt?
+    func save(balance: BInt, address: Data)
 
     func lastTransactionBlockHeight(erc20: Bool) -> Int?
-
-    func save(lastBlockHeight: Int)
-    func save(balance: String, address: String)
-    func save(transactions: [EthereumTransaction])
-
-    func clear()
 }

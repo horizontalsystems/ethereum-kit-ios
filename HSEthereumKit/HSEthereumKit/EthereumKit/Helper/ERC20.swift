@@ -1,97 +1,39 @@
 import HSCryptoKit
 
-/// ERC20 contains necessary method to support ERC20 tokens
-public struct ERC20 {
-    
-    /// Represents a contract address of this erc20 token
-    public let contractAddress: String
-    
-    /// Represents a decimal specified in a contract / erc20 token
-    public let decimal: Int
+struct ERC20 {
 
-    /// Initializer
-    ///
-    /// - Parameters:
-    ///   - contractAddress: contract address of this erc20 token
-    ///   - decimal: decimal specified in a contract
-    ///   - symbol: symbol of this erc20 token
-    public init(contractAddress: String, decimal: Int) {
-        self.contractAddress = contractAddress
-        self.decimal = decimal
-    }
-    
-    /// Transfer method signiture
-    /// function transfer(address _to, uint256 _value) returns (bool success)
-    private var transferSigniture: Data {
-        let method = "transfer(address,uint256)"
-        return CryptoKit.sha3(method.data(using: .ascii)!)[0...3]
-    }
-    
-    /// Length of 256 bits
-    private static var lengthOf256bits: Int {
-        return 256 / 4
-    }
-    
-    /// Generate transaction data for ERC20 token
-    ///
-    /// - Parameter:
-    ///    - toAddress: address you are transfering to
-    ///    - amount: amount to send
-    /// - Returns: transaction data
-    public func generateDataParameter(toAddress: String, amount: String) throws -> Data {
-        let method = transferSigniture.toHexString()
-        let address = ERC20.pad(string: toAddress.stripHexPrefix())
-        
-        let poweredAmount = try power(amount: amount)
-        let amount = ERC20.pad(string: poweredAmount.serialize().toHexString())
-        
-        return Data(hex: method + address + amount)
-    }
-    
-    /// Power the amount by the decimal
-    ///
-    /// - Parameter:
-    ///    - amount: amount in string format
-    /// - Returns: BigInt value powered by (10 * decimal)
-    public func power(amount: String) throws -> BInt {
-        let components = amount.split(separator: ".")
-        
-        // components.count must be 1 or 2. this method accepts only integer or decimal value
-        // like 1, 10, 100 or 1.15, 10.7777, 19.9999
-        guard components.count == 1 || components.count == 2 else {
-            throw EthereumKitError.contractError(.containsInvalidCharactor(amount))
-        }
-        
-        guard let integer = BInt(String(components[0]), radix: 10) else {
-            throw EthereumKitError.contractError(.containsInvalidCharactor(amount))
-        }
-        
-        let poweredInteger = integer * (BInt(10) ** decimal)
-        
-        if components.count == 2 {
-            let count = components[1].count
-            
-            guard count <= decimal else {
-                throw EthereumKitError.contractError(.invalidDecimalValue(amount))
+    enum ContractFunctions {
+        case balanceOf(address: Data)
+        case transfer(address: Data, amount: BInt)
+
+        var methodSignature: Data {
+            switch self {
+            case .balanceOf:
+                return generateSignature(method: "balanceOf(address)")
+            case .transfer:
+                return generateSignature(method: "transfer(address,uint256)")
             }
-            
-            guard let digit = BInt(String(components[1]), radix: 10) else {
-                throw EthereumKitError.contractError(.containsInvalidCharactor(amount))
+        }
+
+        private func generateSignature(method: String) -> Data {
+            return CryptoKit.sha3(method.data(using: .ascii)!)[0...3]
+        }
+
+        var data: Data {
+            switch self {
+
+            case .balanceOf(let address):
+                return methodSignature + pad(data: address)
+
+            case .transfer(let toAddress, let amount):
+                return methodSignature + pad(data: toAddress) + pad(data: amount.serialize())
             }
-            
-            let poweredDigit = digit * (BInt(10) ** (decimal - count))
-            return poweredInteger + poweredDigit
-        } else {
-            return poweredInteger
         }
-    }
-    
-    /// Pad left spaces out of 256bits with 0
-    public static func pad(string: String) -> String {
-        var string = string
-        while string.count != lengthOf256bits {
-            string = "0" + string
+
+        private func pad(data: Data) -> Data {
+            return Data(repeating: 0, count: (max(0, 32 - data.count))) + data
         }
-        return string
+
     }
+
 }

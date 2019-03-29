@@ -1,10 +1,10 @@
 class Erc20Holder {
-    let contractAddress: String
+    let contractAddress: Data
     let delegate: IEthereumKitDelegate
 
-    var balance: String?
+    var balance: BInt?
 
-    init(contractAddress: String, delegate: IEthereumKitDelegate) {
+    init(contractAddress: Data, delegate: IEthereumKitDelegate) {
         self.contractAddress = contractAddress
         self.delegate = delegate
     }

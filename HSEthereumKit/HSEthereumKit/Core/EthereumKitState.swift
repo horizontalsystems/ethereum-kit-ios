@@ -1,35 +1,35 @@
 class EthereumKitState {
 
-    var balance: String?
+    var balance: BInt?
     var lastBlockHeight: Int?
 
-    private var erc20Holders: [String: Erc20Holder] = [:]
+    private var erc20Holders: [Data: Erc20Holder] = [:]
 
     var erc20Delegates: [IEthereumKitDelegate] {
         return erc20Holders.values.map { $0.delegate }
     }
 
-    func has(contractAddress: String) -> Bool {
+    func has(contractAddress: Data) -> Bool {
         return erc20Holders[contractAddress] != nil
     }
 
-    func add(contractAddress: String, delegate: IEthereumKitDelegate) {
+    func add(contractAddress: Data, delegate: IEthereumKitDelegate) {
         erc20Holders[contractAddress] = Erc20Holder(contractAddress: contractAddress, delegate: delegate)
     }
 
-    func remove(contractAddress: String) {
+    func remove(contractAddress: Data) {
         erc20Holders.removeValue(forKey: contractAddress)
     }
 
-    func balance(contractAddress: String) -> String? {
+    func balance(contractAddress: Data) -> BInt? {
         return erc20Holders[contractAddress]?.balance
     }
 
-    func set(balance: String?, contractAddress: String) {
+    func set(balance: BInt?, contractAddress: Data) {
         erc20Holders[contractAddress]?.balance = balance
     }
 
-    func delegate(contractAddress: String) -> IEthereumKitDelegate? {
+    func delegate(contractAddress: Data) -> IEthereumKitDelegate? {
         return erc20Holders[contractAddress]?.delegate
     }
 

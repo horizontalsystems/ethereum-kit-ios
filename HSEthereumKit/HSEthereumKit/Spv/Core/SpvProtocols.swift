@@ -1,7 +1,7 @@
 import RxSwift
 import HSCryptoKit
 
-protocol ISpvStorage {
+protocol ISpvStorage: IStorage {
     var lastBlockHeader: BlockHeader? { get }
     func blockHeader(height: Int) -> BlockHeader?
     func reversedLastBlockHeaders(from height: Int, limit: Int) -> [BlockHeader]
@@ -9,11 +9,6 @@ protocol ISpvStorage {
 
     var accountState: AccountState? { get }
     func save(accountState: AccountState)
-
-    func transactionsSingle(fromHash: String?, limit: Int?, contractAddress: String?) -> Single<[EthereumTransaction]>
-    func save(transactions: [EthereumTransaction])
-
-    func clear()
 }
 
 protocol IRandomHelper: class {
@@ -60,12 +55,11 @@ protocol ICryptoUtils: class {
 }
 
 public protocol IEthereumKitDelegate: class {
-    func onUpdate(transactions: [EthereumTransaction])
+    func onUpdate(transactions: [TransactionInfo])
     func onUpdateBalance()
     func onUpdateLastBlockHeight()
     func onUpdateSyncState()
 }
-
 
 protocol IPeerDelegate: class {
     func didConnect()

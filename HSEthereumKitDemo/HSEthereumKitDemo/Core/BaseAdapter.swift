@@ -20,7 +20,7 @@ class BaseAdapter {
         return .notSynced
     }
 
-    func transactionRecord(fromTransaction transaction: EthereumTransaction) -> TransactionRecord {
+    func transactionRecord(fromTransaction transaction: TransactionInfo) -> TransactionRecord {
         let mineAddress = ethereumKit.receiveAddress
 
         let from = TransactionAddress(
@@ -35,7 +35,7 @@ class BaseAdapter {
 
         var amount: Decimal = 0
 
-        if let significand = Decimal(string: transaction.amount) {
+        if let significand = Decimal(string: transaction.value) {
             let sign: FloatingPointSign = from.mine ? .minus : .plus
             amount = Decimal(sign: sign, exponent: -decimal, significand: significand)
         }
@@ -44,13 +44,13 @@ class BaseAdapter {
                 transactionHash: transaction.hash,
                 blockHeight: transaction.blockNumber,
                 amount: amount,
-                timestamp: Double(transaction.timestamp),
+                timestamp: transaction.timestamp,
                 from: from,
                 to: to
         )
     }
 
-    func transactionsObservable(hashFrom: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {
+    func transactionsObservable(hashFrom: String? = nil, limit: Int? = nil) -> Single<[TransactionInfo]> {
         return Single.just([])
     }
 
@@ -58,7 +58,7 @@ class BaseAdapter {
         return nil
     }
 
-    func sendSingle(to address: String, amount: String) -> Single<Void> {
+    func sendSingle(to: String, value: String) -> Single<Void> {
         return Single.just(())
     }
 
@@ -98,14 +98,14 @@ extension BaseAdapter {
 
         let amountString = String(describing: roundedDecimal)
 
-        return sendSingle(to: address, amount: amountString)
+        return sendSingle(to: address, value: amountString)
     }
 
 }
 
 extension BaseAdapter {
 
-    func onUpdate(transactions: [EthereumTransaction]) {
+    func onUpdate(transactions: [TransactionInfo]) {
         transactionsSignal.notify()
     }
 
@@ -119,6 +119,15 @@ extension BaseAdapter {
 
     func onUpdateSyncState() {
         syncStateSignal.notify()
+    }
+
+}
+
+extension BaseAdapter {
+
+    enum SendError: Error {
+        case invalidAddress
+        case invalidAmount
     }
 
 }
