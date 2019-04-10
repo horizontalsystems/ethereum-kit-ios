@@ -160,7 +160,7 @@ extension EthereumKit: IBlockchainDelegate {
 
 extension EthereumKit {
 
-    public static func instance(privateKey: Data, syncMode: SyncMode, networkType: NetworkType = .mainNet, walletId: String = "default", minLogLevel: Logger.Level = .error) -> EthereumKit {
+    public static func instance(privateKey: Data, syncMode: SyncMode, networkType: NetworkType = .mainNet, etherscanApiKey: String, walletId: String = "default", minLogLevel: Logger.Level = .error) -> EthereumKit {
         let logger = Logger(minLogLevel: minLogLevel)
 
         let publicKey = Data(CryptoKit.createPublicKey(fromPrivateKeyData: privateKey, compressed: false).dropFirst())
@@ -196,13 +196,13 @@ extension EthereumKit {
         return ethereumKit
     }
 
-    public static func instance(words: [String], syncMode: SyncMode, networkType: NetworkType = .mainNet, walletId: String = "default", minLogLevel: Logger.Level = .error) throws -> EthereumKit {
+    public static func instance(words: [String], syncMode: SyncMode, networkType: NetworkType = .mainNet, etherscanApiKey: String, walletId: String = "default", minLogLevel: Logger.Level = .error) throws -> EthereumKit {
         let coinType: UInt32 = networkType == .mainNet ? 60 : 1
 
         let hdWallet = HDWallet(seed: Mnemonic.seed(mnemonic: words), coinType: coinType, xPrivKey: 0, xPubKey: 0)
         let privateKey = try hdWallet.privateKey(account: 0, index: 0, chain: .external).raw
 
-        return instance(privateKey: privateKey, syncMode: syncMode, networkType: networkType, walletId: walletId, minLogLevel: minLogLevel)
+        return instance(privateKey: privateKey, syncMode: syncMode, networkType: networkType, etherscanApiKey: etherscanApiKey, walletId: walletId, minLogLevel: minLogLevel)
     }
 
 }
