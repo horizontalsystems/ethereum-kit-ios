@@ -40,19 +40,12 @@ class Manager {
     }
 
     private func initEthereumKit(words: [String]) {
-        let networkType:  EthereumKit.NetworkType = .ropsten
-
-        let coinType: UInt32 = networkType == .mainNet ? 60 : 1
-
-        let hdWallet = HDWallet(seed: Mnemonic.seed(mnemonic: words), coinType: coinType, xPrivKey: 0, xPubKey: 0)
-
-        let privateKey = try! hdWallet.privateKey(account: 0, index: 0, chain: .external).raw
-
 //        let nodePrivateKey = try! hdWallet.privateKey(account: 100, index: 100, chain: .external).raw
 //        ethereumKit = EthereumKit.instance(privateKey: privateKey, syncMode: .spv(nodePrivateKey: nodePrivateKey), etherscanApiKey: etherscanApiKey, networkType: networkType)
 
         let ethereumKit = EthereumKit.instance(privateKey: privateKey, syncMode: .api(infuraProjectId: infuraProjectId), networkType: networkType, etherscanApiKey: etherscanApiKey)
         let erc20Kit = Erc20Kit.instance(ethereumKit: ethereumKit, networkType: networkType, etherscanApiKey: etherscanApiKey)
+        ethereumKit = try! EthereumKit.instance(words: words, syncMode: .api(infuraProjectId: infuraProjectId, etherscanApiKey: etherscanApiKey), networkType: .ropsten, minLogLevel: .verbose)
 
         ethereumAdapter = EthereumAdapter(ethereumKit: ethereumKit)
         erc20Adapter = Erc20Adapter(erc20Kit: erc20Kit, ethereumKit: ethereumKit, contractAddress: tokenContractAddress, position: tokenBalanceStoragePosition, decimal: tokenDecimal)
