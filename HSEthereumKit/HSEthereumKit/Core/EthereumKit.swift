@@ -3,11 +3,8 @@ import HSCryptoKit
 
 public class EthereumKit {
     private let gasLimit = 21_000
-    private let gasLimitErc20 = 100_000
-
-    private let disposeBag = DisposeBag()
-
-    public weak var delegate: IEthereumKitDelegate?
+    private var delegates = [IEthereumKitDelegate]()
+    private var requests = [Int: IEthereumKitDelegate]()
 
     private let blockchain: IBlockchain
     private let addressValidator: IAddressValidator
@@ -34,13 +31,18 @@ extension EthereumKit {
 
     public func start() {
         blockchain.start()
+        for delegate in delegates {
+            delegate.onStart()
+        }
     }
 
     public func clear() {
-        delegate = nil
-
         blockchain.clear()
         state.clear()
+        for delegate in delegates {
+            delegate.onClear()
+        }
+        delegates = []
     }
 
     public var lastBlockHeight: Int? {
@@ -57,30 +59,6 @@ extension EthereumKit {
 
     public var receiveAddress: String {
         return blockchain.address.toEIP55Address()
-    }
-
-    public func register(contractAddress: String, delegate: IEthereumKitDelegate) {
-        guard let contractAddress = Data(hex: contractAddress) else {
-            return
-        }
-
-        guard !state.has(contractAddress: contractAddress) else {
-            return
-        }
-
-        state.add(contractAddress: contractAddress, delegate: delegate)
-        state.set(balance: blockchain.balanceErc20(contractAddress: contractAddress), contractAddress: contractAddress)
-
-        blockchain.register(contractAddress: contractAddress)
-    }
-
-    public func unregister(contractAddress: String) {
-        guard let contractAddress = Data(hex: contractAddress) else {
-            return
-        }
-
-        blockchain.unregister(contractAddress: contractAddress)
-        state.remove(contractAddress: contractAddress)
     }
 
     public func validate(address: String) throws {
@@ -113,66 +91,26 @@ extension EthereumKit {
     public var debugInfo: String {
         var lines = [String]()
 
-//        lines.append("PUBLIC KEY: \(hdWallet.publicKey()) ADDRESS: \(hdWallet.address())")
         lines.append("ADDRESS: \(blockchain.address)")
 
         return lines.joined(separator: "\n")
     }
 
-}
-
-// Public ERC20 API Extension
-
-extension EthereumKit {
-
-    public func feeErc20(gasPrice: Int) -> Decimal {
-        return Decimal(gasPrice) * Decimal(gasLimitErc20)
+    public func add(delegate: IEthereumKitDelegate) {
+        delegates.append(delegate)
     }
 
-    public func balanceErc20(contractAddress: String) -> String? {
-        guard let contractAddress = Data(hex: contractAddress) else {
-            return nil
-        }
+//    public func getStorageAt(contractAddress: String, position: String, blockNumber: Int?) -> Single<String> {
+//        return blockchain.getStorageAt(contractAddress: contractAddress, position: position, blockNumber: blockNumber)
+//    }
 
-        return state.balance(contractAddress: contractAddress)?.asString(withBase: 10)
-    }
-
-    public func syncStateErc20(contractAddress: String) -> SyncState {
-        guard let contractAddress = Data(hex: contractAddress) else {
-            return .notSynced
-        }
-
-        return blockchain.syncStateErc20(contractAddress: contractAddress)
-    }
-
-    public func transactionsErc20Single(contractAddress: String, fromHash: String? = nil, limit: Int? = nil) -> Single<[TransactionInfo]> {
-        guard let contractAddress = Data(hex: contractAddress) else {
-            return Single.just([])
-        }
-
-        return blockchain.transactionsErc20Single(contractAddress: contractAddress, fromHash: fromHash.flatMap { Data(hex: $0) }, limit: limit)
-                .map { $0.compactMap { TransactionInfo(transaction: $0) } }
-    }
-
-    public func sendErc20Single(contractAddress: String, to: String, value: String, gasPrice: Int) -> Single<TransactionInfo> {
-        guard let contractAddress = Data(hex: contractAddress) else {
-            return Single.error(SendError.invalidContractAddress)
-        }
-
-        guard let to = Data(hex: to) else {
-            return Single.error(SendError.invalidAddress)
-        }
-
-        guard let value = BInt(value) else {
-            return Single.error(SendError.invalidValue)
-        }
-
-        let rawTransaction = transactionBuilder.rawErc20Transaction(contractAddress: contractAddress, gasPrice: gasPrice, gasLimit: gasLimit, to: to, value: value)
-        return blockchain.sendSingle(rawTransaction: rawTransaction)
-                .map { TransactionInfo(transaction: $0) }
+    public func send(request: IRequest, by delegate: IEthereumKitDelegate) {
+        self.requests[request.id] = delegate
+        blockchain.send(request: request)
     }
 
 }
+
 
 extension EthereumKit: IBlockchainDelegate {
 
@@ -184,10 +122,8 @@ extension EthereumKit: IBlockchainDelegate {
         state.lastBlockHeight = lastBlockHeight
 
         delegateQueue.async { [weak self] in
-            self?.delegate?.onUpdateLastBlockHeight()
-            self?.state.erc20Delegates.forEach { delegate in
-                delegate.onUpdateLastBlockHeight()
-            }
+            print("DELEGATES COUNT: \(self?.delegates.count)")
+            self?.delegates.forEach { $0.onUpdateLastBlockHeight() }
         }
     }
 
@@ -199,41 +135,23 @@ extension EthereumKit: IBlockchainDelegate {
         state.balance = balance
 
         delegateQueue.async { [weak self] in
-            self?.delegate?.onUpdateBalance()
-        }
-    }
-
-    func onUpdateErc20(balance: BInt, contractAddress: Data) {
-        guard state.balance(contractAddress: contractAddress) != balance else {
-            return
-        }
-
-        state.set(balance: balance, contractAddress: contractAddress)
-
-        delegateQueue.async { [weak self] in
-            self?.state.delegate(contractAddress: contractAddress)?.onUpdateBalance()
+            self?.delegates.forEach { $0.onUpdateBalance() }
         }
     }
 
     func onUpdate(syncState: SyncState) {
-        delegate?.onUpdateSyncState()
-    }
-
-    func onUpdateErc20(syncState: SyncState, contractAddress: Data) {
-        delegateQueue.async { [weak self] in
-            self?.state.delegate(contractAddress: contractAddress)?.onUpdateSyncState()
-        }
+        delegates.forEach { $0.onUpdateSyncState() }
     }
 
     func onUpdate(transactions: [Transaction]) {
         delegateQueue.async { [weak self] in
-            self?.delegate?.onUpdate(transactions: transactions.map { TransactionInfo(transaction: $0) })
+            self?.delegates.forEach { $0.onUpdate(transactions: transactions.map { TransactionInfo(transaction: $0) }) }
         }
     }
 
-    func onUpdateErc20(transactions: [Transaction], contractAddress: Data) {
-        delegateQueue.async { [weak self] in
-            self?.state.delegate(contractAddress: contractAddress)?.onUpdate(transactions: transactions.map { TransactionInfo(transaction: $0) })
+    func onResponse(response: IResponse) {
+        if let delegate = requests[response.id] {
+            delegate.onResponse(response: response)
         }
     }
 
@@ -241,7 +159,7 @@ extension EthereumKit: IBlockchainDelegate {
 
 extension EthereumKit {
 
-    public static func instance(privateKey: Data, syncMode: SyncMode, networkType: NetworkType = .mainNet, walletId: String = "default", minLogLevel: Logger.Level = .verbose) -> EthereumKit {
+    public static func instance(privateKey: Data, syncMode: SyncMode, networkType: NetworkType = .mainNet, etherscanApiKey: String, walletId: String = "default", minLogLevel: Logger.Level = .verbose) -> EthereumKit {
         let logger = Logger(minLogLevel: minLogLevel)
 
         let publicKey = Data(CryptoKit.createPublicKey(fromPrivateKeyData: privateKey, compressed: false).dropFirst())
@@ -250,19 +168,23 @@ extension EthereumKit {
         let network: INetwork = networkType.network
         let transactionSigner = TransactionSigner(network: network, privateKey: privateKey)
         let transactionBuilder = TransactionBuilder()
+        let networkManager = NetworkManager(logger: logger)
+        let transactionsProvider: ITransactionsProvider = EtherscanApiProvider(networkManager: networkManager, network: network, etherscanApiKey: etherscanApiKey)
+
         var blockchain: IBlockchain
 
         switch syncMode {
-        case .api(let infuraProjectId, let etherscanApiKey):
+        case .api(let infuraProjectId):
             let storage: IApiStorage = ApiGrdbStorage(databaseFileName: "api-\(walletId)-\(networkType)")
-            blockchain = ApiBlockchain.instance(storage: storage, network: network, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, address: address, infuraProjectId: infuraProjectId, etherscanApiKey: etherscanApiKey, logger: logger)
+            let rpcApiProvider: IRpcApiProvider = InfuraApiProvider(networkManager: networkManager, network: network, infuraProjectId: infuraProjectId)
+            blockchain = ApiBlockchain.instance(storage: storage, network: network, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, address: address, rpcApiProvider: rpcApiProvider, transactionsProvider: transactionsProvider, logger: logger)
         case .spv(let nodePrivateKey):
             let storage: ISpvStorage = SpvGrdbStorage(databaseFileName: "spv-\(walletId)-\(networkType)")
 
             let nodePublicKey = Data(CryptoKit.createPublicKey(fromPrivateKeyData: nodePrivateKey, compressed: false).dropFirst())
             let nodeKey = ECKey(privateKey: nodePrivateKey, publicKeyPoint: ECPoint(nodeId: nodePublicKey))
 
-            blockchain = SpvBlockchain.spvBlockchain(storage: storage, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, network: network, address: address, nodeKey: nodeKey, logger: logger)
+            blockchain = SpvBlockchain.instance(storage: storage, transactionsProvider: transactionsProvider, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, network: network, address: address, nodeKey: nodeKey, logger: logger)
         }
 
         let addressValidator: IAddressValidator = AddressValidator()
@@ -290,7 +212,7 @@ extension EthereumKit {
     }
 
     public enum SyncMode {
-        case api(infuraProjectId: String, etherscanApiKey: String)
+        case api(infuraProjectId: String)
         case spv(nodePrivateKey: Data)
     }
 

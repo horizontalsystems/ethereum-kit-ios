@@ -60,17 +60,9 @@ extension ApiGrdbStorage: IApiStorage {
         }
     }
 
-    func lastTransactionBlockHeight(erc20: Bool) -> Int? {
+    func lastTransactionBlockHeight() -> Int? {
         return try! dbPool.read { db in
-            let predicate: SQLExpressible
-
-            if erc20 {
-                predicate = Transaction.Columns.input != Data()
-            } else {
-                predicate = Transaction.Columns.input == Data()
-            }
-
-            return try Transaction.filter(predicate).order(Transaction.Columns.blockNumber.desc).fetchOne(db)?.blockNumber
+            return try Transaction.order(Transaction.Columns.blockNumber.desc).fetchOne(db)?.blockNumber
         }
     }
 

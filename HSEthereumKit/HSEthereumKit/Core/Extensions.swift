@@ -1,4 +1,4 @@
-extension Data {
+public extension Data {
 
     init?(hex: String) {
         let hex = hex.stripHexPrefix()

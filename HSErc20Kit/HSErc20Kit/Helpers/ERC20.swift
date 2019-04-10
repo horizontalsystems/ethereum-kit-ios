@@ -1,4 +1,5 @@
 import HSCryptoKit
+import HSEthereumKit
 
 struct ERC20 {
 

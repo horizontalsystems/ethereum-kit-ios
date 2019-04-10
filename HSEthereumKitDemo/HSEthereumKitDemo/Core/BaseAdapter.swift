@@ -20,46 +20,16 @@ class BaseAdapter {
         return .notSynced
     }
 
-    func transactionRecord(fromTransaction transaction: TransactionInfo) -> TransactionRecord {
-        let mineAddress = ethereumKit.receiveAddress
-
-        let from = TransactionAddress(
-                address: transaction.from,
-                mine: transaction.from == mineAddress
-        )
-
-        let to = TransactionAddress(
-                address: transaction.to,
-                mine: transaction.to == mineAddress
-        )
-
-        var amount: Decimal = 0
-
-        if let significand = Decimal(string: transaction.value) {
-            let sign: FloatingPointSign = from.mine ? .minus : .plus
-            amount = Decimal(sign: sign, exponent: -decimal, significand: significand)
-        }
-
-        return TransactionRecord(
-                transactionHash: transaction.hash,
-                blockHeight: transaction.blockNumber,
-                amount: amount,
-                timestamp: transaction.timestamp,
-                from: from,
-                to: to
-        )
-    }
-
-    func transactionsObservable(hashFrom: String? = nil, limit: Int? = nil) -> Single<[TransactionInfo]> {
-        return Single.just([])
-    }
-
     var balanceString: String? {
         return nil
     }
 
     func sendSingle(to: String, value: String) -> Single<Void> {
         return Single.just(())
+    }
+
+    func transactionsSingle(hashFrom: String? = nil, limit: Int? = nil) -> Single<[TransactionRecord]> {
+        return Single.just([])
     }
 
 }
@@ -86,11 +56,6 @@ extension BaseAdapter {
         return ethereumKit.receiveAddress
     }
 
-    func transactionsSingle(hashFrom: String? = nil, limit: Int? = nil) -> Single<[TransactionRecord]> {
-        return transactionsObservable(hashFrom: hashFrom, limit: limit)
-                .map { [unowned self] in $0.map { self.transactionRecord(fromTransaction: $0) }}
-    }
-
     func sendSingle(to address: String, amount: Decimal) -> Single<Void> {
         let poweredDecimal = amount * pow(10, decimal)
         let handler = NSDecimalNumberHandler(roundingMode: .plain, scale: 0, raiseOnExactness: false, raiseOnOverflow: false, raiseOnUnderflow: false, raiseOnDivideByZero: false)
@@ -99,26 +64,6 @@ extension BaseAdapter {
         let amountString = String(describing: roundedDecimal)
 
         return sendSingle(to: address, value: amountString)
-    }
-
-}
-
-extension BaseAdapter {
-
-    func onUpdate(transactions: [TransactionInfo]) {
-        transactionsSignal.notify()
-    }
-
-    func onUpdateBalance() {
-        balanceSignal.notify()
-    }
-
-    func onUpdateLastBlockHeight() {
-        lastBlockHeightSignal.notify()
-    }
-
-    func onUpdateSyncState() {
-        syncStateSignal.notify()
     }
 
 }

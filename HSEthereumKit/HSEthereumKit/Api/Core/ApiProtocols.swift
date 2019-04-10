@@ -1,16 +1,13 @@
 import RxSwift
 
-protocol IApiProvider {
+protocol IRpcApiProvider {
     func lastBlockHeightSingle() -> Single<Int>
     func transactionCountSingle(address: Data) -> Single<Int>
-
     func balanceSingle(address: Data) -> Single<BInt>
-    func balanceErc20Single(address: Data, contractAddress: Data) -> Single<BInt>
-
-    func transactionsSingle(address: Data, startBlock: Int) -> Single<[Transaction]>
-    func transactionsErc20Single(address: Data, startBlock: Int) -> Single<[Transaction]>
-
     func sendSingle(signedTransaction: Data) -> Single<Void>
+    func getStorageAt(contractAddress: String, position: String, blockNumber: Int?) -> Single<String>
+    func getLogs(address: Data?, fromBlock: Int?, toBlock: Int?, topics: [Any]) -> Single<[EthereumLog]>
+    func getBlock(byNumber: Int) -> Single<Block>
 }
 
 protocol IApiStorage: IStorage {
@@ -20,5 +17,5 @@ protocol IApiStorage: IStorage {
     func balance(forAddress address: Data) -> BInt?
     func save(balance: BInt, address: Data)
 
-    func lastTransactionBlockHeight(erc20: Bool) -> Int?
+    func lastTransactionBlockHeight() -> Int?
 }

@@ -5,15 +5,17 @@ class SpvBlockchain {
 
     private let peerGroup: IPeerGroup
     private let storage: ISpvStorage
+    private let transactionsProvider: ITransactionsProvider
     private let network: INetwork
     private let transactionSigner: TransactionSigner
     private let transactionBuilder: TransactionBuilder
 
     let address: Data
 
-    private init(peerGroup: IPeerGroup, storage: ISpvStorage, network: INetwork, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, address: Data) {
+    private init(peerGroup: IPeerGroup, storage: ISpvStorage, transactionsProvider: ITransactionsProvider, network: INetwork, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, address: Data) {
         self.peerGroup = peerGroup
         self.storage = storage
+        self.transactionsProvider = transactionsProvider
         self.network = network
         self.transactionSigner = transactionSigner
         self.transactionBuilder = transactionBuilder
@@ -44,10 +46,6 @@ extension SpvBlockchain: IBlockchain {
         return peerGroup.syncState
     }
 
-    func syncStateErc20(contractAddress: Data) -> EthereumKit.SyncState {
-        return EthereumKit.SyncState.synced
-    }
-
     var lastBlockHeight: Int? {
         return storage.lastBlockHeader?.height
     }
@@ -56,16 +54,12 @@ extension SpvBlockchain: IBlockchain {
         return storage.accountState?.balance
     }
 
-    func balanceErc20(contractAddress: Data) -> BInt? {
-        return nil
-    }
-
     func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[Transaction]> {
         return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: nil)
     }
 
-    func transactionsErc20Single(contractAddress: Data, fromHash: Data?, limit: Int?) -> Single<[Transaction]> {
-        return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: contractAddress)
+    func send(request: IRequest) {
+
     }
 
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction> {
@@ -91,10 +85,8 @@ extension SpvBlockchain: IBlockchain {
         })
     }
 
-    func register(contractAddress: Data) {
-    }
-
-    func unregister(contractAddress: Data) {
+    func getStorageAt(contractAddress: String, position: String, blockNumber: Int?) -> Single<String> {
+        return Single.just("")
     }
 
 }
@@ -123,13 +115,13 @@ extension SpvBlockchain {
 
 extension SpvBlockchain {
 
-    static func spvBlockchain(storage: ISpvStorage, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, network: INetwork, address: Data, nodeKey: ECKey, logger: Logger? = nil) -> SpvBlockchain {
+    static func instance(storage: ISpvStorage, transactionsProvider: ITransactionsProvider, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, network: INetwork, address: Data, nodeKey: ECKey, logger: Logger? = nil) -> SpvBlockchain {
         let peerProvider = PeerProvider(network: network, storage: storage, connectionKey: nodeKey, logger: logger)
         let validator = BlockValidator()
         let blockHelper = BlockHelper(storage: storage, network: network)
         let peerGroup = PeerGroup(storage: storage, peerProvider: peerProvider, validator: validator, blockHelper: blockHelper, address: address, logger: logger)
 
-        let spvBlockchain = SpvBlockchain(peerGroup: peerGroup, storage: storage, network: network, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, address: address)
+        let spvBlockchain = SpvBlockchain(peerGroup: peerGroup, storage: storage, transactionsProvider: transactionsProvider, network: network, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, address: address)
 
         peerGroup.delegate = spvBlockchain
 
