@@ -7,6 +7,7 @@ workspace 'HSEthereumKit'
 
 project 'HSEthereumKitDemo/HSEthereumKitDemo'
 project 'HSEthereumKit/HSEthereumKit'
+project 'HSErc20Kit/HSErc20Kit'
 
 def common_pods
   pod 'RxSwift', '~> 4.0'
@@ -26,6 +27,11 @@ end
 
 target :HSEthereumKit do
   project 'HSEthereumKit/HSEthereumKit'
+  common_pods
+end
+
+target :HSErc20Kit do
+  project 'HSErc20Kit/HSErc20Kit'
   common_pods
 end
 

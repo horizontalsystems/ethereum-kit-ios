@@ -54,13 +54,6 @@ protocol ICryptoUtils: class {
     func aesEncrypt(_ data: Data, withKey: Data, keySize: Int) -> Data
 }
 
-public protocol IEthereumKitDelegate: class {
-    func onUpdate(transactions: [TransactionInfo])
-    func onUpdateBalance()
-    func onUpdateLastBlockHeight()
-    func onUpdateSyncState()
-}
-
 protocol IPeerDelegate: class {
     func didConnect()
     func didDisconnect(error: Error?)

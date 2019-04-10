@@ -1,18 +1,21 @@
 import RxSwift
 import HSEthereumKit
+import HSErc20Kit
 import HSHDWalletKit
 
 class Manager {
     private let infuraProjectId = "2a1306f1d12f4c109a4d4fb9be46b02e"
     private let etherscanApiKey = "GKNHXT22ED7PRVCKZATFZQD1YI7FK9AAYE"
-    private let contractAddress = "0x583cbBb8a8443B38aBcC0c956beCe47340ea1367"
-    private let contractDecimal = 18
+    private let tokenContractAddress = Data(hex: "0xf559862f9265756619d5523bbc4bd8422898e97d")!
+    private let tokenDecimal = 18
+    private let tokenBalanceStoragePosition = Int64(6)
 
     static let shared = Manager()
 
     private let keyWords = "mnemonic_words"
 
     var ethereumKit: EthereumKit!
+    var erc20Kit: Erc20Kit!
     var ethereumAdapter: EthereumAdapter!
     var erc20Adapter: Erc20Adapter!
 
@@ -31,18 +34,23 @@ class Manager {
         ethereumKit.clear()
         clearWords()
         ethereumKit = nil
+        erc20Kit = nil
         ethereumAdapter = nil
         erc20Adapter = nil
     }
 
     private func initEthereumKit(words: [String]) {
 //        let nodePrivateKey = try! hdWallet.privateKey(account: 100, index: 100, chain: .external).raw
-//        ethereumKit = EthereumKit.instance(privateKey: privateKey, syncMode: .spv(nodePrivateKey: nodePrivateKey), networkType: networkType)
+//        ethereumKit = EthereumKit.instance(privateKey: privateKey, syncMode: .spv(nodePrivateKey: nodePrivateKey), etherscanApiKey: etherscanApiKey, networkType: networkType)
 
-        ethereumKit = try! EthereumKit.instance(words: words, syncMode: .api(infuraProjectId: infuraProjectId, etherscanApiKey: etherscanApiKey), networkType: .ropsten, minLogLevel: .verbose)
+        let ethereumKit = try! EthereumKit.instance(words: words, syncMode: .api(infuraProjectId: infuraProjectId), networkType: .ropsten, etherscanApiKey: etherscanApiKey, minLogLevel: .verbose)
+        let erc20Kit = Erc20Kit.instance(ethereumKit: ethereumKit, networkType: .ropsten, etherscanApiKey: etherscanApiKey)
 
         ethereumAdapter = EthereumAdapter(ethereumKit: ethereumKit)
-        erc20Adapter = Erc20Adapter(ethereumKit: ethereumKit, contractAddress: contractAddress, decimal: contractDecimal)
+        erc20Adapter = Erc20Adapter(erc20Kit: erc20Kit, ethereumKit: ethereumKit, contractAddress: tokenContractAddress, position: tokenBalanceStoragePosition, decimal: tokenDecimal)
+
+        self.ethereumKit = ethereumKit
+        self.erc20Kit = erc20Kit
 
 //        ethereumKit.start()
     }

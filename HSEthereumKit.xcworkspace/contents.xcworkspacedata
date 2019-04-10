@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:HSErc20Kit/HSErc20Kit.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:HSEthereumKit/HSEthereumKit.xcodeproj">
    </FileRef>
    <FileRef
