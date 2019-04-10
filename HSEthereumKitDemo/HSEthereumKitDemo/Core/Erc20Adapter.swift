@@ -5,7 +5,7 @@ class Erc20Adapter: BaseAdapter {
     let contractAddress: String
 
     init(ethereumKit: EthereumKit, contractAddress: String, decimal: Int) {
-        self.contractAddress = EIP55.format(contractAddress)
+        self.contractAddress = contractAddress
 
         super.init(ethereumKit: ethereumKit, decimal: decimal)
 
@@ -20,11 +20,11 @@ class Erc20Adapter: BaseAdapter {
         return ethereumKit.balanceErc20(contractAddress: contractAddress)
     }
 
-    override func sendSingle(to address: String, amount: String) -> Single<Void> {
-        return ethereumKit.sendErc20Single(to: address, contractAddress: contractAddress, amount: amount).map { _ in ()}
+    override func sendSingle(to: String, value: String) -> Single<Void> {
+        return ethereumKit.sendErc20Single(contractAddress: contractAddress, to: to, value: value, gasPrice: 5_000_000_000).map { _ in ()}
     }
 
-    override func transactionsObservable(hashFrom: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {
+    override func transactionsObservable(hashFrom: String? = nil, limit: Int? = nil) -> Single<[TransactionInfo]> {
         return ethereumKit.transactionsErc20Single(contractAddress: contractAddress, fromHash: hashFrom, limit: limit)
     }
 

@@ -1,9 +1,9 @@
-class Ropsten: INetwork {
-    let chainId = 3
-    let genesisBlockHash = Data(hex: "41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d")!
+class Kovan: INetwork {
+    let chainId = 42
+    let genesisBlockHash = Data(hex: "")!
 
     let checkpointBlock = BlockHeader(
-            hashHex: Data(hex: "9cb88ed0cc268d188755b0cf5ff8cca9b01eb53a0b3ebcdb35fb319882a041ee")!,
+            hashHex: Data(hex: "")!,
             totalDifficulty: 0,
             parentHash: Data(),
             unclesHash: Data(),
@@ -13,7 +13,7 @@ class Ropsten: INetwork {
             receiptsRoot: Data(),
             logsBloom: Data(),
             difficulty: 0,
-            height: 5279800,
+            height: 0,
             gasLimit: 0,
             gasUsed: 0,
             timestamp: 0,

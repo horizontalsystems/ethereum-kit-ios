@@ -24,7 +24,7 @@ class LESPeerTests: QuickSpec {
 
         beforeEach {
             stub(mockNetwork) { mock in
-                when(mock.id.get).thenReturn(networkId)
+                when(mock.chainId.get).thenReturn(networkId)
                 when(mock.genesisBlockHash.get).thenReturn(genesisHash)
             }
 

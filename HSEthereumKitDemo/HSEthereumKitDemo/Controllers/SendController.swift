@@ -8,9 +8,6 @@ class SendController: UIViewController {
     @IBOutlet weak var addressTextField: UITextField?
     @IBOutlet weak var amountTextField: UITextField?
     @IBOutlet weak var sendCoin: UIButton!
-    @IBOutlet weak var gasPriceTextField: UITextField!
-
-    var priority = FeePriority.medium
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -56,34 +53,6 @@ class SendController: UIViewController {
                     self?.show(error: "Something conversion wrong: \(error)")
                 })
                 .disposed(by: disposeBag)
-    }
-
-    @IBAction func changePriority(sender: UISegmentedControl) {
-        gasPriceTextField.isHidden = true
-
-        switch sender.selectedSegmentIndex {
-        case 0: priority = .lowest
-        case 1: priority = .low
-        case 2: priority = .medium
-        case 3: priority = .high
-        case 4: priority = .highest
-        case 5:
-            gasPriceTextField.isHidden = false
-            fillPriority(with: gasPriceTextField.text)
-        default: priority = .medium
-        }
-    }
-
-    @IBAction func changeGasPrice(sender: UITextField) {
-        fillPriority(with: sender.text)
-    }
-
-    func fillPriority(with text: String?) {
-        if let gasPrice = Int(text ?? "") {
-            priority = .custom(gasPriceInWei: gasPrice * 1_000_000_000)
-        } else  {
-            priority = .medium
-        }
     }
 
     private func show(error: String) {

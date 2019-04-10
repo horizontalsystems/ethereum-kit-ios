@@ -1,7 +1,7 @@
 import RxSwift
 import HSCryptoKit
 
-protocol ISpvStorage {
+protocol ISpvStorage: IStorage {
     var lastBlockHeader: BlockHeader? { get }
     func blockHeader(height: Int) -> BlockHeader?
     func reversedLastBlockHeaders(from height: Int, limit: Int) -> [BlockHeader]
@@ -9,11 +9,6 @@ protocol ISpvStorage {
 
     var accountState: AccountState? { get }
     func save(accountState: AccountState)
-
-    func transactionsSingle(fromHash: String?, limit: Int?, contractAddress: String?) -> Single<[EthereumTransaction]>
-    func save(transactions: [EthereumTransaction])
-
-    func clear()
 }
 
 protocol IRandomHelper: class {
@@ -60,12 +55,11 @@ protocol ICryptoUtils: class {
 }
 
 public protocol IEthereumKitDelegate: class {
-    func onUpdate(transactions: [EthereumTransaction])
+    func onUpdate(transactions: [TransactionInfo])
     func onUpdateBalance()
     func onUpdateLastBlockHeight()
     func onUpdateSyncState()
 }
-
 
 protocol IPeerDelegate: class {
     func didConnect()
@@ -97,7 +91,7 @@ protocol IPeer: class {
     func requestBlockHeaders(blockHeader: BlockHeader, limit: Int, reverse: Bool)
     func requestAccountState(address: Data, blockHeader: BlockHeader)
 
-    func send(rawTransaction: RawTransaction, signature: (v: BInt, r: BInt, s: BInt))
+    func send(rawTransaction: RawTransaction, nonce: Int, signature: Signature)
 }
 
 protocol IConnection: class {
@@ -139,12 +133,9 @@ protocol IDevP2PConnectionDelegate: class {
 }
 
 protocol INetwork {
-    var id: Int { get }
+    var chainId: Int { get }
     var genesisBlockHash: Data { get }
     var checkpointBlock: BlockHeader { get }
-    var coinType: UInt32 { get }
-    var privateKeyPrefix: UInt32 { get }
-    var publicKeyPrefix: UInt32 { get }
 }
 
 protocol IPeerGroupDelegate: class {
@@ -159,7 +150,7 @@ protocol IPeerGroup {
 
     func start()
 
-    func send(rawTransaction: RawTransaction, signature: (v: BInt, r: BInt, s: BInt))
+    func send(rawTransaction: RawTransaction, nonce: Int, signature: Signature)
 }
 
 protocol IDevP2PPeer {

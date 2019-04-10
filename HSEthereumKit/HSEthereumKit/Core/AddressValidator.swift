@@ -10,7 +10,7 @@ class AddressValidator {
     }
 
     private func isCheckSumAddress(hex: String) throws {
-        let addressHash: String = CryptoKit.sha3(hex.lowercased().data(using: .ascii)!).toHexString()
+        let addressHash: String = CryptoKit.sha3(hex.lowercased().data(using: .ascii)!).toRawHexString()
         for i in 0..<40 {
             let hashSymbol = character(addressHash, i)
 

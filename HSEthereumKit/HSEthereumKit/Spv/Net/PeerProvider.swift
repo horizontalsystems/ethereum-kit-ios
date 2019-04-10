@@ -18,7 +18,7 @@ extension PeerProvider: IPeerProvider {
     func peer() -> IPeer {
 
         let node = Node(
-                id: Data(hex: "f9a9a1b2f68dc119b0f44ba579cbc40da1f817ddbdb1045a57fa8159c51eb0f826786ce9e8b327d04c9ad075f2c52da90e9f84ee4dde3a2a911bb1270ef23f6d"),
+                id: Data(hex: "f9a9a1b2f68dc119b0f44ba579cbc40da1f817ddbdb1045a57fa8159c51eb0f826786ce9e8b327d04c9ad075f2c52da90e9f84ee4dde3a2a911bb1270ef23f6d")!,
                 host: "eth-testnet.horizontalsystems.xyz",
                 port: 20303,
                 discoveryPort: 30301

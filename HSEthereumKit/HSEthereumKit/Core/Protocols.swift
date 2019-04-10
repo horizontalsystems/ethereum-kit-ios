@@ -1,5 +1,53 @@
-import Foundation
 import RxSwift
+
+protocol IStorage {
+    func transactionsSingle(fromHash: Data?, limit: Int?, contractAddress: Data?) -> Single<[Transaction]>
+    func save(transactions: [Transaction])
+
+    func clear()
+}
+
+protocol IBlockchain {
+    var delegate: IBlockchainDelegate? { get set }
+
+    var address: Data { get }
+
+    func start()
+    func clear()
+
+    var syncState: EthereumKit.SyncState { get }
+    func syncStateErc20(contractAddress: Data) -> EthereumKit.SyncState
+
+    var lastBlockHeight: Int? { get }
+
+    var balance: BInt? { get }
+    func balanceErc20(contractAddress: Data) -> BInt?
+
+    func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[Transaction]>
+    func transactionsErc20Single(contractAddress: Data, fromHash: Data?, limit: Int?) -> Single<[Transaction]>
+
+    func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction>
+
+    func register(contractAddress: Data)
+    func unregister(contractAddress: Data)
+}
+
+protocol IBlockchainDelegate: class {
+    func onUpdate(lastBlockHeight: Int)
+
+    func onUpdate(balance: BInt)
+    func onUpdateErc20(balance: BInt, contractAddress: Data)
+
+    func onUpdate(syncState: EthereumKit.SyncState)
+    func onUpdateErc20(syncState: EthereumKit.SyncState, contractAddress: Data)
+
+    func onUpdate(transactions: [Transaction])
+    func onUpdateErc20(transactions: [Transaction], contractAddress: Data)
+}
+
+protocol IAddressValidator {
+    func validate(address: String) throws
+}
 
 protocol IReachabilityManager {
     var isReachable: Bool { get }
@@ -9,98 +57,4 @@ protocol IReachabilityManager {
 protocol IApiConfigProvider {
     var reachabilityHost: String { get }
     var apiUrl: String { get }
-}
-
-protocol IApiProvider {
-    func gasPriceDataSingle() -> Single<GasPrice>
-    func lastBlockHeightSingle() -> Single<Int>
-    func transactionCountSingle(address: String) -> Single<Int>
-
-    func balanceSingle(address: String) -> Single<String>
-    func balanceErc20Single(address: String, contractAddress: String) -> Single<String>
-
-    func transactionsSingle(address: String, startBlock: Int64) -> Single<[EthereumTransaction]>
-    func transactionsErc20Single(address: String, startBlock: Int64) -> Single<[EthereumTransaction]>
-
-    func sendSingle(from: String, to: String, nonce: Int, amount: String, gasPriceInWei: Int, gasLimit: Int) -> Single<EthereumTransaction>
-    func sendErc20Single(contractAddress: String, from: String, to: String, nonce: Int, amount: String, gasPriceInWei: Int, gasLimit: Int) -> Single<EthereumTransaction>
-}
-
-protocol IPeriodicTimer {
-    var delegate: IPeriodicTimerDelegate? { get set }
-    func schedule()
-    func invalidate()
-}
-
-protocol IPeriodicTimerDelegate: class {
-    func onFire()
-}
-
-protocol IRefreshKitDelegate: class {
-    func onRefresh()
-    func onDisconnect()
-}
-
-protocol IRefreshManager {
-    func didRefresh()
-}
-
-protocol IAddressValidator {
-    func validate(address: String) throws
-}
-
-protocol IApiStorage {
-    var lastBlockHeight: Int? { get }
-
-    func balance(forAddress address: String) -> String?
-    func transactionsSingle(fromHash: String?, limit: Int?, contractAddress: String?) -> Single<[EthereumTransaction]>
-
-    var gasPriceData: GasPrice? { get }
-    func lastTransactionBlockHeight(erc20: Bool) -> Int?
-
-    func save(lastBlockHeight: Int)
-    func save(gasPriceData: GasPrice)
-    func save(balance: String, address: String)
-    func save(transactions: [EthereumTransaction])
-
-    func clear()
-}
-
-protocol IBlockchain {
-    var ethereumAddress: String { get }
-    var gasLimitEthereum: Int { get }
-    var gasLimitErc20: Int { get }
-
-    var delegate: IBlockchainDelegate? { get set }
-
-    func start()
-    func clear()
-
-    func gasPriceInWei(priority: FeePriority) -> Int
-
-    var lastBlockHeight: Int? { get }
-    func balance(forAddress address: String) -> String?
-    func transactionsSingle(fromHash: String?, limit: Int?, contractAddress: String?) -> Single<[EthereumTransaction]>
-
-    var syncState: EthereumKit.SyncState { get }
-    func syncState(contractAddress: String) -> EthereumKit.SyncState
-
-    func register(contractAddress: String)
-    func unregister(contractAddress: String)
-
-    func sendSingle(to address: String, amount: String, priority: FeePriority) -> Single<EthereumTransaction>
-    func sendErc20Single(to address: String, contractAddress: String, amount: String, priority: FeePriority) -> Single<EthereumTransaction>
-}
-
-protocol IBlockchainDelegate: class {
-    func onUpdate(lastBlockHeight: Int)
-
-    func onUpdate(balance: String)
-    func onUpdateErc20(balance: String, contractAddress: String)
-
-    func onUpdate(syncState: EthereumKit.SyncState)
-    func onUpdateErc20(syncState: EthereumKit.SyncState, contractAddress: String)
-
-    func onUpdate(transactions: [EthereumTransaction])
-    func onUpdateErc20(transactions: [EthereumTransaction], contractAddress: String)
 }

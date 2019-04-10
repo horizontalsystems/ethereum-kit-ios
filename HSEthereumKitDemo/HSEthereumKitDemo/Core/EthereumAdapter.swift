@@ -17,11 +17,11 @@ class EthereumAdapter: BaseAdapter {
         return ethereumKit.balance
     }
 
-    override func sendSingle(to address: String, amount: String) -> Single<Void> {
-        return ethereumKit.sendSingle(to: address, amount: amount).map { _ in ()}
+    override func sendSingle(to: String, value: String) -> Single<Void> {
+        return ethereumKit.sendSingle(to: to, value: value, gasPrice: 5_000_000_000).map { _ in ()}
     }
 
-    override func transactionsObservable(hashFrom: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {
+    override func transactionsObservable(hashFrom: String? = nil, limit: Int? = nil) -> Single<[TransactionInfo]> {
         return ethereumKit.transactionsSingle(fromHash: hashFrom, limit: limit)
     }
 

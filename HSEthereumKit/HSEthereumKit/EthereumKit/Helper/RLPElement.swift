@@ -26,7 +26,7 @@ class RLPElement {
             return 0
         }
 
-        guard let uInt = UInt(dataValue.toHexString(), radix: 16) else {
+        guard let uInt = UInt(dataValue.toRawHexString(), radix: 16) else {
             throw RLP.DecodeError.invalidIntValue
         }
 
@@ -42,7 +42,7 @@ class RLPElement {
             return 0
         }
 
-        guard let bInt = BInt(dataValue.toHexString(), radix: 16) else {
+        guard let bInt = BInt(dataValue.toRawHexString(), radix: 16) else {
             throw RLP.DecodeError.invalidBIntValue
         }
 

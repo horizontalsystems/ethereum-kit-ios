@@ -13,7 +13,6 @@
             <connections>
                 <outlet property="addressTextField" destination="eid-xi-6C6" id="FDB-s1-Rsb"/>
                 <outlet property="amountTextField" destination="0XQ-lU-qZQ" id="7BO-ra-IQ8"/>
-                <outlet property="gasPriceTextField" destination="TVc-t0-9l4" id="fPv-Mi-P6U"/>
                 <outlet property="sendCoin" destination="Jsg-3Z-Zfy" id="N1W-UM-0tE"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
             </connections>
@@ -61,32 +60,6 @@
                         <action selector="send:" destination="-1" eventType="touchUpInside" id="rBI-RE-bwS"/>
                     </connections>
                 </button>
-                <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="2" translatesAutoresizingMaskIntoConstraints="NO" id="WjR-xF-hvb">
-                    <rect key="frame" x="20" y="208" width="335" height="29"/>
-                    <segments>
-                        <segment title="lowest"/>
-                        <segment title="low"/>
-                        <segment title="medium"/>
-                        <segment title="high"/>
-                        <segment title="highest"/>
-                        <segment title="custom"/>
-                    </segments>
-                    <connections>
-                        <action selector="changePriorityWithSender:" destination="-1" eventType="valueChanged" id="5sc-u1-zy0"/>
-                    </connections>
-                </segmentedControl>
-                <textField hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="GWei" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="TVc-t0-9l4">
-                    <rect key="frame" x="131" y="262" width="113" height="30"/>
-                    <constraints>
-                        <constraint firstAttribute="width" constant="113" id="oEA-yM-R5f"/>
-                    </constraints>
-                    <nil key="textColor"/>
-                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                    <textInputTraits key="textInputTraits" keyboardType="numberPad"/>
-                    <connections>
-                        <action selector="changeGasPriceWithSender:" destination="-1" eventType="editingChanged" id="prq-nu-Ygs"/>
-                    </connections>
-                </textField>
             </subviews>
             <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
             <constraints>
@@ -97,19 +70,13 @@
                 <constraint firstItem="fnl-2z-Ty3" firstAttribute="trailing" secondItem="iZq-bw-BVE" secondAttribute="trailing" constant="20" id="FtC-On-tnr"/>
                 <constraint firstItem="iZq-bw-BVE" firstAttribute="top" secondItem="eid-xi-6C6" secondAttribute="bottom" constant="20" id="G42-yg-Qup"/>
                 <constraint firstItem="cps-kG-bsH" firstAttribute="top" secondItem="fnl-2z-Ty3" secondAttribute="top" constant="20" id="S75-aY-4wk"/>
-                <constraint firstItem="WjR-xF-hvb" firstAttribute="centerX" secondItem="i5M-Pr-FkT" secondAttribute="centerX" id="Sgw-mp-72Z"/>
                 <constraint firstItem="eid-xi-6C6" firstAttribute="leading" secondItem="fnl-2z-Ty3" secondAttribute="leading" constant="20" id="WtW-ac-K0H"/>
                 <constraint firstItem="0XQ-lU-qZQ" firstAttribute="leading" secondItem="fnl-2z-Ty3" secondAttribute="leading" constant="20" id="X8x-c2-LvQ"/>
-                <constraint firstItem="WjR-xF-hvb" firstAttribute="top" secondItem="0XQ-lU-qZQ" secondAttribute="bottom" constant="26" id="aDr-8x-ijb"/>
                 <constraint firstItem="eid-xi-6C6" firstAttribute="top" secondItem="cps-kG-bsH" secondAttribute="bottom" constant="10" id="bLS-Wt-GSX"/>
                 <constraint firstItem="fnl-2z-Ty3" firstAttribute="trailing" secondItem="0XQ-lU-qZQ" secondAttribute="trailing" constant="20" id="eDK-1S-mrh"/>
-                <constraint firstItem="TVc-t0-9l4" firstAttribute="centerX" secondItem="i5M-Pr-FkT" secondAttribute="centerX" id="gee-lU-N27"/>
                 <constraint firstItem="fnl-2z-Ty3" firstAttribute="trailing" secondItem="eid-xi-6C6" secondAttribute="trailing" constant="20" id="haZ-oO-cOI"/>
                 <constraint firstItem="iZq-bw-BVE" firstAttribute="leading" secondItem="fnl-2z-Ty3" secondAttribute="leading" constant="20" id="jIW-px-cgJ"/>
-                <constraint firstItem="WjR-xF-hvb" firstAttribute="trailing" secondItem="0XQ-lU-qZQ" secondAttribute="trailing" id="kES-xx-Nsq"/>
                 <constraint firstItem="PLD-Gr-HJH" firstAttribute="leading" secondItem="0XQ-lU-qZQ" secondAttribute="leading" id="tNo-nj-7uf"/>
-                <constraint firstItem="TVc-t0-9l4" firstAttribute="top" secondItem="WjR-xF-hvb" secondAttribute="bottom" constant="26" id="uHB-uv-Fm9"/>
-                <constraint firstItem="WjR-xF-hvb" firstAttribute="leading" secondItem="0XQ-lU-qZQ" secondAttribute="leading" id="urw-7u-qrx"/>
                 <constraint firstItem="Jsg-3Z-Zfy" firstAttribute="top" secondItem="PLD-Gr-HJH" secondAttribute="top" id="yPn-aq-8DO"/>
                 <constraint firstItem="0XQ-lU-qZQ" firstAttribute="top" secondItem="iZq-bw-BVE" secondAttribute="bottom" constant="10" id="zxL-s7-GWn"/>
             </constraints>

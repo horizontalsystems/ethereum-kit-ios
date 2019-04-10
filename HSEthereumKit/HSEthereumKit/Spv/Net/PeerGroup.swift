@@ -81,8 +81,8 @@ extension PeerGroup: IPeerGroup {
         peer.connect()
     }
 
-    func send(rawTransaction: RawTransaction, signature: (v: BInt, r: BInt, s: BInt)) {
-        state.syncPeer?.send(rawTransaction: rawTransaction, signature: signature)
+    func send(rawTransaction: RawTransaction, nonce: Int, signature: Signature) {
+        state.syncPeer?.send(rawTransaction: rawTransaction, nonce: nonce, signature: signature)
     }
 
 }

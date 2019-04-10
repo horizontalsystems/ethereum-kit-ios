@@ -1,11 +1,10 @@
-import Foundation
 import GRDB
 
 class EthereumBalance: Record {
-    let address: String
-    let value: String
+    let address: Data
+    let value: BInt
 
-    init(address: String, value: String) {
+    init(address: Data, value: BInt) {
         self.address = address
         self.value = value
 
