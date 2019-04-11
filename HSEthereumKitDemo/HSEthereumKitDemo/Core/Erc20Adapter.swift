@@ -37,8 +37,13 @@ class Erc20Adapter: BaseAdapter {
             amount = Decimal(sign: sign, exponent: -decimal, significand: significand)
         }
 
+        var logIndex = ""
+        if let index = transaction.logIndex {
+            logIndex = String(index, radix: 10)
+        }
+
         return TransactionRecord(
-                transactionHash: transaction.transactionHash + String(transaction.transactionIndex, radix: 10),
+                transactionHash: transaction.transactionHash + logIndex,
                 blockHeight: transaction.blockNumber,
                 amount: amount,
                 timestamp: transaction.timestamp,

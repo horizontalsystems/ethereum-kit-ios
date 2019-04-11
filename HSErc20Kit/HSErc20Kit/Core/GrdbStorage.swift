@@ -24,7 +24,6 @@ class GrdbStorage {
         migrator.registerMigration("createTransactions") { db in
             try db.create(table: Transaction.databaseTableName) { t in
                 t.column(Transaction.Columns.transactionHash.name, .text).notNull()
-                t.column(Transaction.Columns.transactionIndex.name, .integer).notNull()
                 t.column(Transaction.Columns.contractAddress.name, .text).notNull()
                 t.column(Transaction.Columns.from.name, .text).notNull()
                 t.column(Transaction.Columns.to.name, .text).notNull()
@@ -77,7 +76,7 @@ extension GrdbStorage {
                 var request = Transaction.filter(Transaction.Columns.contractAddress == contractAddress)
 
                 if let hashFrom = hashFrom, let indexFrom = indexFrom,
-                   let fromTransaction = try request.filter(Transaction.Columns.transactionHash == hashFrom).filter(Transaction.Columns.transactionIndex == indexFrom).fetchOne(db) {
+                   let fromTransaction = try request.filter(Transaction.Columns.transactionHash == hashFrom).filter(Transaction.Columns.logIndex == indexFrom).fetchOne(db) {
                     request = request.filter(Transaction.Columns.timestamp < fromTransaction.timestamp)
                 }
                 if let limit = limit {
@@ -110,12 +109,6 @@ extension GrdbStorage {
     func lastTransactionBlockHeight() -> Int? {
         return try! dbPool.read { db in
             try Transaction.order(Transaction.Columns.blockNumber.desc).fetchOne(db)?.blockNumber
-        }
-    }
-
-    func relayedTransactionsWithoutTimestamp() -> [Transaction] {
-        return try! dbPool.read { db in
-            try Transaction.filter(Transaction.Columns.timestamp == nil).filter(Transaction.Columns.blockNumber != nil).fetchAll(db)
         }
     }
 

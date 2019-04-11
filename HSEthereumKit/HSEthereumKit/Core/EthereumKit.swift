@@ -75,6 +75,16 @@ extension EthereumKit {
                 .map { $0.map { TransactionInfo(transaction: $0) } }
     }
 
+    public func sendSingle(to: Data, value: String, transactionInput: Data, gasPrice: Int) -> Single<TransactionInfo> {
+        guard let value = BInt(value) else {
+            return Single.error(EthereumKit.SendError.invalidValue)
+        }
+
+        let rawTransaction = transactionBuilder.rawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: to, value: value, data: transactionInput)
+        return blockchain.sendSingle(rawTransaction: rawTransaction)
+                .map { TransactionInfo(transaction: $0) }
+    }
+
     public func sendSingle(to: String, value: String, gasPrice: Int) -> Single<TransactionInfo> {
         guard let to = Data(hex: to) else {
             return Single.error(SendError.invalidAddress)

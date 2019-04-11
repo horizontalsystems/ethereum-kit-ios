@@ -12,6 +12,7 @@ public class Erc20Kit {
     let storage: GrdbStorage
     let transactionSyncer: TransactionSyncer
     let balanceSyncer: BalanceSyncer
+    let transactionBuilder: TransactionBuilder
     let address: Data
     var tokens = [Data: Token]()
     var delegates = [Data: IErc20TokenDelegate]()
@@ -23,6 +24,7 @@ public class Erc20Kit {
         self.queue = queue
         self.transactionSyncer = TransactionSyncer(storage: storage, addressTopic: Data(repeating: 0, count: 12) + self.address)
         self.balanceSyncer = BalanceSyncer(storage: storage)
+        self.transactionBuilder = TransactionBuilder()
 
         self.transactionSyncer.delegate = self
         self.balanceSyncer.delegate = self
@@ -69,9 +71,23 @@ extension Erc20Kit {
         return tokens[contractAddress]?.balance?.asString(withBase: 10)
     }
 
-    public func sendSingle(contractAddress: Data, to: String, value: String, gasPrice: Int) -> Single<TransactionInfo> {
-        let transaction = Transaction(transactionHash: Data(), transactionIndex: 0, contractAddress: contractAddress, from: contractAddress, to: Data(hex: to)!, value: BInt(value, radix: 16)!)
-        return Single.just(TransactionInfo(transaction: transaction))
+    public func sendSingle(contractAddress: Data, to: String, value: String, gasPrice: Int) -> Single<HSErc20Kit.TransactionInfo> {
+        guard let toData = Data(hex: to) else {
+            return Single.error(EthereumKit.SendError.invalidValue)
+        }
+
+        guard let valueBInt = BInt(value, radix: 16) else {
+            return Single.error(EthereumKit.SendError.invalidValue)
+        }
+
+        let transactionInput = transactionBuilder.transferTransactionInput(to: toData, value: valueBInt)
+
+        return ethereumKit.sendSingle(to: contractAddress, value: BInt(0).asString(withBase: 10), transactionInput: transactionInput, gasPrice: gasPrice)
+                .map({ Transaction(transactionHash: Data(hex: $0.hash)!, contractAddress: contractAddress, from: self.address, to: toData, value: valueBInt) })
+                .do(onSuccess: { [weak self] transaction in
+                    self?.storage.save(transactions: [transaction])
+                })
+                .map({ TransactionInfo(transaction: $0) })
     }
 
     public func transactionsSingle(contractAddress: Data, hashFrom: Data?, indexFrom: Int?, limit: Int?) -> Single<[TransactionInfo]> {

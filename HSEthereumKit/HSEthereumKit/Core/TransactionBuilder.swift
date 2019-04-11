@@ -2,8 +2,8 @@ import HSCryptoKit
 
 class TransactionBuilder {
 
-    func rawTransaction(gasPrice: Int, gasLimit: Int, to: Data, value: BInt) -> RawTransaction {
-        return RawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: to, value: value)
+    func rawTransaction(gasPrice: Int, gasLimit: Int, to: Data, value: BInt, data: Data = Data()) -> RawTransaction {
+        return RawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: to, value: value, data: data)
     }
 
     func transaction(rawTransaction: RawTransaction, nonce: Int, signature: Signature, address: Data) -> Transaction {

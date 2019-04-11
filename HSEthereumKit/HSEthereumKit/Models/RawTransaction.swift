@@ -5,7 +5,7 @@ class RawTransaction {
     let value: BInt
     let data: Data
 
-    init(gasPrice: Int, gasLimit: Int, to: Data, value: BInt, data: Data = Data()) {
+    init(gasPrice: Int, gasLimit: Int, to: Data, value: BInt, data: Data) {
         self.gasPrice = gasPrice
         self.gasLimit = gasLimit
         self.to = to
