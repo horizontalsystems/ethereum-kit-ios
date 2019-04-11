@@ -77,16 +77,16 @@ extension EthereumKit {
         try addressValidator.validate(address: address)
     }
 
-    public func fee(gasPriceInWei: Int? = nil) -> Decimal {
+    public func fee(gasPriceInWei: Int) -> Decimal {
         // only for standard transactions without data
-        return Decimal(gasPriceInWei ?? blockchain.gasPriceInWei) * Decimal(blockchain.gasLimitEthereum)
+        return Decimal(gasPriceInWei) * Decimal(blockchain.gasLimitEthereum)
     }
 
     public func transactionsSingle(fromHash: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {
         return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: nil)
     }
 
-    public func sendSingle(to address: String, amount: String, gasPriceInWei: Int? = nil) -> Single<EthereumTransaction> {
+    public func sendSingle(to address: String, amount: String, gasPriceInWei: Int) -> Single<EthereumTransaction> {
         return blockchain.sendSingle(to: address, amount: amount, gasPriceInWei: gasPriceInWei)
     }
 
@@ -105,9 +105,9 @@ extension EthereumKit {
 
 extension EthereumKit {
 
-    public func feeErc20(gasPriceInWei: Int? = nil) -> Decimal {
+    public func feeErc20(gasPriceInWei: Int) -> Decimal {
         // only for erc20 coin maximum fee
-        return Decimal(gasPriceInWei ?? blockchain.gasPriceInWei) * Decimal(blockchain.gasLimitErc20)
+        return Decimal(gasPriceInWei) * Decimal(blockchain.gasLimitErc20)
     }
 
     public func balanceErc20(contractAddress: String) -> String? {
@@ -122,7 +122,7 @@ extension EthereumKit {
         return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: contractAddress)
     }
 
-    public func sendErc20Single(to address: String, contractAddress: String, amount: String, gasPriceInWei: Int? = nil) -> Single<EthereumTransaction> {
+    public func sendErc20Single(to address: String, contractAddress: String, amount: String, gasPriceInWei: Int) -> Single<EthereumTransaction> {
         return blockchain.sendErc20Single(to: address, contractAddress: contractAddress, amount: amount, gasPriceInWei: gasPriceInWei)
     }
 
