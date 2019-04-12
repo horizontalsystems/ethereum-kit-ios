@@ -26,11 +26,7 @@ class BalanceSyncer {
         storage.save(token: token)
 
         delegate?.onBalanceUpdated(contractAddress: token.contractAddress)
-
-        if tokenStates.state(of: token.contractAddress) != .synced {
-            tokenStates.set(.synced, to: token.contractAddress)
-            delegate?.onSyncStateUpdated(contractAddress: token.contractAddress)
-        }
+        tokenStates.set(state: .synced, to: token.contractAddress)
 
         tokensFetching[token.contractAddress] = false
     }
@@ -50,6 +46,13 @@ extension BalanceSyncer: IBalanceSyncer {
 
         tokensFetching[token.contractAddress] = true
         dataProvider.getStorageAt(for: token, toBlock: blockNumber, completeFunction: onBalanceReceived)
+    }
+
+    func setSynced(forBlock blockNumber: Int, token: Token) {
+        token.syncedBlockHeight = blockNumber
+        storage.save(token: token)
+
+        tokenStates.set(state: .synced, to: token.contractAddress)
     }
 
 }

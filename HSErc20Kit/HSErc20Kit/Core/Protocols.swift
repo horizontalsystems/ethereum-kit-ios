@@ -9,11 +9,13 @@ public protocol IErc20TokenDelegate: class {
 
 protocol IBalanceSyncerDelegate: class {
     func onBalanceUpdated(contractAddress: Data)
-    func onSyncStateUpdated(contractAddress: Data)
 }
 
 protocol ITransactionSyncerDelegate: class {
-    func onTransactionsUpdated(contractAddress: Data, transactions: [Transaction])
+    func onTransactionsUpdated(contractAddress: Data, transactions: [Transaction], blockNumber: Int)
+}
+
+protocol ITokenStatesDelegate: class {
     func onSyncStateUpdated(contractAddress: Data)
 }
 
@@ -31,6 +33,7 @@ protocol ITransactionSyncer {
 
 protocol IBalanceSyncer {
     func sync(forBlock blockNumber: Int, token: Token)
+    func setSynced(forBlock: Int, token: Token)
 }
 
 protocol IDataProvider {
@@ -50,6 +53,6 @@ protocol ITokenStates {
     var states: [Data: Erc20Kit.SyncState] { get }
 
     func state(of contractAddress: Data) -> Erc20Kit.SyncState
-    func set(_ state: Erc20Kit.SyncState, to: Data)
+    func set(state: Erc20Kit.SyncState, to contractAddress: Data)
     func clear()
 }

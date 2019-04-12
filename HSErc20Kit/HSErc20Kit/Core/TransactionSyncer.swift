@@ -25,7 +25,7 @@ class TransactionSyncer {
         let transactionsByToken: [Data: [Transaction]] = Dictionary(grouping: transactions, by: { $0.contractAddress })
 
         for (contractAddress, _) in tokensHolder.tokens {
-            delegate?.onTransactionsUpdated(contractAddress: contractAddress, transactions: transactionsByToken[contractAddress] ?? [Transaction]())
+            delegate?.onTransactionsUpdated(contractAddress: contractAddress, transactions: transactionsByToken[contractAddress] ?? [Transaction](), blockNumber: blockNumber)
         }
 
         syncing = false
@@ -37,10 +37,7 @@ extension TransactionSyncer: ITransactionSyncer {
 
     func sync(forBlock blockNumber: Int) {
         for (contractAddress, _) in tokensHolder.tokens {
-            if tokenStates.state(of: contractAddress) != .synced {
-                tokenStates.set(.syncing, to: contractAddress)
-                delegate?.onSyncStateUpdated(contractAddress: contractAddress)
-            }
+            tokenStates.set(state: .syncing, to: contractAddress)
         }
 
         guard lastTransactionsSyncBlockHeight < blockNumber, !syncing else {

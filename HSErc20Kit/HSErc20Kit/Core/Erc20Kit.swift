@@ -111,20 +111,18 @@ extension Erc20Kit: IEthereumKitDelegate {
 
 extension Erc20Kit: ITransactionSyncerDelegate {
 
-    func onTransactionsUpdated(contractAddress: Data, transactions: [Transaction]) {
-        if !transactions.isEmpty {
-            delegates[contractAddress]?.onUpdate(transactions: transactions.map { TransactionInfo(transaction: $0) })
-        }
-
-        guard let blockNumber = self.ethereumKit.lastBlockHeight, let token = tokensHolder.token(byContractAddress: contractAddress) else {
+    func onTransactionsUpdated(contractAddress: Data, transactions: [Transaction], blockNumber: Int) {
+        guard let token = tokensHolder.token(byContractAddress: contractAddress) else {
             return
         }
 
-        balanceSyncer.sync(forBlock: blockNumber, token: token)
-    }
+        if transactions.isEmpty {
+            balanceSyncer.setSynced(forBlock: blockNumber, token: token)
+        } else {
+            delegates[contractAddress]?.onUpdate(transactions: transactions.map { TransactionInfo(transaction: $0) })
 
-    func onSyncStateUpdated(contractAddress: Data) {
-        delegates[contractAddress]?.onUpdateSyncState()
+            balanceSyncer.sync(forBlock: blockNumber, token: token)
+        }
     }
 
 }
@@ -135,6 +133,14 @@ extension Erc20Kit: IBalanceSyncerDelegate {
         delegates[contractAddress]?.onUpdateBalance()
 
         startTransactionsSync()
+    }
+
+}
+
+extension Erc20Kit: ITokenStatesDelegate {
+
+    func onSyncStateUpdated(contractAddress: Data) {
+        delegates[contractAddress]?.onUpdateSyncState()
     }
 
 }
@@ -162,6 +168,7 @@ extension Erc20Kit {
 
         transactionSyncer.delegate = erc20Kit
         balanceSyncer.delegate = erc20Kit
+        tokenStates.delegate = erc20Kit
 
         ethereumKit.add(delegate: erc20Kit)
 

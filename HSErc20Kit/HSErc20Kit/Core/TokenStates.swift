@@ -1,5 +1,7 @@
 class TokenStates {
 
+    weak var delegate: ITokenStatesDelegate?
+
     var states = [Data: Erc20Kit.SyncState]()
 
 }
@@ -10,8 +12,11 @@ extension TokenStates: ITokenStates {
         return states[contractAddress] ?? Erc20Kit.SyncState.notSynced
     }
 
-    func set(_ state: Erc20Kit.SyncState, to: Data) {
-        states[to] = state
+    func set(state: Erc20Kit.SyncState, to contractAddress: Data) {
+        if self.state(of: contractAddress) != .synced {
+            states[contractAddress] = state
+            delegate?.onSyncStateUpdated(contractAddress: contractAddress)
+        }
     }
 
     func clear() {
