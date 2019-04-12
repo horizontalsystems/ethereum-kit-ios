@@ -21,7 +21,7 @@ class Erc20Adapter: BaseAdapter {
     }
 
     override func sendSingle(to address: String, amount: String) -> Single<Void> {
-        return ethereumKit.sendErc20Single(to: address, contractAddress: contractAddress, amount: amount).map { _ in ()}
+        return ethereumKit.sendErc20Single(to: address, contractAddress: contractAddress, amount: amount, gasPriceInWei: 10_000_000_000).map { _ in ()}
     }
 
     override func transactionsObservable(hashFrom: String? = nil, limit: Int? = nil) -> Single<[EthereumTransaction]> {

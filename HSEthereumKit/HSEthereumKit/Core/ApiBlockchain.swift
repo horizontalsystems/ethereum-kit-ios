@@ -69,13 +69,11 @@ class ApiBlockchain {
 
         Single.zip(
                         apiProvider.lastBlockHeightSingle(),
-                        apiProvider.gasPriceInWeiSingle(),
                         apiProvider.balanceSingle(address: ethereumAddress)
                 )
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                .subscribe(onSuccess: { [weak self] lastBlockHeight, gasPriceInWei, balance in
+                .subscribe(onSuccess: { [weak self] lastBlockHeight, balance in
                     self?.update(lastBlockHeight: lastBlockHeight)
-                    self?.update(gasPriceInWei: gasPriceInWei)
                     self?.update(balance: balance)
 
                     self?.refreshTransactions()
