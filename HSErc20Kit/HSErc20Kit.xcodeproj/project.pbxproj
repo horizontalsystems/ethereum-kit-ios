@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		03E1FFFB41A8EDB624AF16AB /* Pods_HSErc20KitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC766483C92C3556F47907A4 /* Pods_HSErc20KitTests.framework */; };
 		2FA5D10732E8DA3873942DC7 /* TokenStates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D01B0CEF7EBA3D022A23 /* TokenStates.swift */; };
 		2FA5D2A306594691E81F3700 /* TokensHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D08B96FAE5E25240E847 /* TokensHolder.swift */; };
 		2FA5D2F8ABDFB907536308D3 /* Erc20Kit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5DBFF8094999891470F26 /* Erc20Kit.swift */; };
@@ -54,7 +55,10 @@
 		2FA5DDC47CB76FAD28B5DBFD /* TransactionBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionBuilder.swift; sourceTree = "<group>"; };
 		2FA5DEAC9C95ECFFB1054F23 /* Protocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Protocols.swift; sourceTree = "<group>"; };
 		2FA5DF526D8DC26011DF61D6 /* DataProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataProvider.swift; sourceTree = "<group>"; };
+		9E7972E262B4E79FD07467AB /* Pods-HSErc20KitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HSErc20KitTests.release.xcconfig"; path = "../Pods/Target Support Files/Pods-HSErc20KitTests/Pods-HSErc20KitTests.release.xcconfig"; sourceTree = "<group>"; };
 		B1F474299577926267731BB2 /* Pods-HSErc20Kit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HSErc20Kit.debug.xcconfig"; path = "../Pods/Target Support Files/Pods-HSErc20Kit/Pods-HSErc20Kit.debug.xcconfig"; sourceTree = "<group>"; };
+		CA095DD7700BBDE6E4F39505 /* Pods-HSErc20KitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HSErc20KitTests.debug.xcconfig"; path = "../Pods/Target Support Files/Pods-HSErc20KitTests/Pods-HSErc20KitTests.debug.xcconfig"; sourceTree = "<group>"; };
+		CC766483C92C3556F47907A4 /* Pods_HSErc20KitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HSErc20KitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D001D2E72251CC7F00165546 /* HSErc20Kit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = HSErc20Kit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D001D2EA2251CC7F00165546 /* HSErc20Kit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HSErc20Kit.h; sourceTree = "<group>"; };
 		D001D2EB2251CC7F00165546 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -80,6 +84,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D001D2F12251CC7F00165546 /* HSErc20Kit.framework in Frameworks */,
+				03E1FFFB41A8EDB624AF16AB /* Pods_HSErc20KitTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -118,6 +123,8 @@
 			children = (
 				B1F474299577926267731BB2 /* Pods-HSErc20Kit.debug.xcconfig */,
 				DD6D850F75D8AB30AC2CE77B /* Pods-HSErc20Kit.release.xcconfig */,
+				CA095DD7700BBDE6E4F39505 /* Pods-HSErc20KitTests.debug.xcconfig */,
+				9E7972E262B4E79FD07467AB /* Pods-HSErc20KitTests.release.xcconfig */,
 			);
 			name = Pods;
 			sourceTree = "<group>";
@@ -168,6 +175,7 @@
 			children = (
 				D001D3052251CD2500165546 /* HSEthereumKit.framework */,
 				2F7A35A2D731F85D5CC9A3CC /* Pods_HSErc20Kit.framework */,
+				CC766483C92C3556F47907A4 /* Pods_HSErc20KitTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -217,9 +225,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = D001D2FE2251CC7F00165546 /* Build configuration list for PBXNativeTarget "HSErc20KitTests" */;
 			buildPhases = (
+				607EBFBD92917B1351402769 /* [CP] Check Pods Manifest.lock */,
 				D001D2EC2251CC7F00165546 /* Sources */,
 				D001D2ED2251CC7F00165546 /* Frameworks */,
 				D001D2EE2251CC7F00165546 /* Resources */,
+				E7105C60FB4D755C243DE8F2 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -305,6 +315,64 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		607EBFBD92917B1351402769 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-HSErc20KitTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		E7105C60FB4D755C243DE8F2 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${SRCROOT}/../Pods/Target Support Files/Pods-HSErc20KitTests/Pods-HSErc20KitTests-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/Cuckoo/Cuckoo.framework",
+				"${BUILT_PRODUCTS_DIR}/Nimble/Nimble.framework",
+				"${BUILT_PRODUCTS_DIR}/Quick/Quick.framework",
+				"${BUILT_PRODUCTS_DIR}/Alamofire/Alamofire.framework",
+				"${BUILT_PRODUCTS_DIR}/GRDB.swift/GRDB.framework",
+				"${BUILT_PRODUCTS_DIR}/HSCryptoKit/HSCryptoKit.framework",
+				"${BUILT_PRODUCTS_DIR}/HSHDWalletKit/HSHDWalletKit.framework",
+				"${BUILT_PRODUCTS_DIR}/RxSwift/RxSwift.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Cuckoo.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Nimble.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Quick.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Alamofire.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GRDB.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/HSCryptoKit.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/HSHDWalletKit.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxSwift.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/../Pods/Target Support Files/Pods-HSErc20KitTests/Pods-HSErc20KitTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -479,7 +547,7 @@
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = 72234W6E3D;
+				DEVELOPMENT_TEAM = HC4MCAXJ66;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -493,7 +561,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = io.horizontalsystems.HSErc20Kit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -505,7 +573,7 @@
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = 72234W6E3D;
+				DEVELOPMENT_TEAM = HC4MCAXJ66;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -519,17 +587,17 @@
 				PRODUCT_BUNDLE_IDENTIFIER = io.horizontalsystems.HSErc20Kit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
 		D001D2FF2251CC7F00165546 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = CA095DD7700BBDE6E4F39505 /* Pods-HSErc20KitTests.debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = PC25UEH75Q;
+				DEVELOPMENT_TEAM = HC4MCAXJ66;
 				INFOPLIST_FILE = HSErc20KitTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -545,10 +613,10 @@
 		};
 		D001D3002251CC7F00165546 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9E7972E262B4E79FD07467AB /* Pods-HSErc20KitTests.release.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = PC25UEH75Q;
+				DEVELOPMENT_TEAM = HC4MCAXJ66;
 				INFOPLIST_FILE = HSErc20KitTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

@@ -422,8 +422,9 @@ public struct BInt: SignedNumeric, // Implies Numeric, Equatable, ExpressibleByI
 		return (self.sign, self.limbs)
 	}
 
-	public var hashValue: Int {
-		return "\(self.sign)\(self.limbs)".hashValue
+	public func hash(into hasher: inout Hasher) {
+		hasher.combine(sign)
+		hasher.combine(limbs)
 	}
 
 	///	A Boolean value indicating whether this type is a signed integer type.
