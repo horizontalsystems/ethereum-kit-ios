@@ -9,21 +9,15 @@ public protocol IResponse {
 }
 
 public protocol IEthereumKitDelegate: class {
-    func onStart()
     func onClear()
 
     func onUpdate(transactions: [TransactionInfo])
     func onUpdateBalance()
     func onUpdateLastBlockHeight()
     func onUpdateSyncState()
-
-    func onResponse(response: IResponse)
 }
 
 extension IEthereumKitDelegate {
-    public func onStart() {
-    }
-
     public func onClear() {
     }
 
@@ -37,9 +31,6 @@ extension IEthereumKitDelegate {
     }
 
     public func onUpdateSyncState() {
-    }
-
-    public func onResponse(response: IResponse) {
     }
 }
 
@@ -69,7 +60,8 @@ protocol IBlockchain {
     func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[Transaction]>
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction>
 
-    func send(request: IRequest)
+    func getLogs(address: Data?, topics: [Any], fromBlock: Int, toBlock: Int, pullTimestamps: Bool, completeFunction: @escaping ([EthereumLog]) -> ())
+    func getStorageAt(contractAddress: Data, position: String, blockNumber: Int, completeFunction: @escaping (Int, Data) -> ())
 }
 
 protocol IBlockchainDelegate: class {
@@ -77,8 +69,6 @@ protocol IBlockchainDelegate: class {
     func onUpdate(balance: BInt)
     func onUpdate(syncState: EthereumKit.SyncState)
     func onUpdate(transactions: [Transaction])
-
-    func onResponse(response: IResponse)
 }
 
 protocol IAddressValidator {

@@ -16,10 +16,20 @@ class ApiBlockchain {
     private let transactionBuilder: TransactionBuilder
     private var logger: Logger?
 
-    private(set) var syncState: EthereumKit.SyncState = .notSynced {
-        didSet {
-            if oldValue != syncState {
-                delegate?.onUpdate(syncState: syncState)
+    private var syncing = false
+    private var _syncState: EthereumKit.SyncState = .notSynced
+    private(set) var syncState: EthereumKit.SyncState {
+        get {
+            return _syncState
+        }
+        set {
+            if _syncState == .synced {
+                return
+            }
+
+            if _syncState != newValue {
+                _syncState = newValue
+                delegate?.onUpdate(syncState: _syncState)
             }
         }
     }
@@ -53,14 +63,15 @@ class ApiBlockchain {
 
     private func refreshAll() {
         guard reachabilityManager.isReachable else {
-            changeAllSyncStates(syncState: .notSynced)
+            self.syncState = .notSynced
             return
         }
-        guard syncState != .syncing else {
+        guard !syncing else {
             return
         }
 
-        changeAllSyncStates(syncState: .syncing)
+        self.syncing = true
+        self.syncState = .syncing
 
         Single.zip(
                         rpcApiProvider.lastBlockHeightSingle(),
@@ -73,7 +84,8 @@ class ApiBlockchain {
 
                     self?.refreshTransactions()
                 }, onError: { [weak self] error in
-                    self?.changeAllSyncStates(syncState: .notSynced)
+                    self?.syncing = false
+                    self?.syncState = .notSynced
                     self?.logger?.error("Sync Failed: lastBlockHeight and balance: \(error)")
                 })
                 .disposed(by: disposeBag)
@@ -87,15 +99,13 @@ class ApiBlockchain {
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(onSuccess: { [weak self] transactions in
                     self?.update(transactions: transactions)
+                    self?.syncing = false
                     self?.syncState = .synced
                 }, onError: { [weak self] _ in
+                    self?.syncing = false
                     self?.syncState = .notSynced
                 })
                 .disposed(by: disposeBag)
-    }
-
-    private func changeAllSyncStates(syncState: EthereumKit.SyncState) {
-        self.syncState = syncState
     }
 
     private func update(lastBlockHeight: Int) {
@@ -195,23 +205,15 @@ extension ApiBlockchain: IBlockchain {
                 })
     }
 
-    func send(request: IRequest) {
-        switch request {
-        case let request as GetLogsRequest: send(request: request)
-        case let request as GetStorageAtRequest: send(request: request)
-        default: ()
-        }
-    }
-
-    func send(request: GetLogsRequest) {
+    func getLogs(address: Data?, topics: [Any], fromBlock: Int, toBlock: Int, pullTimestamps: Bool, completeFunction: @escaping ([EthereumLog]) -> ()) {
         var requestSingles = [Single<[EthereumLog]>]()
 
-        if let topicsArray = request.topics as? [[Any]] {
+        if let topicsArray = topics as? [[Any]] {
             for topics in topicsArray {
-                requestSingles.append(rpcApiProvider.getLogs(address: request.address, fromBlock: request.fromBlock, toBlock: request.toBlock, topics: topics))
+                requestSingles.append(rpcApiProvider.getLogs(address: address, fromBlock: fromBlock, toBlock: toBlock, topics: topics))
             }
         } else {
-            requestSingles.append(rpcApiProvider.getLogs(address: request.address, fromBlock: request.fromBlock, toBlock: request.toBlock, topics: request.topics))
+            requestSingles.append(rpcApiProvider.getLogs(address: address, fromBlock: fromBlock, toBlock: toBlock, topics: topics))
         }
 
         Single.zip(requestSingles)
@@ -220,7 +222,7 @@ extension ApiBlockchain: IBlockchain {
                     return Array(Set<EthereumLog>(joinedLogs))
                 })
                 .flatMap({ (logs: [EthereumLog]) in
-                    if request.pullTimestamps {
+                    if pullTimestamps {
                         return self.pullTransactionTimestamps(ethereumLogs: logs)
                     } else {
                         return Single.just(logs)
@@ -228,22 +230,20 @@ extension ApiBlockchain: IBlockchain {
                 })
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(
-                        onSuccess: { [weak self] (logs: [EthereumLog]) in
-                            self?.delegate?.onResponse(response: GetLogsResponse(id: request.id, logs: logs))
+                        onSuccess: { (logs: [EthereumLog]) in
+                            completeFunction(logs)
                         },
                         onError: { _ in
                         }
                 ).disposed(by: disposeBag)
     }
 
-    func send(request: GetStorageAtRequest) {
-        rpcApiProvider.getStorageAt(contractAddress: request.contractAddress.toHexString(), position: request.position, blockNumber: request.blockNumber)
+    func getStorageAt(contractAddress: Data, position: String, blockNumber: Int, completeFunction: @escaping (Int, Data) -> ()) {
+        rpcApiProvider.getStorageAt(contractAddress: contractAddress.toHexString(), position: position, blockNumber: blockNumber)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(
-                        onSuccess: { [weak self] value in
-                            let response = GetStorageAtResponse(id: request.id, contractAddress: request.contractAddress, blockNumber: request.blockNumber, balanceValue: Data(hex: value)!)
-
-                            self?.delegate?.onResponse(response: response)
+                        onSuccess: { value in
+                            completeFunction(blockNumber, Data(hex: value)!)
                         },
                         onError: { _ in
                         }

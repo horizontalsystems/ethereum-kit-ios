@@ -53,7 +53,11 @@ class Erc20Adapter: BaseAdapter {
     }
 
     override var syncState: EthereumKit.SyncState {
-        return erc20Kit.syncState(contractAddress: contractAddress)
+        switch erc20Kit.syncState(contractAddress: contractAddress) {
+        case .notSynced: return EthereumKit.SyncState.notSynced
+        case .syncing: return EthereumKit.SyncState.syncing
+        case .synced: return EthereumKit.SyncState.synced
+        }
     }
 
     override var balanceString: String? {
