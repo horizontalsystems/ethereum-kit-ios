@@ -13,11 +13,11 @@ def common_pods
   pod 'RxSwift', '~> 4.0'
 
   pod 'HSCryptoKit', git: 'https://github.com/horizontalsystems/crypto-kit-ios'
-  pod 'HSHDWalletKit', '~> 1.0.4'
+  pod 'HSHDWalletKit', '~> 1.0'
 
-  pod 'GRDB.swift', '~> 3.6.2'
+  pod 'GRDB.swift', '~> 3.0'
 
-  pod 'Alamofire', '~> 4.8.0'
+  pod 'Alamofire', '~> 4.0'
 end
 
 target :HSEthereumKitDemo do
