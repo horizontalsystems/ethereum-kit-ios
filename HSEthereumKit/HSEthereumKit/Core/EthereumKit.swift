@@ -32,9 +32,6 @@ extension EthereumKit {
 
     public func start() {
         blockchain.start()
-        for delegate in delegates {
-            delegate.onStart()
-        }
     }
 
     public func clear() {
@@ -75,6 +72,16 @@ extension EthereumKit {
                 .map { $0.map { TransactionInfo(transaction: $0) } }
     }
 
+    public func sendSingle(to: Data, value: String, transactionInput: Data, gasPrice: Int) -> Single<TransactionInfo> {
+        guard let value = BInt(value) else {
+            return Single.error(EthereumKit.SendError.invalidValue)
+        }
+
+        let rawTransaction = transactionBuilder.rawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: to, value: value, data: transactionInput)
+        return blockchain.sendSingle(rawTransaction: rawTransaction)
+                .map { TransactionInfo(transaction: $0) }
+    }
+
     public func sendSingle(to: String, value: String, gasPrice: Int) -> Single<TransactionInfo> {
         guard let to = Data(hex: to) else {
             return Single.error(SendError.invalidAddress)
@@ -101,13 +108,12 @@ extension EthereumKit {
         delegates.append(delegate)
     }
 
-//    public func getStorageAt(contractAddress: String, position: String, blockNumber: Int?) -> Single<String> {
-//        return blockchain.getStorageAt(contractAddress: contractAddress, position: position, blockNumber: blockNumber)
-//    }
+    public func getLogs(address: Data?, topics: [Any], fromBlock: Int, toBlock: Int, pullTimestamps: Bool, completeFunction: @escaping ([EthereumLog]) -> ()) {
+        blockchain.getLogs(address: address, topics: topics, fromBlock: fromBlock, toBlock: toBlock, pullTimestamps: pullTimestamps, completeFunction: completeFunction)
+    }
 
-    public func send(request: IRequest, by delegate: IEthereumKitDelegate) {
-        self.requests[request.id] = delegate
-        blockchain.send(request: request)
+    public func getStorageAt(contractAddress: Data, position: String, blockNumber: Int, completeFunction: @escaping (Int, Data) -> ()) {
+        blockchain.getStorageAt(contractAddress: contractAddress, position: position, blockNumber: blockNumber, completeFunction: completeFunction)
     }
 
 }
@@ -147,12 +153,6 @@ extension EthereumKit: IBlockchainDelegate {
     func onUpdate(transactions: [Transaction]) {
         delegateQueue.async { [weak self] in
             self?.delegates.forEach { $0.onUpdate(transactions: transactions.map { TransactionInfo(transaction: $0) }) }
-        }
-    }
-
-    func onResponse(response: IResponse) {
-        if let delegate = requests[response.id] {
-            delegate.onResponse(response: response)
         }
     }
 

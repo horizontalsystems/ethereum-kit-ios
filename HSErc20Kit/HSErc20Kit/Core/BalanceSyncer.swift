@@ -5,64 +5,54 @@ class BalanceSyncer {
     weak var delegate: IBalanceSyncerDelegate?
 
     let storage: GrdbStorage
+    let tokenStates: TokenStates
+    let dataProvider: DataProvider
 
-    var tokenStates = [Data: EthereumKit.SyncState]()
+    var tokensFetching = [Data: Bool]()
 
-    init(storage: GrdbStorage) {
+    init(storage: GrdbStorage, tokenStates: TokenStates, dataProvider: DataProvider) {
         self.storage = storage
+        self.tokenStates = tokenStates
+        self.dataProvider = dataProvider
     }
 
-    func sync(forBlock blockNumber: Int) {
-        guard let delegate = self.delegate else {
+    private func onBalanceReceived(token: Token, balance: BInt, blockNumber: Int) {
+        if let lastSyncBlockHeight = token.syncedBlockHeight, lastSyncBlockHeight >= blockNumber {
             return
         }
 
-        for (contractAddress, token) in delegate.tokens {
-            if let syncState = tokenStates[contractAddress], syncState == .syncing {
-                continue
-            }
-
-            if let lastSyncBlockHeight = token.syncedBlockHeight, lastSyncBlockHeight >= blockNumber {
-                continue
-            }
-
-            updateSyncState(contractAddress: contractAddress, newState: .syncing)
-            let request = GetStorageAtRequest(contractAddress: contractAddress, position: token.contractBalanceKey, blockNumber: blockNumber)
-            delegate.send(request: request)
-        }
-    }
-
-    func handle(response: GetStorageAtResponse) {
-        guard let delegate = self.delegate else {
-            return
-        }
-
-        guard let newValue = BInt(response.balanceValue.toHexString(), radix: 16) else {
-            return
-        }
-
-        guard let token = delegate.tokens[response.contractAddress] else {
-            return
-        }
-
-        if let lastSyncBlockHeight = token.syncedBlockHeight, lastSyncBlockHeight > response.blockNumber {
-            return
-        }
-
-        token.balance = newValue
-        token.syncedBlockHeight = response.blockNumber
+        token.balance = balance
+        token.syncedBlockHeight = blockNumber
         storage.save(token: token)
-        updateSyncState(contractAddress: token.contractAddress, newState: .synced)
-        delegate.onBalanceUpdated(contractAddress: token.contractAddress)
+
+        delegate?.onBalanceUpdated(contractAddress: token.contractAddress)
+        tokenStates.set(state: .synced, to: token.contractAddress)
+
+        tokensFetching[token.contractAddress] = false
     }
 
-    private func updateSyncState(contractAddress: Data, newState: EthereumKit.SyncState) {
-        guard newState != tokenStates[contractAddress] else {
+}
+
+extension BalanceSyncer: IBalanceSyncer {
+
+    func sync(forBlock blockNumber: Int, token: Token) {
+        if let lastSyncBlockHeight = token.syncedBlockHeight, lastSyncBlockHeight >= blockNumber {
             return
         }
 
-        tokenStates[contractAddress] = newState
-        delegate?.onSyncStateUpdated(contractAddress: contractAddress, state: newState)
+        if let fetching = tokensFetching[token.contractAddress], fetching {
+            return
+        }
+
+        tokensFetching[token.contractAddress] = true
+        dataProvider.getStorageAt(for: token, toBlock: blockNumber, completeFunction: onBalanceReceived)
+    }
+
+    func setSynced(forBlock blockNumber: Int, token: Token) {
+        token.syncedBlockHeight = blockNumber
+        storage.save(token: token)
+
+        tokenStates.set(state: .synced, to: token.contractAddress)
     }
 
 }

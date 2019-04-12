@@ -37,8 +37,13 @@ class Erc20Adapter: BaseAdapter {
             amount = Decimal(sign: sign, exponent: -decimal, significand: significand)
         }
 
+        var logIndex = ""
+        if let index = transaction.logIndex {
+            logIndex = String(index, radix: 10)
+        }
+
         return TransactionRecord(
-                transactionHash: transaction.transactionHash + String(transaction.transactionIndex, radix: 10),
+                transactionHash: transaction.transactionHash + logIndex,
                 blockHeight: transaction.blockNumber,
                 amount: amount,
                 timestamp: transaction.timestamp,
@@ -48,7 +53,11 @@ class Erc20Adapter: BaseAdapter {
     }
 
     override var syncState: EthereumKit.SyncState {
-        return erc20Kit.syncState(contractAddress: contractAddress)
+        switch erc20Kit.syncState(contractAddress: contractAddress) {
+        case .notSynced: return EthereumKit.SyncState.notSynced
+        case .syncing: return EthereumKit.SyncState.syncing
+        case .synced: return EthereumKit.SyncState.synced
+        }
     }
 
     override var balanceString: String? {

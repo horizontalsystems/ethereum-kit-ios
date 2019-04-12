@@ -58,10 +58,6 @@ extension SpvBlockchain: IBlockchain {
         return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: nil)
     }
 
-    func send(request: IRequest) {
-
-    }
-
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction> {
         let single: Single<Transaction> = Single.create { [unowned self] observer in
             do {
@@ -85,10 +81,13 @@ extension SpvBlockchain: IBlockchain {
         })
     }
 
-    func getStorageAt(contractAddress: String, position: String, blockNumber: Int?) -> Single<String> {
-        return Single.just("")
+    func getLogs(address: Data?, topics: [Any], fromBlock: Int, toBlock: Int, pullTimestamps: Bool, completeFunction: @escaping ([EthereumLog]) -> ()) {
+
     }
 
+    func getStorageAt(contractAddress: Data, position: String, blockNumber: Int, completeFunction: @escaping (Int, Data) -> ()) {
+
+    }
 }
 
 extension SpvBlockchain: IPeerGroupDelegate {

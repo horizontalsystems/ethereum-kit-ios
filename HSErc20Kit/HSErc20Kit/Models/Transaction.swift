@@ -3,7 +3,6 @@ import HSEthereumKit
 
 class Transaction: Record {
     var transactionHash: Data
-    var transactionIndex: Int
 
     let contractAddress: Data
     let from: Data
@@ -15,9 +14,8 @@ class Transaction: Record {
     var blockHash: Data?
     var blockNumber: Int?
 
-    init(transactionHash: Data, transactionIndex: Int, contractAddress: Data, from: Data, to: Data, value: BInt, timestamp: TimeInterval = Date().timeIntervalSince1970) {
+    init(transactionHash: Data, contractAddress: Data, from: Data, to: Data, value: BInt, timestamp: TimeInterval = Date().timeIntervalSince1970) {
         self.transactionHash = transactionHash
-        self.transactionIndex = transactionIndex
         self.contractAddress = contractAddress
         self.from = from
         self.to = to
@@ -33,7 +31,6 @@ class Transaction: Record {
 
     enum Columns: String, ColumnExpression {
         case transactionHash
-        case transactionIndex
         case contractAddress
         case from
         case to
@@ -46,7 +43,6 @@ class Transaction: Record {
 
     required init(row: Row) {
         transactionHash = row[Columns.transactionHash]
-        transactionIndex = row[Columns.transactionIndex]
         contractAddress = row[Columns.contractAddress]
         from = row[Columns.from]
         to = row[Columns.to]
@@ -67,7 +63,6 @@ class Transaction: Record {
         }
 
         self.transactionHash = log.transactionHash
-        self.transactionIndex = log.transactionIndex
 
         self.contractAddress = log.address
         self.from = log.topics[1].suffix(from: 12)
@@ -85,7 +80,6 @@ class Transaction: Record {
 
     override func encode(to container: inout PersistenceContainer) {
         container[Columns.transactionHash] = transactionHash
-        container[Columns.transactionIndex] = transactionIndex
         container[Columns.contractAddress] = contractAddress
         container[Columns.from] = from
         container[Columns.to] = to

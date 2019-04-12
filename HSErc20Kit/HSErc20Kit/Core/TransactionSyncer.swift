@@ -1,56 +1,51 @@
-import HSEthereumKit
-
 class TransactionSyncer {
 
     weak var delegate: ITransactionSyncerDelegate?
 
     let storage: GrdbStorage
-    let addressTopic: Data
+    let tokensHolder: TokensHolder
+    let tokenStates: TokenStates
+    let dataProvider: DataProvider
 
     var lastTransactionsSyncBlockHeight: Int
-    var syncState: EthereumKit.SyncState
+    var syncing = false
 
-    init(storage: GrdbStorage, addressTopic: Data) {
+    init(storage: GrdbStorage, tokensHolder: TokensHolder, tokenStates: TokenStates, dataProvider: DataProvider) {
         self.storage = storage
-        self.addressTopic = addressTopic
+        self.tokensHolder = tokensHolder
+        self.tokenStates = tokenStates
+        self.dataProvider = dataProvider
         self.lastTransactionsSyncBlockHeight = storage.lastTransactionBlockHeight() ?? 0
-        self.syncState = .notSynced
     }
 
-    func sync(forBlock blockNumber: Int) {
-        guard syncState != .syncing && lastTransactionsSyncBlockHeight < blockNumber else {
-            return
-        }
-
-        updateSyncState(newState: .syncing)
-
-        let lastTransactionBlockHeight = lastTransactionsSyncBlockHeight
+    private func onTransactionsReceived(transactions: [Transaction], blockNumber: Int) {
+        storage.save(transactions: transactions)
         lastTransactionsSyncBlockHeight = blockNumber
 
-        let topics = [
-            [Erc20Kit.transferEventTopic, addressTopic],
-            [Erc20Kit.transferEventTopic, nil, addressTopic]
-        ]
+        let transactionsByToken: [Data: [Transaction]] = Dictionary(grouping: transactions, by: { $0.contractAddress })
 
-        let request = GetLogsRequest(topics: topics, fromBlock: lastTransactionBlockHeight + 1, toBlock: blockNumber, pullTimestamps: false)
-        delegate?.send(request: request)
-    }
-
-    func handle(response: GetLogsResponse) {
-        let transactions = response.logs.compactMap {
-            Transaction(log: $0)
+        for (contractAddress, _) in tokensHolder.tokens {
+            delegate?.onTransactionsUpdated(contractAddress: contractAddress, transactions: transactionsByToken[contractAddress] ?? [Transaction](), blockNumber: blockNumber)
         }
-        storage.save(transactions: transactions)
-        updateSyncState(newState: .synced)
+
+        syncing = false
     }
 
-    private func updateSyncState(newState: EthereumKit.SyncState) {
-        guard newState != syncState else {
+}
+
+extension TransactionSyncer: ITransactionSyncer {
+
+    func sync(forBlock blockNumber: Int) {
+        for (contractAddress, _) in tokensHolder.tokens {
+            tokenStates.set(state: .syncing, to: contractAddress)
+        }
+
+        guard lastTransactionsSyncBlockHeight < blockNumber, !syncing else {
             return
         }
 
-        syncState = newState
-        delegate?.onSyncStateUpdated(state: syncState)
+        syncing = true
+        dataProvider.getLogs(from: lastTransactionsSyncBlockHeight + 1, to: blockNumber, completionFunction: onTransactionsReceived)
     }
 
 }
