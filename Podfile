@@ -11,12 +11,12 @@ project 'HSEthereumKit/HSEthereumKit'
 def common_pods
   pod 'RxSwift', '~> 4.0'
 
-  pod 'HSHDWalletKit', '~> 1.0.3'
-  pod 'HSCryptoKit', '~> 1.1.0'
+  pod 'HSHDWalletKit', '~> 1.0'
+  pod 'HSCryptoKit', '~> 1.0'
 
-  pod 'GRDB.swift', '~> 3.6.2'
+  pod 'GRDB.swift', '~> 3.0'
 
-  pod 'Alamofire', '~> 4.8.0'
+  pod 'Alamofire', '~> 4.0'
 end
 
 target :HSEthereumKitDemo do

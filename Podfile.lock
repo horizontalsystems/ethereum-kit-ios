@@ -1,20 +1,18 @@
 PODS:
-  - Alamofire (4.8.0)
-  - Cuckoo (0.12.0)
-  - GRDB.swift (3.6.2)
-  - HSCryptoKit (1.1.0)
-  - HSHDWalletKit (1.0.3):
-    - HSCryptoKit (~> 1.1.0)
-  - RxAtomic (4.4.0)
-  - RxSwift (4.4.0):
-    - RxAtomic (~> 4.4)
+  - Alamofire (4.8.2)
+  - Cuckoo (0.12.1)
+  - GRDB.swift (3.7.0)
+  - HSCryptoKit (1.3.0)
+  - HSHDWalletKit (1.0.4):
+    - HSCryptoKit (~> 1.3.0)
+  - RxSwift (4.5.0)
 
 DEPENDENCIES:
-  - Alamofire (~> 4.8.0)
+  - Alamofire (~> 4.0)
   - Cuckoo (~> 0.12.0)
-  - GRDB.swift (~> 3.6.2)
-  - HSCryptoKit (~> 1.1.0)
-  - HSHDWalletKit (~> 1.0.3)
+  - GRDB.swift (~> 3.0)
+  - HSCryptoKit (~> 1.0)
+  - HSHDWalletKit (~> 1.0)
   - RxSwift (~> 4.0)
 
 SPEC REPOS:
@@ -24,18 +22,16 @@ SPEC REPOS:
     - GRDB.swift
     - HSCryptoKit
     - HSHDWalletKit
-    - RxAtomic
     - RxSwift
 
 SPEC CHECKSUMS:
-  Alamofire: 3ec537f71edc9804815215393ae2b1a8ea33a844
-  Cuckoo: d30b6c149e52ffbcfe6b4a9543e4627d08947274
-  GRDB.swift: e10787d857b6b8135354b9e08fb23b4bb8e2fab7
-  HSCryptoKit: 8679d53083d1136fc128bbf9b040976110ce1491
-  HSHDWalletKit: f75cd8186f00bae4f6aa76548a0b1f24c13dff72
-  RxAtomic: eacf60db868c96bfd63320e28619fe29c179656f
-  RxSwift: 5976ecd04fc2fefd648827c23de5e11157faa973
+  Alamofire: ae5c501addb7afdbb13687d7f2f722c78734c2d3
+  Cuckoo: 2f10364798baa4b0d4aacabfa475249cf29977bc
+  GRDB.swift: 51cc9e57ae8ff7083a9d674c97925aa1de06aac5
+  HSCryptoKit: 564a3888691658cba58aa60f7d037654fd3c6fb0
+  HSHDWalletKit: e09162c2bb121c9db9b0cf203bd93b40965aad74
+  RxSwift: f172070dfd1a93d70a9ab97a5a01166206e1c575
 
-PODFILE CHECKSUM: 0d5d0b78cf2d9fc1ef6f08cde26dc16d7bcdc0b4
+PODFILE CHECKSUM: 5ddefb08caa0582da3c80554fa4534aea02af319
 
 COCOAPODS: 1.5.3
