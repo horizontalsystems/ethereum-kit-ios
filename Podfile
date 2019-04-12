@@ -20,6 +20,12 @@ def common_pods
   pod 'Alamofire', '~> 4.0'
 end
 
+def test_pods
+  pod 'Cuckoo'
+  pod 'Quick'
+  pod 'Nimble'
+end
+
 target :HSEthereumKitDemo do
   project 'HSEthereumKitDemo/HSEthereumKitDemo'
   common_pods
@@ -37,7 +43,10 @@ end
 
 target :HSEthereumKitTests do
   project 'HSEthereumKit/HSEthereumKit'
-  pod 'Cuckoo'
-  pod 'Quick'
-  pod 'Nimble'
+  test_pods
+end
+
+target :HSErc20KitTests do
+  project 'HSErc20Kit/HSErc20Kit'
+  test_pods
 end

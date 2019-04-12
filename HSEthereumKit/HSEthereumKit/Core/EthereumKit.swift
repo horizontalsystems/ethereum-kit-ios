@@ -129,7 +129,7 @@ extension EthereumKit: IBlockchainDelegate {
         state.lastBlockHeight = lastBlockHeight
 
         delegateQueue.async { [weak self] in
-            print("DELEGATES COUNT: \(self?.delegates.count)")
+            print("DELEGATES COUNT: \(self?.delegates.count ?? 0)")
             self?.delegates.forEach { $0.onUpdateLastBlockHeight() }
         }
     }

@@ -62,8 +62,8 @@ class Connection: NSObject {
         inputStream?.delegate = self
         outputStream?.delegate = self
 
-        inputStream?.schedule(in: .current, forMode: .commonModes)
-        outputStream?.schedule(in: .current, forMode: .commonModes)
+        inputStream?.schedule(in: .current, forMode: .common)
+        outputStream?.schedule(in: .current, forMode: .common)
 
         inputStream?.open()
         outputStream?.open()
@@ -178,8 +178,8 @@ extension Connection: IConnection {
         outputStream?.delegate = nil
         inputStream?.close()
         outputStream?.close()
-        inputStream?.remove(from: .current, forMode: .commonModes)
-        outputStream?.remove(from: .current, forMode: .commonModes)
+        inputStream?.remove(from: .current, forMode: .common)
+        outputStream?.remove(from: .current, forMode: .common)
         readStream = nil
         writeStream = nil
         runLoop = nil

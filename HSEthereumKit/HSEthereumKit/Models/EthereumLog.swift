@@ -52,8 +52,9 @@ extension EthereumLog: Equatable {
 
 extension EthereumLog: Hashable {
 
-    public var hashValue: Int {
-        return transactionHash.hashValue ^ logIndex.hashValue
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(transactionHash)
+        hasher.combine(logIndex)
     }
 
 }
