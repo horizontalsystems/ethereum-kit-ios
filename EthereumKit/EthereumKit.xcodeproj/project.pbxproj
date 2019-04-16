@@ -130,7 +130,7 @@
 			containerPortal = 3A3B599B216B1B13001C5E99 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 3A3B59A3216B1B13001C5E99;
-			remoteInfo = HSEthereumKit;
+			remoteInfo = EthereumKit;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -233,7 +233,6 @@
 		3A3B59A4216B1B13001C5E99 /* EthereumKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = EthereumKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3A3B59A7216B1B13001C5E99 /* EthereumKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EthereumKit.h; sourceTree = "<group>"; };
 		3A3B59A8216B1B13001C5E99 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.info; path = Info.plist; sourceTree = "<group>"; };
-		3A3B5B68216B5964001C5E99 /* HSCryptoKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = HSCryptoKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3C7B927263342DD6964CFE2F /* EIP55Tests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EIP55Tests.swift; sourceTree = "<group>"; };
 		3F05A0499B3B9EDC904E9325 /* Pods-EthereumKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EthereumKit.debug.xcconfig"; path = "Target Support Files/Pods-EthereumKit/Pods-EthereumKit.debug.xcconfig"; sourceTree = "<group>"; };
 		58AAA0F77F10D6C404DFCD55 /* ReachabilityManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReachabilityManager.swift; sourceTree = "<group>"; };
@@ -467,7 +466,6 @@
 		771194D7AFB450EC1E50D267 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				3A3B5B68216B5964001C5E99 /* HSCryptoKit.framework */,
 				1C9F117BCBA4A7121478DF3B /* Pods_EthereumKit.framework */,
 				596741140BF72953EA371834 /* Pods_EthereumKitTests.framework */,
 			);
@@ -714,7 +712,7 @@
 				3A19DED3216F4422009109F2 /* PBXTargetDependency */,
 			);
 			name = EthereumKitTests;
-			productName = HSEthereumKitTests;
+			productName = EthereumKitTests;
 			productReference = 3A19DECC216F4422009109F2 /* EthereumKitTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
@@ -733,7 +731,7 @@
 			dependencies = (
 			);
 			name = EthereumKit;
-			productName = HSEthereumKit;
+			productName = EthereumKit;
 			productReference = 3A3B59A4216B1B13001C5E99 /* EthereumKit.framework */;
 			productType = "com.apple.product-type.framework";
 		};

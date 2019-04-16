@@ -58,10 +58,6 @@
 		3A3B59FA216B2694001C5E99 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		41621D85B1288FD0D246AA67 /* Pods-EthereumKitDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EthereumKitDemo.release.xcconfig"; path = "Target Support Files/Pods-EthereumKitDemo/Pods-EthereumKitDemo.release.xcconfig"; sourceTree = "<group>"; };
 		95C31C994DC5805673A5C43E /* Pods-EthereumKitDemo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EthereumKitDemo.debug.xcconfig"; path = "Target Support Files/Pods-EthereumKitDemo/Pods-EthereumKitDemo.debug.xcconfig"; sourceTree = "<group>"; };
-		D31361302260B1B2006D8E5C /* HSErc20Kit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = HSErc20Kit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		D31361322260B1B2006D8E5C /* HSEthereumKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = HSEthereumKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		D31361392260B4FA006D8E5C /* HSErc20Kit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = HSErc20Kit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		D313613B2260B4FA006D8E5C /* HSEthereumKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = HSEthereumKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D31362212265A8BC006D8E5C /* Erc20Kit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Erc20Kit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D31362232265A8BC006D8E5C /* EthereumKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = EthereumKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D9803B4D71EAC1E07B494C77 /* Pods_EthereumKitDemo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_EthereumKitDemo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -128,10 +124,6 @@
 			children = (
 				D31362212265A8BC006D8E5C /* Erc20Kit.framework */,
 				D31362232265A8BC006D8E5C /* EthereumKit.framework */,
-				D31361392260B4FA006D8E5C /* HSErc20Kit.framework */,
-				D313613B2260B4FA006D8E5C /* HSEthereumKit.framework */,
-				D31361302260B1B2006D8E5C /* HSErc20Kit.framework */,
-				D31361322260B1B2006D8E5C /* HSEthereumKit.framework */,
 				D9803B4D71EAC1E07B494C77 /* Pods_EthereumKitDemo.framework */,
 			);
 			name = Frameworks;

@@ -35,7 +35,7 @@
 			containerPortal = D001D2DE2251CC7F00165546 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = D001D2E62251CC7F00165546;
-			remoteInfo = HSErc20Kit;
+			remoteInfo = Erc20Kit;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -64,7 +64,6 @@
 		D001D2F02251CC7F00165546 /* Erc20KitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Erc20KitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D001D2F52251CC7F00165546 /* Erc20KitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Erc20KitTests.swift; sourceTree = "<group>"; };
 		D001D2F72251CC7F00165546 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.info; path = Info.plist; sourceTree = "<group>"; };
-		D001D3052251CD2500165546 /* HSEthereumKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = HSEthereumKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D313621F2265A8A8006D8E5C /* EthereumKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = EthereumKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D908BFA91E1D9AD0A7C4F898 /* Pods-Erc20Kit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Erc20Kit.release.xcconfig"; path = "Target Support Files/Pods-Erc20Kit/Pods-Erc20Kit.release.xcconfig"; sourceTree = "<group>"; };
 		EB3119C5F628B1A04B56D067 /* Pods-Erc20Kit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Erc20Kit.debug.xcconfig"; path = "Target Support Files/Pods-Erc20Kit/Pods-Erc20Kit.debug.xcconfig"; sourceTree = "<group>"; };
@@ -176,7 +175,6 @@
 			isa = PBXGroup;
 			children = (
 				D313621F2265A8A8006D8E5C /* EthereumKit.framework */,
-				D001D3052251CD2500165546 /* HSEthereumKit.framework */,
 				5CCE8AB802620D775CD3A8CB /* Pods_Erc20Kit.framework */,
 				46B7C6CA4D8EC838E225F7E7 /* Pods_Erc20KitTests.framework */,
 			);
@@ -220,7 +218,7 @@
 			dependencies = (
 			);
 			name = Erc20Kit;
-			productName = HSErc20Kit;
+			productName = Erc20Kit;
 			productReference = D001D2E72251CC7F00165546 /* Erc20Kit.framework */;
 			productType = "com.apple.product-type.framework";
 		};
@@ -240,7 +238,7 @@
 				D001D2F32251CC7F00165546 /* PBXTargetDependency */,
 			);
 			name = Erc20KitTests;
-			productName = HSErc20KitTests;
+			productName = Erc20KitTests;
 			productReference = D001D2F02251CC7F00165546 /* Erc20KitTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
