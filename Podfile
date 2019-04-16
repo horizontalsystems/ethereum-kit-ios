@@ -3,11 +3,11 @@ use_frameworks!
 
 inhibit_all_warnings!
 
-workspace 'HSEthereumKit'
+workspace 'EthereumKit'
 
-project 'HSEthereumKitDemo/HSEthereumKitDemo'
-project 'HSEthereumKit/HSEthereumKit'
-project 'HSErc20Kit/HSErc20Kit'
+project 'EthereumKit/EthereumKit'
+project 'Erc20Kit/Erc20Kit'
+project 'EthereumKitDemo/EthereumKitDemo'
 
 def common_pods
   pod 'RxSwift', '~> 4.0'
@@ -26,27 +26,27 @@ def test_pods
   pod 'Nimble'
 end
 
-target :HSEthereumKitDemo do
-  project 'HSEthereumKitDemo/HSEthereumKitDemo'
+target :EthereumKit do
+  project 'EthereumKit/EthereumKit'
   common_pods
 end
 
-target :HSEthereumKit do
-  project 'HSEthereumKit/HSEthereumKit'
+target :Erc20Kit do
+  project 'Erc20Kit/Erc20Kit'
   common_pods
 end
 
-target :HSErc20Kit do
-  project 'HSErc20Kit/HSErc20Kit'
+target :EthereumKitDemo do
+  project 'EthereumKitDemo/EthereumKitDemo'
   common_pods
 end
 
-target :HSEthereumKitTests do
-  project 'HSEthereumKit/HSEthereumKit'
+target :EthereumKitTests do
+  project 'EthereumKit/EthereumKit'
   test_pods
 end
 
-target :HSErc20KitTests do
-  project 'HSErc20Kit/HSErc20Kit'
+target :Erc20KitTests do
+  project 'Erc20Kit/Erc20Kit'
   test_pods
 end

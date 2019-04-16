@@ -1,0 +1,500 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		11B350660B53A7EC6F886ECA /* TransactionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B350091370BE84672B3694 /* TransactionCell.swift */; };
+		11B350DE96ECE1F58F02D8AA /* WordsController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 11B35E53E574BA02E7E80A5F /* WordsController.xib */; };
+		11B353D103BBB08C466FD639 /* ReceiveController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3553E60EA90E64EE2C747 /* ReceiveController.swift */; };
+		11B3542ACE791123A3F1A5AF /* Manager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B356F556750208E0EB231E /* Manager.swift */; };
+		11B35472281532C7F766AEDB /* Erc20Adapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35BD771552E724CF78A64 /* Erc20Adapter.swift */; };
+		11B3550F971365331ABDCF7D /* EthereumAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35E3DF616DA9B67C058D3 /* EthereumAdapter.swift */; };
+		11B355BEC887FD6B4FE563B5 /* WordsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35C8CE1B31790C7BACF0B /* WordsController.swift */; };
+		11B355CE1B19409595DDB55B /* ReceiveController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 11B354EDEC2F9FDA1699B376 /* ReceiveController.xib */; };
+		11B355FFDDB052DA4AC3FE42 /* SendController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 11B351A4E88DAB5E6BF84485 /* SendController.xib */; };
+		11B3575F63581EC844987488 /* TransactionRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35BDED2EDA2070FB64F7E /* TransactionRecord.swift */; };
+		11B359B7667DB412A5B89C77 /* BaseAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B358D0EA9014014F9D1EF3 /* BaseAdapter.swift */; };
+		11B359C7B7CAD9961BF401CE /* Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35692FF8EBC01B66F7CCD /* Signal.swift */; };
+		11B35BDD5F1AC324EB96FBD0 /* MainController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35B0F9C8366CDB491D34C /* MainController.swift */; };
+		11B35C5F4E1FC91FCA4AA3BC /* BalanceController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 11B356BF14F5365228D5F111 /* BalanceController.xib */; };
+		11B35D187F162D8E4FC4B47D /* TransactionsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3588862756DCA125CCFA2 /* TransactionsController.swift */; };
+		11B35DC656DB3BD4D86BDEB6 /* SendController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B355F203687C3A51B9F9A3 /* SendController.swift */; };
+		11B35EE1E492FDE25DC09A70 /* TransactionCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 11B356D4DBD479CBA57B6A1E /* TransactionCell.xib */; };
+		11B35F5EDBDF00DC22EE2428 /* BalanceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35D5FB2C4481394583EF9 /* BalanceController.swift */; };
+		3A3B59EC216B2667001C5E99 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3A3B59EB216B2667001C5E99 /* Assets.xcassets */; };
+		3A3B5A01216B2694001C5E99 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A3B59F1216B2692001C5E99 /* LaunchScreen.xib */; };
+		3A3B5A0A216B2694001C5E99 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A3B59FA216B2694001C5E99 /* AppDelegate.swift */; };
+		D31362222265A8BC006D8E5C /* Erc20Kit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D31362212265A8BC006D8E5C /* Erc20Kit.framework */; };
+		D31362242265A8BC006D8E5C /* EthereumKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D31362232265A8BC006D8E5C /* EthereumKit.framework */; };
+		E2F232A4BB8F7E50A1CA6B75 /* Pods_EthereumKitDemo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9803B4D71EAC1E07B494C77 /* Pods_EthereumKitDemo.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		11B350091370BE84672B3694 /* TransactionCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionCell.swift; sourceTree = "<group>"; };
+		11B351A4E88DAB5E6BF84485 /* SendController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SendController.xib; sourceTree = "<group>"; };
+		11B354EDEC2F9FDA1699B376 /* ReceiveController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ReceiveController.xib; sourceTree = "<group>"; };
+		11B3553E60EA90E64EE2C747 /* ReceiveController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReceiveController.swift; sourceTree = "<group>"; };
+		11B355F203687C3A51B9F9A3 /* SendController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendController.swift; sourceTree = "<group>"; };
+		11B35692FF8EBC01B66F7CCD /* Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Signal.swift; sourceTree = "<group>"; };
+		11B356BF14F5365228D5F111 /* BalanceController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = BalanceController.xib; sourceTree = "<group>"; };
+		11B356D4DBD479CBA57B6A1E /* TransactionCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TransactionCell.xib; sourceTree = "<group>"; };
+		11B356F556750208E0EB231E /* Manager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Manager.swift; sourceTree = "<group>"; };
+		11B3588862756DCA125CCFA2 /* TransactionsController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionsController.swift; sourceTree = "<group>"; };
+		11B358D0EA9014014F9D1EF3 /* BaseAdapter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseAdapter.swift; sourceTree = "<group>"; };
+		11B35B0F9C8366CDB491D34C /* MainController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainController.swift; sourceTree = "<group>"; };
+		11B35BD771552E724CF78A64 /* Erc20Adapter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Erc20Adapter.swift; sourceTree = "<group>"; };
+		11B35BDED2EDA2070FB64F7E /* TransactionRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionRecord.swift; sourceTree = "<group>"; };
+		11B35C8CE1B31790C7BACF0B /* WordsController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WordsController.swift; sourceTree = "<group>"; };
+		11B35D5FB2C4481394583EF9 /* BalanceController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BalanceController.swift; sourceTree = "<group>"; };
+		11B35E3DF616DA9B67C058D3 /* EthereumAdapter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumAdapter.swift; sourceTree = "<group>"; };
+		11B35E53E574BA02E7E80A5F /* WordsController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = WordsController.xib; sourceTree = "<group>"; };
+		3A3B59D6216B1D81001C5E99 /* EthereumKitDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EthereumKitDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3A3B59EB216B2667001C5E99 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		3A3B59F1216B2692001C5E99 /* LaunchScreen.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LaunchScreen.xib; sourceTree = "<group>"; };
+		3A3B59FA216B2694001C5E99 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		41621D85B1288FD0D246AA67 /* Pods-EthereumKitDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EthereumKitDemo.release.xcconfig"; path = "Target Support Files/Pods-EthereumKitDemo/Pods-EthereumKitDemo.release.xcconfig"; sourceTree = "<group>"; };
+		95C31C994DC5805673A5C43E /* Pods-EthereumKitDemo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EthereumKitDemo.debug.xcconfig"; path = "Target Support Files/Pods-EthereumKitDemo/Pods-EthereumKitDemo.debug.xcconfig"; sourceTree = "<group>"; };
+		D31361302260B1B2006D8E5C /* HSErc20Kit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = HSErc20Kit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D31361322260B1B2006D8E5C /* HSEthereumKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = HSEthereumKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D31361392260B4FA006D8E5C /* HSErc20Kit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = HSErc20Kit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D313613B2260B4FA006D8E5C /* HSEthereumKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = HSEthereumKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D31362212265A8BC006D8E5C /* Erc20Kit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Erc20Kit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D31362232265A8BC006D8E5C /* EthereumKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = EthereumKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D9803B4D71EAC1E07B494C77 /* Pods_EthereumKitDemo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_EthereumKitDemo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		3A3B59D3216B1D81001C5E99 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D31362222265A8BC006D8E5C /* Erc20Kit.framework in Frameworks */,
+				D31362242265A8BC006D8E5C /* EthereumKit.framework in Frameworks */,
+				E2F232A4BB8F7E50A1CA6B75 /* Pods_EthereumKitDemo.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		11B35AB321C4BF1327A3F33D /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				11B356D4DBD479CBA57B6A1E /* TransactionCell.xib */,
+				11B35E53E574BA02E7E80A5F /* WordsController.xib */,
+				11B350091370BE84672B3694 /* TransactionCell.swift */,
+				11B35B0F9C8366CDB491D34C /* MainController.swift */,
+				11B354EDEC2F9FDA1699B376 /* ReceiveController.xib */,
+				11B355F203687C3A51B9F9A3 /* SendController.swift */,
+				11B35C8CE1B31790C7BACF0B /* WordsController.swift */,
+				11B3553E60EA90E64EE2C747 /* ReceiveController.swift */,
+				11B3588862756DCA125CCFA2 /* TransactionsController.swift */,
+				11B351A4E88DAB5E6BF84485 /* SendController.xib */,
+				11B356BF14F5365228D5F111 /* BalanceController.xib */,
+				11B35D5FB2C4481394583EF9 /* BalanceController.swift */,
+			);
+			path = Controllers;
+			sourceTree = "<group>";
+		};
+		11B35BC62B80357D20D5F5AA /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				11B35BD771552E724CF78A64 /* Erc20Adapter.swift */,
+				11B356F556750208E0EB231E /* Manager.swift */,
+				11B358D0EA9014014F9D1EF3 /* BaseAdapter.swift */,
+				11B35BDED2EDA2070FB64F7E /* TransactionRecord.swift */,
+				11B35692FF8EBC01B66F7CCD /* Signal.swift */,
+				11B35E3DF616DA9B67C058D3 /* EthereumAdapter.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		2A9318AEBE68C52CF2E8BADA /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				95C31C994DC5805673A5C43E /* Pods-EthereumKitDemo.debug.xcconfig */,
+				41621D85B1288FD0D246AA67 /* Pods-EthereumKitDemo.release.xcconfig */,
+			);
+			name = Pods;
+			path = ../Pods;
+			sourceTree = "<group>";
+		};
+		38EDFC9C9FBC9B21590B0B8A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D31362212265A8BC006D8E5C /* Erc20Kit.framework */,
+				D31362232265A8BC006D8E5C /* EthereumKit.framework */,
+				D31361392260B4FA006D8E5C /* HSErc20Kit.framework */,
+				D313613B2260B4FA006D8E5C /* HSEthereumKit.framework */,
+				D31361302260B1B2006D8E5C /* HSErc20Kit.framework */,
+				D31361322260B1B2006D8E5C /* HSEthereumKit.framework */,
+				D9803B4D71EAC1E07B494C77 /* Pods_EthereumKitDemo.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		3A3B59CD216B1D81001C5E99 = {
+			isa = PBXGroup;
+			children = (
+				3A3B59D8216B1D81001C5E99 /* EthereumKitDemo */,
+				3A3B59D7216B1D81001C5E99 /* Products */,
+				38EDFC9C9FBC9B21590B0B8A /* Frameworks */,
+				2A9318AEBE68C52CF2E8BADA /* Pods */,
+			);
+			sourceTree = "<group>";
+		};
+		3A3B59D7216B1D81001C5E99 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3A3B59D6216B1D81001C5E99 /* EthereumKitDemo.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		3A3B59D8216B1D81001C5E99 /* EthereumKitDemo */ = {
+			isa = PBXGroup;
+			children = (
+				11B35BC62B80357D20D5F5AA /* Core */,
+				11B35AB321C4BF1327A3F33D /* Controllers */,
+				3A3B59FA216B2694001C5E99 /* AppDelegate.swift */,
+				3A3B59EB216B2667001C5E99 /* Assets.xcassets */,
+				3A3B59F1216B2692001C5E99 /* LaunchScreen.xib */,
+			);
+			path = EthereumKitDemo;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3A3B59D5216B1D81001C5E99 /* EthereumKitDemo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3A3B59E8216B1D82001C5E99 /* Build configuration list for PBXNativeTarget "EthereumKitDemo" */;
+			buildPhases = (
+				579FBA92CD7E4620ADEF3C2F /* [CP] Check Pods Manifest.lock */,
+				3A3B59D2216B1D81001C5E99 /* Sources */,
+				3A3B59D3216B1D81001C5E99 /* Frameworks */,
+				3A3B59D4216B1D81001C5E99 /* Resources */,
+				309D32B816BC165C3500E566 /* [CP] Embed Pods Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = EthereumKitDemo;
+			productName = Example;
+			productReference = 3A3B59D6216B1D81001C5E99 /* EthereumKitDemo.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		3A3B59CE216B1D81001C5E99 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1000;
+				LastUpgradeCheck = 1000;
+				ORGANIZATIONNAME = "Horizontal Systems";
+				TargetAttributes = {
+					3A3B59D5216B1D81001C5E99 = {
+						CreatedOnToolsVersion = 10.0;
+					};
+				};
+			};
+			buildConfigurationList = 3A3B59D1216B1D81001C5E99 /* Build configuration list for PBXProject "EthereumKitDemo" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 3A3B59CD216B1D81001C5E99;
+			productRefGroup = 3A3B59D7216B1D81001C5E99 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				3A3B59D5216B1D81001C5E99 /* EthereumKitDemo */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3A3B59D4216B1D81001C5E99 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3A3B5A01216B2694001C5E99 /* LaunchScreen.xib in Resources */,
+				3A3B59EC216B2667001C5E99 /* Assets.xcassets in Resources */,
+				11B35EE1E492FDE25DC09A70 /* TransactionCell.xib in Resources */,
+				11B350DE96ECE1F58F02D8AA /* WordsController.xib in Resources */,
+				11B355CE1B19409595DDB55B /* ReceiveController.xib in Resources */,
+				11B355FFDDB052DA4AC3FE42 /* SendController.xib in Resources */,
+				11B35C5F4E1FC91FCA4AA3BC /* BalanceController.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		309D32B816BC165C3500E566 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-EthereumKitDemo/Pods-EthereumKitDemo-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/Alamofire/Alamofire.framework",
+				"${BUILT_PRODUCTS_DIR}/GRDB.swift/GRDB.framework",
+				"${BUILT_PRODUCTS_DIR}/HSCryptoKit/HSCryptoKit.framework",
+				"${BUILT_PRODUCTS_DIR}/HSHDWalletKit/HSHDWalletKit.framework",
+				"${BUILT_PRODUCTS_DIR}/RxSwift/RxSwift.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Alamofire.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GRDB.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/HSCryptoKit.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/HSHDWalletKit.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxSwift.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-EthereumKitDemo/Pods-EthereumKitDemo-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		579FBA92CD7E4620ADEF3C2F /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-EthereumKitDemo-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3A3B59D2216B1D81001C5E99 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3A3B5A0A216B2694001C5E99 /* AppDelegate.swift in Sources */,
+				11B350660B53A7EC6F886ECA /* TransactionCell.swift in Sources */,
+				11B35BDD5F1AC324EB96FBD0 /* MainController.swift in Sources */,
+				11B35DC656DB3BD4D86BDEB6 /* SendController.swift in Sources */,
+				11B355BEC887FD6B4FE563B5 /* WordsController.swift in Sources */,
+				11B353D103BBB08C466FD639 /* ReceiveController.swift in Sources */,
+				11B35D187F162D8E4FC4B47D /* TransactionsController.swift in Sources */,
+				11B35F5EDBDF00DC22EE2428 /* BalanceController.swift in Sources */,
+				11B35472281532C7F766AEDB /* Erc20Adapter.swift in Sources */,
+				11B3542ACE791123A3F1A5AF /* Manager.swift in Sources */,
+				11B359B7667DB412A5B89C77 /* BaseAdapter.swift in Sources */,
+				11B3575F63581EC844987488 /* TransactionRecord.swift in Sources */,
+				11B359C7B7CAD9961BF401CE /* Signal.swift in Sources */,
+				11B3550F971365331ABDCF7D /* EthereumAdapter.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		3A3B59E6216B1D82001C5E99 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		3A3B59E7216B1D82001C5E99 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		3A3B59E9216B1D82001C5E99 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 95C31C994DC5805673A5C43E /* Pods-EthereumKitDemo.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = HC4MCAXJ66;
+				INFOPLIST_FILE = EthereumKitDemo/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.horizontalsystems.EthereumKitDemo;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		3A3B59EA216B1D82001C5E99 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 41621D85B1288FD0D246AA67 /* Pods-EthereumKitDemo.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = HC4MCAXJ66;
+				INFOPLIST_FILE = EthereumKitDemo/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.horizontalsystems.EthereumKitDemo;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3A3B59D1216B1D81001C5E99 /* Build configuration list for PBXProject "EthereumKitDemo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3A3B59E6216B1D82001C5E99 /* Debug */,
+				3A3B59E7216B1D82001C5E99 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3A3B59E8216B1D82001C5E99 /* Build configuration list for PBXNativeTarget "EthereumKitDemo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3A3B59E9216B1D82001C5E99 /* Debug */,
+				3A3B59EA216B1D82001C5E99 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 3A3B59CE216B1D81001C5E99 /* Project object */;
+}
