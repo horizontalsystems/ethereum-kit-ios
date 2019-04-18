@@ -6,17 +6,17 @@ import RxSwift
 
 class Erc20Adapter: BaseAdapter {
     let erc20Kit: Erc20Kit
-    let contractAddress: Data
-    let position: Int64
+    let contractAddress: String
+    let position: Int
 
-    init(erc20Kit: Erc20Kit, ethereumKit: EthereumKit, contractAddress: Data, position: Int64, decimal: Int, minLogLevel: Logger.Level = .verbose) {
+    init(erc20Kit: Erc20Kit, ethereumKit: EthereumKit, contractAddress: String, position: Int, decimal: Int, minLogLevel: Logger.Level = .verbose) {
         self.erc20Kit = erc20Kit
         self.contractAddress = contractAddress
         self.position = position
 
         super.init(ethereumKit: ethereumKit, decimal: decimal)
 
-        self.erc20Kit.register(contractAddress: contractAddress, position: position, decimal: decimal, delegate: self)
+        try! self.erc20Kit.register(contractAddress: contractAddress, balancePosition: position, delegate: self)
     }
 
     private func transactionRecord(fromTransaction transaction: TransactionInfo) -> TransactionRecord? {
@@ -55,7 +55,7 @@ class Erc20Adapter: BaseAdapter {
     }
 
     override var syncState: EthereumKit.SyncState {
-        switch erc20Kit.syncState(contractAddress: contractAddress) {
+        switch try! erc20Kit.syncState(contractAddress: contractAddress) {
         case .notSynced: return EthereumKit.SyncState.notSynced
         case .syncing: return EthereumKit.SyncState.syncing
         case .synced: return EthereumKit.SyncState.synced
@@ -63,11 +63,11 @@ class Erc20Adapter: BaseAdapter {
     }
 
     override var balanceString: String? {
-        return erc20Kit.balance(contractAddress: contractAddress)
+        return try! erc20Kit.balance(contractAddress: contractAddress)
     }
 
     override func sendSingle(to: String, value: String) -> Single<Void> {
-        return erc20Kit.sendSingle(contractAddress: contractAddress, to: to, value: value, gasPrice: 5_000_000_000).map { _ in ()}
+        return try! erc20Kit.sendSingle(contractAddress: contractAddress, to: to, value: value, gasPrice: 5_000_000_000).map { _ in ()}
     }
 
     override func transactionsSingle(hashFrom: String? = nil, limit: Int? = nil) -> Single<[TransactionRecord]> {
@@ -79,7 +79,7 @@ class Erc20Adapter: BaseAdapter {
             resolvedIndexFrom = Int(String(hashFrom.suffix(33)), radix: 10)
         }
 
-        return erc20Kit.transactionsSingle(contractAddress: contractAddress, hashFrom: resolvedHashFrom, indexFrom: resolvedIndexFrom, limit: limit)
+        return try! erc20Kit.transactionsSingle(contractAddress: contractAddress, hashFrom: resolvedHashFrom, indexFrom: resolvedIndexFrom, limit: limit)
                 .map { [unowned self] in $0.compactMap { self.transactionRecord(fromTransaction: $0) }}
     }
 

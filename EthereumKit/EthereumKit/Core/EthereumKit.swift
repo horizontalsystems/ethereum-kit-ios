@@ -59,6 +59,10 @@ extension EthereumKit {
         return blockchain.address.toEIP55Address()
     }
 
+    public var receiveAddressData: Data {
+        return blockchain.address
+    }
+
     public func validate(address: String) throws {
         try addressValidator.validate(address: address)
     }
@@ -108,12 +112,12 @@ extension EthereumKit {
         delegates.append(delegate)
     }
 
-    public func getLogs(address: Data?, topics: [Any], fromBlock: Int, toBlock: Int, pullTimestamps: Bool, completeFunction: @escaping ([EthereumLog]) -> ()) {
-        blockchain.getLogs(address: address, topics: topics, fromBlock: fromBlock, toBlock: toBlock, pullTimestamps: pullTimestamps, completeFunction: completeFunction)
+    public func getLogsSingle(address: Data?, topics: [Any], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
+        return blockchain.getLogsSingle(address: address, topics: topics, fromBlock: fromBlock, toBlock: toBlock, pullTimestamps: pullTimestamps)
     }
 
-    public func getStorageAt(contractAddress: Data, position: String, blockNumber: Int, completeFunction: @escaping (Int, Data) -> ()) {
-        blockchain.getStorageAt(contractAddress: contractAddress, position: position, blockNumber: blockNumber, completeFunction: completeFunction)
+    public func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data> {
+        return blockchain.getStorageAt(contractAddress: contractAddress, positionData: positionData, blockHeight: blockHeight)
     }
 
 }
@@ -213,6 +217,10 @@ extension EthereumKit {
         case invalidAddress
         case invalidContractAddress
         case invalidValue
+    }
+
+    public enum ApiError: Error {
+        case invalidData
     }
 
     public enum SyncState {

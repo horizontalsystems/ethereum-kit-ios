@@ -3,89 +3,81 @@ import EthereumKit
 import HSCryptoKit
 
 public class Erc20Kit {
-    static let transferEventTopic = Data(hex: "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef")! // Keccak-256("Transfer(address,address,uint256)")
-
     let disposeBag = DisposeBag()
 
     let ethereumKit: EthereumKit
-    let address: Data
-    let storage: GrdbStorage
-    let transactionBuilder: ITransactionBuilder
-    let transactionSyncer: ITransactionSyncer
-    let balanceSyncer: IBalanceSyncer
-    let tokensHolder: ITokensHolder
-    let tokenStates: ITokenStates
-    var delegates = [Data: IErc20TokenDelegate]()
+    let transactionManager: ITransactionManager
+    let balanceManager: IBalanceManager
+    let tokenHolder: ITokenHolder
 
-    init(ethereumKit: EthereumKit, address: Data, storage: GrdbStorage, transactionBuilder: ITransactionBuilder, transactionSyncer: ITransactionSyncer, balanceSyncer: IBalanceSyncer,
-         tokensHolder: ITokensHolder, tokenStates: ITokenStates) {
+    init(ethereumKit: EthereumKit, transactionManager: ITransactionManager, balanceManager: IBalanceManager, tokenHolder: ITokenHolder = TokenHolder()) {
         self.ethereumKit = ethereumKit
-        self.storage = storage
-        self.address = address
-        self.transactionBuilder = transactionBuilder
-        self.transactionSyncer = transactionSyncer
-        self.balanceSyncer = balanceSyncer
-        self.tokensHolder = tokensHolder
-        self.tokenStates = tokenStates
+        self.transactionManager = transactionManager
+        self.balanceManager = balanceManager
+        self.tokenHolder = tokenHolder
     }
 
     private func startTransactionsSync() {
-        guard ethereumKit.syncState == .synced, let blockNumber = self.ethereumKit.lastBlockHeight else {
-            return
+        transactionManager.sync()
+    }
+
+    private func convert(address: String) throws -> Data {
+        guard let contractAddress = Data(hex: address) else {
+            throw TokenError.invalidAddress
         }
 
-        self.transactionSyncer.sync(forBlock: blockNumber)
+        return contractAddress
+    }
+
+    private func set(syncState: Erc20Kit.SyncState, contractAddress: Data) {
+        try? tokenHolder.set(syncState: syncState, contractAddress: contractAddress)
+        try? tokenHolder.delegate(contractAddress: contractAddress)?.onUpdateSyncState()
+    }
+
+    private func setAll(syncState: Erc20Kit.SyncState) {
+        for contractAddress in tokenHolder.contractAddresses {
+            set(syncState: syncState, contractAddress: contractAddress)
+        }
     }
 
 }
 
 extension Erc20Kit {
 
-    public func syncState(contractAddress: Data) -> SyncState {
-        return tokenStates.state(of: contractAddress)
+    public func syncState(contractAddress: String) throws -> SyncState {
+        return try tokenHolder.syncState(contractAddress: try convert(address: contractAddress))
     }
 
-    public func balance(contractAddress: Data) -> String? {
-        return tokensHolder.token(byContractAddress: contractAddress)?.balance?.asString(withBase: 10)
+    public func balance(contractAddress: String) throws -> String {
+        return try tokenHolder.balance(contractAddress: try convert(address: contractAddress)).value.asString(withBase: 10)
     }
 
-    public func sendSingle(contractAddress: Data, to: String, value: String, gasPrice: Int) -> Single<TransactionInfo> {
-        guard let toData = Data(hex: to) else {
-            return Single.error(SendError.invalidValue)
+    public func sendSingle(contractAddress: String, to: String, value: String, gasPrice: Int) throws -> Single<TransactionInfo> {
+        let contractAddress = try convert(address: contractAddress)
+        let to = try convert(address: to)
+
+        guard let value = BInt(value, radix: 16) else {
+            throw SendError.invalidValue
         }
 
-        guard let valueBInt = BInt(value, radix: 16) else {
-            return Single.error(SendError.invalidValue)
-        }
-
-        let transactionInput = transactionBuilder.transferTransactionInput(to: toData, value: valueBInt)
-
-        return ethereumKit.sendSingle(to: contractAddress, value: BInt(0).asString(withBase: 10), transactionInput: transactionInput, gasPrice: gasPrice)
-                .map({ Transaction(transactionHash: Data(hex: $0.hash)!, contractAddress: contractAddress, from: self.address, to: toData, value: valueBInt) })
-                .do(onSuccess: { [weak self] transaction in
-                    self?.storage.save(transactions: [transaction])
-                })
+        return transactionManager.sendSingle(contractAddress: contractAddress, to: to, value: value, gasPrice: gasPrice)
                 .map({ TransactionInfo(transaction: $0) })
     }
 
-    public func transactionsSingle(contractAddress: Data, hashFrom: Data?, indexFrom: Int?, limit: Int?) -> Single<[TransactionInfo]> {
-        return storage.transactionsSingle(contractAddress: contractAddress, hashFrom: hashFrom, indexFrom: indexFrom, limit: limit).map {
-            $0.map {
-                TransactionInfo(transaction: $0)
-            }
-        }
+    public func transactionsSingle(contractAddress: String, hashFrom: Data?, indexFrom: Int?, limit: Int?) throws -> Single<[TransactionInfo]> {
+        return transactionManager.transactionsSingle(contractAddress: try convert(address: contractAddress), hashFrom: hashFrom, indexFrom: indexFrom, limit: limit)
+                .map { transactions in
+                    transactions.map {
+                        TransactionInfo(transaction: $0)
+                    }
+                }
     }
 
-    public func register(contractAddress: Data, position: Int64, decimal: Int, delegate: IErc20TokenDelegate) {
-        var positionKeyData = Data(repeating: 0, count: 12) + address
-        positionKeyData += Data(repeating: 0, count: 24) + Data(withUnsafeBytes(of: position) {
-            Data($0)
-        }).reversed()
+    public func register(contractAddress: String, balancePosition: Int, delegate: IErc20TokenDelegate) throws {
+        let contractAddress = try convert(address: contractAddress)
+        let balance = balanceManager.balance(contractAddress: contractAddress)
 
-        let token = storage.token(contractAddress: contractAddress) ?? Token(contractAddress: contractAddress, contractBalanceKey: CryptoKit.sha3(positionKeyData).toHexString(), balance: nil, syncedBlockHeight: nil)
-
-        tokensHolder.add(token: token)
-        delegates[contractAddress] = delegate
+        try tokenHolder.register(contractAddress: contractAddress, balancePosition: balancePosition, balance: balance, delegate: delegate)
     }
 
 }
@@ -93,82 +85,92 @@ extension Erc20Kit {
 extension Erc20Kit: IEthereumKitDelegate {
 
     public func onUpdateSyncState() {
-        startTransactionsSync()
+        switch ethereumKit.syncState {
+        case .notSynced: setAll(syncState: .notSynced)
+        case .syncing: setAll(syncState: .syncing)
+        case .synced: startTransactionsSync()
+        }
     }
 
     public func onUpdateLastBlockHeight() {
+        guard ethereumKit.syncState == .synced else {
+            return
+        }
+
         startTransactionsSync()
     }
 
     public func onClear() {
-        tokensHolder.clear()
-        tokenStates.clear()
-        storage.clear()
-        delegates.removeAll()
+        tokenHolder.clear()
+        transactionManager.clear()
+        balanceManager.clear()
     }
 
 }
 
-extension Erc20Kit: ITransactionSyncerDelegate {
+extension Erc20Kit: ITransactionManagerDelegate {
 
-    func onTransactionsUpdated(contractAddress: Data, transactions: [Transaction], blockNumber: Int) {
-        guard let token = tokensHolder.token(byContractAddress: contractAddress) else {
-            return
+    func onSyncSuccess(transactions: [Transaction]) {
+        let transactionsData: [Data: [Transaction]] = Dictionary(grouping: transactions, by: { $0.contractAddress })
+
+        for (contractAddress, transactions) in transactionsData {
+            try? tokenHolder.delegate(contractAddress: contractAddress)?.onUpdate(transactions: transactions.map { TransactionInfo(transaction: $0) })
         }
 
-        if transactions.isEmpty {
-            balanceSyncer.setSynced(forBlock: blockNumber, token: token)
-        } else {
-            delegates[contractAddress]?.onUpdate(transactions: transactions.map { TransactionInfo(transaction: $0) })
+        for contractAddress in tokenHolder.contractAddresses {
+            guard let balancePosition = try? tokenHolder.balancePosition(contractAddress: contractAddress) else {
+                continue
+            }
 
-            balanceSyncer.sync(forBlock: blockNumber, token: token)
+            if let lastTransactionBlockHeight = transactionManager.lastTransactionBlockHeight(contractAddress: contractAddress),
+               lastTransactionBlockHeight > balanceManager.balance(contractAddress: contractAddress).blockHeight
+            {
+                balanceManager.sync(blockHeight: lastTransactionBlockHeight, contractAddress: contractAddress, balancePosition: balancePosition)
+            } else {
+                set(syncState: .synced, contractAddress: contractAddress)
+            }
         }
     }
 
-}
-
-extension Erc20Kit: IBalanceSyncerDelegate {
-
-    func onBalanceUpdated(contractAddress: Data) {
-        delegates[contractAddress]?.onUpdateBalance()
-
-        startTransactionsSync()
+    func onSyncTransactionsError() {
+        setAll(syncState: .notSynced)
     }
 
 }
 
-extension Erc20Kit: ITokenStatesDelegate {
+extension Erc20Kit: IBalanceManagerDelegate {
 
-    func onSyncStateUpdated(contractAddress: Data) {
-        delegates[contractAddress]?.onUpdateSyncState()
+    func onSyncBalanceSuccess(contractAddress: Data) {
+        set(syncState: .synced, contractAddress: contractAddress)
+    }
+
+    func onSyncBalanceError(contractAddress: Data) {
+        set(syncState: .notSynced, contractAddress: contractAddress)
+    }
+
+    func onUpdate(balance: TokenBalance, contractAddress: Data) {
+        try? tokenHolder.set(balance: balance, contractAddress: contractAddress)
+        try? tokenHolder.delegate(contractAddress: contractAddress)?.onUpdateBalance()
     }
 
 }
-
 
 extension Erc20Kit {
 
     public static func instance(ethereumKit: EthereumKit, networkType: EthereumKit.NetworkType, etherscanApiKey: String, minLogLevel: Logger.Level = .verbose) -> Erc20Kit {
-        let address = Data(hex: ethereumKit.receiveAddress)!
+        let address = ethereumKit.receiveAddressData
 
-        let storage = GrdbStorage(databaseFileName: "erc20_tokens_db")
-        let tokensHolder = TokensHolder()
-        let tokenStates = TokenStates()
-        let dataProvider = DataProvider(ethereumKit: ethereumKit, addressTopic: Data(repeating: 0, count: 12) + address)
-        let transactionSyncer = TransactionSyncer(storage: storage, tokensHolder: tokensHolder, tokenStates: tokenStates, dataProvider: dataProvider)
-        let balanceSyncer = BalanceSyncer(storage: storage, tokenStates: tokenStates, dataProvider: dataProvider)
-        let transactionBuilder = TransactionBuilder()
+        let storage: ITransactionStorage & ITokenBalanceStorage = GrdbStorage(databaseFileName: "erc20_tokens_db")
 
-        let erc20Kit = Erc20Kit(
-                ethereumKit: ethereumKit, address: address, storage: storage,
-                transactionBuilder: transactionBuilder, transactionSyncer: transactionSyncer, balanceSyncer: balanceSyncer,
-                tokensHolder: tokensHolder,
-                tokenStates: tokenStates
-        )
+        let dataProvider: IDataProvider = DataProvider(ethereumKit: ethereumKit)
+        let transactionBuilder: ITransactionBuilder = TransactionBuilder()
+        var transactionManager: ITransactionManager = TransactionManager(address: address, storage: storage, dataProvider: dataProvider, transactionBuilder: transactionBuilder)
+        var balanceManager: IBalanceManager = BalanceManager(address: address, storage: storage, dataProvider: dataProvider)
 
-        transactionSyncer.delegate = erc20Kit
-        balanceSyncer.delegate = erc20Kit
-        tokenStates.delegate = erc20Kit
+        let erc20Kit = Erc20Kit(ethereumKit: ethereumKit, transactionManager: transactionManager, balanceManager: balanceManager)
+
+        transactionManager.delegate = erc20Kit
+        balanceManager.delegate = erc20Kit
 
         ethereumKit.add(delegate: erc20Kit)
 
@@ -178,6 +180,12 @@ extension Erc20Kit {
 }
 
 extension Erc20Kit {
+
+    public enum TokenError: Error {
+        case invalidAddress
+        case notRegistered
+        case alreadyRegistered
+    }
 
     public enum SendError: Error {
         case invalidAddress

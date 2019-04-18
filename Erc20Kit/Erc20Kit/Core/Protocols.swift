@@ -7,16 +7,15 @@ public protocol IErc20TokenDelegate: class {
     func onUpdateSyncState()
 }
 
-protocol IBalanceSyncerDelegate: class {
-    func onBalanceUpdated(contractAddress: Data)
+protocol IBalanceManagerDelegate: class {
+    func onUpdate(balance: TokenBalance, contractAddress: Data)
+    func onSyncBalanceSuccess(contractAddress: Data)
+    func onSyncBalanceError(contractAddress: Data)
 }
 
-protocol ITransactionSyncerDelegate: class {
-    func onTransactionsUpdated(contractAddress: Data, transactions: [Transaction], blockNumber: Int)
-}
-
-protocol ITokenStatesDelegate: class {
-    func onSyncStateUpdated(contractAddress: Data)
+protocol ITransactionManagerDelegate: class {
+    func onSyncSuccess(transactions: [Transaction])
+    func onSyncTransactionsError()
 }
 
 protocol ITransactionsProvider {
@@ -27,32 +26,60 @@ protocol ITransactionBuilder {
     func transferTransactionInput(to toAddress: Data, value: BInt) -> Data
 }
 
-protocol ITransactionSyncer {
-    func sync(forBlock blockNumber: Int)
+protocol ITransactionManager {
+    var delegate: ITransactionManagerDelegate? { get set }
+
+    func lastTransactionBlockHeight(contractAddress: Data) -> Int?
+    func transactionsSingle(contractAddress: Data, hashFrom: Data?, indexFrom: Int?, limit: Int?) -> Single<[Transaction]>
+
+    func sync()
+    func sendSingle(contractAddress: Data, to: Data, value: BInt, gasPrice: Int) -> Single<Transaction>
+
+    func clear()
 }
 
-protocol IBalanceSyncer {
-    func sync(forBlock blockNumber: Int, token: Token)
-    func setSynced(forBlock: Int, token: Token)
+protocol IBalanceManager {
+    var delegate: IBalanceManagerDelegate? { get set }
+
+    func balance(contractAddress: Data) -> TokenBalance
+    func sync(blockHeight: Int, contractAddress: Data, balancePosition: Int)
+
+    func clear()
 }
 
 protocol IDataProvider {
-    func getLogs(from: Int, to: Int, completionFunction: @escaping ([Transaction], Int) -> ())
-    func getStorageAt(for token: Token, toBlock: Int, completeFunction: @escaping (Token, BInt, Int) -> ())
+    var lastBlockHeight: Int { get }
+    func getTransactions(from: Int, to: Int, address: Data) -> Single<[Transaction]>
+    func getStorageValue(contractAddress: Data, position: Int, address: Data, blockHeight: Int) -> Single<BInt>
+    func sendSingle(contractAddress: Data, transactionInput: Data, gasPrice: Int) -> Single<Data>
 }
 
-protocol ITokensHolder {
-    var tokens: [Data: Token] { get }
+protocol ITokenHolder {
+    var contractAddresses: [Data] { get }
 
-    func add(token: Token)
-    func token(byContractAddress contractAddress: Data) -> Token?
+    func syncState(contractAddress: Data) throws -> Erc20Kit.SyncState
+    func balance(contractAddress: Data) throws -> TokenBalance
+    func balancePosition(contractAddress: Data) throws -> Int
+    func delegate(contractAddress: Data) throws -> IErc20TokenDelegate?
+
+    func register(contractAddress: Data, balancePosition: Int, balance: TokenBalance, delegate: IErc20TokenDelegate) throws
+    func set(syncState: Erc20Kit.SyncState, contractAddress: Data) throws
+    func set(balance: TokenBalance, contractAddress: Data) throws
+
     func clear()
 }
 
-protocol ITokenStates {
-    var states: [Data: Erc20Kit.SyncState] { get }
+protocol ITransactionStorage {
+    var lastTransactionBlockHeight: Int? { get }
+    func lastTransactionBlockHeight(contractAddress: Data) -> Int?
+    func transactionsSingle(contractAddress: Data, hashFrom: Data?, indexFrom: Int?, limit: Int?) -> Single<[Transaction]>
+    func save(transactions: [Transaction])
+    func update(transaction: Transaction)
+    func clearTransactions()
+}
 
-    func state(of contractAddress: Data) -> Erc20Kit.SyncState
-    func set(state: Erc20Kit.SyncState, to contractAddress: Data)
-    func clear()
+protocol ITokenBalanceStorage {
+    func tokenBalance(contractAddress: Data) -> TokenBalance?
+    func save(tokenBalance: TokenBalance)
+    func clearTokenBalances()
 }

@@ -60,8 +60,8 @@ protocol IBlockchain {
     func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[Transaction]>
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction>
 
-    func getLogs(address: Data?, topics: [Any], fromBlock: Int, toBlock: Int, pullTimestamps: Bool, completeFunction: @escaping ([EthereumLog]) -> ())
-    func getStorageAt(contractAddress: Data, position: String, blockNumber: Int, completeFunction: @escaping (Int, Data) -> ())
+    func getLogsSingle(address: Data?, topics: [Any], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]>
+    func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data>
 }
 
 protocol IBlockchainDelegate: class {

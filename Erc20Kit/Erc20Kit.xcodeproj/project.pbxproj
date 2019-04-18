@@ -7,17 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2FA5D10732E8DA3873942DC7 /* TokenStates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D01B0CEF7EBA3D022A23 /* TokenStates.swift */; };
-		2FA5D2A306594691E81F3700 /* TokensHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D08B96FAE5E25240E847 /* TokensHolder.swift */; };
+		11B356FA52264751894BD896 /* TokenHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3598F31FDFB86F63A21EF /* TokenHolder.swift */; };
+		11B3588565C278E3276C5280 /* TokenBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B356EBA7F3536B9A691B73 /* TokenBalance.swift */; };
 		2FA5D2F8ABDFB907536308D3 /* Erc20Kit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5DBFF8094999891470F26 /* Erc20Kit.swift */; };
-		2FA5D511E296A8D98629DC2C /* TransactionSyncer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D605318BC6D83F0F8871 /* TransactionSyncer.swift */; };
+		2FA5D511E296A8D98629DC2C /* TransactionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D605318BC6D83F0F8871 /* TransactionManager.swift */; };
 		2FA5D57B96B3FC698F1E9370 /* Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5DEAC9C95ECFFB1054F23 /* Protocols.swift */; };
 		2FA5D8120ED290898312D6DC /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D186C22D1A5217D44790 /* Transaction.swift */; };
 		2FA5D88789CD8077E3931C3D /* ERC20.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5DC75DEDD9B83143FAF32 /* ERC20.swift */; };
 		2FA5D897C88DE11C9B5FEA13 /* DataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5DF526D8DC26011DF61D6 /* DataProvider.swift */; };
-		2FA5DA06B17B1234B7E9782B /* BalanceSyncer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D87E7CF0B5A799E27ED1 /* BalanceSyncer.swift */; };
+		2FA5DA06B17B1234B7E9782B /* BalanceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D87E7CF0B5A799E27ED1 /* BalanceManager.swift */; };
 		2FA5DA8A9FCA2F87E18392C8 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D25B49D7474BC55CA9E5 /* Logger.swift */; };
-		2FA5DC7ADAEE702CA2B77CE1 /* Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5DD6BA9349BADC61B45C3 /* Token.swift */; };
 		2FA5DD3FBD282AFF2E02C2E5 /* GrdbStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D62B268E97C692098E83 /* GrdbStorage.swift */; };
 		2FA5DF1F9375720B34B4F445 /* TransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5DDC47CB76FAD28B5DBFD /* TransactionBuilder.swift */; };
 		2FA5DFE69ED8711073AEE5A4 /* TransactionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D26E2F762277566B99E6 /* TransactionInfo.swift */; };
@@ -40,17 +39,16 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		2FA5D01B0CEF7EBA3D022A23 /* TokenStates.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TokenStates.swift; sourceTree = "<group>"; };
-		2FA5D08B96FAE5E25240E847 /* TokensHolder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TokensHolder.swift; sourceTree = "<group>"; };
+		11B356EBA7F3536B9A691B73 /* TokenBalance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TokenBalance.swift; sourceTree = "<group>"; };
+		11B3598F31FDFB86F63A21EF /* TokenHolder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TokenHolder.swift; sourceTree = "<group>"; };
 		2FA5D186C22D1A5217D44790 /* Transaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
 		2FA5D25B49D7474BC55CA9E5 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		2FA5D26E2F762277566B99E6 /* TransactionInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionInfo.swift; sourceTree = "<group>"; };
-		2FA5D605318BC6D83F0F8871 /* TransactionSyncer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionSyncer.swift; sourceTree = "<group>"; };
+		2FA5D605318BC6D83F0F8871 /* TransactionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionManager.swift; sourceTree = "<group>"; };
 		2FA5D62B268E97C692098E83 /* GrdbStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GrdbStorage.swift; sourceTree = "<group>"; };
-		2FA5D87E7CF0B5A799E27ED1 /* BalanceSyncer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BalanceSyncer.swift; sourceTree = "<group>"; };
+		2FA5D87E7CF0B5A799E27ED1 /* BalanceManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BalanceManager.swift; sourceTree = "<group>"; };
 		2FA5DBFF8094999891470F26 /* Erc20Kit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Erc20Kit.swift; sourceTree = "<group>"; };
 		2FA5DC75DEDD9B83143FAF32 /* ERC20.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ERC20.swift; sourceTree = "<group>"; };
-		2FA5DD6BA9349BADC61B45C3 /* Token.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Token.swift; sourceTree = "<group>"; };
 		2FA5DDC47CB76FAD28B5DBFD /* TransactionBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionBuilder.swift; sourceTree = "<group>"; };
 		2FA5DEAC9C95ECFFB1054F23 /* Protocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Protocols.swift; sourceTree = "<group>"; };
 		2FA5DF526D8DC26011DF61D6 /* DataProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataProvider.swift; sourceTree = "<group>"; };
@@ -106,16 +104,15 @@
 		2FA5D6D983DF8C36E7322315 /* Core */ = {
 			isa = PBXGroup;
 			children = (
-				2FA5D87E7CF0B5A799E27ED1 /* BalanceSyncer.swift */,
+				2FA5D87E7CF0B5A799E27ED1 /* BalanceManager.swift */,
 				2FA5DBFF8094999891470F26 /* Erc20Kit.swift */,
 				2FA5D62B268E97C692098E83 /* GrdbStorage.swift */,
 				2FA5D25B49D7474BC55CA9E5 /* Logger.swift */,
 				2FA5DEAC9C95ECFFB1054F23 /* Protocols.swift */,
 				2FA5DDC47CB76FAD28B5DBFD /* TransactionBuilder.swift */,
-				2FA5D605318BC6D83F0F8871 /* TransactionSyncer.swift */,
-				2FA5D01B0CEF7EBA3D022A23 /* TokenStates.swift */,
-				2FA5D08B96FAE5E25240E847 /* TokensHolder.swift */,
+				2FA5D605318BC6D83F0F8871 /* TransactionManager.swift */,
 				2FA5DF526D8DC26011DF61D6 /* DataProvider.swift */,
+				11B3598F31FDFB86F63A21EF /* TokenHolder.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -123,9 +120,9 @@
 		2FA5DD86439C256EA6680E6D /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				2FA5DD6BA9349BADC61B45C3 /* Token.swift */,
 				2FA5D186C22D1A5217D44790 /* Transaction.swift */,
 				2FA5D26E2F762277566B99E6 /* TransactionInfo.swift */,
+				11B356EBA7F3536B9A691B73 /* TokenBalance.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -391,13 +388,12 @@
 				2FA5D57B96B3FC698F1E9370 /* Protocols.swift in Sources */,
 				2FA5DFE69ED8711073AEE5A4 /* TransactionInfo.swift in Sources */,
 				2FA5DD3FBD282AFF2E02C2E5 /* GrdbStorage.swift in Sources */,
-				2FA5DC7ADAEE702CA2B77CE1 /* Token.swift in Sources */,
 				2FA5DA8A9FCA2F87E18392C8 /* Logger.swift in Sources */,
-				2FA5D511E296A8D98629DC2C /* TransactionSyncer.swift in Sources */,
-				2FA5D10732E8DA3873942DC7 /* TokenStates.swift in Sources */,
-				2FA5D2A306594691E81F3700 /* TokensHolder.swift in Sources */,
-				2FA5DA06B17B1234B7E9782B /* BalanceSyncer.swift in Sources */,
+				2FA5D511E296A8D98629DC2C /* TransactionManager.swift in Sources */,
+				2FA5DA06B17B1234B7E9782B /* BalanceManager.swift in Sources */,
 				2FA5D897C88DE11C9B5FEA13 /* DataProvider.swift in Sources */,
+				11B356FA52264751894BD896 /* TokenHolder.swift in Sources */,
+				11B3588565C278E3276C5280 /* TokenBalance.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

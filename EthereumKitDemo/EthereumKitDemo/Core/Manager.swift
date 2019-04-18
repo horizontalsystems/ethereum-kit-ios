@@ -6,9 +6,9 @@ import HSHDWalletKit
 class Manager {
     private let infuraProjectId = "2a1306f1d12f4c109a4d4fb9be46b02e"
     private let etherscanApiKey = "GKNHXT22ED7PRVCKZATFZQD1YI7FK9AAYE"
-    private let tokenContractAddress = Data(hex: "0xf559862f9265756619d5523bbc4bd8422898e97d")!
+    private let tokenContractAddress = "0xf559862f9265756619d5523bbc4bd8422898e97d"
     private let tokenDecimal = 18
-    private let tokenBalanceStoragePosition = Int64(6)
+    private let tokenBalanceStoragePosition = 6
 
     static let shared = Manager()
 

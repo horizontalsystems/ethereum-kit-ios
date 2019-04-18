@@ -21,6 +21,16 @@ class GrdbStorage {
     var migrator: DatabaseMigrator {
         var migrator = DatabaseMigrator()
 
+        migrator.registerMigration("createTokenBalances") { db in
+            try db.create(table: TokenBalance.databaseTableName) { t in
+                t.column(TokenBalance.Columns.contractAddress.name, .text).notNull()
+                t.column(TokenBalance.Columns.value.name, .text).notNull()
+                t.column(TokenBalance.Columns.blockHeight.name, .integer).notNull()
+
+                t.primaryKey([TokenBalance.Columns.contractAddress.name], onConflict: .replace)
+            }
+        }
+
         migrator.registerMigration("createTransactions") { db in
             try db.create(table: Transaction.databaseTableName) { t in
                 t.column(Transaction.Columns.transactionHash.name, .text).notNull()
@@ -37,38 +47,45 @@ class GrdbStorage {
             }
         }
 
-        migrator.registerMigration("createTokens") { db in
-            try db.create(table: Token.databaseTableName) { t in
-                t.column(Token.Columns.contractAddress.name, .text).notNull()
-                t.column(Token.Columns.contractBalanceKey.name, .text).notNull()
-                t.column(Token.Columns.balance.name, .text).notNull()
-                t.column(Token.Columns.syncedBlockHeight.name, .integer).notNull()
-
-                t.primaryKey([Token.Columns.contractAddress.name], onConflict: .replace)
-            }
-        }
-
         return migrator
     }
 }
 
-extension GrdbStorage {
+extension GrdbStorage: ITokenBalanceStorage {
 
-    // Token
-
-    func token(contractAddress: Data) -> Token? {
+    func tokenBalance(contractAddress: Data) -> TokenBalance? {
         return try! dbPool.read { db in
-            try Token.filter(Token.Columns.contractAddress == contractAddress).fetchOne(db)
+            try TokenBalance.filter(TokenBalance.Columns.contractAddress == contractAddress).fetchOne(db)
         }
     }
 
-    func save(token: Token) {
+    func save(tokenBalance: TokenBalance) {
         _ = try? dbPool.write { db in
-            try token.save(db)
+            try tokenBalance.insert(db)
         }
     }
 
-    // Transactions
+    func clearTokenBalances() {
+        _ = try? dbPool.write { db in
+            try TokenBalance.deleteAll(db)
+        }
+    }
+
+}
+
+extension GrdbStorage: ITransactionStorage {
+
+    var lastTransactionBlockHeight: Int? {
+        return try! dbPool.read { db in
+            try Transaction.order(Transaction.Columns.blockNumber.desc).fetchOne(db)?.blockNumber
+        }
+    }
+
+    func lastTransactionBlockHeight(contractAddress: Data) -> Int? {
+        return try! dbPool.read { db in
+            try Transaction.filter(Transaction.Columns.contractAddress == contractAddress).order(Transaction.Columns.blockNumber.desc).fetchOne(db)?.blockNumber
+        }
+    }
 
     func transactionsSingle(contractAddress: Data, hashFrom: Data?, indexFrom: Int?, limit: Int?) -> Single<[Transaction]> {
         return Single.create { [weak self] observer in
@@ -106,18 +123,10 @@ extension GrdbStorage {
         }
     }
 
-    func lastTransactionBlockHeight() -> Int? {
-        return try! dbPool.read { db in
-            try Transaction.order(Transaction.Columns.blockNumber.desc).fetchOne(db)?.blockNumber
-        }
-    }
-
-    func clear() {
+    func clearTransactions() {
         _ = try? dbPool.write { db in
             try Transaction.deleteAll(db)
-            try Token.deleteAll(db)
         }
-
     }
 
 }

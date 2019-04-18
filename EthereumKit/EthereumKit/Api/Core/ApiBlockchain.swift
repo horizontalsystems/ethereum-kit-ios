@@ -205,49 +205,26 @@ extension ApiBlockchain: IBlockchain {
                 })
     }
 
-    func getLogs(address: Data?, topics: [Any], fromBlock: Int, toBlock: Int, pullTimestamps: Bool, completeFunction: @escaping ([EthereumLog]) -> ()) {
-        var requestSingles = [Single<[EthereumLog]>]()
-
-        if let topicsArray = topics as? [[Any]] {
-            for topics in topicsArray {
-                requestSingles.append(rpcApiProvider.getLogs(address: address, fromBlock: fromBlock, toBlock: toBlock, topics: topics))
-            }
-        } else {
-            requestSingles.append(rpcApiProvider.getLogs(address: address, fromBlock: fromBlock, toBlock: toBlock, topics: topics))
-        }
-
-        Single.zip(requestSingles)
-                .map({ (logs: [[EthereumLog]]) in
-                    let joinedLogs: [EthereumLog] = Array(logs.joined())
-                    return Array(Set<EthereumLog>(joinedLogs))
-                })
-                .flatMap({ (logs: [EthereumLog]) in
+    func getLogsSingle(address: Data?, topics: [Any], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
+        return rpcApiProvider.getLogs(address: address, fromBlock: fromBlock, toBlock: toBlock, topics: topics)
+                .flatMap { [unowned self] logs in
                     if pullTimestamps {
                         return self.pullTransactionTimestamps(ethereumLogs: logs)
                     } else {
                         return Single.just(logs)
                     }
-                })
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                .subscribe(
-                        onSuccess: { (logs: [EthereumLog]) in
-                            completeFunction(logs)
-                        },
-                        onError: { _ in
-                        }
-                ).disposed(by: disposeBag)
+                }
     }
 
-    func getStorageAt(contractAddress: Data, position: String, blockNumber: Int, completeFunction: @escaping (Int, Data) -> ()) {
-        rpcApiProvider.getStorageAt(contractAddress: contractAddress.toHexString(), position: position, blockNumber: blockNumber)
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                .subscribe(
-                        onSuccess: { value in
-                            completeFunction(blockNumber, Data(hex: value)!)
-                        },
-                        onError: { _ in
-                        }
-                ).disposed(by: disposeBag)
+    func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data> {
+        return rpcApiProvider.getStorageAt(contractAddress: contractAddress.toHexString(), position: positionData.toHexString(), blockNumber: blockHeight)
+                .flatMap { value -> Single<Data> in
+                    guard let data = Data(hex: value) else {
+                        return Single.error(EthereumKit.ApiError.invalidData)
+                    }
+
+                    return Single.just(data)
+                }
     }
 
 }
