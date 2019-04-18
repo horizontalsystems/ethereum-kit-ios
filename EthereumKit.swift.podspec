@@ -13,7 +13,7 @@ Pod::Spec.new do |spec|
   spec.social_media_url = 'http://horizontalsystems.io/'
 
   spec.requires_arc = true
-  spec.source = { git: 'https://github.com/horizontalsystems/ethereum-kit-ios.git', tag: "#{spec.version}" }
+  spec.source = { git: 'https://github.com/horizontalsystems/ethereum-kit-ios.git', tag: "ethereum-kit-#{spec.version}" }
   spec.source_files = 'EthereumKit/EthereumKit/**/*.{h,m,swift}'
   spec.ios.deployment_target = '11.0'
   spec.swift_version = '4.2'
