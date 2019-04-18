@@ -62,7 +62,8 @@ protocol ITokenHolder {
     func balancePosition(contractAddress: Data) throws -> Int
     func delegate(contractAddress: Data) throws -> IErc20TokenDelegate?
 
-    func register(contractAddress: Data, balancePosition: Int, balance: TokenBalance, delegate: IErc20TokenDelegate) throws
+    func register(contractAddress: Data, balancePosition: Int, balance: TokenBalance, delegate: IErc20TokenDelegate)
+    func unregister(contractAddress: Data) throws
     func set(syncState: Erc20Kit.SyncState, contractAddress: Data) throws
     func set(balance: TokenBalance, contractAddress: Data) throws
 
