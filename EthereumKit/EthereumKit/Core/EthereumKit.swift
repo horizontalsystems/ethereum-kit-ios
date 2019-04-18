@@ -112,6 +112,10 @@ extension EthereumKit {
         delegates.append(delegate)
     }
 
+    public func remove(delegate: IEthereumKitDelegate) {
+        delegates.removeAll { $0 === delegate }
+    }
+
     public func getLogsSingle(address: Data?, topics: [Any], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
         return blockchain.getLogsSingle(address: address, topics: topics, fromBlock: fromBlock, toBlock: toBlock, pullTimestamps: pullTimestamps)
     }
@@ -212,6 +216,13 @@ extension EthereumKit {
 }
 
 extension EthereumKit {
+
+    public enum NetworkError: Error {
+        case invalidUrl
+        case mappingError
+        case noConnection
+        case serverError(status: Int, data: Any?)
+    }
 
     public enum SendError: Error {
         case invalidAddress

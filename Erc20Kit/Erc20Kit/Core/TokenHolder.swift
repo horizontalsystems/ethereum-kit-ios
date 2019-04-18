@@ -32,11 +32,15 @@ extension TokenHolder: ITokenHolder {
         return try token(contractAddress: contractAddress).delegate
     }
 
-    func register(contractAddress: Data, balancePosition: Int, balance: TokenBalance, delegate: IErc20TokenDelegate) throws {
+    func register(contractAddress: Data, balancePosition: Int, balance: TokenBalance, delegate: IErc20TokenDelegate) {
         let token = Token(contractAddress: contractAddress, balancePosition: balancePosition, balance: balance)
         token.delegate = delegate
 
         tokensMap[contractAddress] = token
+    }
+
+    func unregister(contractAddress: Data) {
+        tokensMap.removeValue(forKey: contractAddress)
     }
 
     func set(syncState: Erc20Kit.SyncState, contractAddress: Data) throws {

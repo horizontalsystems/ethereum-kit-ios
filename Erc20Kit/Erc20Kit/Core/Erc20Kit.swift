@@ -3,12 +3,14 @@ import EthereumKit
 import HSCryptoKit
 
 public class Erc20Kit {
-    let disposeBag = DisposeBag()
+    private let gasLimit = 100_000
 
-    let ethereumKit: EthereumKit
-    let transactionManager: ITransactionManager
-    let balanceManager: IBalanceManager
-    let tokenHolder: ITokenHolder
+    private let disposeBag = DisposeBag()
+
+    private let ethereumKit: EthereumKit
+    private let transactionManager: ITransactionManager
+    private let balanceManager: IBalanceManager
+    private let tokenHolder: ITokenHolder
 
     init(ethereumKit: EthereumKit, transactionManager: ITransactionManager, balanceManager: IBalanceManager, tokenHolder: ITokenHolder = TokenHolder()) {
         self.ethereumKit = ethereumKit
@@ -52,6 +54,10 @@ extension Erc20Kit {
         return try tokenHolder.balance(contractAddress: try convert(address: contractAddress)).value.asString(withBase: 10)
     }
 
+    public func fee(gasPrice: Int) -> Decimal {
+        return Decimal(gasPrice) * Decimal(gasLimit)
+    }
+
     public func sendSingle(contractAddress: String, to: String, value: String, gasPrice: Int) throws -> Single<TransactionInfo> {
         let contractAddress = try convert(address: contractAddress)
         let to = try convert(address: to)
@@ -77,7 +83,19 @@ extension Erc20Kit {
         let contractAddress = try convert(address: contractAddress)
         let balance = balanceManager.balance(contractAddress: contractAddress)
 
-        try tokenHolder.register(contractAddress: contractAddress, balancePosition: balancePosition, balance: balance, delegate: delegate)
+        tokenHolder.register(contractAddress: contractAddress, balancePosition: balancePosition, balance: balance, delegate: delegate)
+    }
+
+    public func unregister(contractAddress: String) throws {
+        let contractAddress = try convert(address: contractAddress)
+
+        try tokenHolder.unregister(contractAddress: contractAddress)
+    }
+
+    public func clear() {
+        tokenHolder.clear()
+        transactionManager.clear()
+        balanceManager.clear()
     }
 
 }
@@ -101,9 +119,7 @@ extension Erc20Kit: IEthereumKitDelegate {
     }
 
     public func onClear() {
-        tokenHolder.clear()
-        transactionManager.clear()
-        balanceManager.clear()
+        clear()
     }
 
 }
