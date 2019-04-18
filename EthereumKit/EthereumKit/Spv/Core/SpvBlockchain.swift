@@ -81,13 +81,14 @@ extension SpvBlockchain: IBlockchain {
         })
     }
 
-    func getLogs(address: Data?, topics: [Any], fromBlock: Int, toBlock: Int, pullTimestamps: Bool, completeFunction: @escaping ([EthereumLog]) -> ()) {
-
+    func getLogsSingle(address: Data?, topics: [Any], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
+        fatalError("getLogsSingle(address:topics:fromBlock:toBlock:pullTimestamps:) has not been implemented")
     }
 
-    func getStorageAt(contractAddress: Data, position: String, blockNumber: Int, completeFunction: @escaping (Int, Data) -> ()) {
-
+    func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data> {
+        fatalError("getStorageAt(contractAddress:positionData:blockHeight:) has not been implemented")
     }
+
 }
 
 extension SpvBlockchain: IPeerGroupDelegate {
