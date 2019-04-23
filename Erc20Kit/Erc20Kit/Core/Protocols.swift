@@ -55,8 +55,8 @@ protocol ITokenHolder {
     func balance(contractAddress: Data) throws -> TokenBalance
     func balancePosition(contractAddress: Data) throws -> Int
 
-    func syncStateSignal(contractAddress: Data) throws -> Signal
-    func balanceSignal(contractAddress: Data) throws -> Signal
+    func syncStateSubject(contractAddress: Data) throws -> PublishSubject<Erc20Kit.SyncState>
+    func balanceSubject(contractAddress: Data) throws -> PublishSubject<String>
     func transactionsSubject(contractAddress: Data) throws -> PublishSubject<[TransactionInfo]>
 
     func register(contractAddress: Data, balancePosition: Int, balance: TokenBalance)

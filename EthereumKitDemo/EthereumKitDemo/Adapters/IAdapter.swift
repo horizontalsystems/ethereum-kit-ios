@@ -12,10 +12,10 @@ protocol IAdapter {
 
     var receiveAddress: String { get }
 
-    var lastBlockHeightSignal: Signal { get }
-    var syncStateSignal: Signal { get }
-    var balanceSignal: Signal { get }
-    var transactionsSignal: Observable<Void> { get }
+    var lastBlockHeightObservable: Observable<Void> { get }
+    var syncStateObservable: Observable<Void> { get }
+    var balanceObservable: Observable<Void> { get }
+    var transactionsObservable: Observable<Void> { get }
 
     func validate(address: String) throws
     func sendSingle(to address: String, amount: Decimal) -> Single<Void>
