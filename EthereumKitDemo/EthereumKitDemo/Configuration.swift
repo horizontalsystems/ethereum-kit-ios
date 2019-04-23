@@ -6,7 +6,7 @@ class Configuration {
     let syncMode: SyncMode = .api
     let networkType: EthereumKit.NetworkType = .mainNet
 
-    let defaultsWords = "mom year father track attend frown loyal goddess crisp abandon juice roof"
+    let defaultsWords = ""
 
     let infuraProjectId = "2a1306f1d12f4c109a4d4fb9be46b02e"
     let etherscanApiKey = "GKNHXT22ED7PRVCKZATFZQD1YI7FK9AAYE"
