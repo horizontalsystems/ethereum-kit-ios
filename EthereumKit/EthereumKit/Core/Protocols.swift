@@ -8,32 +8,6 @@ public protocol IResponse {
     var id: Int { get }
 }
 
-public protocol IEthereumKitDelegate: class {
-    func onClear()
-
-    func onUpdate(transactions: [TransactionInfo])
-    func onUpdateBalance()
-    func onUpdateLastBlockHeight()
-    func onUpdateSyncState()
-}
-
-extension IEthereumKitDelegate {
-    public func onClear() {
-    }
-
-    public func onUpdate(transactions: [TransactionInfo]) {
-    }
-
-    public func onUpdateBalance() {
-    }
-
-    public func onUpdateLastBlockHeight() {
-    }
-
-    public func onUpdateSyncState() {
-    }
-}
-
 protocol ITransactionsProvider {
     func transactionsSingle(address: Data, startBlock: Int) -> Single<[Transaction]>
 }
@@ -51,6 +25,7 @@ protocol IBlockchain {
     var address: Data { get }
 
     func start()
+    func stop()
     func clear()
 
     var syncState: EthereumKit.SyncState { get }

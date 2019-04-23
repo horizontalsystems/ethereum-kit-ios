@@ -8,8 +8,13 @@ class WordsController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        textView?.text = "mom year father track attend frown loyal goddess crisp abandon juice roof"
+
         title = "EthereumKit Demo"
+
+        textView?.textContainerInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+        textView?.layer.cornerRadius = 8
+
+        textView?.text = Configuration.shared.defaultsWords
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -29,6 +34,7 @@ class WordsController: UIViewController {
 
         do {
             try Mnemonic.validate(words: words)
+
             Manager.shared.login(words: words)
 
             if let window = UIApplication.shared.keyWindow {

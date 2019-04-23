@@ -1,3 +1,6 @@
+import RxSwift
+import EthereumKit
+
 class TokenHolder {
     private var tokensMap = [Data: Token]()
 
@@ -28,13 +31,20 @@ extension TokenHolder: ITokenHolder {
         return try token(contractAddress: contractAddress).balancePosition
     }
 
-    func delegate(contractAddress: Data) throws -> IErc20TokenDelegate? {
-        return try token(contractAddress: contractAddress).delegate
+    func syncStateSignal(contractAddress: Data) throws -> Signal {
+        return try token(contractAddress: contractAddress).syncStateSignal
     }
 
-    func register(contractAddress: Data, balancePosition: Int, balance: TokenBalance, delegate: IErc20TokenDelegate) {
+    func balanceSignal(contractAddress: Data) throws -> Signal {
+        return try token(contractAddress: contractAddress).balanceSignal
+    }
+
+    func transactionsSubject(contractAddress: Data) throws -> PublishSubject<[TransactionInfo]> {
+        return try token(contractAddress: contractAddress).transactionsSubject
+    }
+
+    func register(contractAddress: Data, balancePosition: Int, balance: TokenBalance) {
         let token = Token(contractAddress: contractAddress, balancePosition: balancePosition, balance: balance)
-        token.delegate = delegate
 
         tokensMap[contractAddress] = token
     }
@@ -66,7 +76,9 @@ extension TokenHolder {
         var balance: TokenBalance
         var syncState: Erc20Kit.SyncState = .notSynced
 
-        weak var delegate: IErc20TokenDelegate?
+        let syncStateSignal = Signal()
+        let balanceSignal = Signal()
+        let transactionsSubject = PublishSubject<[TransactionInfo]>()
 
         init(contractAddress: Data, balancePosition: Int, balance: TokenBalance) {
             self.contractAddress = contractAddress

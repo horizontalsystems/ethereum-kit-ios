@@ -12,15 +12,15 @@
 		11B353D103BBB08C466FD639 /* ReceiveController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3553E60EA90E64EE2C747 /* ReceiveController.swift */; };
 		11B3542ACE791123A3F1A5AF /* Manager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B356F556750208E0EB231E /* Manager.swift */; };
 		11B35472281532C7F766AEDB /* Erc20Adapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35BD771552E724CF78A64 /* Erc20Adapter.swift */; };
+		11B354B1D94F3D65B56F2D5C /* IAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3527FFC47FA9129697381 /* IAdapter.swift */; };
 		11B3550F971365331ABDCF7D /* EthereumAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35E3DF616DA9B67C058D3 /* EthereumAdapter.swift */; };
 		11B355BEC887FD6B4FE563B5 /* WordsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35C8CE1B31790C7BACF0B /* WordsController.swift */; };
 		11B355CE1B19409595DDB55B /* ReceiveController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 11B354EDEC2F9FDA1699B376 /* ReceiveController.xib */; };
 		11B355FFDDB052DA4AC3FE42 /* SendController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 11B351A4E88DAB5E6BF84485 /* SendController.xib */; };
+		11B35634EDC9CD1B0CFA5478 /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3510CCAE0A2454000D4F1 /* Configuration.swift */; };
 		11B3575F63581EC844987488 /* TransactionRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35BDED2EDA2070FB64F7E /* TransactionRecord.swift */; };
-		11B359B7667DB412A5B89C77 /* BaseAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B358D0EA9014014F9D1EF3 /* BaseAdapter.swift */; };
 		11B359C7B7CAD9961BF401CE /* Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35692FF8EBC01B66F7CCD /* Signal.swift */; };
 		11B35BDD5F1AC324EB96FBD0 /* MainController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35B0F9C8366CDB491D34C /* MainController.swift */; };
-		11B35C5F4E1FC91FCA4AA3BC /* BalanceController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 11B356BF14F5365228D5F111 /* BalanceController.xib */; };
 		11B35D187F162D8E4FC4B47D /* TransactionsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3588862756DCA125CCFA2 /* TransactionsController.swift */; };
 		11B35DC656DB3BD4D86BDEB6 /* SendController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B355F203687C3A51B9F9A3 /* SendController.swift */; };
 		11B35EE1E492FDE25DC09A70 /* TransactionCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 11B356D4DBD479CBA57B6A1E /* TransactionCell.xib */; };
@@ -28,23 +28,42 @@
 		3A3B59EC216B2667001C5E99 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3A3B59EB216B2667001C5E99 /* Assets.xcassets */; };
 		3A3B5A01216B2694001C5E99 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3A3B59F1216B2692001C5E99 /* LaunchScreen.xib */; };
 		3A3B5A0A216B2694001C5E99 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A3B59FA216B2694001C5E99 /* AppDelegate.swift */; };
-		D31362222265A8BC006D8E5C /* Erc20Kit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D31362212265A8BC006D8E5C /* Erc20Kit.framework */; };
-		D31362242265A8BC006D8E5C /* EthereumKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D31362232265A8BC006D8E5C /* EthereumKit.framework */; };
+		D3927B93226DA95A005094C4 /* BalanceCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3927B91226DA95A005094C4 /* BalanceCell.swift */; };
+		D3927B94226DA95A005094C4 /* BalanceCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = D3927B92226DA95A005094C4 /* BalanceCell.xib */; };
+		D3927B9A226ED196005094C4 /* EthereumKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D31362232265A8BC006D8E5C /* EthereumKit.framework */; };
+		D3927B9B226ED196005094C4 /* EthereumKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D31362232265A8BC006D8E5C /* EthereumKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D3927B9C226ED196005094C4 /* Erc20Kit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D31362212265A8BC006D8E5C /* Erc20Kit.framework */; };
+		D3927B9D226ED196005094C4 /* Erc20Kit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D31362212265A8BC006D8E5C /* Erc20Kit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		E2F232A4BB8F7E50A1CA6B75 /* Pods_EthereumKitDemo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9803B4D71EAC1E07B494C77 /* Pods_EthereumKitDemo.framework */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		D3927B9E226ED196005094C4 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				D3927B9D226ED196005094C4 /* Erc20Kit.framework in Embed Frameworks */,
+				D3927B9B226ED196005094C4 /* EthereumKit.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		11B350091370BE84672B3694 /* TransactionCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionCell.swift; sourceTree = "<group>"; };
+		11B3510CCAE0A2454000D4F1 /* Configuration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		11B351A4E88DAB5E6BF84485 /* SendController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SendController.xib; sourceTree = "<group>"; };
+		11B3527FFC47FA9129697381 /* IAdapter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IAdapter.swift; sourceTree = "<group>"; };
 		11B354EDEC2F9FDA1699B376 /* ReceiveController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ReceiveController.xib; sourceTree = "<group>"; };
 		11B3553E60EA90E64EE2C747 /* ReceiveController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReceiveController.swift; sourceTree = "<group>"; };
 		11B355F203687C3A51B9F9A3 /* SendController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendController.swift; sourceTree = "<group>"; };
 		11B35692FF8EBC01B66F7CCD /* Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Signal.swift; sourceTree = "<group>"; };
-		11B356BF14F5365228D5F111 /* BalanceController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = BalanceController.xib; sourceTree = "<group>"; };
 		11B356D4DBD479CBA57B6A1E /* TransactionCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TransactionCell.xib; sourceTree = "<group>"; };
 		11B356F556750208E0EB231E /* Manager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Manager.swift; sourceTree = "<group>"; };
 		11B3588862756DCA125CCFA2 /* TransactionsController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionsController.swift; sourceTree = "<group>"; };
-		11B358D0EA9014014F9D1EF3 /* BaseAdapter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseAdapter.swift; sourceTree = "<group>"; };
 		11B35B0F9C8366CDB491D34C /* MainController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainController.swift; sourceTree = "<group>"; };
 		11B35BD771552E724CF78A64 /* Erc20Adapter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Erc20Adapter.swift; sourceTree = "<group>"; };
 		11B35BDED2EDA2070FB64F7E /* TransactionRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionRecord.swift; sourceTree = "<group>"; };
@@ -60,6 +79,8 @@
 		95C31C994DC5805673A5C43E /* Pods-EthereumKitDemo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EthereumKitDemo.debug.xcconfig"; path = "Target Support Files/Pods-EthereumKitDemo/Pods-EthereumKitDemo.debug.xcconfig"; sourceTree = "<group>"; };
 		D31362212265A8BC006D8E5C /* Erc20Kit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Erc20Kit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D31362232265A8BC006D8E5C /* EthereumKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = EthereumKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D3927B91226DA95A005094C4 /* BalanceCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceCell.swift; sourceTree = "<group>"; };
+		D3927B92226DA95A005094C4 /* BalanceCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = BalanceCell.xib; sourceTree = "<group>"; };
 		D9803B4D71EAC1E07B494C77 /* Pods_EthereumKitDemo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_EthereumKitDemo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -68,30 +89,49 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D31362222265A8BC006D8E5C /* Erc20Kit.framework in Frameworks */,
-				D31362242265A8BC006D8E5C /* EthereumKit.framework in Frameworks */,
+				D3927B9A226ED196005094C4 /* EthereumKit.framework in Frameworks */,
 				E2F232A4BB8F7E50A1CA6B75 /* Pods_EthereumKitDemo.framework in Frameworks */,
+				D3927B9C226ED196005094C4 /* Erc20Kit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		11B352A121B93564521FADB1 /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				D3927B91226DA95A005094C4 /* BalanceCell.swift */,
+				D3927B92226DA95A005094C4 /* BalanceCell.xib */,
+				11B350091370BE84672B3694 /* TransactionCell.swift */,
+				11B356D4DBD479CBA57B6A1E /* TransactionCell.xib */,
+			);
+			path = Cells;
+			sourceTree = "<group>";
+		};
+		11B357A8E05F9B38634D02C9 /* Adapters */ = {
+			isa = PBXGroup;
+			children = (
+				11B3527FFC47FA9129697381 /* IAdapter.swift */,
+				11B35E3DF616DA9B67C058D3 /* EthereumAdapter.swift */,
+				11B35BD771552E724CF78A64 /* Erc20Adapter.swift */,
+			);
+			path = Adapters;
+			sourceTree = "<group>";
+		};
 		11B35AB321C4BF1327A3F33D /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				11B356D4DBD479CBA57B6A1E /* TransactionCell.xib */,
-				11B35E53E574BA02E7E80A5F /* WordsController.xib */,
-				11B350091370BE84672B3694 /* TransactionCell.swift */,
-				11B35B0F9C8366CDB491D34C /* MainController.swift */,
-				11B354EDEC2F9FDA1699B376 /* ReceiveController.xib */,
-				11B355F203687C3A51B9F9A3 /* SendController.swift */,
+				11B352A121B93564521FADB1 /* Cells */,
 				11B35C8CE1B31790C7BACF0B /* WordsController.swift */,
-				11B3553E60EA90E64EE2C747 /* ReceiveController.swift */,
-				11B3588862756DCA125CCFA2 /* TransactionsController.swift */,
-				11B351A4E88DAB5E6BF84485 /* SendController.xib */,
-				11B356BF14F5365228D5F111 /* BalanceController.xib */,
+				11B35E53E574BA02E7E80A5F /* WordsController.xib */,
+				11B35B0F9C8366CDB491D34C /* MainController.swift */,
 				11B35D5FB2C4481394583EF9 /* BalanceController.swift */,
+				11B3588862756DCA125CCFA2 /* TransactionsController.swift */,
+				11B355F203687C3A51B9F9A3 /* SendController.swift */,
+				11B351A4E88DAB5E6BF84485 /* SendController.xib */,
+				11B3553E60EA90E64EE2C747 /* ReceiveController.swift */,
+				11B354EDEC2F9FDA1699B376 /* ReceiveController.xib */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -99,12 +139,9 @@
 		11B35BC62B80357D20D5F5AA /* Core */ = {
 			isa = PBXGroup;
 			children = (
-				11B35BD771552E724CF78A64 /* Erc20Adapter.swift */,
 				11B356F556750208E0EB231E /* Manager.swift */,
-				11B358D0EA9014014F9D1EF3 /* BaseAdapter.swift */,
 				11B35BDED2EDA2070FB64F7E /* TransactionRecord.swift */,
 				11B35692FF8EBC01B66F7CCD /* Signal.swift */,
-				11B35E3DF616DA9B67C058D3 /* EthereumAdapter.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -151,9 +188,11 @@
 			isa = PBXGroup;
 			children = (
 				11B35BC62B80357D20D5F5AA /* Core */,
+				11B357A8E05F9B38634D02C9 /* Adapters */,
 				11B35AB321C4BF1327A3F33D /* Controllers */,
-				3A3B59FA216B2694001C5E99 /* AppDelegate.swift */,
 				3A3B59EB216B2667001C5E99 /* Assets.xcassets */,
+				3A3B59FA216B2694001C5E99 /* AppDelegate.swift */,
+				11B3510CCAE0A2454000D4F1 /* Configuration.swift */,
 				3A3B59F1216B2692001C5E99 /* LaunchScreen.xib */,
 			);
 			path = EthereumKitDemo;
@@ -171,6 +210,7 @@
 				3A3B59D3216B1D81001C5E99 /* Frameworks */,
 				3A3B59D4216B1D81001C5E99 /* Resources */,
 				309D32B816BC165C3500E566 /* [CP] Embed Pods Frameworks */,
+				D3927B9E226ED196005094C4 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -225,7 +265,7 @@
 				11B350DE96ECE1F58F02D8AA /* WordsController.xib in Resources */,
 				11B355CE1B19409595DDB55B /* ReceiveController.xib in Resources */,
 				11B355FFDDB052DA4AC3FE42 /* SendController.xib in Resources */,
-				11B35C5F4E1FC91FCA4AA3BC /* BalanceController.xib in Resources */,
+				D3927B94226DA95A005094C4 /* BalanceCell.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -301,10 +341,12 @@
 				11B35F5EDBDF00DC22EE2428 /* BalanceController.swift in Sources */,
 				11B35472281532C7F766AEDB /* Erc20Adapter.swift in Sources */,
 				11B3542ACE791123A3F1A5AF /* Manager.swift in Sources */,
-				11B359B7667DB412A5B89C77 /* BaseAdapter.swift in Sources */,
 				11B3575F63581EC844987488 /* TransactionRecord.swift in Sources */,
 				11B359C7B7CAD9961BF401CE /* Signal.swift in Sources */,
 				11B3550F971365331ABDCF7D /* EthereumAdapter.swift in Sources */,
+				D3927B93226DA95A005094C4 /* BalanceCell.swift in Sources */,
+				11B354B1D94F3D65B56F2D5C /* IAdapter.swift in Sources */,
+				11B35634EDC9CD1B0CFA5478 /* Configuration.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

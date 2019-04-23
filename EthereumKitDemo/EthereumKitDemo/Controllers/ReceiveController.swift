@@ -9,7 +9,10 @@ class ReceiveController: UIViewController {
 
         title = "Receive"
 
-        addressLabel?.text = Manager.shared.ethereumAdapter.receiveAddress
+        addressLabel?.layer.cornerRadius = 8
+        addressLabel?.clipsToBounds = true
+
+        addressLabel?.text = "  \(Manager.shared.ethereumAdapter.receiveAddress)  "
     }
 
     @IBAction func copyToClipboard() {

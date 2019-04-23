@@ -7,12 +7,27 @@ class SendController: UIViewController {
 
     @IBOutlet weak var addressTextField: UITextField?
     @IBOutlet weak var amountTextField: UITextField?
-    @IBOutlet weak var sendCoin: UIButton!
+    @IBOutlet weak var coinLabel: UILabel?
+
+    private var adapters = [IAdapter]()
+    private let segmentedControl = UISegmentedControl()
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "Send"
+        adapters.append(Manager.shared.ethereumAdapter)
+        adapters.append(contentsOf: Manager.shared.erc20Adapters)
+
+        for (index, adapter) in adapters.enumerated() {
+            segmentedControl.insertSegment(withTitle: adapter.coin, at: index, animated: false)
+        }
+
+        segmentedControl.addTarget(self, action: #selector(onSegmentChanged), for: .valueChanged)
+
+        navigationItem.titleView = segmentedControl
+
+        segmentedControl.selectedSegmentIndex = 0
+        segmentedControl.sendActions(for: .valueChanged)
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -21,36 +36,37 @@ class SendController: UIViewController {
         view.endEditing(true)
     }
 
-    @IBAction func send(_ sender: Any) {
-        guard Manager.shared.ethereumKit != nil else {
+    @objc func onSegmentChanged() {
+        coinLabel?.text = currentAdapter.coin
+    }
+
+    @IBAction func send() {
+        guard let address = addressTextField?.text else {
             return
         }
 
-        guard let address = addressTextField?.text, !address.isEmpty else {
-            show(error: "Empty Address")
+        do {
+            try currentAdapter.validate(address: address)
+        } catch {
+            show(error: "Invalid address")
             return
         }
 
         guard let amountString = amountTextField?.text, let amount = Decimal(string: amountString) else {
-            show(error: "Empty or Non Integer Amount")
+            show(error: "Invalid amount")
             return
         }
 
-        let adapter: BaseAdapter
-
-        if (sender as? UIButton) == sendCoin {
-            adapter = Manager.shared.erc20Adapter
-        } else {
-            adapter = Manager.shared.ethereumAdapter
-        }
-
-        adapter.sendSingle(to: address, amount: amount)
+        currentAdapter.sendSingle(to: address, amount: amount)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { [weak self] _ in
+                    self?.addressTextField?.text = ""
+                    self?.amountTextField?.text = ""
+
                     self?.showSuccess(address: address, amount: amount)
                 }, onError: { [weak self] error in
-                    self?.show(error: "Something conversion wrong: \(error)")
+                    self?.show(error: "Send failed: \(error)")
                 })
                 .disposed(by: disposeBag)
     }
@@ -62,12 +78,13 @@ class SendController: UIViewController {
     }
 
     private func showSuccess(address: String, amount: Decimal) {
-        addressTextField?.text = ""
-        amountTextField?.text = ""
-
         let alert = UIAlertController(title: "Success", message: "\(amount.description) sent to \(address)", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .cancel))
         present(alert, animated: true)
+    }
+
+    private var currentAdapter: IAdapter {
+        return adapters[segmentedControl.selectedSegmentIndex]
     }
 
 }

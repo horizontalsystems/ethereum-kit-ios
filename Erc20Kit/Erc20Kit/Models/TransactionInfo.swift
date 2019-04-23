@@ -15,8 +15,8 @@ public class TransactionInfo {
     init(transaction: Transaction) {
         self.transactionHash = transaction.transactionHash.toHexString()
         self.logIndex = transaction.logIndex
-        self.from = transaction.from.toHexString()
-        self.to = transaction.to.toHexString()
+        self.from = transaction.from.toEIP55Address()
+        self.to = transaction.to.toEIP55Address()
         self.value = transaction.value.asString(withBase: 10)
         self.timestamp = transaction.timestamp
         self.blockHash = transaction.blockHash?.toHexString()

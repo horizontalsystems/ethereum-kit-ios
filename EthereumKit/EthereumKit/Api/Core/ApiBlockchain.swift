@@ -16,6 +16,8 @@ class ApiBlockchain {
     private let transactionBuilder: TransactionBuilder
     private var logger: Logger?
 
+    private var started = false
+
     private var syncing = false
     private var _syncState: EthereumKit.SyncState = .notSynced
     private(set) var syncState: EthereumKit.SyncState {
@@ -62,6 +64,10 @@ class ApiBlockchain {
     }
 
     private func refreshAll() {
+        guard started else {
+            return
+        }
+
         guard reachabilityManager.isReachable else {
             self.syncState = .notSynced
             return
@@ -176,7 +182,13 @@ class ApiBlockchain {
 extension ApiBlockchain: IBlockchain {
 
     func start() {
+        started = true
+
         refreshAll()
+    }
+
+    func stop() {
+        started = false
     }
 
     func clear() {
