@@ -189,7 +189,7 @@ extension EthereumKit {
         case .api(let infuraProjectId):
             let storage: IApiStorage = ApiGrdbStorage(databaseFileName: "api-\(walletId)-\(networkType)")
             let rpcApiProvider: IRpcApiProvider = InfuraApiProvider(networkManager: networkManager, network: network, infuraProjectId: infuraProjectId)
-            blockchain = ApiBlockchain.instance(storage: storage, network: network, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, address: address, rpcApiProvider: rpcApiProvider, transactionsProvider: transactionsProvider, logger: logger)
+            blockchain = ApiBlockchain.instance(storage: storage, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, address: address, rpcApiProvider: rpcApiProvider, transactionsProvider: transactionsProvider, logger: logger)
         case .spv(let nodePrivateKey):
             let storage: ISpvStorage = SpvGrdbStorage(databaseFileName: "spv-\(walletId)-\(networkType)")
 
@@ -269,9 +269,11 @@ extension EthereumKit {
         var network: INetwork {
             switch self {
             case .mainNet:
+                return MainNet()
+            case .ropsten:
                 return Ropsten()
-            case .ropsten, .kovan:
-                return Ropsten()
+            case .kovan:
+                return Kovan()
             }
         }
     }
