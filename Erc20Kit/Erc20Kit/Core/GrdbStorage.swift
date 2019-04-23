@@ -10,8 +10,8 @@ class GrdbStorage {
                 .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
                 .appendingPathComponent("\(databaseFileName).sqlite")
 
-        var configuration: Configuration = Configuration()
-        configuration.trace = { print($0) }
+        let configuration: Configuration = Configuration()
+//        configuration.trace = { print($0) }
 
         dbPool = try! DatabasePool(path: databaseURL.path, configuration: configuration)
 
@@ -87,20 +87,26 @@ extension GrdbStorage: ITransactionStorage {
         }
     }
 
-    func transactionsSingle(contractAddress: Data, hashFrom: Data?, indexFrom: Int?, limit: Int?) -> Single<[Transaction]> {
+    func transactionsCount(contractAddress: Data) -> Int {
+        return try! dbPool.read { db in
+            try Transaction.filter(Transaction.Columns.contractAddress == contractAddress).fetchCount(db)
+        }
+    }
+
+    func transactionsSingle(contractAddress: Data, from: (hash: Data, index: Int)?, limit: Int?) -> Single<[Transaction]> {
         return Single.create { [weak self] observer in
             try? self?.dbPool.read { db in
                 var request = Transaction.filter(Transaction.Columns.contractAddress == contractAddress)
 
-                if let hashFrom = hashFrom, let indexFrom = indexFrom,
-                   let fromTransaction = try request.filter(Transaction.Columns.transactionHash == hashFrom).filter(Transaction.Columns.logIndex == indexFrom).fetchOne(db) {
-                    request = request.filter(Transaction.Columns.timestamp < fromTransaction.timestamp)
+                if let from = from,
+                   let fromTransaction = try request.filter(Transaction.Columns.transactionHash == from.hash).filter(Transaction.Columns.logIndex == from.index).fetchOne(db) {
+                    request = request.filter(Transaction.Columns.timestamp < fromTransaction.timestamp || (Transaction.Columns.timestamp == fromTransaction.timestamp && Transaction.Columns.logIndex < from.index))
                 }
                 if let limit = limit {
                     request = request.limit(limit)
                 }
 
-                let transactions = try request.order(Transaction.Columns.timestamp.desc).fetchAll(db)
+                let transactions = try request.order(Transaction.Columns.timestamp.desc, Transaction.Columns.logIndex.desc).fetchAll(db)
 
                 observer(.success(transactions))
             }

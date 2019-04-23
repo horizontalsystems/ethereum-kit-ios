@@ -3,10 +3,10 @@ import EthereumKit
 
 class TokenBalance: Record {
     let contractAddress: Data
-    let value: BInt
-    let blockHeight: Int
+    let value: BInt?
+    let blockHeight: Int?
 
-    init(contractAddress: Data, value: BInt, blockHeight: Int) {
+    init(contractAddress: Data, value: BInt? = nil, blockHeight: Int? = nil) {
         self.contractAddress = contractAddress
         self.value = value
         self.blockHeight = blockHeight

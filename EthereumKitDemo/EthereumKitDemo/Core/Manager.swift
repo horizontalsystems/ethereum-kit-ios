@@ -4,20 +4,15 @@ import Erc20Kit
 import HSHDWalletKit
 
 class Manager {
-    private let infuraProjectId = "2a1306f1d12f4c109a4d4fb9be46b02e"
-    private let etherscanApiKey = "GKNHXT22ED7PRVCKZATFZQD1YI7FK9AAYE"
-    private let tokenContractAddress = "0xf559862f9265756619d5523bbc4bd8422898e97d"
-    private let tokenDecimal = 18
-    private let tokenBalanceStoragePosition = 6
-
     static let shared = Manager()
 
     private let keyWords = "mnemonic_words"
 
     var ethereumKit: EthereumKit!
     var erc20Kit: Erc20Kit!
+
     var ethereumAdapter: EthereumAdapter!
-    var erc20Adapter: Erc20Adapter!
+    var erc20Adapters = [Erc20Adapter]()
 
     init() {
         if let words = savedWords {
@@ -32,27 +27,50 @@ class Manager {
 
     func logout() {
         ethereumKit.clear()
+        erc20Kit.clear()
         clearWords()
+
         ethereumKit = nil
         erc20Kit = nil
+
         ethereumAdapter = nil
-        erc20Adapter = nil
+        erc20Adapters = []
     }
 
     private func initEthereumKit(words: [String]) {
-//        let nodePrivateKey = try! hdWallet.privateKey(account: 100, index: 100, chain: .external).raw
-//        ethereumKit = EthereumKit.instance(privateKey: privateKey, syncMode: .spv(nodePrivateKey: nodePrivateKey), etherscanApiKey: etherscanApiKey, networkType: networkType)
+        let configuration = Configuration.shared
 
-        let ethereumKit = try! EthereumKit.instance(words: words, syncMode: .api(infuraProjectId: infuraProjectId), networkType: .ropsten, etherscanApiKey: etherscanApiKey, minLogLevel: .verbose)
-        let erc20Kit = Erc20Kit.instance(ethereumKit: ethereumKit, networkType: .ropsten, etherscanApiKey: etherscanApiKey)
+        let syncMode: EthereumKit.WordsSyncMode
+
+        switch configuration.syncMode {
+        case .api: syncMode = .api(infuraProjectId: configuration.infuraProjectId)
+        case .spv: syncMode = .spv
+        }
+
+        let ethereumKit = try! EthereumKit.instance(
+                words: words,
+                syncMode: syncMode,
+                networkType: configuration.networkType,
+                etherscanApiKey: configuration.etherscanApiKey,
+                minLogLevel: .verbose
+        )
+
+        let erc20Kit = Erc20Kit.instance(
+                ethereumKit: ethereumKit,
+                minLogLevel: .verbose
+        )
 
         ethereumAdapter = EthereumAdapter(ethereumKit: ethereumKit)
-        erc20Adapter = Erc20Adapter(erc20Kit: erc20Kit, ethereumKit: ethereumKit, contractAddress: tokenContractAddress, position: tokenBalanceStoragePosition, decimal: tokenDecimal)
+
+        for token in configuration.erc20Tokens {
+            let adapter = Erc20Adapter(ethereumKit: ethereumKit, erc20Kit: erc20Kit, name: token.name, coin: token.coin, contractAddress: token.contractAddress, balancePosition: token.balancePosition, decimal: token.decimal)
+            erc20Adapters.append(adapter)
+        }
 
         self.ethereumKit = ethereumKit
         self.erc20Kit = erc20Kit
 
-//        ethereumKit.start()
+        ethereumKit.start()
     }
 
     private var savedWords: [String]? {

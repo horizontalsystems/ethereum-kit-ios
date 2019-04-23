@@ -20,7 +20,7 @@ class BalanceManager {
 extension BalanceManager: IBalanceManager {
 
     func balance(contractAddress: Data) -> TokenBalance {
-        return storage.tokenBalance(contractAddress: contractAddress) ?? TokenBalance(contractAddress: contractAddress, value: 0, blockHeight: 0)
+        return storage.tokenBalance(contractAddress: contractAddress) ?? TokenBalance(contractAddress: contractAddress)
     }
 
     func sync(blockHeight: Int, contractAddress: Data, balancePosition: Int) {

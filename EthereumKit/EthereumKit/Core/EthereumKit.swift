@@ -4,21 +4,22 @@ import HSHDWalletKit
 
 public class EthereumKit {
     private let gasLimit = 21_000
-    private var delegates = [IEthereumKitDelegate]()
-    private var requests = [Int: IEthereumKitDelegate]()
+
+    public let lastBlockHeightSignal = Signal()
+    public let syncStateSignal = Signal()
+    public let balanceSignal = Signal()
+    public let transactionsSubject = PublishSubject<[TransactionInfo]>()
 
     private let blockchain: IBlockchain
     private let addressValidator: IAddressValidator
     private let transactionBuilder: TransactionBuilder
     private let state: EthereumKitState
-    private let delegateQueue: DispatchQueue
 
-    init(blockchain: IBlockchain, addressValidator: IAddressValidator, transactionBuilder: TransactionBuilder, state: EthereumKitState = EthereumKitState(), delegateQueue: DispatchQueue = .main) {
+    init(blockchain: IBlockchain, addressValidator: IAddressValidator, transactionBuilder: TransactionBuilder, state: EthereumKitState = EthereumKitState()) {
         self.blockchain = blockchain
         self.addressValidator = addressValidator
         self.transactionBuilder = transactionBuilder
         self.state = state
-        self.delegateQueue = delegateQueue
 
         state.balance = blockchain.balance
         state.lastBlockHeight = blockchain.lastBlockHeight
@@ -34,13 +35,14 @@ extension EthereumKit {
         blockchain.start()
     }
 
+    public func stop() {
+        blockchain.stop()
+    }
+
     public func clear() {
+        blockchain.stop()
         blockchain.clear()
         state.clear()
-        for delegate in delegates {
-            delegate.onClear()
-        }
-        delegates = []
     }
 
     public var lastBlockHeight: Int? {
@@ -108,14 +110,6 @@ extension EthereumKit {
         return lines.joined(separator: "\n")
     }
 
-    public func add(delegate: IEthereumKitDelegate) {
-        delegates.append(delegate)
-    }
-
-    public func remove(delegate: IEthereumKitDelegate) {
-        delegates.removeAll { $0 === delegate }
-    }
-
     public func getLogsSingle(address: Data?, topics: [Any], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
         return blockchain.getLogsSingle(address: address, topics: topics, fromBlock: fromBlock, toBlock: toBlock, pullTimestamps: pullTimestamps)
     }
@@ -136,10 +130,7 @@ extension EthereumKit: IBlockchainDelegate {
 
         state.lastBlockHeight = lastBlockHeight
 
-        delegateQueue.async { [weak self] in
-            print("DELEGATES COUNT: \(self?.delegates.count ?? 0)")
-            self?.delegates.forEach { $0.onUpdateLastBlockHeight() }
-        }
+        lastBlockHeightSignal.notify()
     }
 
     func onUpdate(balance: BInt) {
@@ -149,19 +140,15 @@ extension EthereumKit: IBlockchainDelegate {
 
         state.balance = balance
 
-        delegateQueue.async { [weak self] in
-            self?.delegates.forEach { $0.onUpdateBalance() }
-        }
+        balanceSignal.notify()
     }
 
     func onUpdate(syncState: SyncState) {
-        delegates.forEach { $0.onUpdateSyncState() }
+        syncStateSignal.notify()
     }
 
     func onUpdate(transactions: [Transaction]) {
-        delegateQueue.async { [weak self] in
-            self?.delegates.forEach { $0.onUpdate(transactions: transactions.map { TransactionInfo(transaction: $0) }) }
-        }
+        transactionsSubject.onNext(transactions.map { TransactionInfo(transaction: $0) })
     }
 
 }
@@ -204,11 +191,18 @@ extension EthereumKit {
         return ethereumKit
     }
 
-    public static func instance(words: [String], syncMode: SyncMode, networkType: NetworkType = .mainNet, etherscanApiKey: String, walletId: String = "default", minLogLevel: Logger.Level = .error) throws -> EthereumKit {
+    public static func instance(words: [String], syncMode wordsSyncMode: WordsSyncMode, networkType: NetworkType = .mainNet, etherscanApiKey: String, walletId: String = "default", minLogLevel: Logger.Level = .error) throws -> EthereumKit {
         let coinType: UInt32 = networkType == .mainNet ? 60 : 1
 
         let hdWallet = HDWallet(seed: Mnemonic.seed(mnemonic: words), coinType: coinType, xPrivKey: 0, xPubKey: 0)
         let privateKey = try hdWallet.privateKey(account: 0, index: 0, chain: .external).raw
+
+        let syncMode: SyncMode
+
+        switch wordsSyncMode {
+        case .api(let infuraProjectId): syncMode = .api(infuraProjectId: infuraProjectId)
+        case .spv: syncMode = .spv(nodePrivateKey: try hdWallet.privateKey(account: 100, index: 100, chain: .external).raw)
+        }
 
         return instance(privateKey: privateKey, syncMode: syncMode, networkType: networkType, etherscanApiKey: etherscanApiKey, walletId: walletId, minLogLevel: minLogLevel)
     }
@@ -243,6 +237,11 @@ extension EthereumKit {
     public enum SyncMode {
         case api(infuraProjectId: String)
         case spv(nodePrivateKey: Data)
+    }
+
+    public enum WordsSyncMode {
+        case api(infuraProjectId: String)
+        case spv
     }
 
     public enum NetworkType {

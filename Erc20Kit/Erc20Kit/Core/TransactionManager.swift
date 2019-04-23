@@ -26,8 +26,8 @@ extension TransactionManager: ITransactionManager {
         return storage.lastTransactionBlockHeight(contractAddress: contractAddress)
     }
 
-    func transactionsSingle(contractAddress: Data, hashFrom: Data?, indexFrom: Int?, limit: Int?) -> Single<[Transaction]> {
-        return storage.transactionsSingle(contractAddress: contractAddress, hashFrom: hashFrom, indexFrom: indexFrom, limit: limit)
+    func transactionsSingle(contractAddress: Data, from: (hash: Data, index: Int)?, limit: Int?) -> Single<[Transaction]> {
+        return storage.transactionsSingle(contractAddress: contractAddress, from: from, limit: limit)
     }
 
     func sync() {

@@ -1,12 +1,6 @@
 import RxSwift
 import EthereumKit
 
-public protocol IErc20TokenDelegate: class {
-    func onUpdate(transactions: [TransactionInfo])
-    func onUpdateBalance()
-    func onUpdateSyncState()
-}
-
 protocol IBalanceManagerDelegate: class {
     func onUpdate(balance: TokenBalance, contractAddress: Data)
     func onSyncBalanceSuccess(contractAddress: Data)
@@ -30,7 +24,7 @@ protocol ITransactionManager {
     var delegate: ITransactionManagerDelegate? { get set }
 
     func lastTransactionBlockHeight(contractAddress: Data) -> Int?
-    func transactionsSingle(contractAddress: Data, hashFrom: Data?, indexFrom: Int?, limit: Int?) -> Single<[Transaction]>
+    func transactionsSingle(contractAddress: Data, from: (hash: Data, index: Int)?, limit: Int?) -> Single<[Transaction]>
 
     func sync()
     func sendSingle(contractAddress: Data, to: Data, value: BInt, gasPrice: Int) -> Single<Transaction>
@@ -60,9 +54,12 @@ protocol ITokenHolder {
     func syncState(contractAddress: Data) throws -> Erc20Kit.SyncState
     func balance(contractAddress: Data) throws -> TokenBalance
     func balancePosition(contractAddress: Data) throws -> Int
-    func delegate(contractAddress: Data) throws -> IErc20TokenDelegate?
 
-    func register(contractAddress: Data, balancePosition: Int, balance: TokenBalance, delegate: IErc20TokenDelegate)
+    func syncStateSignal(contractAddress: Data) throws -> Signal
+    func balanceSignal(contractAddress: Data) throws -> Signal
+    func transactionsSubject(contractAddress: Data) throws -> PublishSubject<[TransactionInfo]>
+
+    func register(contractAddress: Data, balancePosition: Int, balance: TokenBalance)
     func unregister(contractAddress: Data) throws
     func set(syncState: Erc20Kit.SyncState, contractAddress: Data) throws
     func set(balance: TokenBalance, contractAddress: Data) throws
@@ -73,7 +70,8 @@ protocol ITokenHolder {
 protocol ITransactionStorage {
     var lastTransactionBlockHeight: Int? { get }
     func lastTransactionBlockHeight(contractAddress: Data) -> Int?
-    func transactionsSingle(contractAddress: Data, hashFrom: Data?, indexFrom: Int?, limit: Int?) -> Single<[Transaction]>
+    func transactionsCount(contractAddress: Data) -> Int
+    func transactionsSingle(contractAddress: Data, from: (hash: Data, index: Int)?, limit: Int?) -> Single<[Transaction]>
     func save(transactions: [Transaction])
     func update(transaction: Transaction)
     func clearTransactions()

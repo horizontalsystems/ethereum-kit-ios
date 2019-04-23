@@ -2,57 +2,58 @@ import UIKit
 import RxSwift
 
 class TransactionsController: UITableViewController {
-    let disposeBag = DisposeBag()
+    private let disposeBag = DisposeBag()
 
-    var transactions = [TransactionRecord]()
-    var showEthereumTransaction: Bool = true
+    private var adapters = [IAdapter]()
+    private var transactions = [TransactionRecord]()
+
+    private let segmentedControl = UISegmentedControl()
+
+    private let limit = 20
+    private var loading = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "Transactions"
-
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Show Coin", style: .plain, target: self, action: #selector(changeSource))
-
         tableView.register(UINib(nibName: String(describing: TransactionCell.self), bundle: Bundle(for: TransactionCell.self)), forCellReuseIdentifier: String(describing: TransactionCell.self))
+        tableView.tableFooterView = UIView()
+        tableView.separatorInset = .zero
 
-        update()
+        adapters.append(Manager.shared.ethereumAdapter)
+        adapters.append(contentsOf: Manager.shared.erc20Adapters)
 
-        Manager.shared.ethereumAdapter.lastBlockHeightSignal.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] _ in
-            self?.update()
-        }).disposed(by: disposeBag)
+        for (index, adapter) in adapters.enumerated() {
+            segmentedControl.insertSegment(withTitle: adapter.coin, at: index, animated: false)
 
-        Manager.shared.ethereumAdapter.transactionsSignal.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
-            if self?.showEthereumTransaction ?? false {
-                self?.update()
-            }
-        }).disposed(by: disposeBag)
+            adapter.lastBlockHeightSignal
+                    .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+                    .observeOn(MainScheduler.instance)
+                    .subscribe(onNext: { [weak self] in
+                        self?.onLastBlockHeightUpdated(index: index)
+                    })
+                    .disposed(by: disposeBag)
 
-        Manager.shared.erc20Adapter.transactionsSignal.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
-            if !(self?.showEthereumTransaction ?? true) {
-                self?.update()
-            }
-        }).disposed(by: disposeBag)
-
-    }
-
-    @objc func changeSource() {
-        showEthereumTransaction.toggle()
-        navigationItem.rightBarButtonItem?.title = showEthereumTransaction ? "Show Coin" : "Show Eth"
-        update()
-    }
-
-    private func update() {
-        guard Manager.shared.ethereumKit != nil else {
-            return
+            adapter.transactionsSignal
+                    .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+                    .observeOn(MainScheduler.instance)
+                    .subscribe(onNext: { [weak self] in
+                        self?.onTransactionsUpdated(index: index)
+                    })
+                    .disposed(by: disposeBag)
         }
 
-        let adapter = showEthereumTransaction ? Manager.shared.ethereumAdapter! : Manager.shared.erc20Adapter!
+        segmentedControl.addTarget(self, action: #selector(onSegmentChanged), for: .valueChanged)
 
-        adapter.transactionsSingle().subscribe(onSuccess: { [weak self] transactions in
-            self?.transactions = transactions
-            self?.tableView.reloadData()
-        }).disposed(by: disposeBag)
+        navigationItem.titleView = segmentedControl
+
+        segmentedControl.selectedSegmentIndex = 0
+        segmentedControl.sendActions(for: .valueChanged)
+    }
+
+    @objc func onSegmentChanged() {
+        transactions = []
+        loading = false
+        loadNext()
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -60,7 +61,7 @@ class TransactionsController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 150
+        return 180
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -69,15 +70,66 @@ class TransactionsController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         if let cell = cell as? TransactionCell {
-            cell.bind(transaction: transactions[indexPath.row], index: transactions.count - indexPath.row, lastBlockHeight: Manager.shared.ethereumAdapter.lastBlockHeight)
+            cell.bind(transaction: transactions[indexPath.row], coin: currentAdapter.coin, lastBlockHeight: currentAdapter.lastBlockHeight)
+        }
+
+        if indexPath.row > transactions.count - 3 {
+            loadNext()
         }
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard indexPath.row < transactions.count else {
+        UIPasteboard.general.setValue(transactions[indexPath.row].transactionHash, forPasteboardType: "public.plain-text")
+
+        let alert = UIAlertController(title: "Success", message: "Transaction Hash copied", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .cancel))
+        present(alert, animated: true)
+
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+
+    private var currentAdapter: IAdapter {
+        return adapters[segmentedControl.selectedSegmentIndex]
+    }
+
+    private func loadNext() {
+        guard !loading else {
             return
         }
-        print("hash: \(transactions[indexPath.row].transactionHash)")
+
+        loading = true
+
+        let from = transactions.last.map { (hash: $0.transactionHash, index: $0.index) }
+
+        currentAdapter.transactionsSingle(from: from, limit: limit)
+                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+                .observeOn(MainScheduler.instance)
+                .subscribe(onSuccess: { [weak self] transactions in
+                    self?.onLoad(transactions: transactions)
+                })
+                .disposed(by: disposeBag)
+    }
+
+    private func onLoad(transactions: [TransactionRecord]) {
+        self.transactions.append(contentsOf: transactions)
+
+        tableView.reloadData()
+
+        if transactions.count == limit {
+            loading = false
+        }
+    }
+
+    private func onLastBlockHeightUpdated(index: Int) {
+        if index == segmentedControl.selectedSegmentIndex {
+            tableView.reloadData()
+        }
+    }
+
+    private func onTransactionsUpdated(index: Int) {
+        if index == segmentedControl.selectedSegmentIndex {
+            onSegmentChanged()
+        }
     }
 
 }

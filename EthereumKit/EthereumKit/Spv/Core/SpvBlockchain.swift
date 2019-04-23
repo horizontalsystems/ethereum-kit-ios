@@ -38,6 +38,10 @@ extension SpvBlockchain: IBlockchain {
         peerGroup.start()
     }
 
+    func stop() {
+        // todo
+    }
+
     func clear() {
         storage.clear()
     }

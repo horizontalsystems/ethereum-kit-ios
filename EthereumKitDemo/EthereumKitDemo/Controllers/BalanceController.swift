@@ -2,61 +2,33 @@ import UIKit
 import RxSwift
 import EthereumKit
 
-class BalanceController: UIViewController {
+class BalanceController: UITableViewController {
     let disposeBag = DisposeBag()
 
-    @IBOutlet weak var balanceLabel: UILabel?
-    @IBOutlet weak var progressLabel: UILabel?
-    @IBOutlet weak var lastBlockLabel: UILabel?
-
-    @IBOutlet weak var balanceCoinLabel: UILabel?
-    @IBOutlet weak var progressCoinLabel: UILabel?
-    
-    private lazy var dateFormatter: DateFormatter = {
-        var formatter = DateFormatter()
-        formatter.timeZone = TimeZone.autoupdatingCurrent
-        formatter.locale = Locale.current
-        formatter.dateFormat = "MMM d, yyyy, HH:mm"
-        return formatter
-    }()
-
-    private let ethereumAdapter: BaseAdapter = Manager.shared.ethereumAdapter!
-    private let erc20Adapter: BaseAdapter = Manager.shared.erc20Adapter!
+    var adapters = [IAdapter]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "Balance"
-
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Logout", style: .plain, target: self, action: #selector(logout))
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Refresh", style: .plain, target: self, action: #selector(refresh))
 
-        updateLastBlockHeight()
+        tableView.register(UINib(nibName: String(describing: BalanceCell.self), bundle: Bundle(for: BalanceCell.self)), forCellReuseIdentifier: String(describing: BalanceCell.self))
+        tableView.tableFooterView = UIView()
+        tableView.separatorInset = .zero
 
-        updateBalance()
-        updateState()
+        adapters.append(Manager.shared.ethereumAdapter)
+        adapters.append(contentsOf: Manager.shared.erc20Adapters)
 
-        erc20updateBalance()
-        erc20updateState()
-
-        ethereumAdapter.lastBlockHeightSignal.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
-            self?.updateLastBlockHeight()
-        }).disposed(by: disposeBag)
-
-        ethereumAdapter.balanceSignal.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
-            self?.updateBalance()
-        }).disposed(by: disposeBag)
-        ethereumAdapter.syncStateSignal.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
-            self?.updateState()
-        }).disposed(by: disposeBag)
-
-        erc20Adapter.balanceSignal.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
-            self?.erc20updateBalance()
-        }).disposed(by: disposeBag)
-
-        erc20Adapter.syncStateSignal.observeOn(MainScheduler.instance).subscribe(onNext: { [weak self] in
-            self?.erc20updateState()
-        }).disposed(by: disposeBag)
+        for (index, adapter) in adapters.enumerated() {
+            Observable.merge([adapter.lastBlockHeightSignal, adapter.syncStateSignal, adapter.balanceSignal])
+                    .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+                    .observeOn(MainScheduler.instance)
+                    .subscribe(onNext: { [weak self] in
+                        self?.update(index: index)
+                    })
+                    .disposed(by: disposeBag)
+        }
     }
 
     @objc func logout() {
@@ -77,44 +49,26 @@ class BalanceController: UIViewController {
         print(Manager.shared.ethereumKit.debugInfo)
     }
 
-    private func updateBalance() {
-        balanceLabel?.text = "Balance: \(ethereumAdapter.balance)"
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return adapters.count
     }
 
-    private func erc20updateBalance() {
-        balanceCoinLabel?.text = "Balance Coin: \(erc20Adapter.balance)"
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 140
     }
 
-    private func updateState() {
-        let kitStateString: String
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        return tableView.dequeueReusableCell(withIdentifier: String(describing: BalanceCell.self), for: indexPath)
+    }
 
-        switch ethereumAdapter.syncState {
-        case .synced: kitStateString = "Synced!"
-        case .syncing: kitStateString = "Syncing"
-        case .notSynced: kitStateString = "Not Synced"
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if let cell = cell as? BalanceCell {
+            cell.bind(adapter: adapters[indexPath.row])
         }
-
-        progressLabel?.text = "Sync State: \(kitStateString)"
     }
 
-    private func erc20updateState() {
-        let kitStateString: String
-
-        switch erc20Adapter.syncState {
-        case .synced: kitStateString = "Synced!"
-        case .syncing: kitStateString = "Syncing"
-        case .notSynced: kitStateString = "Not Synced"
-        }
-
-        progressCoinLabel?.text = "Sync State: \(kitStateString)"
-    }
-
-    private func updateLastBlockHeight() {
-        if let lastBlockHeight = ethereumAdapter.lastBlockHeight {
-            lastBlockLabel?.text = "Last Block: \(lastBlockHeight)"
-        } else {
-            lastBlockLabel?.text = "Last Block: n/a"
-        }
+    private func update(index: Int) {
+        tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
     }
 
 }
