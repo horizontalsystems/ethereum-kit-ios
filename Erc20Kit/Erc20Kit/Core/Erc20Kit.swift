@@ -92,12 +92,15 @@ extension Erc20Kit {
         let contractAddress = try convert(address: contractAddress)
         let to = try convert(address: to)
 
-        guard let value = BInt(value, radix: 16) else {
+        guard let value = BInt(value) else {
             throw SendError.invalidValue
         }
 
-        return transactionManager.sendSingle(contractAddress: contractAddress, to: to, value: value, gasPrice: gasPrice)
+        return transactionManager.sendSingle(contractAddress: contractAddress, to: to, value: value, gasPrice: gasPrice, gasLimit: gasLimit)
                 .map({ TransactionInfo(transaction: $0) })
+                .do(onSuccess: { [weak self] transaction in
+                    try? self?.tokenHolder.transactionsSubject(contractAddress: contractAddress).onNext([transaction])
+                })
     }
 
     public func transactionsSingle(contractAddress: String, from: (hash: String, index: Int)?, limit: Int?) throws -> Single<[TransactionInfo]> {

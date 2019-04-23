@@ -78,7 +78,7 @@ extension EthereumKit {
                 .map { $0.map { TransactionInfo(transaction: $0) } }
     }
 
-    public func sendSingle(to: Data, value: String, transactionInput: Data, gasPrice: Int) -> Single<TransactionInfo> {
+    public func sendSingle(to: Data, value: String, transactionInput: Data, gasPrice: Int, gasLimit: Int) -> Single<TransactionInfo> {
         guard let value = BInt(value) else {
             return Single.error(EthereumKit.SendError.invalidValue)
         }
@@ -222,6 +222,7 @@ extension EthereumKit {
         case invalidAddress
         case invalidContractAddress
         case invalidValue
+        case infuraError(message: String)
     }
 
     public enum ApiError: Error {

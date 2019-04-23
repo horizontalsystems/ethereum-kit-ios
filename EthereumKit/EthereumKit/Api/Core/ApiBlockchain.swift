@@ -214,6 +214,7 @@ extension ApiBlockchain: IBlockchain {
                 }
                 .do(onSuccess: { [weak self] transaction in
                     self?.update(transactions: [transaction])
+                    self?.refreshAll()
                 })
     }
 

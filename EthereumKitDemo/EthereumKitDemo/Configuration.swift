@@ -12,7 +12,7 @@ class Configuration {
     let etherscanApiKey = "GKNHXT22ED7PRVCKZATFZQD1YI7FK9AAYE"
 
     let erc20Tokens = [
-        Erc20Token(name: "ToxaCoin", coin: "TXC", contractAddress: "0xf559862f9265756619d5523bbc4bd8422898e97d", decimal: 18, balancePosition: 6),
+        Erc20Token(name: "Max Token", coin: "MXT", contractAddress: "0xf559862f9265756619d5523bbc4bd8422898e97d", decimal: 28, balancePosition: 6),
         Erc20Token(name: "SuperPay", coin: "SPAY", contractAddress: "0x9ebca7b1ea057c0ffe9a59827bb954a4ea057521", decimal: 6, balancePosition: 3)
     ]
 
