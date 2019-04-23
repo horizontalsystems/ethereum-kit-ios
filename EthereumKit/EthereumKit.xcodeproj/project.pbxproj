@@ -23,6 +23,7 @@
 		11B3563CCAB1B50D85984C7E /* CapabilityHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B351D958CC3C4A60EEEC9D /* CapabilityHelperTests.swift */; };
 		11B356BF054DFC99D8EB19E5 /* GeneratedMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B359F34D40C2E21B4CD620 /* GeneratedMocks.swift */; };
 		11B356C00C09E99530F2831E /* Signature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35D26672131FDD0A04A33 /* Signature.swift */; };
+		11B35776F4FF3AFEBC314BA5 /* MainNet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3573C09B1BA0CBB48642F /* MainNet.swift */; };
 		11B357CC1C30E29E9276522F /* Kovan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B359E71C80BE3229E1688F /* Kovan.swift */; };
 		11B358FE9E238EF0DA368319 /* TransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B352BAA4B1636FA6FCDA75 /* TransactionBuilder.swift */; };
 		11B3592A8ADE33386B8D5783 /* MaxCost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35CF0B3192008B47AAACB /* MaxCost.swift */; };
@@ -149,6 +150,7 @@
 		11B3563AB847E272EE94FECD /* PeerGroupState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerGroupState.swift; sourceTree = "<group>"; };
 		11B3567B8F9696AA05DFFADE /* EthereumKitState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumKitState.swift; sourceTree = "<group>"; };
 		11B356EE4167A9EF2D429826 /* BlockHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockHelper.swift; sourceTree = "<group>"; };
+		11B3573C09B1BA0CBB48642F /* MainNet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainNet.swift; sourceTree = "<group>"; };
 		11B357626B809CC6A964D5B1 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		11B357A047DE71BAAF7B7429 /* BaseGrdbStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseGrdbStorage.swift; sourceTree = "<group>"; };
 		11B35893177645F06E2AE8FB /* NetworkManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
@@ -579,6 +581,7 @@
 				11B358B81C30D5D2AAD8B85C /* BlockValidator.swift */,
 				11B356EE4167A9EF2D429826 /* BlockHelper.swift */,
 				11B359E71C80BE3229E1688F /* Kovan.swift */,
+				11B3573C09B1BA0CBB48642F /* MainNet.swift */,
 			);
 			path = Net;
 			sourceTree = "<group>";
@@ -1017,6 +1020,7 @@
 				2FA5DC0FAF7E6F42971C9A3C /* GetLogsResponse.swift in Sources */,
 				2FA5D916D6B4917E4C19B3E1 /* GetStorageAtRequest.swift in Sources */,
 				2FA5D21EE88B9D877156DAA8 /* GetStorageAtResponse.swift in Sources */,
+				11B35776F4FF3AFEBC314BA5 /* MainNet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
