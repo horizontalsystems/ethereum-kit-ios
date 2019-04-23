@@ -86,20 +86,20 @@ extension Erc20Adapter: IAdapter {
         return ethereumKit.receiveAddress
     }
 
-    var lastBlockHeightSignal: Signal {
-        return ethereumKit.lastBlockHeightSignal
+    var lastBlockHeightObservable: Observable<Void> {
+        return ethereumKit.lastBlockHeightObservable.map { _ in () }
     }
 
-    var syncStateSignal: Signal {
-        return try! erc20Kit.syncStateSignal(contractAddress: contractAddress)
+    var syncStateObservable: Observable<Void> {
+        return try! erc20Kit.syncStateObservable(contractAddress: contractAddress).map { _ in () }
     }
 
-    var balanceSignal: Signal {
-        return try! erc20Kit.balanceSignal(contractAddress: contractAddress)
+    var balanceObservable: Observable<Void> {
+        return try! erc20Kit.balanceObservable(contractAddress: contractAddress).map { _ in () }
     }
 
-    var transactionsSignal: Observable<Void> {
-        return try! erc20Kit.transactionsSubject(contractAddress: contractAddress).map { _ in () }
+    var transactionsObservable: Observable<Void> {
+        return try! erc20Kit.transactionsObservable(contractAddress: contractAddress).map { _ in () }
     }
 
     func validate(address: String) throws {

@@ -1,5 +1,4 @@
 import RxSwift
-import EthereumKit
 
 class TokenHolder {
     private var tokensMap = [Data: Token]()
@@ -31,12 +30,12 @@ extension TokenHolder: ITokenHolder {
         return try token(contractAddress: contractAddress).balancePosition
     }
 
-    func syncStateSignal(contractAddress: Data) throws -> Signal {
-        return try token(contractAddress: contractAddress).syncStateSignal
+    func syncStateSubject(contractAddress: Data) throws -> PublishSubject<Erc20Kit.SyncState> {
+        return try token(contractAddress: contractAddress).syncStateSubject
     }
 
-    func balanceSignal(contractAddress: Data) throws -> Signal {
-        return try token(contractAddress: contractAddress).balanceSignal
+    func balanceSubject(contractAddress: Data) throws -> PublishSubject<String> {
+        return try token(contractAddress: contractAddress).balanceSubject
     }
 
     func transactionsSubject(contractAddress: Data) throws -> PublishSubject<[TransactionInfo]> {
@@ -76,8 +75,8 @@ extension TokenHolder {
         var balance: TokenBalance
         var syncState: Erc20Kit.SyncState = .notSynced
 
-        let syncStateSignal = Signal()
-        let balanceSignal = Signal()
+        let syncStateSubject = PublishSubject<Erc20Kit.SyncState>()
+        let balanceSubject = PublishSubject<String>()
         let transactionsSubject = PublishSubject<[TransactionInfo]>()
 
         init(contractAddress: Data, balancePosition: Int, balance: TokenBalance) {

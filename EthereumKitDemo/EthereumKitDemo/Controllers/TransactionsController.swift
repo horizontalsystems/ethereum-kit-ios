@@ -25,7 +25,7 @@ class TransactionsController: UITableViewController {
         for (index, adapter) in adapters.enumerated() {
             segmentedControl.insertSegment(withTitle: adapter.coin, at: index, animated: false)
 
-            adapter.lastBlockHeightSignal
+            adapter.lastBlockHeightObservable
                     .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                     .observeOn(MainScheduler.instance)
                     .subscribe(onNext: { [weak self] in
@@ -33,7 +33,7 @@ class TransactionsController: UITableViewController {
                     })
                     .disposed(by: disposeBag)
 
-            adapter.transactionsSignal
+            adapter.transactionsObservable
                     .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                     .observeOn(MainScheduler.instance)
                     .subscribe(onNext: { [weak self] in

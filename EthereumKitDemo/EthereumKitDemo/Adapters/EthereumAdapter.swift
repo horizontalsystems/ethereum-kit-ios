@@ -71,20 +71,20 @@ extension EthereumAdapter: IAdapter {
         return ethereumKit.receiveAddress
     }
 
-    var lastBlockHeightSignal: Signal {
-        return ethereumKit.lastBlockHeightSignal
+    var lastBlockHeightObservable: Observable<Void> {
+        return ethereumKit.lastBlockHeightObservable.map { _ in () }
     }
 
-    var syncStateSignal: Signal {
-        return ethereumKit.syncStateSignal
+    var syncStateObservable: Observable<Void> {
+        return ethereumKit.syncStateObservable.map { _ in () }
     }
 
-    var balanceSignal: Signal {
-        return ethereumKit.balanceSignal
+    var balanceObservable: Observable<Void> {
+        return ethereumKit.balanceObservable.map { _ in () }
     }
 
-    var transactionsSignal: Observable<Void> {
-        return ethereumKit.transactionsSubject.map { _ in () }
+    var transactionsObservable: Observable<Void> {
+        return ethereumKit.transactionsObservable.map { _ in () }
     }
 
     func validate(address: String) throws {

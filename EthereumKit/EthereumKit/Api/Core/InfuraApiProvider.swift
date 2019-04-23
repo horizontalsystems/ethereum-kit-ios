@@ -38,7 +38,15 @@ extension InfuraApiProvider {
     }
 
     private func infuraVoidSingle(method: String, params: [Any]) -> Single<Void> {
-        return infuraSingle(method: method, params: params) { data -> Void? in return () }
+        return infuraSingle(method: method, params: params) { data -> [String: Any]? in
+            return data as? [String: Any]
+        }.flatMap { data -> Single<Void> in
+            guard data["result"] != nil else {
+                return Single.error(EthereumKit.SendError.infuraError(message: (data["error"] as? [String: Any])?["message"] as? String ?? ""))
+            }
+
+            return Single.just(())
+        }
     }
 
     private func infuraIntSingle(method: String, params: [Any]) -> Single<Int> {

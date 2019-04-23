@@ -46,10 +46,10 @@ extension TransactionManager: ITransactionManager {
                 .disposed(by: disposeBag)
     }
 
-    func sendSingle(contractAddress: Data, to: Data, value: BInt, gasPrice: Int) -> Single<Transaction> {
+    func sendSingle(contractAddress: Data, to: Data, value: BInt, gasPrice: Int, gasLimit: Int) -> Single<Transaction> {
         let transactionInput = transactionBuilder.transferTransactionInput(to: to, value: value)
 
-        return dataProvider.sendSingle(contractAddress: contractAddress, transactionInput: transactionInput, gasPrice: gasPrice)
+        return dataProvider.sendSingle(contractAddress: contractAddress, transactionInput: transactionInput, gasPrice: gasPrice, gasLimit: gasLimit)
                 .map { [unowned self] hash in
                     Transaction(transactionHash: hash, contractAddress: contractAddress, from: self.address, to: to, value: value)
                 }

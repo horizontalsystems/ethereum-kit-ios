@@ -5,10 +5,10 @@ import HSHDWalletKit
 public class EthereumKit {
     private let gasLimit = 21_000
 
-    public let lastBlockHeightSignal = Signal()
-    public let syncStateSignal = Signal()
-    public let balanceSignal = Signal()
-    public let transactionsSubject = PublishSubject<[TransactionInfo]>()
+    private let lastBlockHeightSubject = PublishSubject<Int>()
+    private let syncStateSubject = PublishSubject<SyncState>()
+    private let balanceSubject = PublishSubject<String>()
+    private let transactionsSubject = PublishSubject<[TransactionInfo]>()
 
     private let blockchain: IBlockchain
     private let addressValidator: IAddressValidator
@@ -49,12 +49,28 @@ extension EthereumKit {
         return state.lastBlockHeight
     }
 
+    public var lastBlockHeightObservable: Observable<Int> {
+        return lastBlockHeightSubject.asObservable()
+    }
+
     public var balance: String? {
         return state.balance?.asString(withBase: 10)
     }
 
+    public var balanceObservable: Observable<String> {
+        return balanceSubject.asObservable()
+    }
+
     public var syncState: SyncState {
         return blockchain.syncState
+    }
+
+    public var syncStateObservable: Observable<SyncState> {
+        return syncStateSubject.asObservable()
+    }
+
+    public var transactionsObservable: Observable<[TransactionInfo]> {
+        return transactionsSubject.asObservable()
     }
 
     public var receiveAddress: String {
@@ -78,7 +94,7 @@ extension EthereumKit {
                 .map { $0.map { TransactionInfo(transaction: $0) } }
     }
 
-    public func sendSingle(to: Data, value: String, transactionInput: Data, gasPrice: Int) -> Single<TransactionInfo> {
+    public func sendSingle(to: Data, value: String, transactionInput: Data, gasPrice: Int, gasLimit: Int) -> Single<TransactionInfo> {
         guard let value = BInt(value) else {
             return Single.error(EthereumKit.SendError.invalidValue)
         }
@@ -130,7 +146,7 @@ extension EthereumKit: IBlockchainDelegate {
 
         state.lastBlockHeight = lastBlockHeight
 
-        lastBlockHeightSignal.notify()
+        lastBlockHeightSubject.onNext(lastBlockHeight)
     }
 
     func onUpdate(balance: BInt) {
@@ -140,11 +156,11 @@ extension EthereumKit: IBlockchainDelegate {
 
         state.balance = balance
 
-        balanceSignal.notify()
+        balanceSubject.onNext(balance.asString(withBase: 10))
     }
 
     func onUpdate(syncState: SyncState) {
-        syncStateSignal.notify()
+        syncStateSubject.onNext(syncState)
     }
 
     func onUpdate(transactions: [Transaction]) {
@@ -222,6 +238,7 @@ extension EthereumKit {
         case invalidAddress
         case invalidContractAddress
         case invalidValue
+        case infuraError(message: String)
     }
 
     public enum ApiError: Error {

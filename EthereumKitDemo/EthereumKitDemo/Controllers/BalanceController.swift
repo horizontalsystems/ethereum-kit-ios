@@ -21,7 +21,7 @@ class BalanceController: UITableViewController {
         adapters.append(contentsOf: Manager.shared.erc20Adapters)
 
         for (index, adapter) in adapters.enumerated() {
-            Observable.merge([adapter.lastBlockHeightSignal, adapter.syncStateSignal, adapter.balanceSignal])
+            Observable.merge([adapter.lastBlockHeightObservable, adapter.syncStateObservable, adapter.balanceObservable])
                     .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                     .observeOn(MainScheduler.instance)
                     .subscribe(onNext: { [weak self] in

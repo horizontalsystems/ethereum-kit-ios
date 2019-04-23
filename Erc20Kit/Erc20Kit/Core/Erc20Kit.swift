@@ -18,17 +18,17 @@ public class Erc20Kit {
         self.balanceManager = balanceManager
         self.tokenHolder = tokenHolder
 
-        ethereumKit.lastBlockHeightSignal
+        ethereumKit.lastBlockHeightObservable
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                .subscribe(onNext: { [weak self] in
+                .subscribe(onNext: { [weak self] _ in
                     self?.onUpdateLastBlockHeight()
                 })
                 .disposed(by: disposeBag)
 
-        ethereumKit.syncStateSignal
+        ethereumKit.syncStateObservable
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(onNext: { [weak self] in
-                    self?.onUpdateSyncState()
+                    self?.onUpdateSyncState(syncState: $0)
                 })
                 .disposed(by: disposeBag)
     }
@@ -47,7 +47,7 @@ public class Erc20Kit {
 
     private func set(syncState: Erc20Kit.SyncState, contractAddress: Data) {
         try? tokenHolder.set(syncState: syncState, contractAddress: contractAddress)
-        try? tokenHolder.syncStateSignal(contractAddress: contractAddress).notify()
+        try? tokenHolder.syncStateSubject(contractAddress: contractAddress).onNext(syncState)
     }
 
     private func setAll(syncState: Erc20Kit.SyncState) {
@@ -56,8 +56,8 @@ public class Erc20Kit {
         }
     }
 
-    private func onUpdateSyncState() {
-        switch ethereumKit.syncState {
+    private func onUpdateSyncState(syncState: EthereumKit.SyncState) {
+        switch syncState {
         case .notSynced: setAll(syncState: .notSynced)
         case .syncing: setAll(syncState: .syncing)
         case .synced: startTransactionsSync()
@@ -92,12 +92,15 @@ extension Erc20Kit {
         let contractAddress = try convert(address: contractAddress)
         let to = try convert(address: to)
 
-        guard let value = BInt(value, radix: 16) else {
+        guard let value = BInt(value) else {
             throw SendError.invalidValue
         }
 
-        return transactionManager.sendSingle(contractAddress: contractAddress, to: to, value: value, gasPrice: gasPrice)
+        return transactionManager.sendSingle(contractAddress: contractAddress, to: to, value: value, gasPrice: gasPrice, gasLimit: gasLimit)
                 .map({ TransactionInfo(transaction: $0) })
+                .do(onSuccess: { [weak self] transaction in
+                    try? self?.tokenHolder.transactionsSubject(contractAddress: contractAddress).onNext([transaction])
+                })
     }
 
     public func transactionsSingle(contractAddress: String, from: (hash: String, index: Int)?, limit: Int?) throws -> Single<[TransactionInfo]> {
@@ -126,22 +129,22 @@ extension Erc20Kit {
         try tokenHolder.unregister(contractAddress: contractAddress)
     }
 
-    public func syncStateSignal(contractAddress: String) throws -> Signal {
+    public func syncStateObservable(contractAddress: String) throws -> Observable<SyncState> {
         let contractAddress = try convert(address: contractAddress)
 
-        return try tokenHolder.syncStateSignal(contractAddress: contractAddress)
+        return try tokenHolder.syncStateSubject(contractAddress: contractAddress).asObservable()
     }
 
-    public func balanceSignal(contractAddress: String) throws -> Signal {
+    public func balanceObservable(contractAddress: String) throws -> Observable<String> {
         let contractAddress = try convert(address: contractAddress)
 
-        return try tokenHolder.balanceSignal(contractAddress: contractAddress)
+        return try tokenHolder.balanceSubject(contractAddress: contractAddress).asObservable()
     }
 
-    public func transactionsSubject(contractAddress: String) throws -> PublishSubject<[TransactionInfo]> {
+    public func transactionsObservable(contractAddress: String) throws -> Observable<[TransactionInfo]> {
         let contractAddress = try convert(address: contractAddress)
 
-        return try tokenHolder.transactionsSubject(contractAddress: contractAddress)
+        return try tokenHolder.transactionsSubject(contractAddress: contractAddress).asObservable()
     }
 
     public func clear() {
@@ -194,7 +197,10 @@ extension Erc20Kit: IBalanceManagerDelegate {
 
     func onUpdate(balance: TokenBalance, contractAddress: Data) {
         try? tokenHolder.set(balance: balance, contractAddress: contractAddress)
-        try? tokenHolder.balanceSignal(contractAddress: contractAddress).notify()
+
+        if let value = balance.value {
+            try? tokenHolder.balanceSubject(contractAddress: contractAddress).onNext(value.asString(withBase: 10))
+        }
     }
 
 }
