@@ -116,11 +116,11 @@ extension Erc20Kit {
                 }
     }
 
-    public func register(contractAddress: String, balancePosition: Int) throws {
+    public func register(contractAddress: String) throws {
         let contractAddress = try convert(address: contractAddress)
         let balance = balanceManager.balance(contractAddress: contractAddress)
 
-        tokenHolder.register(contractAddress: contractAddress, balancePosition: balancePosition, balance: balance)
+        tokenHolder.register(contractAddress: contractAddress, balance: balance)
     }
 
     public func unregister(contractAddress: String) throws {
@@ -165,14 +165,10 @@ extension Erc20Kit: ITransactionManagerDelegate {
         }
 
         for contractAddress in tokenHolder.contractAddresses {
-            guard let balancePosition = try? tokenHolder.balancePosition(contractAddress: contractAddress) else {
-                continue
-            }
-
             if let lastTransactionBlockHeight = transactionManager.lastTransactionBlockHeight(contractAddress: contractAddress),
                lastTransactionBlockHeight > balanceManager.balance(contractAddress: contractAddress).blockHeight ?? 0
             {
-                balanceManager.sync(blockHeight: lastTransactionBlockHeight, contractAddress: contractAddress, balancePosition: balancePosition)
+                balanceManager.sync(blockHeight: lastTransactionBlockHeight, contractAddress: contractAddress)
             } else {
                 set(syncState: .synced, contractAddress: contractAddress)
             }

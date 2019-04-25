@@ -26,10 +26,6 @@ extension TokenHolder: ITokenHolder {
         return try token(contractAddress: contractAddress).balance
     }
 
-    func balancePosition(contractAddress: Data) throws -> Int {
-        return try token(contractAddress: contractAddress).balancePosition
-    }
-
     func syncStateSubject(contractAddress: Data) throws -> PublishSubject<Erc20Kit.SyncState> {
         return try token(contractAddress: contractAddress).syncStateSubject
     }
@@ -42,8 +38,8 @@ extension TokenHolder: ITokenHolder {
         return try token(contractAddress: contractAddress).transactionsSubject
     }
 
-    func register(contractAddress: Data, balancePosition: Int, balance: TokenBalance) {
-        let token = Token(contractAddress: contractAddress, balancePosition: balancePosition, balance: balance)
+    func register(contractAddress: Data, balance: TokenBalance) {
+        let token = Token(contractAddress: contractAddress, balance: balance)
 
         tokensMap[contractAddress] = token
     }
@@ -70,7 +66,6 @@ extension TokenHolder {
 
     class Token {
         let contractAddress: Data
-        let balancePosition: Int
 
         var balance: TokenBalance
         var syncState: Erc20Kit.SyncState = .notSynced
@@ -79,9 +74,8 @@ extension TokenHolder {
         let balanceSubject = PublishSubject<String>()
         let transactionsSubject = PublishSubject<[TransactionInfo]>()
 
-        init(contractAddress: Data, balancePosition: Int, balance: TokenBalance) {
+        init(contractAddress: Data, balance: TokenBalance) {
             self.contractAddress = contractAddress
-            self.balancePosition = balancePosition
             self.balance = balance
         }
 

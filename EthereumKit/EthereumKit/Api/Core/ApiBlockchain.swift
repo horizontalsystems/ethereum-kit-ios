@@ -240,6 +240,17 @@ extension ApiBlockchain: IBlockchain {
                 }
     }
 
+    func call(contractAddress: Data, data: Data, blockHeight: Int?) -> Single<Data> {
+        return rpcApiProvider.call(contractAddress: contractAddress.toHexString(), data: data.toHexString(), blockNumber: blockHeight)
+                .flatMap { value -> Single<Data> in
+                    guard let data = Data(hex: value) else {
+                        return Single.error(EthereumKit.ApiError.invalidData)
+                    }
+
+                    return Single.just(data)
+                }
+    }
+
 }
 
 extension ApiBlockchain {

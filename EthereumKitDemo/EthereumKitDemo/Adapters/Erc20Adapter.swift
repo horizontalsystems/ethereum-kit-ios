@@ -14,7 +14,7 @@ class Erc20Adapter {
     private let contractAddress: String
     private let decimal: Int
 
-    init(ethereumKit: EthereumKit, erc20Kit: Erc20Kit, name: String, coin: String, contractAddress: String, balancePosition: Int, decimal: Int, minLogLevel: Logger.Level = .verbose) {
+    init(ethereumKit: EthereumKit, erc20Kit: Erc20Kit, name: String, coin: String, contractAddress: String, decimal: Int, minLogLevel: Logger.Level = .verbose) {
         self.ethereumKit = ethereumKit
         self.erc20Kit = erc20Kit
 
@@ -24,7 +24,7 @@ class Erc20Adapter {
         self.contractAddress = contractAddress
         self.decimal = decimal
 
-        try! erc20Kit.register(contractAddress: contractAddress, balancePosition: balancePosition)
+        try! erc20Kit.register(contractAddress: contractAddress)
     }
 
     private func transactionRecord(fromTransaction transaction: TransactionInfo) -> TransactionRecord? {

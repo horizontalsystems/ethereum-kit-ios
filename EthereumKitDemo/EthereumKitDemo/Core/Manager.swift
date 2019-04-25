@@ -63,7 +63,7 @@ class Manager {
         ethereumAdapter = EthereumAdapter(ethereumKit: ethereumKit)
 
         for token in configuration.erc20Tokens {
-            let adapter = Erc20Adapter(ethereumKit: ethereumKit, erc20Kit: erc20Kit, name: token.name, coin: token.coin, contractAddress: token.contractAddress, balancePosition: token.balancePosition, decimal: token.decimal)
+            let adapter = Erc20Adapter(ethereumKit: ethereumKit, erc20Kit: erc20Kit, name: token.name, coin: token.coin, contractAddress: token.contractAddress, decimal: token.decimal)
             erc20Adapters.append(adapter)
         }
 

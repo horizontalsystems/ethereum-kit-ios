@@ -134,6 +134,10 @@ extension EthereumKit {
         return blockchain.getStorageAt(contractAddress: contractAddress, positionData: positionData, blockHeight: blockHeight)
     }
 
+    public func call(contractAddress: Data, data: Data, blockHeight: Int?) -> Single<Data> {
+        return blockchain.call(contractAddress: contractAddress, data: data, blockHeight: blockHeight)
+    }
+
 }
 
 

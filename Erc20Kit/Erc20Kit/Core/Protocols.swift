@@ -36,7 +36,7 @@ protocol IBalanceManager {
     var delegate: IBalanceManagerDelegate? { get set }
 
     func balance(contractAddress: Data) -> TokenBalance
-    func sync(blockHeight: Int, contractAddress: Data, balancePosition: Int)
+    func sync(blockHeight: Int, contractAddress: Data)
 
     func clear()
 }
@@ -44,7 +44,7 @@ protocol IBalanceManager {
 protocol IDataProvider {
     var lastBlockHeight: Int { get }
     func getTransactions(from: Int, to: Int, address: Data) -> Single<[Transaction]>
-    func getStorageValue(contractAddress: Data, position: Int, address: Data, blockHeight: Int) -> Single<BInt>
+    func getBalance(contractAddress: Data, address: Data, blockHeight: Int?) -> Single<BInt>
     func sendSingle(contractAddress: Data, transactionInput: Data, gasPrice: Int, gasLimit: Int) -> Single<Data>
 }
 
@@ -53,13 +53,12 @@ protocol ITokenHolder {
 
     func syncState(contractAddress: Data) throws -> Erc20Kit.SyncState
     func balance(contractAddress: Data) throws -> TokenBalance
-    func balancePosition(contractAddress: Data) throws -> Int
 
     func syncStateSubject(contractAddress: Data) throws -> PublishSubject<Erc20Kit.SyncState>
     func balanceSubject(contractAddress: Data) throws -> PublishSubject<String>
     func transactionsSubject(contractAddress: Data) throws -> PublishSubject<[TransactionInfo]>
 
-    func register(contractAddress: Data, balancePosition: Int, balance: TokenBalance)
+    func register(contractAddress: Data, balance: TokenBalance)
     func unregister(contractAddress: Data) throws
     func set(syncState: Erc20Kit.SyncState, contractAddress: Data) throws
     func set(balance: TokenBalance, contractAddress: Data) throws

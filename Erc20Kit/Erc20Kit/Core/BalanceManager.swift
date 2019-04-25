@@ -23,8 +23,8 @@ extension BalanceManager: IBalanceManager {
         return storage.tokenBalance(contractAddress: contractAddress) ?? TokenBalance(contractAddress: contractAddress)
     }
 
-    func sync(blockHeight: Int, contractAddress: Data, balancePosition: Int) {
-        dataProvider.getStorageValue(contractAddress: contractAddress, position: balancePosition, address: address, blockHeight: blockHeight)
+    func sync(blockHeight: Int, contractAddress: Data) {
+        dataProvider.getBalance(contractAddress: contractAddress, address: address, blockHeight: blockHeight)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(onSuccess: { [weak self] value in
                     let balance = TokenBalance(contractAddress: contractAddress, value: value, blockHeight: blockHeight)

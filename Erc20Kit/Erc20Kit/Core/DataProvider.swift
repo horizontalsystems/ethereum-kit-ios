@@ -1,5 +1,4 @@
 import EthereumKit
-import HSCryptoKit
 import RxSwift
 
 class DataProvider {
@@ -35,13 +34,10 @@ extension DataProvider: IDataProvider {
                 }
     }
 
-    func getStorageValue(contractAddress: Data, position: Int, address: Data, blockHeight: Int) -> Single<BInt> {
-        var positionKeyData = Data(repeating: 0, count: 12) + address
-        positionKeyData += Data(repeating: 0, count: 24) + Data(withUnsafeBytes(of: position) { Data($0) }).reversed()
+    func getBalance(contractAddress: Data, address: Data, blockHeight: Int?) -> Single<BInt> {
+        let balanceOfData = ERC20.ContractFunctions.balanceOf(address: address).data
 
-        let positionData = CryptoKit.sha3(positionKeyData)
-
-        return ethereumKit.getStorageAt(contractAddress: contractAddress, positionData: positionData, blockHeight: blockHeight)
+        return ethereumKit.call(contractAddress: contractAddress, data: balanceOfData, blockHeight: blockHeight)
                 .flatMap { data -> Single<BInt> in
                     guard let value = BInt(data.toHexString(), radix: 16) else {
                         return Single.error(Erc20Kit.TokenError.invalidAddress)
