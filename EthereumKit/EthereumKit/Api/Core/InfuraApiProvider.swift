@@ -96,10 +96,6 @@ extension InfuraApiProvider: IRpcApiProvider {
         return infuraVoidSingle(method: "eth_sendRawTransaction", params: [signedTransaction.toHexString()])
     }
 
-    func getStorageAt(contractAddress: String, position: String, blockNumber: Int?) -> Single<String> {
-        return infuraStringSingle(method: "eth_getStorageAt", params: [contractAddress, position, "latest"])
-    }
-
     func getLogs(address: Data?, fromBlock: Int?, toBlock: Int?, topics: [Any]) -> Single<[EthereumLog]> {
         var toBlockStr = "latest"
         if let toBlockInt = toBlock {
@@ -135,6 +131,14 @@ extension InfuraApiProvider: IRpcApiProvider {
             }
             return []
         }
+    }
+
+    func getStorageAt(contractAddress: String, position: String, blockNumber: Int?) -> Single<String> {
+        return infuraStringSingle(method: "eth_getStorageAt", params: [contractAddress, position, "latest"])
+    }
+
+    func call(contractAddress: String, data: String, blockNumber: Int?) -> Single<String> {
+        return infuraStringSingle(method: "eth_call", params: [["to": contractAddress, "data": data], "latest"])
     }
 
     func getBlock(byNumber number: Int) -> Single<Block> {

@@ -6,7 +6,6 @@ class Transaction: Record {
 
     var transactionHash: Data
 
-    let contractAddress: Data
     let from: Data
     let to: Data
     let value: BInt
@@ -16,9 +15,8 @@ class Transaction: Record {
     var blockHash: Data?
     var blockNumber: Int?
 
-    init(transactionHash: Data, contractAddress: Data, from: Data, to: Data, value: BInt, timestamp: TimeInterval = Date().timeIntervalSince1970) {
+    init(transactionHash: Data, from: Data, to: Data, value: BInt, timestamp: TimeInterval = Date().timeIntervalSince1970) {
         self.transactionHash = transactionHash
-        self.contractAddress = contractAddress
         self.from = from
         self.to = to
         self.value = value
@@ -33,7 +31,6 @@ class Transaction: Record {
 
     enum Columns: String, ColumnExpression {
         case transactionHash
-        case contractAddress
         case from
         case to
         case value
@@ -45,7 +42,6 @@ class Transaction: Record {
 
     required init(row: Row) {
         transactionHash = row[Columns.transactionHash]
-        contractAddress = row[Columns.contractAddress]
         from = row[Columns.from]
         to = row[Columns.to]
         value = row[Columns.value]
@@ -66,7 +62,6 @@ class Transaction: Record {
 
         self.transactionHash = log.transactionHash
 
-        self.contractAddress = log.address
         self.from = log.topics[1].suffix(from: 12)
         self.to = log.topics[2].suffix(from: 12)
         self.value = BInt(log.data.toHexString(), radix: 16)!
@@ -82,7 +77,6 @@ class Transaction: Record {
 
     override func encode(to container: inout PersistenceContainer) {
         container[Columns.transactionHash] = transactionHash
-        container[Columns.contractAddress] = contractAddress
         container[Columns.from] = from
         container[Columns.to] = to
         container[Columns.value] = value

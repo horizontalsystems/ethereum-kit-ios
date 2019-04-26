@@ -26,6 +26,7 @@ protocol IBlockchain {
 
     func start()
     func stop()
+    func refresh()
     func clear()
 
     var syncState: EthereumKit.SyncState { get }
@@ -37,6 +38,7 @@ protocol IBlockchain {
 
     func getLogsSingle(address: Data?, topics: [Any], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]>
     func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data>
+    func call(contractAddress: Data, data: Data, blockHeight: Int?) -> Single<Data>
 }
 
 protocol IBlockchainDelegate: class {

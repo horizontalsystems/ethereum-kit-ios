@@ -1,5 +1,4 @@
 import EthereumKit
-import HSCryptoKit
 import RxSwift
 
 class DataProvider {
@@ -17,14 +16,14 @@ extension DataProvider: IDataProvider {
         return ethereumKit.lastBlockHeight ?? 0
     }
 
-    func getTransactions(from: Int, to: Int, address: Data) -> Single<[Transaction]> {
+    func getTransactions(contractAddress: Data, address: Data, from: Int, to: Int) -> Single<[Transaction]> {
         let addressTopic = Data(repeating: 0, count: 12) + address
 
         let outgoingTopics = [Transaction.transferEventTopic, addressTopic]
         let incomingTopics = [Transaction.transferEventTopic, nil, addressTopic]
 
         let singles = [incomingTopics, outgoingTopics].map {
-            ethereumKit.getLogsSingle(address: nil, topics: $0 as [Any], fromBlock: from, toBlock: to, pullTimestamps: true)
+            ethereumKit.getLogsSingle(address: contractAddress, topics: $0 as [Any], fromBlock: from, toBlock: to, pullTimestamps: true)
         }
 
         return Single.zip(singles) { logsArray -> [EthereumLog] in
@@ -35,13 +34,10 @@ extension DataProvider: IDataProvider {
                 }
     }
 
-    func getStorageValue(contractAddress: Data, position: Int, address: Data, blockHeight: Int) -> Single<BInt> {
-        var positionKeyData = Data(repeating: 0, count: 12) + address
-        positionKeyData += Data(repeating: 0, count: 24) + Data(withUnsafeBytes(of: position) { Data($0) }).reversed()
+    func getBalance(contractAddress: Data, address: Data) -> Single<BInt> {
+        let balanceOfData = ERC20.ContractFunctions.balanceOf(address: address).data
 
-        let positionData = CryptoKit.sha3(positionKeyData)
-
-        return ethereumKit.getStorageAt(contractAddress: contractAddress, positionData: positionData, blockHeight: blockHeight)
+        return ethereumKit.call(contractAddress: contractAddress, data: balanceOfData)
                 .flatMap { data -> Single<BInt> in
                     guard let value = BInt(data.toHexString(), radix: 16) else {
                         return Single.error(Erc20Kit.TokenError.invalidAddress)

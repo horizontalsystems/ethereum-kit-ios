@@ -11,20 +11,19 @@ class Erc20Adapter {
     let name: String
     let coin: String
 
-    private let contractAddress: String
     private let decimal: Int
 
-    init(ethereumKit: EthereumKit, erc20Kit: Erc20Kit, name: String, coin: String, contractAddress: String, balancePosition: Int, decimal: Int, minLogLevel: Logger.Level = .verbose) {
+    init(ethereumKit: EthereumKit, name: String, coin: String, contractAddress: String, decimal: Int) {
         self.ethereumKit = ethereumKit
-        self.erc20Kit = erc20Kit
+        self.erc20Kit = try! Erc20Kit.instance(
+                ethereumKit: ethereumKit,
+                contractAddress: contractAddress
+        )
 
         self.name = name
         self.coin = coin
 
-        self.contractAddress = contractAddress
         self.decimal = decimal
-
-        try! erc20Kit.register(contractAddress: contractAddress, balancePosition: balancePosition)
     }
 
     private func transactionRecord(fromTransaction transaction: TransactionInfo) -> TransactionRecord? {
@@ -67,7 +66,7 @@ extension Erc20Adapter: IAdapter {
     }
 
     var syncState: EthereumKit.SyncState {
-        switch try! erc20Kit.syncState(contractAddress: contractAddress) {
+        switch erc20Kit.syncState {
         case .notSynced: return EthereumKit.SyncState.notSynced
         case .syncing: return EthereumKit.SyncState.syncing
         case .synced: return EthereumKit.SyncState.synced
@@ -75,7 +74,7 @@ extension Erc20Adapter: IAdapter {
     }
 
     var balance: Decimal {
-        if let balanceString = try! erc20Kit.balance(contractAddress: contractAddress), let significand = Decimal(string: balanceString) {
+        if let balanceString = erc20Kit.balance, let significand = Decimal(string: balanceString) {
             return Decimal(sign: .plus, exponent: -decimal, significand: significand)
         }
 
@@ -91,15 +90,15 @@ extension Erc20Adapter: IAdapter {
     }
 
     var syncStateObservable: Observable<Void> {
-        return try! erc20Kit.syncStateObservable(contractAddress: contractAddress).map { _ in () }
+        return erc20Kit.syncStateObservable.map { _ in () }
     }
 
     var balanceObservable: Observable<Void> {
-        return try! erc20Kit.balanceObservable(contractAddress: contractAddress).map { _ in () }
+        return erc20Kit.balanceObservable.map { _ in () }
     }
 
     var transactionsObservable: Observable<Void> {
-        return try! erc20Kit.transactionsObservable(contractAddress: contractAddress).map { _ in () }
+        return erc20Kit.transactionsObservable.map { _ in () }
     }
 
     func validate(address: String) throws {
@@ -113,16 +112,20 @@ extension Erc20Adapter: IAdapter {
 
         let value = String(describing: roundedDecimal)
 
-        return try! erc20Kit.sendSingle(contractAddress: contractAddress, to: to, value: value, gasPrice: 5_000_000_000).map { _ in ()}
+        return try! erc20Kit.sendSingle(to: to, value: value, gasPrice: 5_000_000_000).map { _ in ()}
     }
 
     func transactionsSingle(from: (hash: String, index: Int)?, limit: Int?) -> Single<[TransactionRecord]> {
-        return try! erc20Kit.transactionsSingle(contractAddress: contractAddress, from: from, limit: limit)
+        return try! erc20Kit.transactionsSingle(from: from, limit: limit)
                 .map { [weak self] in
                     $0.compactMap {
                         self?.transactionRecord(fromTransaction: $0)
                     }
                 }
+    }
+
+    func clear() {
+        erc20Kit.clear()
     }
 
 }

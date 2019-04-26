@@ -42,7 +42,7 @@ class BalanceController: UITableViewController {
     }
 
     @objc func refresh() {
-        Manager.shared.ethereumKit.start()
+        Manager.shared.ethereumKit.refresh()
     }
 
     @IBAction func showDebugInfo() {

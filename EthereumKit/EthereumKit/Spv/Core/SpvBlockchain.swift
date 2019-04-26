@@ -42,6 +42,10 @@ extension SpvBlockchain: IBlockchain {
         // todo
     }
 
+    func refresh() {
+        // todo
+    }
+
     func clear() {
         storage.clear()
     }
@@ -91,6 +95,10 @@ extension SpvBlockchain: IBlockchain {
 
     func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data> {
         fatalError("getStorageAt(contractAddress:positionData:blockHeight:) has not been implemented")
+    }
+
+    func call(contractAddress: Data, data: Data, blockHeight: Int?) -> Single<Data> {
+        fatalError("call(contractAddress:callData:blockHeight:) has not been implemented")
     }
 
 }

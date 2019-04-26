@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		11B356FA52264751894BD896 /* TokenHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3598F31FDFB86F63A21EF /* TokenHolder.swift */; };
 		11B3588565C278E3276C5280 /* TokenBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B356EBA7F3536B9A691B73 /* TokenBalance.swift */; };
+		11B35B8F4851F92695D232C7 /* KitState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B357B5C09A5E64C5EA0615 /* KitState.swift */; };
 		2FA5D2F8ABDFB907536308D3 /* Erc20Kit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5DBFF8094999891470F26 /* Erc20Kit.swift */; };
 		2FA5D511E296A8D98629DC2C /* TransactionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D605318BC6D83F0F8871 /* TransactionManager.swift */; };
 		2FA5D57B96B3FC698F1E9370 /* Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5DEAC9C95ECFFB1054F23 /* Protocols.swift */; };
@@ -40,7 +40,7 @@
 
 /* Begin PBXFileReference section */
 		11B356EBA7F3536B9A691B73 /* TokenBalance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TokenBalance.swift; sourceTree = "<group>"; };
-		11B3598F31FDFB86F63A21EF /* TokenHolder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TokenHolder.swift; sourceTree = "<group>"; };
+		11B357B5C09A5E64C5EA0615 /* KitState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KitState.swift; sourceTree = "<group>"; };
 		2FA5D186C22D1A5217D44790 /* Transaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
 		2FA5D25B49D7474BC55CA9E5 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		2FA5D26E2F762277566B99E6 /* TransactionInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionInfo.swift; sourceTree = "<group>"; };
@@ -112,7 +112,7 @@
 				2FA5DDC47CB76FAD28B5DBFD /* TransactionBuilder.swift */,
 				2FA5D605318BC6D83F0F8871 /* TransactionManager.swift */,
 				2FA5DF526D8DC26011DF61D6 /* DataProvider.swift */,
-				11B3598F31FDFB86F63A21EF /* TokenHolder.swift */,
+				11B357B5C09A5E64C5EA0615 /* KitState.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -392,8 +392,8 @@
 				2FA5D511E296A8D98629DC2C /* TransactionManager.swift in Sources */,
 				2FA5DA06B17B1234B7E9782B /* BalanceManager.swift in Sources */,
 				2FA5D897C88DE11C9B5FEA13 /* DataProvider.swift in Sources */,
-				11B356FA52264751894BD896 /* TokenHolder.swift in Sources */,
 				11B3588565C278E3276C5280 /* TokenBalance.swift in Sources */,
+				11B35B8F4851F92695D232C7 /* KitState.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

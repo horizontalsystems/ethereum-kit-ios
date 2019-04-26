@@ -25,10 +25,6 @@ class ApiBlockchain {
             return _syncState
         }
         set {
-            if _syncState == .synced {
-                return
-            }
-
             if _syncState != newValue {
                 _syncState = newValue
                 delegate?.onUpdate(syncState: _syncState)
@@ -48,22 +44,15 @@ class ApiBlockchain {
         self.address = address
         self.logger = logger
 
-        Observable<Int>.interval(refreshInterval, scheduler: ConcurrentDispatchQueueScheduler(qos: .background))
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                .subscribe(onNext: { [weak self] _ in
-                    self?.refreshAll()
-                })
-                .disposed(by: disposeBag)
-
         reachabilityManager.reachabilitySignal
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(onNext: { [weak self] in
-                    self?.refreshAll()
+                    self?.sync()
                 })
                 .disposed(by: disposeBag)
     }
 
-    private func refreshAll() {
+    private func sync() {
         guard started else {
             return
         }
@@ -184,11 +173,15 @@ extension ApiBlockchain: IBlockchain {
     func start() {
         started = true
 
-        refreshAll()
+        sync()
     }
 
     func stop() {
         started = false
+    }
+
+    func refresh() {
+        sync()
     }
 
     func clear() {
@@ -214,7 +207,7 @@ extension ApiBlockchain: IBlockchain {
                 }
                 .do(onSuccess: { [weak self] transaction in
                     self?.update(transactions: [transaction])
-                    self?.refreshAll()
+                    self?.sync()
                 })
     }
 
@@ -231,6 +224,17 @@ extension ApiBlockchain: IBlockchain {
 
     func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data> {
         return rpcApiProvider.getStorageAt(contractAddress: contractAddress.toHexString(), position: positionData.toHexString(), blockNumber: blockHeight)
+                .flatMap { value -> Single<Data> in
+                    guard let data = Data(hex: value) else {
+                        return Single.error(EthereumKit.ApiError.invalidData)
+                    }
+
+                    return Single.just(data)
+                }
+    }
+
+    func call(contractAddress: Data, data: Data, blockHeight: Int?) -> Single<Data> {
+        return rpcApiProvider.call(contractAddress: contractAddress.toHexString(), data: data.toHexString(), blockNumber: blockHeight)
                 .flatMap { value -> Single<Data> in
                     guard let data = Data(hex: value) else {
                         return Single.error(EthereumKit.ApiError.invalidData)
