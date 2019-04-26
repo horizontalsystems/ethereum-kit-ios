@@ -19,6 +19,7 @@ public class Erc20Kit {
         self.balanceManager = balanceManager
         self.state = state
 
+        onUpdateSyncState(syncState: ethereumKit.syncState)
         state.balance = balanceManager.balance
 
         ethereumKit.syncStateObservable
@@ -41,7 +42,9 @@ public class Erc20Kit {
         switch syncState {
         case .notSynced: state.syncState = .notSynced
         case .syncing: state.syncState = .syncing
-        case .synced: transactionManager.sync()
+        case .synced:
+            state.syncState = .syncing
+            transactionManager.sync()
         }
     }
 

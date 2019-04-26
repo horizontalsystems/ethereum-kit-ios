@@ -4,7 +4,7 @@ import RxSwift
 class KitState {
     let contractAddress: Data = Data()
 
-    var syncState: Erc20Kit.SyncState = .notSynced {
+    var syncState: Erc20Kit.SyncState = .syncing {
         didSet {
             if syncState != oldValue {
                 syncStateSubject.onNext(syncState)
