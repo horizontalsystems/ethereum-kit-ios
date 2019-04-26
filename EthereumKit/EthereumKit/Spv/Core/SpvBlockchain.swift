@@ -42,6 +42,10 @@ extension SpvBlockchain: IBlockchain {
         // todo
     }
 
+    func refresh() {
+        // todo
+    }
+
     func clear() {
         storage.clear()
     }

@@ -2,14 +2,11 @@ import GRDB
 import EthereumKit
 
 class TokenBalance: Record {
-    let contractAddress: Data
+    let primaryKey: String = "primaryKey"
     let value: BInt?
-    let blockHeight: Int?
 
-    init(contractAddress: Data, value: BInt? = nil, blockHeight: Int? = nil) {
-        self.contractAddress = contractAddress
+    init(value: BInt?) {
         self.value = value
-        self.blockHeight = blockHeight
 
         super.init()
     }
@@ -19,23 +16,19 @@ class TokenBalance: Record {
     }
 
     enum Columns: String, ColumnExpression {
-        case contractAddress
+        case primaryKey
         case value
-        case blockHeight
     }
 
     required init(row: Row) {
-        contractAddress = row[Columns.contractAddress]
         value = row[Columns.value]
-        blockHeight = row[Columns.blockHeight]
 
         super.init(row: row)
     }
 
     override func encode(to container: inout PersistenceContainer) {
-        container[Columns.contractAddress] = contractAddress
+        container[Columns.primaryKey] = primaryKey
         container[Columns.value] = value
-        container[Columns.blockHeight] = blockHeight
     }
 
 }

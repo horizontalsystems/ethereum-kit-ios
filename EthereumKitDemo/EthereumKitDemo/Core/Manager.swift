@@ -9,7 +9,6 @@ class Manager {
     private let keyWords = "mnemonic_words"
 
     var ethereumKit: EthereumKit!
-    var erc20Kit: Erc20Kit!
 
     var ethereumAdapter: EthereumAdapter!
     var erc20Adapters = [Erc20Adapter]()
@@ -27,13 +26,12 @@ class Manager {
 
     func logout() {
         ethereumKit.clear()
-        erc20Kit.clear()
         clearWords()
 
         ethereumKit = nil
-        erc20Kit = nil
 
         ethereumAdapter = nil
+        erc20Adapters.forEach { $0.clear() }
         erc20Adapters = []
     }
 
@@ -52,23 +50,17 @@ class Manager {
                 syncMode: syncMode,
                 networkType: configuration.networkType,
                 etherscanApiKey: configuration.etherscanApiKey,
-                minLogLevel: .verbose
-        )
-
-        let erc20Kit = Erc20Kit.instance(
-                ethereumKit: ethereumKit,
-                minLogLevel: .verbose
+                minLogLevel: .error
         )
 
         ethereumAdapter = EthereumAdapter(ethereumKit: ethereumKit)
 
         for token in configuration.erc20Tokens {
-            let adapter = Erc20Adapter(ethereumKit: ethereumKit, erc20Kit: erc20Kit, name: token.name, coin: token.coin, contractAddress: token.contractAddress, decimal: token.decimal)
+            let adapter = Erc20Adapter(ethereumKit: ethereumKit, name: token.name, coin: token.coin, contractAddress: token.contractAddress, decimal: token.decimal)
             erc20Adapters.append(adapter)
         }
 
         self.ethereumKit = ethereumKit
-        self.erc20Kit = erc20Kit
 
         ethereumKit.start()
     }

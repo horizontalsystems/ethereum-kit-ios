@@ -26,6 +26,7 @@ protocol IBlockchain {
 
     func start()
     func stop()
+    func refresh()
     func clear()
 
     var syncState: EthereumKit.SyncState { get }

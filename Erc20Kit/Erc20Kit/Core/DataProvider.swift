@@ -16,14 +16,14 @@ extension DataProvider: IDataProvider {
         return ethereumKit.lastBlockHeight ?? 0
     }
 
-    func getTransactions(from: Int, to: Int, address: Data) -> Single<[Transaction]> {
+    func getTransactions(contractAddress: Data, address: Data, from: Int, to: Int) -> Single<[Transaction]> {
         let addressTopic = Data(repeating: 0, count: 12) + address
 
         let outgoingTopics = [Transaction.transferEventTopic, addressTopic]
         let incomingTopics = [Transaction.transferEventTopic, nil, addressTopic]
 
         let singles = [incomingTopics, outgoingTopics].map {
-            ethereumKit.getLogsSingle(address: nil, topics: $0 as [Any], fromBlock: from, toBlock: to, pullTimestamps: true)
+            ethereumKit.getLogsSingle(address: contractAddress, topics: $0 as [Any], fromBlock: from, toBlock: to, pullTimestamps: true)
         }
 
         return Single.zip(singles) { logsArray -> [EthereumLog] in
@@ -34,10 +34,10 @@ extension DataProvider: IDataProvider {
                 }
     }
 
-    func getBalance(contractAddress: Data, address: Data, blockHeight: Int?) -> Single<BInt> {
+    func getBalance(contractAddress: Data, address: Data) -> Single<BInt> {
         let balanceOfData = ERC20.ContractFunctions.balanceOf(address: address).data
 
-        return ethereumKit.call(contractAddress: contractAddress, data: balanceOfData, blockHeight: blockHeight)
+        return ethereumKit.call(contractAddress: contractAddress, data: balanceOfData)
                 .flatMap { data -> Single<BInt> in
                     guard let value = BInt(data.toHexString(), radix: 16) else {
                         return Single.error(Erc20Kit.TokenError.invalidAddress)
