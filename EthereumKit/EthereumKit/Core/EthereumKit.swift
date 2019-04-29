@@ -16,11 +16,14 @@ public class EthereumKit {
     private let transactionBuilder: TransactionBuilder
     private let state: EthereumKitState
 
-    init(blockchain: IBlockchain, addressValidator: IAddressValidator, transactionBuilder: TransactionBuilder, state: EthereumKitState = EthereumKitState()) {
+    public let logger: Logger
+
+    init(blockchain: IBlockchain, addressValidator: IAddressValidator, transactionBuilder: TransactionBuilder, state: EthereumKitState = EthereumKitState(), logger: Logger) {
         self.blockchain = blockchain
         self.addressValidator = addressValidator
         self.transactionBuilder = transactionBuilder
         self.state = state
+        self.logger = logger
 
         state.balance = blockchain.balance
         state.lastBlockHeight = blockchain.lastBlockHeight
@@ -209,7 +212,7 @@ extension EthereumKit {
         }
 
         let addressValidator: IAddressValidator = AddressValidator()
-        let ethereumKit = EthereumKit(blockchain: blockchain, addressValidator: addressValidator, transactionBuilder: transactionBuilder)
+        let ethereumKit = EthereumKit(blockchain: blockchain, addressValidator: addressValidator, transactionBuilder: transactionBuilder, logger: logger)
 
         blockchain.delegate = ethereumKit
 

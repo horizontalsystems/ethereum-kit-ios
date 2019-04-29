@@ -3,7 +3,7 @@ import BigInt
 import GRDB
 
 class GrdbStorage {
-    internal let dbPool: DatabasePool
+    private let dbPool: DatabasePool
 
     init(databaseFileName: String) {
         let databaseURL = try! FileManager.default
@@ -24,7 +24,7 @@ class GrdbStorage {
         migrator.registerMigration("createTokenBalances") { db in
             try db.create(table: TokenBalance.databaseTableName) { t in
                 t.column(TokenBalance.Columns.primaryKey.name, .text).notNull()
-                t.column(TokenBalance.Columns.value.name, .text).notNull()
+                t.column(TokenBalance.Columns.value.name, .text)
 
                 t.primaryKey([TokenBalance.Columns.primaryKey.name], onConflict: .replace)
             }
@@ -36,7 +36,7 @@ class GrdbStorage {
                 t.column(Transaction.Columns.from.name, .text).notNull()
                 t.column(Transaction.Columns.to.name, .text).notNull()
                 t.column(Transaction.Columns.value.name, .text).notNull()
-                t.column(Transaction.Columns.timestamp.name, .double)
+                t.column(Transaction.Columns.timestamp.name, .double).notNull()
                 t.column(Transaction.Columns.logIndex.name, .integer)
                 t.column(Transaction.Columns.blockHash.name, .text)
                 t.column(Transaction.Columns.blockNumber.name, .integer)
@@ -61,7 +61,7 @@ extension GrdbStorage: ITokenBalanceStorage {
         set {
             let tokenBalance = TokenBalance(value: newValue)
 
-            _ = try? dbPool.write { db in
+            _ = try! dbPool.write { db in
                 try tokenBalance.insert(db)
             }
         }
@@ -79,7 +79,7 @@ extension GrdbStorage: ITransactionStorage {
 
     func transactionsSingle(from: (hash: Data, index: Int)?, limit: Int?) -> Single<[Transaction]> {
         return Single.create { [weak self] observer in
-            try? self?.dbPool.read { db in
+            try! self?.dbPool.read { db in
                 var request = Transaction.order(Transaction.Columns.timestamp.desc, Transaction.Columns.logIndex.desc)
 
                 if let from = from,
@@ -98,7 +98,7 @@ extension GrdbStorage: ITransactionStorage {
     }
 
     func save(transactions: [Transaction]) {
-        _ = try? dbPool.write { db in
+        _ = try! dbPool.write { db in
             for transaction in transactions {
                 try Transaction.filter(Transaction.Columns.transactionHash == transaction.transactionHash && Transaction.Columns.logIndex == nil).deleteAll(db)
                 try transaction.insert(db)
@@ -107,13 +107,13 @@ extension GrdbStorage: ITransactionStorage {
     }
 
     func update(transaction: Transaction) {
-        _ = try? dbPool.write { db in
+        _ = try! dbPool.write { db in
             try transaction.update(db)
         }
     }
 
     func clearTransactions() {
-        _ = try? dbPool.write { db in
+        _ = try! dbPool.write { db in
             try Transaction.deleteAll(db)
         }
     }

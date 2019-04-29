@@ -24,7 +24,7 @@ public class Erc20Kit {
         state.balance = balanceManager.balance
 
         ethereumKit.syncStateObservable
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+                .observeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .subscribe(onNext: { [weak self] in
                     self?.onUpdateSyncState(syncState: $0)
                 })
