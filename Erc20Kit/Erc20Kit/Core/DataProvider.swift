@@ -18,9 +18,10 @@ extension DataProvider: IDataProvider {
 
     func getTransactions(contractAddress: Data, address: Data, from: Int, to: Int) -> Single<[Transaction]> {
         let addressTopic = Data(repeating: 0, count: 12) + address
+        let transferTopic = ERC20.ContractLogs.transfer.topic
 
-        let outgoingTopics = [Transaction.transferEventTopic, addressTopic]
-        let incomingTopics = [Transaction.transferEventTopic, nil, addressTopic]
+        let outgoingTopics = [transferTopic, addressTopic]
+        let incomingTopics = [transferTopic, nil, addressTopic]
 
         let singles = [incomingTopics, outgoingTopics].map {
             ethereumKit.getLogsSingle(address: contractAddress, topics: $0 as [Any], fromBlock: from, toBlock: to, pullTimestamps: true)

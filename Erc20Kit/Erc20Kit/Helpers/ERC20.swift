@@ -3,6 +3,17 @@ import EthereumKit
 
 struct ERC20 {
 
+    enum ContractLogs {
+        case transfer
+
+        var topic: Data {
+            switch self {
+            case .transfer:
+                return CryptoKit.sha3("Transfer(address,address,uint256)".data(using: .ascii)!)
+            }
+        }
+    }
+
     enum ContractFunctions {
         case balanceOf(address: Data)
         case transfer(address: Data, amount: BInt)

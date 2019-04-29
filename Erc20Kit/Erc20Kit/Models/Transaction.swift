@@ -2,8 +2,6 @@ import GRDB
 import EthereumKit
 
 class Transaction: Record {
-    static let transferEventTopic = Data(hex: "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef")! // Keccak-256("Transfer(address,address,uint256)")
-
     var transactionHash: Data
 
     let from: Data
@@ -55,7 +53,7 @@ class Transaction: Record {
 
     init?(log: EthereumLog) {
         guard log.topics.count == 3,
-              log.topics[0] == Transaction.transferEventTopic,
+              log.topics[0] == ERC20.ContractLogs.transfer.topic,
               log.topics[1].count == 32 && log.topics[2].count == 32  else {
             return nil
         }
