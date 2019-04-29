@@ -1,9 +1,11 @@
+import BigInt
+
 class Signature {
     let v: Int
-    let r: BInt
-    let s: BInt
+    let r: BigUInt
+    let s: BigUInt
 
-    init(v: Int, r: BInt, s: BInt) {
+    init(v: Int, r: BigUInt, s: BigUInt) {
         self.v = v
         self.r = r
         self.s = s

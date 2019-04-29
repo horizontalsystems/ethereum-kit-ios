@@ -1,5 +1,5 @@
 import RxSwift
-import EthereumKit
+import BigInt
 import GRDB
 
 class GrdbStorage {
@@ -51,7 +51,7 @@ class GrdbStorage {
 
 extension GrdbStorage: ITokenBalanceStorage {
 
-    var balance: BInt? {
+    var balance: BigUInt? {
         get {
             let tokenBalance = try! dbPool.read { db in
                 try TokenBalance.fetchOne(db)
@@ -100,6 +100,7 @@ extension GrdbStorage: ITransactionStorage {
     func save(transactions: [Transaction]) {
         _ = try? dbPool.write { db in
             for transaction in transactions {
+                try Transaction.filter(Transaction.Columns.transactionHash == transaction.transactionHash && Transaction.Columns.logIndex == nil).deleteAll(db)
                 try transaction.insert(db)
             }
         }

@@ -1,4 +1,5 @@
 import RxSwift
+import BigInt
 
 class SpvBlockchain {
     weak var delegate: IBlockchainDelegate?
@@ -58,7 +59,7 @@ extension SpvBlockchain: IBlockchain {
         return storage.lastBlockHeader?.height
     }
 
-    var balance: BInt? {
+    var balance: BigUInt? {
         return storage.accountState?.balance
     }
 

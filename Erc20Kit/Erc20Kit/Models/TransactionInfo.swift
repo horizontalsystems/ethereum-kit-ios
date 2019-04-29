@@ -1,5 +1,5 @@
 import GRDB
-import EthereumKit
+import BigInt
 
 public class TransactionInfo {
     public let transactionHash: String
@@ -17,7 +17,7 @@ public class TransactionInfo {
         self.logIndex = transaction.logIndex
         self.from = transaction.from.toEIP55Address()
         self.to = transaction.to.toEIP55Address()
-        self.value = transaction.value.asString(withBase: 10)
+        self.value = transaction.value.description
         self.timestamp = transaction.timestamp
         self.blockHash = transaction.blockHash?.toHexString()
         self.blockNumber = transaction.blockNumber

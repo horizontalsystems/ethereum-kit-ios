@@ -1,6 +1,7 @@
 import RxSwift
 import HSCryptoKit
 import HSHDWalletKit
+import BigInt
 
 public class EthereumKit {
     private let gasLimit = 21_000
@@ -58,7 +59,7 @@ extension EthereumKit {
     }
 
     public var balance: String? {
-        return state.balance?.asString(withBase: 10)
+        return state.balance?.description
     }
 
     public var balanceObservable: Observable<String> {
@@ -99,7 +100,7 @@ extension EthereumKit {
     }
 
     public func sendSingle(to: Data, value: String, transactionInput: Data, gasPrice: Int, gasLimit: Int) -> Single<TransactionInfo> {
-        guard let value = BInt(value) else {
+        guard let value = BigUInt(value) else {
             return Single.error(EthereumKit.SendError.invalidValue)
         }
 
@@ -113,7 +114,7 @@ extension EthereumKit {
             return Single.error(SendError.invalidAddress)
         }
 
-        guard let value = BInt(value) else {
+        guard let value = BigUInt(value) else {
             return Single.error(SendError.invalidValue)
         }
 
@@ -157,14 +158,14 @@ extension EthereumKit: IBlockchainDelegate {
         lastBlockHeightSubject.onNext(lastBlockHeight)
     }
 
-    func onUpdate(balance: BInt) {
+    func onUpdate(balance: BigUInt) {
         guard state.balance != balance else {
             return
         }
 
         state.balance = balance
 
-        balanceSubject.onNext(balance.asString(withBase: 10))
+        balanceSubject.onNext(balance.description)
     }
 
     func onUpdate(syncState: SyncState) {

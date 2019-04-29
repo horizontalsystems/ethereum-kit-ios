@@ -1,4 +1,5 @@
 import RxSwift
+import BigInt
 
 public protocol IRequest {
     var id: Int { get }
@@ -31,7 +32,7 @@ protocol IBlockchain {
 
     var syncState: EthereumKit.SyncState { get }
     var lastBlockHeight: Int? { get }
-    var balance: BInt? { get }
+    var balance: BigUInt? { get }
 
     func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[Transaction]>
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction>
@@ -43,7 +44,7 @@ protocol IBlockchain {
 
 protocol IBlockchainDelegate: class {
     func onUpdate(lastBlockHeight: Int)
-    func onUpdate(balance: BInt)
+    func onUpdate(balance: BigUInt)
     func onUpdate(syncState: EthereumKit.SyncState)
     func onUpdate(transactions: [Transaction])
 }

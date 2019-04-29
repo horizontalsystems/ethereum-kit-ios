@@ -1,6 +1,7 @@
-class EthereumKitState {
+import BigInt
 
-    var balance: BInt?
+class EthereumKitState {
+    var balance: BigUInt?
     var lastBlockHeight: Int?
 
     func clear() {

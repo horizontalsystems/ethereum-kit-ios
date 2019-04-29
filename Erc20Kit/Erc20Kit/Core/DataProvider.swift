@@ -1,5 +1,6 @@
 import EthereumKit
 import RxSwift
+import BigInt
 
 class DataProvider {
     private let ethereumKit: EthereumKit
@@ -18,9 +19,10 @@ extension DataProvider: IDataProvider {
 
     func getTransactions(contractAddress: Data, address: Data, from: Int, to: Int) -> Single<[Transaction]> {
         let addressTopic = Data(repeating: 0, count: 12) + address
+        let transferTopic = ERC20.ContractLogs.transfer.topic
 
-        let outgoingTopics = [Transaction.transferEventTopic, addressTopic]
-        let incomingTopics = [Transaction.transferEventTopic, nil, addressTopic]
+        let outgoingTopics = [transferTopic, addressTopic]
+        let incomingTopics = [transferTopic, nil, addressTopic]
 
         let singles = [incomingTopics, outgoingTopics].map {
             ethereumKit.getLogsSingle(address: contractAddress, topics: $0 as [Any], fromBlock: from, toBlock: to, pullTimestamps: true)
@@ -34,12 +36,12 @@ extension DataProvider: IDataProvider {
                 }
     }
 
-    func getBalance(contractAddress: Data, address: Data) -> Single<BInt> {
+    func getBalance(contractAddress: Data, address: Data) -> Single<BigUInt> {
         let balanceOfData = ERC20.ContractFunctions.balanceOf(address: address).data
 
         return ethereumKit.call(contractAddress: contractAddress, data: balanceOfData)
-                .flatMap { data -> Single<BInt> in
-                    guard let value = BInt(data.toHexString(), radix: 16) else {
+                .flatMap { data -> Single<BigUInt> in
+                    guard let value = BigUInt(data.toRawHexString(), radix: 16) else {
                         return Single.error(Erc20Kit.TokenError.invalidAddress)
                     }
 

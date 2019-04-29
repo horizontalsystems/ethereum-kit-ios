@@ -1,8 +1,8 @@
 import RxSwift
-import EthereumKit
+import BigInt
 
 protocol IBalanceManagerDelegate: class {
-    func onSyncBalanceSuccess(balance: BInt)
+    func onSyncBalanceSuccess(balance: BigUInt)
     func onSyncBalanceError()
 }
 
@@ -12,7 +12,7 @@ protocol ITransactionManagerDelegate: class {
 }
 
 protocol ITransactionBuilder {
-    func transferTransactionInput(to toAddress: Data, value: BInt) -> Data
+    func transferTransactionInput(to toAddress: Data, value: BigUInt) -> Data
 }
 
 protocol ITransactionManager {
@@ -22,7 +22,7 @@ protocol ITransactionManager {
     func transactionsSingle(from: (hash: Data, index: Int)?, limit: Int?) -> Single<[Transaction]>
 
     func sync()
-    func sendSingle(to: Data, value: BInt, gasPrice: Int, gasLimit: Int) -> Single<Transaction>
+    func sendSingle(to: Data, value: BigUInt, gasPrice: Int, gasLimit: Int) -> Single<Transaction>
 
     func clear()
 }
@@ -30,7 +30,7 @@ protocol ITransactionManager {
 protocol IBalanceManager {
     var delegate: IBalanceManagerDelegate? { get set }
 
-    var balance: BInt? { get }
+    var balance: BigUInt? { get }
     func sync()
 
     func clear()
@@ -39,7 +39,7 @@ protocol IBalanceManager {
 protocol IDataProvider {
     var lastBlockHeight: Int { get }
     func getTransactions(contractAddress: Data, address: Data, from: Int, to: Int) -> Single<[Transaction]>
-    func getBalance(contractAddress: Data, address: Data) -> Single<BInt>
+    func getBalance(contractAddress: Data, address: Data) -> Single<BigUInt>
     func sendSingle(contractAddress: Data, transactionInput: Data, gasPrice: Int, gasLimit: Int) -> Single<Data>
 }
 
@@ -52,5 +52,5 @@ protocol ITransactionStorage {
 }
 
 protocol ITokenBalanceStorage {
-    var balance: BInt? { get set }
+    var balance: BigUInt? { get set }
 }

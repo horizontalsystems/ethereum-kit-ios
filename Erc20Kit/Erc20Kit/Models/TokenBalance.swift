@@ -1,11 +1,11 @@
 import GRDB
-import EthereumKit
+import BigInt
 
 class TokenBalance: Record {
     let primaryKey: String = "primaryKey"
-    let value: BInt?
+    let value: BigUInt?
 
-    init(value: BInt?) {
+    init(value: BigUInt?) {
         self.value = value
 
         super.init()

@@ -1,5 +1,5 @@
 import RxSwift
-import EthereumKit
+import BigInt
 
 class BalanceManager {
     weak var delegate: IBalanceManagerDelegate?
@@ -22,7 +22,7 @@ class BalanceManager {
 
 extension BalanceManager: IBalanceManager {
 
-    var balance: BInt? {
+    var balance: BigUInt? {
         return storage.balance
     }
 

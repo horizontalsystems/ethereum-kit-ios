@@ -18,6 +18,8 @@ def common_pods
   pod 'GRDB.swift', '~> 3.0'
 
   pod 'Alamofire', '~> 4.0'
+
+  pod 'BigInt', '~> 4.0'
 end
 
 def test_pods

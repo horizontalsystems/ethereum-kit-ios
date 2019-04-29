@@ -1,4 +1,5 @@
 import RxSwift
+import BigInt
 
 class ApiBlockchain {
     private let refreshInterval: TimeInterval = 30
@@ -108,7 +109,7 @@ class ApiBlockchain {
         delegate?.onUpdate(lastBlockHeight: lastBlockHeight)
     }
 
-    private func update(balance: BInt) {
+    private func update(balance: BigUInt) {
         storage.save(balance: balance, address: address)
         delegate?.onUpdate(balance: balance)
     }
@@ -192,7 +193,7 @@ extension ApiBlockchain: IBlockchain {
         return storage.lastBlockHeight
     }
 
-    var balance: BInt? {
+    var balance: BigUInt? {
         return storage.balance(forAddress: address)
     }
 

@@ -1,6 +1,7 @@
 import RxSwift
 import EthereumKit
 import HSCryptoKit
+import BigInt
 
 public class Erc20Kit {
     private let gasLimit = 100_000
@@ -57,7 +58,7 @@ extension Erc20Kit {
     }
 
     public var balance: String? {
-        return state.balance?.asString(withBase: 10)
+        return state.balance?.description
     }
 
     public func fee(gasPrice: Int) -> Decimal {
@@ -67,7 +68,7 @@ extension Erc20Kit {
     public func sendSingle(to: String, value: String, gasPrice: Int) throws -> Single<TransactionInfo> {
         let to = try convert(address: to)
 
-        guard let value = BInt(value) else {
+        guard let value = BigUInt(value) else {
             throw SendError.invalidValue
         }
 
@@ -130,7 +131,7 @@ extension Erc20Kit: ITransactionManagerDelegate {
 
 extension Erc20Kit: IBalanceManagerDelegate {
 
-    func onSyncBalanceSuccess(balance: BInt) {
+    func onSyncBalanceSuccess(balance: BigUInt) {
         state.balance = balance
         state.syncState = .synced
     }

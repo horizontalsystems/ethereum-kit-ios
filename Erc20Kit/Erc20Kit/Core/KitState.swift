@@ -1,9 +1,7 @@
-import EthereumKit
+import BigInt
 import RxSwift
 
 class KitState {
-    let contractAddress: Data = Data()
-
     var syncState: Erc20Kit.SyncState = .syncing {
         didSet {
             if syncState != oldValue {
@@ -12,10 +10,10 @@ class KitState {
         }
     }
 
-    var balance: BInt? {
+    var balance: BigUInt? {
         didSet {
             if let balance = balance, balance != oldValue {
-                balanceSubject.onNext(balance.asString(withBase: 10))
+                balanceSubject.onNext(balance.description)
             }
         }
     }

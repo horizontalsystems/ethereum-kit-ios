@@ -1,21 +1,20 @@
 import GRDB
+import BigInt
 import EthereumKit
 
 class Transaction: Record {
-    static let transferEventTopic = Data(hex: "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef")! // Keccak-256("Transfer(address,address,uint256)")
-
     var transactionHash: Data
 
     let from: Data
     let to: Data
-    let value: BInt
+    let value: BigUInt
     var timestamp: TimeInterval
 
     var logIndex: Int?
     var blockHash: Data?
     var blockNumber: Int?
 
-    init(transactionHash: Data, from: Data, to: Data, value: BInt, timestamp: TimeInterval = Date().timeIntervalSince1970) {
+    init(transactionHash: Data, from: Data, to: Data, value: BigUInt, timestamp: TimeInterval = Date().timeIntervalSince1970) {
         self.transactionHash = transactionHash
         self.from = from
         self.to = to
@@ -55,7 +54,7 @@ class Transaction: Record {
 
     init?(log: EthereumLog) {
         guard log.topics.count == 3,
-              log.topics[0] == Transaction.transferEventTopic,
+              log.topics[0] == ERC20.ContractLogs.transfer.topic,
               log.topics[1].count == 32 && log.topics[2].count == 32  else {
             return nil
         }
@@ -64,7 +63,7 @@ class Transaction: Record {
 
         self.from = log.topics[1].suffix(from: 12)
         self.to = log.topics[2].suffix(from: 12)
-        self.value = BInt(log.data.toHexString(), radix: 16)!
+        self.value = BigUInt(log.data.toRawHexString(), radix: 16)!
         self.timestamp = log.timestamp ?? Date().timeIntervalSince1970
 
         self.logIndex = log.logIndex

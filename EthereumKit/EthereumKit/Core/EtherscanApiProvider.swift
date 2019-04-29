@@ -1,4 +1,5 @@
 import RxSwift
+import BigInt
 
 class EtherscanApiProvider {
     private let networkManager: NetworkManager
@@ -62,7 +63,7 @@ extension EtherscanApiProvider: ITransactionsProvider {
                 guard let nonce = data["nonce"].flatMap({ Int($0) }) else { return nil }
                 guard let from = data["from"].flatMap({ Data(hex: $0) }) else { return nil }
                 guard let to = data["to"].flatMap({ Data(hex: $0) }) else { return nil }
-                guard let value = data["value"].flatMap({ BInt($0) }) else { return nil }
+                guard let value = data["value"].flatMap({ BigUInt($0) }) else { return nil }
                 guard let gasLimit = data["gas"].flatMap({ Int($0) }) else { return nil }
                 guard let gasPrice = data["gasPrice"].flatMap({ Int($0) }) else { return nil }
                 guard let input = data["input"].flatMap({ Data(hex: $0) }) else { return nil }
