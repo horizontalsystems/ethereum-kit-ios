@@ -2,9 +2,6 @@ import RxSwift
 import BigInt
 
 class ApiBlockchain {
-    private let refreshInterval: TimeInterval = 30
-    private let ipfsRefreshInterval: TimeInterval = 60 * 3
-
     private var disposeBag = DisposeBag()
 
     weak var delegate: IBlockchainDelegate?
@@ -19,16 +16,10 @@ class ApiBlockchain {
 
     private var started = false
 
-    private var syncing = false
-    private var _syncState: EthereumKit.SyncState = .notSynced
-    private(set) var syncState: EthereumKit.SyncState {
-        get {
-            return _syncState
-        }
-        set {
-            if _syncState != newValue {
-                _syncState = newValue
-                delegate?.onUpdate(syncState: _syncState)
+    private(set) var syncState: EthereumKit.SyncState = .notSynced {
+        didSet {
+            if syncState != oldValue {
+                delegate?.onUpdate(syncState: syncState)
             }
         }
     }
@@ -46,7 +37,7 @@ class ApiBlockchain {
         self.logger = logger
 
         reachabilityManager.reachabilitySignal
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+                .observeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .subscribe(onNext: { [weak self] in
                     self?.sync()
                 })
@@ -59,15 +50,14 @@ class ApiBlockchain {
         }
 
         guard reachabilityManager.isReachable else {
-            self.syncState = .notSynced
+            syncState = .notSynced
             return
         }
-        guard !syncing else {
+        guard syncState != .syncing else {
             return
         }
 
-        self.syncing = true
-        self.syncState = .syncing
+        syncState = .syncing
 
         Single.zip(
                         rpcApiProvider.lastBlockHeightSingle(),
@@ -80,7 +70,6 @@ class ApiBlockchain {
 
                     self?.refreshTransactions()
                 }, onError: { [weak self] error in
-                    self?.syncing = false
                     self?.syncState = .notSynced
                     self?.logger?.error("Sync Failed: lastBlockHeight and balance: \(error)")
                 })
@@ -95,10 +84,8 @@ class ApiBlockchain {
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(onSuccess: { [weak self] transactions in
                     self?.update(transactions: transactions)
-                    self?.syncing = false
                     self?.syncState = .synced
                 }, onError: { [weak self] _ in
-                    self?.syncing = false
                     self?.syncState = .notSynced
                 })
                 .disposed(by: disposeBag)
