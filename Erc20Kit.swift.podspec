@@ -19,4 +19,5 @@ Pod::Spec.new do |spec|
   spec.dependency 'HSCryptoKit', '~> 1.0'
   spec.dependency 'RxSwift', '~> 4.0'
   spec.dependency 'GRDB.swift', '~> 3.0'
+  spec.dependency 'BigInt', '~> 4.0'
 end

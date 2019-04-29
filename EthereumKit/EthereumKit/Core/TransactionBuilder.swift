@@ -1,8 +1,9 @@
 import HSCryptoKit
+import BigInt
 
 class TransactionBuilder {
 
-    func rawTransaction(gasPrice: Int, gasLimit: Int, to: Data, value: BInt, data: Data = Data()) -> RawTransaction {
+    func rawTransaction(gasPrice: Int, gasLimit: Int, to: Data, value: BigUInt, data: Data = Data()) -> RawTransaction {
         return RawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: to, value: value, data: data)
     }
 

@@ -1,4 +1,4 @@
-import EthereumKit
+import BigInt
 import RxSwift
 
 class KitState {
@@ -10,10 +10,10 @@ class KitState {
         }
     }
 
-    var balance: BInt? {
+    var balance: BigUInt? {
         didSet {
             if let balance = balance, balance != oldValue {
-                balanceSubject.onNext(balance.asString(withBase: 10))
+                balanceSubject.onNext(balance.description)
             }
         }
     }

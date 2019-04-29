@@ -1,4 +1,5 @@
 import GRDB
+import BigInt
 
 extension UInt16 {
     
@@ -9,17 +10,17 @@ extension UInt16 {
     
 }
 
-extension BInt: DatabaseValueConvertible {
+extension BigUInt: DatabaseValueConvertible {
 
     /// Returns a value that can be stored in the database.
     public var databaseValue: DatabaseValue {
-        return self.asString(withBase: 10).databaseValue
+        return self.description.databaseValue
     }
 
     /// Returns a value initialized from dbValue, if possible.
-    public static func fromDatabaseValue(_ dbValue: DatabaseValue) -> BInt? {
+    public static func fromDatabaseValue(_ dbValue: DatabaseValue) -> BigUInt? {
         if case let DatabaseValue.Storage.string(value) = dbValue.storage {
-            return BInt(value, radix: 10)
+            return BigUInt(value)
         }
 
         return nil

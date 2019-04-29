@@ -1,10 +1,11 @@
 import GRDB
+import BigInt
 
 class EthereumBalance: Record {
     let address: Data
-    let value: BInt
+    let value: BigUInt
 
-    init(address: Data, value: BInt) {
+    init(address: Data, value: BigUInt) {
         self.address = address
         self.value = value
 

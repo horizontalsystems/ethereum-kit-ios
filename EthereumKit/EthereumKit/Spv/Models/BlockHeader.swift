@@ -1,22 +1,23 @@
 import GRDB
+import BigInt
 
 class BlockHeader: Record {
 
     static let EMPTY_TRIE_HASH = CryptoUtils.shared.sha3(RLP.encode([]))
 
     var hashHex: Data
-    var totalDifficulty: BInt = 0 // Scalar value corresponding to the sum of difficulty values of all previous blocks
+    var totalDifficulty: BigUInt = 0 // Scalar value corresponding to the sum of difficulty values of all previous blocks
 
     var parentHash: Data         // 256-bit Keccak-256 hash of parent block
     let unclesHash: Data         // 256-bit Keccak-256 hash of uncles portion of this block
     let coinbase: Data           // 160-bit address for fees collected from successful mining
     let stateRoot: Data          // 256-bit state trie root hash
-    let transactionsRoot: Data   // 256-bit transactions trie root hash
+    let transactionsRoot: Data    // 256-bit transactions trie root hash
     let receiptsRoot: Data       // 256-bit receipts trie root hash
     let logsBloom: Data          /* The Bloom filter composed from indexable information
                                   * (logger address and log topics) contained in each log entry
                                   * from the receipt of each transaction in the transactions list */
-    let difficulty: BInt         /* A scalar value corresponding to the difficulty level of this block.
+    let difficulty: BigUInt         /* A scalar value corresponding to the difficulty level of this block.
                                   * This can be calculated from the previous block’s difficulty level
                                   * and the timestamp */
     var height: Int
@@ -30,9 +31,9 @@ class BlockHeader: Record {
     let nonce: Data              /* A 64-bit hash which proves that a sufficient amount
                                   * of computation has been carried out on this block */
 
-    init(hashHex: Data, totalDifficulty: BInt, parentHash: Data, unclesHash: Data, coinbase: Data,
+    init(hashHex: Data, totalDifficulty: BigUInt, parentHash: Data, unclesHash: Data, coinbase: Data,
          stateRoot: Data, transactionsRoot: Data, receiptsRoot: Data, logsBloom: Data,
-         difficulty: BInt, height: Int, gasLimit: Int, gasUsed: Int, timestamp: Int,
+         difficulty: BigUInt, height: Int, gasLimit: Int, gasUsed: Int, timestamp: Int,
          extraData: Data, mixHash: Data, nonce: Data) {
         self.hashHex = hashHex
         self.totalDifficulty = totalDifficulty

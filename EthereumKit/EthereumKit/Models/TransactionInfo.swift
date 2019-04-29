@@ -1,4 +1,4 @@
-import GRDB
+import BigInt
 
 public class TransactionInfo {
     public let hash: String
@@ -42,11 +42,11 @@ public class TransactionInfo {
 
         if data.count == 68 && data[0...3].toRawHexString() == "a9059cbb" {
             to = data[4...35].toEIP55Address()
-            value = BInt(number: data[36...67].toRawHexString(), withBase: 16)!.asString(withBase: 10)
+            value = BigUInt(data[36...67].toRawHexString(), radix: 16)!.description
             contractAddress = transaction.to.toEIP55Address()
         } else {
             to = transaction.to.toEIP55Address()
-            value = transaction.value.asString(withBase: 10)
+            value = transaction.value.description
             contractAddress = nil
         }
     }

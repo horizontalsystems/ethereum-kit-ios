@@ -1,4 +1,5 @@
 import GRDB
+import BigInt
 
 class Transaction: Record {
     let hash: Data
@@ -6,7 +7,7 @@ class Transaction: Record {
     let input: Data
     let from: Data
     let to: Data
-    let value: BInt
+    let value: BigUInt
     let gasLimit: Int
     let gasPrice: Int
     let timestamp: TimeInterval
@@ -19,7 +20,7 @@ class Transaction: Record {
     var transactionIndex: Int?
     var txReceiptStatus: Int?
 
-    init(hash: Data, nonce: Int, input: Data = Data(), from: Data, to: Data, value: BInt, gasLimit: Int, gasPrice: Int, timestamp: TimeInterval = Date().timeIntervalSince1970) {
+    init(hash: Data, nonce: Int, input: Data = Data(), from: Data, to: Data, value: BigUInt, gasLimit: Int, gasPrice: Int, timestamp: TimeInterval = Date().timeIntervalSince1970) {
         self.hash = hash
         self.nonce = nonce
         self.input = input

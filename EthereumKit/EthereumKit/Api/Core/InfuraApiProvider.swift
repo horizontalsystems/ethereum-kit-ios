@@ -1,4 +1,5 @@
 import RxSwift
+import BigInt
 
 class InfuraApiProvider {
     private let networkManager: NetworkManager
@@ -58,10 +59,10 @@ extension InfuraApiProvider {
         }
     }
 
-    private func infuraBIntSingle(method: String, params: [Any]) -> Single<BInt> {
-        return infuraSingle(method: method, params: params) { data -> BInt? in
-            if let map = data as? [String: Any], let result = map["result"] as? String, let bInt = BInt(result.stripHexPrefix(), radix: 16) {
-                return bInt
+    private func infuraBIntSingle(method: String, params: [Any]) -> Single<BigUInt> {
+        return infuraSingle(method: method, params: params) { data -> BigUInt? in
+            if let map = data as? [String: Any], let result = map["result"] as? String, let bigInt = BigUInt(result.stripHexPrefix(), radix: 16) {
+                return bigInt
             }
             return nil
         }
@@ -88,7 +89,7 @@ extension InfuraApiProvider: IRpcApiProvider {
         return infuraIntSingle(method: "eth_getTransactionCount", params: [address.toHexString(), "pending"])
     }
 
-    func balanceSingle(address: Data) -> Single<BInt> {
+    func balanceSingle(address: Data) -> Single<BigUInt> {
         return infuraBIntSingle(method: "eth_getBalance", params: [address.toHexString(), "latest"])
     }
 

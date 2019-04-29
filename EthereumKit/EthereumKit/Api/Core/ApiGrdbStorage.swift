@@ -1,5 +1,6 @@
 import RxSwift
 import GRDB
+import BigInt
 
 class ApiGrdbStorage: BaseGrdbStorage {
 
@@ -45,7 +46,7 @@ extension ApiGrdbStorage: IApiStorage {
         }
     }
 
-    func balance(forAddress address: Data) -> BInt? {
+    func balance(forAddress address: Data) -> BigUInt? {
         let request = EthereumBalance.filter(EthereumBalance.Columns.address == address)
 
         return try! dbPool.read { db in
@@ -53,7 +54,7 @@ extension ApiGrdbStorage: IApiStorage {
         }
     }
 
-    func save(balance: BInt, address: Data) {
+    func save(balance: BigUInt, address: Data) {
         _ = try? dbPool.write { db in
             let balanceObject = EthereumBalance(address: address, value: balance)
             try balanceObject.insert(db)

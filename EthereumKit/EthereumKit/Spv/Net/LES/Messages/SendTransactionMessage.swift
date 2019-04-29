@@ -34,7 +34,7 @@ class SendTransactionMessage: IOutMessage {
 
     func toString() -> String {
         return "SEND_TX [requestId: \(requestId), nonce: \(nonce), gasPrice: \(rawTransaction.gasPrice), gasLimit: \(rawTransaction.gasLimit), " +
-                "to: \(rawTransaction.to.toHexString()), value: \(rawTransaction.value.asString(withBase: 10)), data: \(rawTransaction.data.toHexString()), " +
+                "to: \(rawTransaction.to.toHexString()), value: \(rawTransaction.value), data: \(rawTransaction.data.toHexString()), " +
                 "v: \(signature.v), r: \(signature.r), s: \(signature.s)]"
     }
 

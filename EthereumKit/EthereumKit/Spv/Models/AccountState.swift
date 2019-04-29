@@ -1,13 +1,14 @@
 import GRDB
+import BigInt
 
 class AccountState: Record {
     let address: Data
     let nonce: Int
-    let balance: BInt
+    let balance: BigUInt
     let storageHash: Data // Storage Trie root hash
     let codeHash: Data
 
-    init(address: Data, nonce: Int, balance: BInt, storageHash: Data, codeHash: Data) {
+    init(address: Data, nonce: Int, balance: BigUInt, storageHash: Data, codeHash: Data) {
         self.address = address
         self.nonce = nonce
         self.balance = balance
@@ -50,7 +51,7 @@ class AccountState: Record {
     func toString() -> String {
         return "(\n" +
                 "  nonce: \(nonce)\n" + 
-                "  balance: \(balance.asString(withBase: 10))\n" + 
+                "  balance: \(balance)\n" + 
                 "  storageHash: \(storageHash.toHexString())\n" + 
                 "  codeHash: \(codeHash.toHexString())\n" +
                 ")"

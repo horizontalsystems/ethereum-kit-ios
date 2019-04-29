@@ -1,4 +1,5 @@
 import Foundation
+import BigInt
 
 class RLPElement {
 
@@ -33,7 +34,7 @@ class RLPElement {
         return Int(bitPattern: uInt)
     }
 
-    func bIntValue() throws -> BInt {
+    func bIntValue() throws -> BigUInt {
         guard type == .string else {
             throw RLP.DecodeError.invalidBIntValue
         }
@@ -42,7 +43,7 @@ class RLPElement {
             return 0
         }
 
-        guard let bInt = BInt(dataValue.toRawHexString(), radix: 16) else {
+        guard let bInt = BigUInt(dataValue.toRawHexString(), radix: 16) else {
             throw RLP.DecodeError.invalidBIntValue
         }
 

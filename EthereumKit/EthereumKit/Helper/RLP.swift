@@ -1,3 +1,5 @@
+import BigInt
+
 struct RLP {
 
     enum DecodeError: Error {
@@ -19,11 +21,11 @@ struct RLP {
         case let list as [Any]:
             return encode(elements: list)
 
-        case let bint as BInt:
+        case let bint as BigUInt:
             return encode(bint: bint)
 
         case let int as Int:
-            return encode(bint: BInt(int))
+            return encode(bint: BigUInt(int))
 
         case let data as Data:
             return encode(data: data)
@@ -145,7 +147,7 @@ struct RLP {
         return encode(data: data)
     }
 
-    private static func encode(bint: BInt) -> Data {
+    private static func encode(bint: BigUInt) -> Data {
         let data = bint.serialize()
         if data.isEmpty {
             return Data(bytes: [0x80])

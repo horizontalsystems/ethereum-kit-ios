@@ -1,7 +1,9 @@
+import BigInt
+
 class StatusMessage: IInMessage, IOutMessage {
     var protocolVersion: Int
     var networkId: Int
-    var headTotalDifficulty: BInt
+    var headTotalDifficulty: BigUInt
     var headHash: Data
     var headHeight: Int
     var genesisHash: Data
@@ -14,7 +16,7 @@ class StatusMessage: IInMessage, IOutMessage {
     var flowControlMRR: Int = 0
     var flowControlMRC: [MaxCost] = []
 
-    init(protocolVersion: Int, networkId: Int, genesisHash: Data, headTotalDifficulty: BInt, headHash: Data, headHeight: Int) {
+    init(protocolVersion: Int, networkId: Int, genesisHash: Data, headTotalDifficulty: BigUInt, headHash: Data, headHeight: Int) {
         self.protocolVersion = protocolVersion
         self.networkId = networkId
         self.genesisHash = genesisHash

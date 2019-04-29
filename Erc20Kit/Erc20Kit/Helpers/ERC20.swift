@@ -1,5 +1,5 @@
 import HSCryptoKit
-import EthereumKit
+import BigInt
 
 struct ERC20 {
 
@@ -16,7 +16,7 @@ struct ERC20 {
 
     enum ContractFunctions {
         case balanceOf(address: Data)
-        case transfer(address: Data, amount: BInt)
+        case transfer(address: Data, amount: BigUInt)
 
         var methodSignature: Data {
             switch self {

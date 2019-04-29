@@ -1,10 +1,12 @@
+import BigInt
+
 class AnnounceMessage: IInMessage {
     let blockHash: Data
-    let blockTotalDifficulty: BInt
+    let blockTotalDifficulty: BigUInt
     let blockHeight: Int
     let reorganizationDepth: Int
 
-    init(blockHash: Data, blockTotalDifficulty: BInt, blockHeight: Int, reorganizationDepth: Int) {
+    init(blockHash: Data, blockTotalDifficulty: BigUInt, blockHeight: Int, reorganizationDepth: Int) {
         self.blockHash = blockHash
         self.blockTotalDifficulty = blockTotalDifficulty
         self.blockHeight = blockHeight

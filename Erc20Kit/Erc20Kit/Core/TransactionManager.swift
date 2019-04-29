@@ -1,5 +1,5 @@
 import RxSwift
-import EthereumKit
+import BigInt
 
 class TransactionManager {
     weak var delegate: ITransactionManagerDelegate?
@@ -32,7 +32,7 @@ extension TransactionManager: ITransactionManager {
         return storage.transactionsSingle(from: from, limit: limit)
     }
 
-    func sendSingle(to: Data, value: BInt, gasPrice: Int, gasLimit: Int) -> Single<Transaction> {
+    func sendSingle(to: Data, value: BigUInt, gasPrice: Int, gasLimit: Int) -> Single<Transaction> {
         let transactionInput = transactionBuilder.transferTransactionInput(to: to, value: value)
 
         return dataProvider.sendSingle(contractAddress: contractAddress, transactionInput: transactionInput, gasPrice: gasPrice, gasLimit: gasLimit)

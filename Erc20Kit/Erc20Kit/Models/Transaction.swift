@@ -1,4 +1,5 @@
 import GRDB
+import BigInt
 import EthereumKit
 
 class Transaction: Record {
@@ -6,14 +7,14 @@ class Transaction: Record {
 
     let from: Data
     let to: Data
-    let value: BInt
+    let value: BigUInt
     var timestamp: TimeInterval
 
     var logIndex: Int?
     var blockHash: Data?
     var blockNumber: Int?
 
-    init(transactionHash: Data, from: Data, to: Data, value: BInt, timestamp: TimeInterval = Date().timeIntervalSince1970) {
+    init(transactionHash: Data, from: Data, to: Data, value: BigUInt, timestamp: TimeInterval = Date().timeIntervalSince1970) {
         self.transactionHash = transactionHash
         self.from = from
         self.to = to
@@ -62,7 +63,7 @@ class Transaction: Record {
 
         self.from = log.topics[1].suffix(from: 12)
         self.to = log.topics[2].suffix(from: 12)
-        self.value = BInt(log.data.toHexString(), radix: 16)!
+        self.value = BigUInt(log.data.toRawHexString(), radix: 16)!
         self.timestamp = log.timestamp ?? Date().timeIntervalSince1970
 
         self.logIndex = log.logIndex
