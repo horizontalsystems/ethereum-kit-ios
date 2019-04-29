@@ -100,6 +100,7 @@ extension GrdbStorage: ITransactionStorage {
     func save(transactions: [Transaction]) {
         _ = try? dbPool.write { db in
             for transaction in transactions {
+                try Transaction.filter(Transaction.Columns.transactionHash == transaction.transactionHash && Transaction.Columns.logIndex == nil).deleteAll(db)
                 try transaction.insert(db)
             }
         }
