@@ -120,18 +120,10 @@ class ApiBlockchain {
     }
 
     private func pullTransactionTimestamps(ethereumLogs: [EthereumLog]) -> Single<[EthereumLog]> {
-        var logsByBlockNumber = [Int: [EthereumLog]]()
-
-        for log in ethereumLogs {
-            if var logs = logsByBlockNumber[log.blockNumber] {
-                logs.append(log)
-            } else {
-                logsByBlockNumber[log.blockNumber] = [log]
-            }
-        }
+        var logsByBlockNumber = Dictionary(grouping: ethereumLogs, by: { $0.blockNumber })
 
         var requestSingles = [Single<Block>]()
-        for (blockNumber, _) in logsByBlockNumber {
+        for blockNumber in logsByBlockNumber.keys {
             requestSingles.append(rpcApiProvider.getBlock(byNumber: blockNumber))
         }
 
