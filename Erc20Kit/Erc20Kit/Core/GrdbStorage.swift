@@ -37,11 +37,12 @@ class GrdbStorage {
                 t.column(Transaction.Columns.to.name, .text).notNull()
                 t.column(Transaction.Columns.value.name, .text).notNull()
                 t.column(Transaction.Columns.timestamp.name, .double).notNull()
+                t.column(Transaction.Columns.index.name, .integer).notNull()
                 t.column(Transaction.Columns.logIndex.name, .integer)
                 t.column(Transaction.Columns.blockHash.name, .text)
                 t.column(Transaction.Columns.blockNumber.name, .integer)
 
-                t.primaryKey([Transaction.Columns.transactionHash.name, Transaction.Columns.logIndex.name], onConflict: .replace)
+                t.primaryKey([Transaction.Columns.transactionHash.name, Transaction.Columns.index.name], onConflict: .replace)
             }
         }
 
@@ -77,14 +78,20 @@ extension GrdbStorage: ITransactionStorage {
         }
     }
 
+    var pendingTransactions: [Transaction] {
+        return try! dbPool.read { db in
+            try Transaction.filter(Transaction.Columns.logIndex == nil).fetchAll(db)
+        }
+    }
+
     func transactionsSingle(from: (hash: Data, index: Int)?, limit: Int?) -> Single<[Transaction]> {
         return Single.create { [weak self] observer in
             try! self?.dbPool.read { db in
-                var request = Transaction.order(Transaction.Columns.timestamp.desc, Transaction.Columns.logIndex.desc)
+                var request = Transaction.order(Transaction.Columns.timestamp.desc, Transaction.Columns.index.desc)
 
                 if let from = from,
-                   let fromTransaction = try request.filter(Transaction.Columns.transactionHash == from.hash).filter(Transaction.Columns.logIndex == from.index).fetchOne(db) {
-                    request = request.filter(Transaction.Columns.timestamp < fromTransaction.timestamp || (Transaction.Columns.timestamp == fromTransaction.timestamp && Transaction.Columns.logIndex < from.index))
+                   let fromTransaction = try request.filter(Transaction.Columns.transactionHash == from.hash).filter(Transaction.Columns.index == from.index).fetchOne(db) {
+                    request = request.filter(Transaction.Columns.timestamp < fromTransaction.timestamp || (Transaction.Columns.timestamp == fromTransaction.timestamp && Transaction.Columns.index < from.index))
                 }
                 if let limit = limit {
                     request = request.limit(limit)
@@ -100,7 +107,6 @@ extension GrdbStorage: ITransactionStorage {
     func save(transactions: [Transaction]) {
         _ = try! dbPool.write { db in
             for transaction in transactions {
-                try Transaction.filter(Transaction.Columns.transactionHash == transaction.transactionHash && Transaction.Columns.logIndex == nil).deleteAll(db)
                 try transaction.insert(db)
             }
         }
