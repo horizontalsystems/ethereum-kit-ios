@@ -48,7 +48,8 @@ class Erc20Adapter {
 
         return TransactionRecord(
                 transactionHash: transaction.transactionHash,
-                index: transaction.index,
+                transactionIndex: transaction.transactionIndex ?? 0,
+                interTransactionIndex: transaction.interTransactionIndex,
                 amount: amount,
                 timestamp: transaction.timestamp,
                 from: from,
@@ -115,7 +116,7 @@ extension Erc20Adapter: IAdapter {
         return try! erc20Kit.sendSingle(to: to, value: value, gasPrice: 5_000_000_000).map { _ in ()}
     }
 
-    func transactionsSingle(from: (hash: String, index: Int)?, limit: Int?) -> Single<[TransactionRecord]> {
+    func transactionsSingle(from: (hash: String, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionRecord]> {
         return try! erc20Kit.transactionsSingle(from: from, limit: limit)
                 .map { [weak self] in
                     $0.compactMap {

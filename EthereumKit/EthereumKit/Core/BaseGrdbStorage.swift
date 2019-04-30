@@ -61,13 +61,14 @@ extension BaseGrdbStorage {
                 }
 
                 if let fromHash = fromHash, let fromTransaction = try request.filter(Transaction.Columns.hash == fromHash).fetchOne(db) {
-                    request = request.filter(Transaction.Columns.timestamp < fromTransaction.timestamp)
+                    let transactionIndex = fromTransaction.transactionIndex ?? 0
+                    request = request.filter(Transaction.Columns.timestamp < fromTransaction.timestamp || (Transaction.Columns.timestamp == fromTransaction.timestamp && Transaction.Columns.transactionIndex < transactionIndex))
                 }
                 if let limit = limit {
                     request = request.limit(limit)
                 }
 
-                let transactions = try request.order(Transaction.Columns.timestamp.desc).fetchAll(db)
+                let transactions = try request.order(Transaction.Columns.timestamp.desc, Transaction.Columns.transactionIndex.desc).fetchAll(db)
 
                 observer(.success(transactions))
             }

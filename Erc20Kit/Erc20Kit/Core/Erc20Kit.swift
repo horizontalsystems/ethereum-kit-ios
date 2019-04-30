@@ -79,9 +79,9 @@ extension Erc20Kit {
                 })
     }
 
-    public func transactionsSingle(from: (hash: String, index: Int)?, limit: Int?) throws -> Single<[TransactionInfo]> {
+    public func transactionsSingle(from: (hash: String, interTransactionIndex: Int)?, limit: Int?) throws -> Single<[TransactionInfo]> {
         let from = try from.map {
-            (hash: try convert(address: $0.hash), index: $0.index)
+            (hash: try convert(address: $0.hash), interTransactionIndex: $0.interTransactionIndex)
         }
 
         return transactionManager.transactionsSingle(from: from, limit: limit)

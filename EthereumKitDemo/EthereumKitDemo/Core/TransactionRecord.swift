@@ -2,7 +2,8 @@ import Foundation
 
 struct TransactionRecord {
     let transactionHash: String
-    let index: Int
+    let transactionIndex: Int
+    let interTransactionIndex: Int
     let amount: Decimal
     let timestamp: Double
 
