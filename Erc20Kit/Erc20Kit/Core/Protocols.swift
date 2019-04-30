@@ -1,5 +1,6 @@
 import RxSwift
 import BigInt
+import EthereumKit
 
 protocol IBalanceManagerDelegate: class {
     func onSyncBalanceSuccess(balance: BigUInt)
@@ -38,13 +39,14 @@ protocol IBalanceManager {
 
 protocol IDataProvider {
     var lastBlockHeight: Int { get }
-    func getTransactions(contractAddress: Data, address: Data, from: Int, to: Int) -> Single<[Transaction]>
+    func getTransactionLogs(contractAddress: Data, address: Data, from: Int, to: Int) -> Single<[EthereumLog]>
     func getBalance(contractAddress: Data, address: Data) -> Single<BigUInt>
     func sendSingle(contractAddress: Data, transactionInput: Data, gasPrice: Int, gasLimit: Int) -> Single<Data>
 }
 
 protocol ITransactionStorage {
     var lastTransactionBlockHeight: Int? { get }
+    var pendingTransactions: [Transaction] { get }
     func transactionsSingle(from: (hash: Data, index: Int)?, limit: Int?) -> Single<[Transaction]>
     func save(transactions: [Transaction])
     func update(transaction: Transaction)

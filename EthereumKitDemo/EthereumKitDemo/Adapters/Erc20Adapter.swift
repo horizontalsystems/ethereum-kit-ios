@@ -48,7 +48,7 @@ class Erc20Adapter {
 
         return TransactionRecord(
                 transactionHash: transaction.transactionHash,
-                index: transaction.logIndex ?? 0,
+                index: transaction.index,
                 amount: amount,
                 timestamp: transaction.timestamp,
                 from: from,

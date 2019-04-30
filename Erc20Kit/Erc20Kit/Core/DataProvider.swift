@@ -17,7 +17,7 @@ extension DataProvider: IDataProvider {
         return ethereumKit.lastBlockHeight ?? 0
     }
 
-    func getTransactions(contractAddress: Data, address: Data, from: Int, to: Int) -> Single<[Transaction]> {
+    func getTransactionLogs(contractAddress: Data, address: Data, from: Int, to: Int) -> Single<[EthereumLog]> {
         let addressTopic = Data(repeating: 0, count: 12) + address
         let transferTopic = ERC20.ContractLogs.transfer.topic
 
@@ -31,9 +31,13 @@ extension DataProvider: IDataProvider {
         return Single.zip(singles) { logsArray -> [EthereumLog] in
                     return Array(Set<EthereumLog>(logsArray.joined()))
                 }
-                .map { logs -> [Transaction] in
-                    return logs.compactMap { Transaction(log: $0) }
-                }
+                .map { logs -> [EthereumLog] in
+                    return logs.filter { log in
+                        return log.topics.count == 3 &&
+                              log.topics[0] == ERC20.ContractLogs.transfer.topic &&
+                              log.topics[1].count == 32 && log.topics[2].count == 32
+                        }
+                    }
     }
 
     func getBalance(contractAddress: Data, address: Data) -> Single<BigUInt> {

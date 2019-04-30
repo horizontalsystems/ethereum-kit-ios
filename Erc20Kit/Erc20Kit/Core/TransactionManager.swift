@@ -1,5 +1,6 @@
 import RxSwift
 import BigInt
+import EthereumKit
 
 class TransactionManager {
     weak var delegate: ITransactionManagerDelegate?
@@ -18,6 +19,32 @@ class TransactionManager {
         self.storage = storage
         self.dataProvider = dataProvider
         self.transactionBuilder = transactionBuilder
+    }
+
+    private func handle(logs: [EthereumLog]) {
+        let pendingTransactions = storage.pendingTransactions
+
+        let transactions = logs.map { log -> Transaction in
+            var index = log.logIndex
+            let value = BigUInt(log.data.toRawHexString(), radix: 16)!
+            let from = log.topics[1].suffix(from: 12)
+            let to = log.topics[2].suffix(from: 12)
+
+            if pendingTransactions.contains(where: { $0.transactionHash == log.transactionHash && $0.value == value && $0.from == from && $0.to == to }) {
+                index = 0
+            }
+
+            let transaction = Transaction(transactionHash: log.transactionHash, from: from, to: to, value: value, timestamp: log.timestamp ?? Date().timeIntervalSince1970, index: index)
+
+            transaction.logIndex = log.logIndex
+            transaction.blockHash = log.blockHash
+            transaction.blockNumber = log.blockNumber
+
+            return transaction
+        }
+
+        storage.save(transactions: transactions)
+        delegate?.onSyncSuccess(transactions: transactions)
     }
 
 }
@@ -48,11 +75,10 @@ extension TransactionManager: ITransactionManager {
         let lastBlockHeight = dataProvider.lastBlockHeight
         let lastTransactionBlockHeight = storage.lastTransactionBlockHeight ?? 0
 
-        dataProvider.getTransactions(contractAddress: contractAddress, address: address, from: lastTransactionBlockHeight + 1, to: lastBlockHeight)
+        dataProvider.getTransactionLogs(contractAddress: contractAddress, address: address, from: lastTransactionBlockHeight + 1, to: lastBlockHeight)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                .subscribe(onSuccess: { [weak self] transactions in
-                    self?.storage.save(transactions: transactions)
-                    self?.delegate?.onSyncSuccess(transactions: transactions)
+                .subscribe(onSuccess: { [weak self] logs in
+                    self?.handle(logs: logs)
                 }, onError: { error in
                     self.delegate?.onSyncTransactionsError()
                 })
