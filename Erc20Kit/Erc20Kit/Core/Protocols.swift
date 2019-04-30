@@ -20,7 +20,7 @@ protocol ITransactionManager {
     var delegate: ITransactionManagerDelegate? { get set }
 
     var lastTransactionBlockHeight: Int? { get }
-    func transactionsSingle(from: (hash: Data, index: Int)?, limit: Int?) -> Single<[Transaction]>
+    func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[Transaction]>
 
     func sync()
     func sendSingle(to: Data, value: BigUInt, gasPrice: Int, gasLimit: Int) -> Single<Transaction>
@@ -47,7 +47,7 @@ protocol IDataProvider {
 protocol ITransactionStorage {
     var lastTransactionBlockHeight: Int? { get }
     var pendingTransactions: [Transaction] { get }
-    func transactionsSingle(from: (hash: Data, index: Int)?, limit: Int?) -> Single<[Transaction]>
+    func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[Transaction]>
     func save(transactions: [Transaction])
     func update(transaction: Transaction)
     func clearTransactions()

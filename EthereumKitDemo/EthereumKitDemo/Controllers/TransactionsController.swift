@@ -61,7 +61,7 @@ class TransactionsController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 180
+        return 190
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -99,7 +99,7 @@ class TransactionsController: UITableViewController {
 
         loading = true
 
-        let from = transactions.last.map { (hash: $0.transactionHash, index: $0.index) }
+        let from = transactions.last.map { (hash: $0.transactionHash, interTransactionIndex: $0.interTransactionIndex) }
 
         currentAdapter.transactionsSingle(from: from, limit: limit)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))

@@ -33,16 +33,17 @@ class GrdbStorage {
         migrator.registerMigration("createTransactions") { db in
             try db.create(table: Transaction.databaseTableName) { t in
                 t.column(Transaction.Columns.transactionHash.name, .text).notNull()
+                t.column(Transaction.Columns.transactionIndex.name, .integer)
                 t.column(Transaction.Columns.from.name, .text).notNull()
                 t.column(Transaction.Columns.to.name, .text).notNull()
                 t.column(Transaction.Columns.value.name, .text).notNull()
                 t.column(Transaction.Columns.timestamp.name, .double).notNull()
-                t.column(Transaction.Columns.index.name, .integer).notNull()
+                t.column(Transaction.Columns.interTransactionIndex.name, .integer).notNull()
                 t.column(Transaction.Columns.logIndex.name, .integer)
                 t.column(Transaction.Columns.blockHash.name, .text)
                 t.column(Transaction.Columns.blockNumber.name, .integer)
 
-                t.primaryKey([Transaction.Columns.transactionHash.name, Transaction.Columns.index.name], onConflict: .replace)
+                t.primaryKey([Transaction.Columns.transactionHash.name, Transaction.Columns.interTransactionIndex.name], onConflict: .replace)
             }
         }
 
@@ -84,14 +85,18 @@ extension GrdbStorage: ITransactionStorage {
         }
     }
 
-    func transactionsSingle(from: (hash: Data, index: Int)?, limit: Int?) -> Single<[Transaction]> {
+    func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[Transaction]> {
         return Single.create { [weak self] observer in
             try! self?.dbPool.read { db in
-                var request = Transaction.order(Transaction.Columns.timestamp.desc, Transaction.Columns.index.desc)
+                var request = Transaction.order(Transaction.Columns.timestamp.desc, Transaction.Columns.transactionIndex.desc, Transaction.Columns.interTransactionIndex.desc)
 
-                if let from = from,
-                   let fromTransaction = try request.filter(Transaction.Columns.transactionHash == from.hash).filter(Transaction.Columns.index == from.index).fetchOne(db) {
-                    request = request.filter(Transaction.Columns.timestamp < fromTransaction.timestamp || (Transaction.Columns.timestamp == fromTransaction.timestamp && Transaction.Columns.index < from.index))
+                if let from = from, let fromTransaction = try request.filter(Transaction.Columns.transactionHash == from.hash).filter(Transaction.Columns.interTransactionIndex == from.interTransactionIndex).fetchOne(db) {
+                    let transactionIndex = fromTransaction.transactionIndex ?? 0
+                    request = request.filter(
+                            Transaction.Columns.timestamp < fromTransaction.timestamp ||
+                                    (Transaction.Columns.timestamp == fromTransaction.timestamp && Transaction.Columns.transactionIndex < transactionIndex) ||
+                                    (Transaction.Columns.timestamp == fromTransaction.timestamp && Transaction.Columns.transactionIndex == fromTransaction.transactionIndex && Transaction.Columns.interTransactionIndex == from.interTransactionIndex)
+                    )
                 }
                 if let limit = limit {
                     request = request.limit(limit)

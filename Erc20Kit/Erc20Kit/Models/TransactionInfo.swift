@@ -3,11 +3,12 @@ import BigInt
 
 public class TransactionInfo {
     public let transactionHash: String
+    public let transactionIndex: Int?
     public let from: String
     public let to: String
     public let value: String
     public let timestamp: TimeInterval
-    public let index: Int
+    public let interTransactionIndex: Int
 
     public var logIndex: Int?
     public var blockHash: String?
@@ -15,7 +16,8 @@ public class TransactionInfo {
 
     init(transaction: Transaction) {
         self.transactionHash = transaction.transactionHash.toHexString()
-        self.index = transaction.index
+        self.transactionIndex = transaction.transactionIndex
+        self.interTransactionIndex = transaction.interTransactionIndex
         self.logIndex = transaction.logIndex
         self.from = transaction.from.toEIP55Address()
         self.to = transaction.to.toEIP55Address()

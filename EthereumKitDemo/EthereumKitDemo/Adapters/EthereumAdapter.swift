@@ -30,7 +30,8 @@ class EthereumAdapter {
 
         return TransactionRecord(
                 transactionHash: transaction.hash,
-                index: 0,
+                transactionIndex: transaction.transactionIndex ?? 0,
+                interTransactionIndex: 0,
                 amount: amount,
                 timestamp: transaction.timestamp,
                 from: from,
@@ -101,7 +102,7 @@ extension EthereumAdapter: IAdapter {
         return ethereumKit.sendSingle(to: to, value: value, gasPrice: 5_000_000_000).map { _ in ()}
     }
 
-    func transactionsSingle(from: (hash: String, index: Int)?, limit: Int?) -> Single<[TransactionRecord]> {
+    func transactionsSingle(from: (hash: String, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionRecord]> {
         return ethereumKit.transactionsSingle(fromHash: from?.hash, limit: limit)
                 .map { [weak self] in
                     $0.compactMap {

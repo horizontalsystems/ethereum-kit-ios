@@ -34,7 +34,7 @@ class TransactionManager {
                 index = 0
             }
 
-            let transaction = Transaction(transactionHash: log.transactionHash, from: from, to: to, value: value, timestamp: log.timestamp ?? Date().timeIntervalSince1970, index: index)
+            let transaction = Transaction(transactionHash: log.transactionHash, transactionIndex: log.transactionIndex, from: from, to: to, value: value, timestamp: log.timestamp ?? Date().timeIntervalSince1970, interTransactionIndex: index)
 
             transaction.logIndex = log.logIndex
             transaction.blockHash = log.blockHash
@@ -55,7 +55,7 @@ extension TransactionManager: ITransactionManager {
         return storage.lastTransactionBlockHeight
     }
 
-    func transactionsSingle(from: (hash: Data, index: Int)?, limit: Int?) -> Single<[Transaction]> {
+    func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[Transaction]> {
         return storage.transactionsSingle(from: from, limit: limit)
     }
 

@@ -19,6 +19,6 @@ protocol IAdapter {
 
     func validate(address: String) throws
     func sendSingle(to address: String, amount: Decimal) -> Single<Void>
-    func transactionsSingle(from: (hash: String, index: Int)?, limit: Int?) -> Single<[TransactionRecord]>
+    func transactionsSingle(from: (hash: String, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionRecord]>
 
 }

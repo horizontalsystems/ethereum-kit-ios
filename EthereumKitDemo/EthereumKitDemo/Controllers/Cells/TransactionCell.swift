@@ -21,7 +21,8 @@ class TransactionCell: UITableViewCell {
 
         set(string: """
                     Tx Hash:
-                    Index:
+                    Tx Index:
+                    Inter Tx Index:
                     Date:
                     Value:
                     \(transaction.from.mine ? "To" : "From")
@@ -31,7 +32,8 @@ class TransactionCell: UITableViewCell {
 
         set(string: """
                     \(format(hash: transaction.transactionHash))
-                    \(transaction.index)
+                    \(transaction.transactionIndex)
+                    \(transaction.interTransactionIndex)
                     \(TransactionCell.dateFormatter.string(from: Date(timeIntervalSince1970: transaction.timestamp)))
                     \(transaction.amount) \(coin)
                     \(format(hash: transaction.from.mine ? transaction.to.address : transaction.from.address))
