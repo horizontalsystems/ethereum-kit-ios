@@ -95,7 +95,7 @@ extension GrdbStorage: ITransactionStorage {
                     request = request.filter(
                             Transaction.Columns.timestamp < fromTransaction.timestamp ||
                                     (Transaction.Columns.timestamp == fromTransaction.timestamp && Transaction.Columns.transactionIndex < transactionIndex) ||
-                                    (Transaction.Columns.timestamp == fromTransaction.timestamp && Transaction.Columns.transactionIndex == fromTransaction.transactionIndex && Transaction.Columns.interTransactionIndex == from.interTransactionIndex)
+                                    (Transaction.Columns.timestamp == fromTransaction.timestamp && Transaction.Columns.transactionIndex == fromTransaction.transactionIndex && Transaction.Columns.interTransactionIndex < from.interTransactionIndex)
                     )
                 }
                 if let limit = limit {
