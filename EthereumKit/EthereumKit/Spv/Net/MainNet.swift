@@ -1,7 +1,8 @@
 class MainNet: INetwork {
+    let chainId = 1
+
     // todo: the following data is invalid and was copied from Ropsten
 
-    let chainId = 3
     let genesisBlockHash = Data(hex: "41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d")!
 
     let checkpointBlock = BlockHeader(

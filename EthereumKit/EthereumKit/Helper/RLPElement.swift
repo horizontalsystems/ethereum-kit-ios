@@ -34,20 +34,20 @@ class RLPElement {
         return Int(bitPattern: uInt)
     }
 
-    func bIntValue() throws -> BigUInt {
+    func bigIntValue() throws -> BigUInt {
         guard type == .string else {
-            throw RLP.DecodeError.invalidBIntValue
+            throw RLP.DecodeError.invalidBigIntValue
         }
 
         if length == 0 {
             return 0
         }
 
-        guard let bInt = BigUInt(dataValue.toRawHexString(), radix: 16) else {
-            throw RLP.DecodeError.invalidBIntValue
+        guard let bigInt = BigUInt(dataValue.toRawHexString(), radix: 16) else {
+            throw RLP.DecodeError.invalidBigIntValue
         }
 
-        return bInt
+        return bigInt
     }
 
     func stringValue() throws -> String {

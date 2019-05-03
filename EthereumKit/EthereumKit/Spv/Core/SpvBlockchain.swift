@@ -10,16 +10,18 @@ class SpvBlockchain {
     private let network: INetwork
     private let transactionSigner: TransactionSigner
     private let transactionBuilder: TransactionBuilder
+    private let rpcApiProvider: IRpcApiProvider
 
     let address: Data
 
-    private init(peerGroup: IPeerGroup, storage: ISpvStorage, transactionsProvider: ITransactionsProvider, network: INetwork, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, address: Data) {
+    private init(peerGroup: IPeerGroup, storage: ISpvStorage, transactionsProvider: ITransactionsProvider, network: INetwork, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, rpcApiProvider: IRpcApiProvider, address: Data) {
         self.peerGroup = peerGroup
         self.storage = storage
         self.transactionsProvider = transactionsProvider
         self.network = network
         self.transactionSigner = transactionSigner
         self.transactionBuilder = transactionBuilder
+        self.rpcApiProvider = rpcApiProvider
         self.address = address
     }
 
@@ -91,20 +93,31 @@ extension SpvBlockchain: IBlockchain {
     }
 
     func getLogsSingle(address: Data?, topics: [Any], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
-        fatalError("getLogsSingle(address:topics:fromBlock:toBlock:pullTimestamps:) has not been implemented")
+        return Single.just([])
     }
 
     func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data> {
-        fatalError("getStorageAt(contractAddress:positionData:blockHeight:) has not been implemented")
+        return Single.just(Data())
     }
 
     func call(contractAddress: Data, data: Data, blockHeight: Int?) -> Single<Data> {
-        fatalError("call(contractAddress:callData:blockHeight:) has not been implemented")
+        return rpcApiProvider.call(contractAddress: contractAddress.toHexString(), data: data.toHexString(), blockNumber: blockHeight)
+                .flatMap { value -> Single<Data> in
+                    guard let data = Data(hex: value) else {
+                        return Single.error(EthereumKit.ApiError.invalidData)
+                    }
+
+                    return Single.just(data)
+                }
     }
 
 }
 
 extension SpvBlockchain: IPeerGroupDelegate {
+
+    func onUpdate(lastBlockHeader: BlockHeader) {
+        delegate?.onUpdate(lastBlockHeight: lastBlockHeader.height)
+    }
 
     func onUpdate(syncState: EthereumKit.SyncState) {
         delegate?.onUpdate(syncState: syncState)
@@ -128,13 +141,13 @@ extension SpvBlockchain {
 
 extension SpvBlockchain {
 
-    static func instance(storage: ISpvStorage, transactionsProvider: ITransactionsProvider, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, network: INetwork, address: Data, nodeKey: ECKey, logger: Logger? = nil) -> SpvBlockchain {
+    static func instance(storage: ISpvStorage, transactionsProvider: ITransactionsProvider, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, rpcApiProvider: IRpcApiProvider, network: INetwork, address: Data, nodeKey: ECKey, logger: Logger? = nil) -> SpvBlockchain {
         let peerProvider = PeerProvider(network: network, storage: storage, connectionKey: nodeKey, logger: logger)
         let validator = BlockValidator()
         let blockHelper = BlockHelper(storage: storage, network: network)
         let peerGroup = PeerGroup(storage: storage, peerProvider: peerProvider, validator: validator, blockHelper: blockHelper, address: address, logger: logger)
 
-        let spvBlockchain = SpvBlockchain(peerGroup: peerGroup, storage: storage, transactionsProvider: transactionsProvider, network: network, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, address: address)
+        let spvBlockchain = SpvBlockchain(peerGroup: peerGroup, storage: storage, transactionsProvider: transactionsProvider, network: network, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, rpcApiProvider: rpcApiProvider, address: address)
 
         peerGroup.delegate = spvBlockchain
 

@@ -8,7 +8,7 @@ public struct Block {
 //    public let transactionsRoot: Data
 //    public let receiptsRoot: Data
 //    public let logsBloom: Data
-//    public let difficulty: BInt
+//    public let difficulty: BigUInt
     public let number: Int
 //    public let gasLimit: Int
 //    public let gasUsed: Int

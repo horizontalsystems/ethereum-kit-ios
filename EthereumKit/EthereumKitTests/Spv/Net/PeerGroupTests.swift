@@ -1,4 +1,5 @@
 import XCTest
+import BigInt
 import Quick
 import Nimble
 import Cuckoo
@@ -90,7 +91,7 @@ class PeerGroupTests: QuickSpec {
         describe("#sendTransaction") {
             let mockPeer = MockIPeer()
             let rawTransaction = RawTransaction()
-            let signature: (v: BInt, r: BInt, s: BInt) = (0, 0, 0)
+            let signature: (v: BigUInt, r: BigUInt, s: BigUInt) = (0, 0, 0)
 
             beforeEach {
                 stub(mockState) { mock in

@@ -39,6 +39,8 @@ class PeerGroup {
             return
         }
 
+        delegate?.onUpdate(lastBlockHeader: lastBlockHeader)
+
         if blockHeaders.count < headersLimit {
             state.syncPeer?.requestAccountState(address: address, blockHeader: lastBlockHeader)
         } else {

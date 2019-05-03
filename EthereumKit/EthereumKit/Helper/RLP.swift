@@ -7,7 +7,7 @@ struct RLP {
         case invalidElementLength
         case invalidListValue
         case invalidIntValue
-        case invalidBIntValue
+        case invalidBigIntValue
         case invalidStringValue
     }
 
@@ -21,11 +21,11 @@ struct RLP {
         case let list as [Any]:
             return encode(elements: list)
 
-        case let bint as BigUInt:
-            return encode(bint: bint)
+        case let bigInt as BigUInt:
+            return encode(bigInt: bigInt)
 
         case let int as Int:
-            return encode(bint: BigUInt(int))
+            return encode(bigInt: BigUInt(int))
 
         case let data as Data:
             return encode(data: data)
@@ -147,8 +147,8 @@ struct RLP {
         return encode(data: data)
     }
 
-    private static func encode(bint: BigUInt) -> Data {
-        let data = bint.serialize()
+    private static func encode(bigInt: BigUInt) -> Data {
+        let data = bigInt.serialize()
         if data.isEmpty {
             return Data(bytes: [0x80])
         }
