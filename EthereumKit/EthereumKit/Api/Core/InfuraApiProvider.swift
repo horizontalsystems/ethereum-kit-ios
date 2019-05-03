@@ -59,7 +59,7 @@ extension InfuraApiProvider {
         }
     }
 
-    private func infuraBIntSingle(method: String, params: [Any]) -> Single<BigUInt> {
+    private func infuraBigIntSingle(method: String, params: [Any]) -> Single<BigUInt> {
         return infuraSingle(method: method, params: params) { data -> BigUInt? in
             if let map = data as? [String: Any], let result = map["result"] as? String, let bigInt = BigUInt(result.stripHexPrefix(), radix: 16) {
                 return bigInt
@@ -90,7 +90,7 @@ extension InfuraApiProvider: IRpcApiProvider {
     }
 
     func balanceSingle(address: Data) -> Single<BigUInt> {
-        return infuraBIntSingle(method: "eth_getBalance", params: [address.toHexString(), "latest"])
+        return infuraBigIntSingle(method: "eth_getBalance", params: [address.toHexString(), "latest"])
     }
 
     func sendSingle(signedTransaction: Data) -> Single<Void> {

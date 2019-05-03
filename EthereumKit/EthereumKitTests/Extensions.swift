@@ -1,5 +1,6 @@
 import XCTest
 import Cuckoo
+import BigInt
 @testable import EthereumKit
 @testable import HSCryptoKit
 
@@ -94,7 +95,7 @@ extension AnnounceMessage {
 
 extension BlockHeader: Equatable {
 
-    convenience init(hashHex: Data = Data(repeating: 7, count: 10), parentHash: Data = Data(repeating: 8, count: 10), totalDifficulty: BInt = 0, height: Int = 0) {
+    convenience init(hashHex: Data = Data(repeating: 7, count: 10), parentHash: Data = Data(repeating: 8, count: 10), totalDifficulty: BigUInt = 0, height: Int = 0) {
         self.init(
                 hashHex: hashHex,
                 totalDifficulty: totalDifficulty,

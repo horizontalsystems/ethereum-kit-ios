@@ -22,7 +22,7 @@ class AnnounceMessage: IInMessage {
 
         blockHash = rlpList[0].dataValue
         blockHeight = try rlpList[1].intValue()
-        blockTotalDifficulty = try rlpList[2].bIntValue()
+        blockTotalDifficulty = try rlpList[2].bigIntValue()
         reorganizationDepth = try rlpList[3].intValue()
     }
 

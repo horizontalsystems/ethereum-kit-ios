@@ -1,4 +1,5 @@
 import XCTest
+import BigInt
 import Quick
 import Nimble
 import Cuckoo
@@ -18,7 +19,7 @@ class LESPeerTests: QuickSpec {
         let protocolVersion = LESPeer.capability.version
         let networkId = 1
         let genesisHash = Data(repeating: 1, count: 10)
-        let blockTotalDifficulty: BInt = 12345
+        let blockTotalDifficulty: BigUInt = 12345
         let blockHash = Data(repeating: 3, count: 10)
         let blockHeight = 100
 
@@ -150,7 +151,7 @@ class LESPeerTests: QuickSpec {
         describe("#sendTransaction") {
             let requestId = 123
             let rawTransaction = RawTransaction()
-            let signature: (v: BInt, r: BInt, s: BInt) = (0, 0, 0)
+            let signature: (v: BigUInt, r: BigUInt, s: BigUInt) = (0, 0, 0)
 
             beforeEach {
                 stub(mockRandomHelper) { mock in

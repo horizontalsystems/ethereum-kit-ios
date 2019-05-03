@@ -79,7 +79,7 @@ class BlockHeader: Record {
         }
 
         self.logsBloom = rlpList[6].dataValue
-        self.difficulty = try rlpList[7].bIntValue()
+        self.difficulty = try rlpList[7].bigIntValue()
         self.height = try rlpList[8].intValue()
         self.gasLimit = try rlpList[9].intValue()
         self.gasUsed = try rlpList[10].intValue()

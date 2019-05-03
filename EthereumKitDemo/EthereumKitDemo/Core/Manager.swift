@@ -41,7 +41,7 @@ class Manager {
         let syncMode: EthereumKit.WordsSyncMode
 
         switch configuration.syncMode {
-        case .api: syncMode = .api(infuraProjectId: configuration.infuraProjectId)
+        case .api: syncMode = .api
         case .spv: syncMode = .spv
         }
 
@@ -49,8 +49,9 @@ class Manager {
                 words: words,
                 syncMode: syncMode,
                 networkType: configuration.networkType,
+                infuraProjectId: configuration.infuraProjectId,
                 etherscanApiKey: configuration.etherscanApiKey,
-                minLogLevel: .error
+                minLogLevel: .verbose
         )
 
         ethereumAdapter = EthereumAdapter(ethereumKit: ethereumKit)

@@ -30,7 +30,7 @@ class StatusMessage: IInMessage, IOutMessage {
 
         protocolVersion = try StatusMessage.valueElement(rlpList: rlpList, name: "protocolVersion").intValue()
         networkId = try StatusMessage.valueElement(rlpList: rlpList, name: "networkId").intValue()
-        headTotalDifficulty = try StatusMessage.valueElement(rlpList: rlpList, name: "headTd").bIntValue()
+        headTotalDifficulty = try StatusMessage.valueElement(rlpList: rlpList, name: "headTd").bigIntValue()
         headHash = try StatusMessage.valueElement(rlpList: rlpList, name: "headHash").dataValue
         headHeight = try StatusMessage.valueElement(rlpList: rlpList, name: "headNum").intValue()
         genesisHash = try StatusMessage.valueElement(rlpList: rlpList, name: "genesisHash").dataValue
@@ -47,7 +47,7 @@ class StatusMessage: IInMessage, IOutMessage {
     }
 
     func encoded() -> Data {
-        let toEncode: [Any] = [
+        let toEncode: [[Any]] = [
             ["protocolVersion", protocolVersion],
             ["networkId", networkId],
             ["headTd", headTotalDifficulty],

@@ -23,7 +23,7 @@ class AccountStateRequest {
         }
 
         let nonce = try rlpState[0].intValue()
-        let balance = try rlpState[1].bIntValue()
+        let balance = try rlpState[1].bigIntValue()
         let storageRoot = rlpState[2].dataValue
         let codeHash = rlpState[3].dataValue
 

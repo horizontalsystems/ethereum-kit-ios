@@ -132,6 +132,7 @@ protocol INetwork {
 }
 
 protocol IPeerGroupDelegate: class {
+    func onUpdate(lastBlockHeader: BlockHeader)
     func onUpdate(syncState: EthereumKit.SyncState)
     func onUpdate(accountState: AccountState)
 }
