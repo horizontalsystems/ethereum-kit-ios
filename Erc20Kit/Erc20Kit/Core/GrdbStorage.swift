@@ -5,10 +5,8 @@ import GRDB
 class GrdbStorage {
     private let dbPool: DatabasePool
 
-    init(databaseFileName: String) {
-        let databaseURL = try! FileManager.default
-                .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-                .appendingPathComponent("\(databaseFileName).sqlite")
+    init(databaseDirectoryUrl: URL, databaseFileName: String) {
+        let databaseURL = databaseDirectoryUrl.appendingPathComponent("\(databaseFileName).sqlite")
 
         let configuration: Configuration = Configuration()
 //        configuration.trace = { print($0) }
@@ -120,12 +118,6 @@ extension GrdbStorage: ITransactionStorage {
     func update(transaction: Transaction) {
         _ = try! dbPool.write { db in
             try transaction.update(db)
-        }
-    }
-
-    func clearTransactions() {
-        _ = try! dbPool.write { db in
-            try Transaction.deleteAll(db)
         }
     }
 

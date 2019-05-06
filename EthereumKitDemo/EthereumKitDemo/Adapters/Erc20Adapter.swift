@@ -125,8 +125,4 @@ extension Erc20Adapter: IAdapter {
                 }
     }
 
-    func clear() {
-        erc20Kit.clear()
-    }
-
 }

@@ -104,11 +104,6 @@ extension Erc20Kit {
         return state.transactionsSubject.asObservable()
     }
 
-    public func clear() {
-        transactionManager.clear()
-        balanceManager.clear()
-    }
-
 }
 
 extension Erc20Kit: ITransactionManagerDelegate {
@@ -145,7 +140,7 @@ extension Erc20Kit: IBalanceManagerDelegate {
 extension Erc20Kit {
 
     public static func instance(ethereumKit: EthereumKit, contractAddress: String) throws -> Erc20Kit {
-        let databaseFileName = "erc20_\(contractAddress)"
+        let databaseFileName = "\(ethereumKit.uniqueId)-\(contractAddress)"
 
         guard let contractAddress = Data(hex: contractAddress) else {
             throw TokenError.invalidAddress
@@ -153,7 +148,7 @@ extension Erc20Kit {
 
         let address = ethereumKit.receiveAddressData
 
-        let storage: ITransactionStorage & ITokenBalanceStorage = GrdbStorage(databaseFileName: databaseFileName)
+        let storage: ITransactionStorage & ITokenBalanceStorage = try GrdbStorage(databaseDirectoryUrl: databaseDirectoryUrl(), databaseFileName: databaseFileName)
 
         let dataProvider: IDataProvider = DataProvider(ethereumKit: ethereumKit)
         let transactionBuilder: ITransactionBuilder = TransactionBuilder()
@@ -166,6 +161,28 @@ extension Erc20Kit {
         balanceManager.delegate = erc20Kit
 
         return erc20Kit
+    }
+
+    public static func clear() throws {
+        let fileManager = FileManager.default
+
+        let urls = try fileManager.contentsOfDirectory(at: databaseDirectoryUrl(), includingPropertiesForKeys: nil)
+
+        for url in urls {
+            try fileManager.removeItem(at: url)
+        }
+    }
+
+    private static func databaseDirectoryUrl() throws -> URL {
+        let fileManager = FileManager.default
+
+        let url = try fileManager
+                .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+                .appendingPathComponent("erc20-kit", isDirectory: true)
+
+        try fileManager.createDirectory(at: url, withIntermediateDirectories: true)
+
+        return url
     }
 
 }

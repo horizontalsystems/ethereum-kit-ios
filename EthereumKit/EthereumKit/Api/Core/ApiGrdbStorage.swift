@@ -67,12 +67,4 @@ extension ApiGrdbStorage: IApiStorage {
         }
     }
 
-    func clear() {
-        _ = try? dbPool.write { db in
-            try Transaction.deleteAll(db)
-            try BlockchainState.deleteAll(db)
-            try EthereumBalance.deleteAll(db)
-        }
-    }
-
 }

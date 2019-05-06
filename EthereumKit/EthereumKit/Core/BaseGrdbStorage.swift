@@ -4,10 +4,8 @@ import GRDB
 class BaseGrdbStorage {
     internal let dbPool: DatabasePool
 
-    init(databaseFileName: String) {
-        let databaseURL = try! FileManager.default
-                .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-                .appendingPathComponent("\(databaseFileName).sqlite")
+    init(databaseDirectoryUrl: URL, databaseFileName: String) {
+        let databaseURL = databaseDirectoryUrl.appendingPathComponent("\(databaseFileName).sqlite")
 
         dbPool = try! DatabasePool(path: databaseURL.path)
 

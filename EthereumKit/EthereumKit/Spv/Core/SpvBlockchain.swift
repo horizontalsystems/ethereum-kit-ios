@@ -49,10 +49,6 @@ extension SpvBlockchain: IBlockchain {
         // todo
     }
 
-    func clear() {
-        storage.clear()
-    }
-
     var syncState: EthereumKit.SyncState {
         return peerGroup.syncState
     }

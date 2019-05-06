@@ -91,14 +91,4 @@ extension SpvGrdbStorage: ISpvStorage {
         }
     }
 
-    // Misc
-
-    func clear() {
-        _ = try? dbPool.write { db in
-            try Transaction.deleteAll(db)
-            try BlockHeader.deleteAll(db)
-            try AccountState.deleteAll(db)
-        }
-    }
-
 }

@@ -20,18 +20,18 @@ class Manager {
     }
 
     func login(words: [String]) {
+        try! EthereumKit.clear()
+        try! Erc20Kit.clear()
+
         save(words: words)
         initEthereumKit(words: words)
     }
 
     func logout() {
-        ethereumKit.clear()
         clearWords()
 
         ethereumKit = nil
-
         ethereumAdapter = nil
-        erc20Adapters.forEach { $0.clear() }
         erc20Adapters = []
     }
 
@@ -51,7 +51,7 @@ class Manager {
                 networkType: configuration.networkType,
                 infuraProjectId: configuration.infuraProjectId,
                 etherscanApiKey: configuration.etherscanApiKey,
-                minLogLevel: .verbose
+                minLogLevel: configuration.minLogLevel
         )
 
         ethereumAdapter = EthereumAdapter(ethereumKit: ethereumKit)

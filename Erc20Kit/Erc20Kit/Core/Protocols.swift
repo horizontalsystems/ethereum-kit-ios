@@ -24,8 +24,6 @@ protocol ITransactionManager {
 
     func sync()
     func sendSingle(to: Data, value: BigUInt, gasPrice: Int, gasLimit: Int) -> Single<Transaction>
-
-    func clear()
 }
 
 protocol IBalanceManager {
@@ -33,8 +31,6 @@ protocol IBalanceManager {
 
     var balance: BigUInt? { get }
     func sync()
-
-    func clear()
 }
 
 protocol IDataProvider {
@@ -50,7 +46,6 @@ protocol ITransactionStorage {
     func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[Transaction]>
     func save(transactions: [Transaction])
     func update(transaction: Transaction)
-    func clearTransactions()
 }
 
 protocol ITokenBalanceStorage {
