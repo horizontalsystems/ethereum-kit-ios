@@ -16,8 +16,6 @@ protocol ITransactionsProvider {
 protocol IStorage {
     func transactionsSingle(fromHash: Data?, limit: Int?, contractAddress: Data?) -> Single<[Transaction]>
     func save(transactions: [Transaction])
-
-    func clear()
 }
 
 protocol IBlockchain {
@@ -28,7 +26,6 @@ protocol IBlockchain {
     func start()
     func stop()
     func refresh()
-    func clear()
 
     var syncState: EthereumKit.SyncState { get }
     var lastBlockHeight: Int? { get }

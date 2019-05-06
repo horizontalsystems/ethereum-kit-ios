@@ -38,8 +38,4 @@ extension BalanceManager: IBalanceManager {
                 .disposed(by: disposeBag)
     }
 
-    func clear() {
-        storage.balance = nil
-    }
-
 }

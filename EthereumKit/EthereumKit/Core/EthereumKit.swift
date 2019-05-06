@@ -16,13 +16,15 @@ public class EthereumKit {
     private let transactionBuilder: TransactionBuilder
     private let state: EthereumKitState
 
+    public let uniqueId: String
     public let logger: Logger
 
-    init(blockchain: IBlockchain, addressValidator: IAddressValidator, transactionBuilder: TransactionBuilder, state: EthereumKitState = EthereumKitState(), logger: Logger) {
+    init(blockchain: IBlockchain, addressValidator: IAddressValidator, transactionBuilder: TransactionBuilder, state: EthereumKitState = EthereumKitState(), uniqueId: String, logger: Logger) {
         self.blockchain = blockchain
         self.addressValidator = addressValidator
         self.transactionBuilder = transactionBuilder
         self.state = state
+        self.uniqueId = uniqueId
         self.logger = logger
 
         state.balance = blockchain.balance
@@ -45,12 +47,6 @@ extension EthereumKit {
 
     public func refresh() {
         blockchain.refresh()
-    }
-
-    public func clear() {
-        blockchain.stop()
-        blockchain.clear()
-        state.clear()
     }
 
     public var lastBlockHeight: Int? {
@@ -183,8 +179,10 @@ extension EthereumKit: IBlockchainDelegate {
 
 extension EthereumKit {
 
-    public static func instance(privateKey: Data, syncMode: SyncMode, networkType: NetworkType = .mainNet, infuraProjectId: String, etherscanApiKey: String, walletId: String = "default", minLogLevel: Logger.Level = .error) -> EthereumKit {
+    public static func instance(privateKey: Data, syncMode: SyncMode, networkType: NetworkType = .mainNet, infuraProjectId: String, etherscanApiKey: String, walletId: String = "default", minLogLevel: Logger.Level = .error) throws -> EthereumKit {
         let logger = Logger(minLogLevel: minLogLevel)
+
+        let uniqueId = "\(walletId)-\(networkType)"
 
         let publicKey = Data(CryptoKit.createPublicKey(fromPrivateKeyData: privateKey, compressed: false).dropFirst())
         let address = Data(CryptoUtils.shared.sha3(publicKey).suffix(20))
@@ -200,10 +198,10 @@ extension EthereumKit {
 
         switch syncMode {
         case .api:
-            let storage: IApiStorage = ApiGrdbStorage(databaseFileName: "api-\(walletId)-\(networkType)")
+            let storage: IApiStorage = try ApiGrdbStorage(databaseDirectoryUrl: databaseDirectoryUrl(), databaseFileName: "api-\(uniqueId)")
             blockchain = ApiBlockchain.instance(storage: storage, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, address: address, rpcApiProvider: rpcApiProvider, transactionsProvider: transactionsProvider, logger: logger)
         case .spv(let nodePrivateKey):
-            let storage: ISpvStorage = SpvGrdbStorage(databaseFileName: "spv-\(walletId)-\(networkType)")
+            let storage: ISpvStorage = try SpvGrdbStorage(databaseDirectoryUrl: databaseDirectoryUrl(), databaseFileName: "spv-\(uniqueId)")
 
             let nodePublicKey = Data(CryptoKit.createPublicKey(fromPrivateKeyData: nodePrivateKey, compressed: false).dropFirst())
             let nodeKey = ECKey(privateKey: nodePrivateKey, publicKeyPoint: ECPoint(nodeId: nodePublicKey))
@@ -212,7 +210,7 @@ extension EthereumKit {
         }
 
         let addressValidator: IAddressValidator = AddressValidator()
-        let ethereumKit = EthereumKit(blockchain: blockchain, addressValidator: addressValidator, transactionBuilder: transactionBuilder, logger: logger)
+        let ethereumKit = EthereumKit(blockchain: blockchain, addressValidator: addressValidator, transactionBuilder: transactionBuilder, uniqueId: uniqueId, logger: logger)
 
         blockchain.delegate = ethereumKit
 
@@ -232,7 +230,29 @@ extension EthereumKit {
         case .spv: syncMode = .spv(nodePrivateKey: try hdWallet.privateKey(account: 100, index: 100, chain: .external).raw)
         }
 
-        return instance(privateKey: privateKey, syncMode: syncMode, networkType: networkType, infuraProjectId: infuraProjectId, etherscanApiKey: etherscanApiKey, walletId: walletId, minLogLevel: minLogLevel)
+        return try instance(privateKey: privateKey, syncMode: syncMode, networkType: networkType, infuraProjectId: infuraProjectId, etherscanApiKey: etherscanApiKey, walletId: walletId, minLogLevel: minLogLevel)
+    }
+
+    public static func clear() throws {
+        let fileManager = FileManager.default
+
+        let urls = try fileManager.contentsOfDirectory(at: databaseDirectoryUrl(), includingPropertiesForKeys: nil)
+
+        for url in urls {
+            try fileManager.removeItem(at: url)
+        }
+    }
+
+    private static func databaseDirectoryUrl() throws -> URL {
+        let fileManager = FileManager.default
+
+        let url = try fileManager
+                .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+                .appendingPathComponent("ethereum-kit", isDirectory: true)
+
+        try fileManager.createDirectory(at: url, withIntermediateDirectories: true)
+
+        return url
     }
 
 }

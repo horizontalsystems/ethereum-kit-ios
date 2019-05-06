@@ -79,14 +79,10 @@ extension TransactionManager: ITransactionManager {
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(onSuccess: { [weak self] logs in
                     self?.handle(logs: logs)
-                }, onError: { error in
-                    self.delegate?.onSyncTransactionsError()
+                }, onError: { [weak self] error in
+                    self?.delegate?.onSyncTransactionsError()
                 })
                 .disposed(by: disposeBag)
-    }
-
-    func clear() {
-        storage.clearTransactions()
     }
 
 }

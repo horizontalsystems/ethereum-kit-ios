@@ -5,6 +5,7 @@ class Configuration {
 
     let syncMode: SyncMode = .api
     let networkType: EthereumKit.NetworkType = .mainNet
+    let minLogLevel: Logger.Level = .error
 
     let defaultsWords = ""
 

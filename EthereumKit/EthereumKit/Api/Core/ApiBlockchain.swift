@@ -164,10 +164,6 @@ extension ApiBlockchain: IBlockchain {
         sync()
     }
 
-    func clear() {
-        storage.clear()
-    }
-
     var lastBlockHeight: Int? {
         return storage.lastBlockHeight
     }
