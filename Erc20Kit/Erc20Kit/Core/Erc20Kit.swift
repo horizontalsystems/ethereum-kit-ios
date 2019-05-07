@@ -45,7 +45,7 @@ public class Erc20Kit {
         case .syncing: state.syncState = .syncing
         case .synced:
             state.syncState = .syncing
-            transactionManager.sync()
+            balanceManager.sync()
         }
     }
 
@@ -109,13 +109,13 @@ extension Erc20Kit {
 extension Erc20Kit: ITransactionManagerDelegate {
 
     func onSyncSuccess(transactions: [Transaction]) {
+        state.syncState = .synced
+
         guard !transactions.isEmpty else {
-            state.syncState = .synced
             return
         }
 
         state.transactionsSubject.onNext(transactions.map { TransactionInfo(transaction: $0) })
-        balanceManager.sync()
     }
 
     func onSyncTransactionsError() {
@@ -128,7 +128,8 @@ extension Erc20Kit: IBalanceManagerDelegate {
 
     func onSyncBalanceSuccess(balance: BigUInt) {
         state.balance = balance
-        state.syncState = .synced
+
+        transactionManager.sync()
     }
 
     func onSyncBalanceError() {
