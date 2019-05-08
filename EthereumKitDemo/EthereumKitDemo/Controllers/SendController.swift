@@ -41,7 +41,7 @@ class SendController: UIViewController {
     }
 
     @IBAction func send() {
-        guard let address = addressTextField?.text else {
+        guard let address = addressTextField?.text?.trimmingCharacters(in: .whitespaces) else {
             return
         }
 
