@@ -1,10 +1,10 @@
 Pod::Spec.new do |spec|
   spec.name = 'EthereumKit.swift'
   spec.module_name = 'EthereumKit'
-  spec.version = '0.5'
+  spec.version = '0.6'
   spec.summary = 'Ethereum wallet library for Swift'
   spec.description = <<-DESC
-                       HSEthereumKit implements Ethereum protocol in Swift. Uses EthereumKit library.
+                       EthereumKit.swift implements Ethereum protocol in Swift.
                        ```
                     DESC
   spec.homepage = 'https://github.com/horizontalsystems/ethereum-kit-ios'
