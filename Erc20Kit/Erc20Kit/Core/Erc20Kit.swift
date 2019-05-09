@@ -4,7 +4,8 @@ import HSCryptoKit
 import BigInt
 
 public class Erc20Kit {
-    private let gasLimit = 100_000
+    private let gasLimit = 150_000
+    private let estimateGasLimit = 100_000
 
     private let disposeBag = DisposeBag()
 
@@ -62,7 +63,7 @@ extension Erc20Kit {
     }
 
     public func fee(gasPrice: Int) -> Decimal {
-        return Decimal(gasPrice) * Decimal(gasLimit)
+        return Decimal(gasPrice) * Decimal(estimateGasLimit)
     }
 
     public func sendSingle(to: String, value: String, gasPrice: Int) throws -> Single<TransactionInfo> {
