@@ -61,7 +61,7 @@ class NetworkManager {
 
 extension NetworkManager {
 
-    func single<T>(urlString: String, httpMethod: HTTPMethod, parameters: [String: Any], mapper: @escaping (Any) -> T?) -> Single<T> {
+    func single<T>(urlString: String, httpMethod: HTTPMethod, basicAuth: (user: String, password: String)? = nil, parameters: [String: Any], mapper: @escaping (Any) -> T?) -> Single<T> {
         guard let url = URL(string: urlString) else {
             return Single.error(EthereumKit.NetworkError.invalidUrl)
         }
@@ -69,6 +69,10 @@ extension NetworkManager {
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = httpMethod.rawValue
         urlRequest.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        if let basicAuth = basicAuth, let header = Alamofire.Request.authorizationHeader(user: basicAuth.user, password: basicAuth.password) {
+            urlRequest.setValue(header.value, forHTTPHeaderField: header.key)
+        }
 
         let request = Request(urlRequest: urlRequest, encoding: httpMethod == .get ? URLEncoding.default : JSONEncoding.default, parameters: parameters)
 

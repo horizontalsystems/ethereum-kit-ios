@@ -49,7 +49,7 @@ class Manager {
                 words: words,
                 syncMode: syncMode,
                 networkType: configuration.networkType,
-                infuraProjectId: configuration.infuraProjectId,
+                infuraCredentials: configuration.infuraCredentials,
                 etherscanApiKey: configuration.etherscanApiKey,
                 minLogLevel: configuration.minLogLevel
         )
