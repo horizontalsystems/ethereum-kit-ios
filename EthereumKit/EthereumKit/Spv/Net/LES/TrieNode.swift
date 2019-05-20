@@ -1,14 +1,6 @@
 import Foundation
 
 class TrieNode {
-
-    enum NodeType {
-        case NULL
-        case BRANCH
-        case EXTENSION
-        case LEAF
-    }
-
     private static let alphabet: [String] = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"]
 
     let nodeType: NodeType
@@ -83,7 +75,23 @@ class TrieNode {
         return nil
     }
 
-    func toString() -> String {
-        return "(\(elements.map{ $0.toHexString() }.joined(separator: "|")))"
+}
+
+extension TrieNode: CustomStringConvertible {
+
+    public var description: String {
+        return "TRIE NODE [type: \(nodeType); hash: \(hash.toHexString()); elementsCount: \(elements.count)]"
     }
+
+}
+
+extension TrieNode {
+
+    enum NodeType {
+        case NULL
+        case BRANCH
+        case EXTENSION
+        case LEAF
+    }
+
 }

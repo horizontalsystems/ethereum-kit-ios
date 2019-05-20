@@ -23,6 +23,10 @@ extension FrameConnection: IFrameConnection {
         connection.send(frame: frame)
     }
 
+    var logName: String {
+        return connection.logName
+    }
+
 }
 
 extension FrameConnection: IConnectionDelegate {

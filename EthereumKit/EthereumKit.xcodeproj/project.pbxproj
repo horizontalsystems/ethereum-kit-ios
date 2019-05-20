@@ -12,32 +12,44 @@
 		11B3515D132B5DCC500CF100 /* DevP2PConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35CC13BE2809A1D47FC37 /* DevP2PConnection.swift */; };
 		11B35169E195D2801E57AD81 /* FrameConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B353E4C00F4D12A5401C6F /* FrameConnection.swift */; };
 		11B35251F4EFCD904ABECE2D /* TransactionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B352DAE427B837007007B2 /* TransactionInfo.swift */; };
+		11B352B4C8412AF6E0620673 /* SendTransactionTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3565B5E1A0CE6F6D95742 /* SendTransactionTask.swift */; };
 		11B352E362DBABA085F7DC8B /* TransactionSigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3540116A395366AE6F482 /* TransactionSigner.swift */; };
 		11B353C417475E1596BABE60 /* EthereumBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35EF3E13F7755732C2765 /* EthereumBalance.swift */; };
 		11B353DA20E3DD02F8C8D4D4 /* LESPeerRequestHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35434455A2AF945B2BD1B /* LESPeerRequestHolder.swift */; };
 		11B35405B7E0C4928E078F76 /* PeerGroupState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3563AB847E272EE94FECD /* PeerGroupState.swift */; };
+		11B3541D943BA9C17AC16FC5 /* HandshakeTaskHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3514226119A9DEF9DD4EE /* HandshakeTaskHandler.swift */; };
 		11B354A47ED18CDC0599ED49 /* PeerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35C30343C696F41F7EC66 /* PeerProvider.swift */; };
+		11B354E7538AAC8BD4EC2CCC /* AnnouncedBlockHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3512961C15B9B7E4F382B /* AnnouncedBlockHandler.swift */; };
 		11B35572FEFC292AC6678A7F /* BlockchainState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35263DF2BF2068B63FC30 /* BlockchainState.swift */; };
 		11B355933CBBA8A82C7005A2 /* AddressValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B359FB55ECFEAC7CAE2A08 /* AddressValidator.swift */; };
 		11B356030FB7878C2BD0C5A8 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B357626B809CC6A964D5B1 /* Logger.swift */; };
 		11B3563CCAB1B50D85984C7E /* CapabilityHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B351D958CC3C4A60EEEC9D /* CapabilityHelperTests.swift */; };
 		11B356BF054DFC99D8EB19E5 /* GeneratedMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B359F34D40C2E21B4CD620 /* GeneratedMocks.swift */; };
 		11B356C00C09E99530F2831E /* Signature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35D26672131FDD0A04A33 /* Signature.swift */; };
+		11B356CC4CF9CFAED632A4AF /* BlockSyncer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35EE8C760174703AB8A60 /* BlockSyncer.swift */; };
 		11B35776F4FF3AFEBC314BA5 /* MainNet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3573C09B1BA0CBB48642F /* MainNet.swift */; };
 		11B357CC1C30E29E9276522F /* Kovan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B359E71C80BE3229E1688F /* Kovan.swift */; };
+		11B358E04F5FCE05AFF6D8CF /* AccountStateTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B358912CDEB18091226B53 /* AccountStateTask.swift */; };
 		11B358FE9E238EF0DA368319 /* TransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B352BAA4B1636FA6FCDA75 /* TransactionBuilder.swift */; };
 		11B3592A8ADE33386B8D5783 /* MaxCost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35CF0B3192008B47AAACB /* MaxCost.swift */; };
+		11B359319508B0650143AF44 /* BlockHeadersTaskHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35161EEDCBE3D6CBC64B1 /* BlockHeadersTaskHandler.swift */; };
+		11B3593AA91D8A1D6E00CF89 /* TransactionSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35696DB7F799E4CFC7FD9 /* TransactionSender.swift */; };
+		11B359EA926091E3A178C144 /* SendTransactionTaskHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35E3869D7E09B9EE6D85A /* SendTransactionTaskHandler.swift */; };
 		11B359FF9CFC6CEFEECFBEAC /* BlockValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3559A823FD2E479FB53EB /* BlockValidatorTests.swift */; };
 		11B35A0D90F7DDB2DE3D2FEC /* BlockHeaderRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B359DA0DDE45734AB73E25 /* BlockHeaderRequest.swift */; };
 		11B35A4116607D8C5B444E37 /* EthereumKitState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3567B8F9696AA05DFFADE /* EthereumKitState.swift */; };
+		11B35A522F721BD7EB5865E7 /* AccountStateTaskHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3535B14F6926AADF8B4CF /* AccountStateTaskHandler.swift */; };
 		11B35AA6B3D4826B649A4985 /* BlockValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B358B81C30D5D2AAD8B85C /* BlockValidator.swift */; };
 		11B35B0D2D815D5A08BE4C54 /* BlockHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B356EE4167A9EF2D429826 /* BlockHelper.swift */; };
+		11B35B65C97F913BD1A1A642 /* HandshakeTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3578B85EEEA759C6F86BF /* HandshakeTask.swift */; };
 		11B35B8E0F413DDC120EB1A9 /* BaseGrdbStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B357A047DE71BAAF7B7429 /* BaseGrdbStorage.swift */; };
+		11B35BCB3417A9AE2D3E16A9 /* BlockHeadersTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3509FF4A0989B661AFBEF /* BlockHeadersTask.swift */; };
 		11B35C62ACE0870699401F3F /* CapabilityHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35074A6F5AB51D13B06BE /* CapabilityHelper.swift */; };
 		11B35CEF617BCF783C3D1DCA /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B359B70EC74CF5E6CFBC0C /* Transaction.swift */; };
 		11B35D680CDB83B30D29187F /* PeerGroupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B351260B945ADB1196EA18 /* PeerGroupTests.swift */; };
 		11B35EAEAEC58D077071352A /* LESPeerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35FFC4D818569376084A3 /* LESPeerTests.swift */; };
 		11B35EB873DF5DDFC6B5207C /* DevP2PPeerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35A34A00570C3752F1EBC /* DevP2PPeerTests.swift */; };
+		11B35FA3B698C36863DA5F70 /* AccountStateSyncer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B355A89D6D5BF7AF5F41E8 /* AccountStateSyncer.swift */; };
 		11B35FCE3632C73F4272964F /* EthereumKitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B350977535A5956D227887 /* EthereumKitTests.swift */; };
 		2BF25F8F9F09855FF45ED54A /* Pods_EthereumKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C9F117BCBA4A7121478DF3B /* Pods_EthereumKit.framework */; };
 		2FA5D06D94EED4E441401521 /* GetLogsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D43B0294D36092C1A91B /* GetLogsRequest.swift */; };
@@ -137,21 +149,31 @@
 /* Begin PBXFileReference section */
 		11B35074A6F5AB51D13B06BE /* CapabilityHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CapabilityHelper.swift; sourceTree = "<group>"; };
 		11B350977535A5956D227887 /* EthereumKitTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumKitTests.swift; sourceTree = "<group>"; };
+		11B3509FF4A0989B661AFBEF /* BlockHeadersTask.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockHeadersTask.swift; sourceTree = "<group>"; };
 		11B351260B945ADB1196EA18 /* PeerGroupTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerGroupTests.swift; sourceTree = "<group>"; };
+		11B3512961C15B9B7E4F382B /* AnnouncedBlockHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnnouncedBlockHandler.swift; sourceTree = "<group>"; };
+		11B3514226119A9DEF9DD4EE /* HandshakeTaskHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HandshakeTaskHandler.swift; sourceTree = "<group>"; };
+		11B35161EEDCBE3D6CBC64B1 /* BlockHeadersTaskHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockHeadersTaskHandler.swift; sourceTree = "<group>"; };
 		11B351D958CC3C4A60EEEC9D /* CapabilityHelperTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CapabilityHelperTests.swift; sourceTree = "<group>"; };
 		11B35263DF2BF2068B63FC30 /* BlockchainState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockchainState.swift; sourceTree = "<group>"; };
 		11B352BAA4B1636FA6FCDA75 /* TransactionBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionBuilder.swift; sourceTree = "<group>"; };
 		11B352DAE427B837007007B2 /* TransactionInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionInfo.swift; sourceTree = "<group>"; };
+		11B3535B14F6926AADF8B4CF /* AccountStateTaskHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountStateTaskHandler.swift; sourceTree = "<group>"; };
 		11B353E4C00F4D12A5401C6F /* FrameConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FrameConnection.swift; sourceTree = "<group>"; };
 		11B3540116A395366AE6F482 /* TransactionSigner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionSigner.swift; sourceTree = "<group>"; };
 		11B35434455A2AF945B2BD1B /* LESPeerRequestHolder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LESPeerRequestHolder.swift; sourceTree = "<group>"; };
 		11B3559A823FD2E479FB53EB /* BlockValidatorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockValidatorTests.swift; sourceTree = "<group>"; };
+		11B355A89D6D5BF7AF5F41E8 /* AccountStateSyncer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountStateSyncer.swift; sourceTree = "<group>"; };
 		11B3563AB847E272EE94FECD /* PeerGroupState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeerGroupState.swift; sourceTree = "<group>"; };
+		11B3565B5E1A0CE6F6D95742 /* SendTransactionTask.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendTransactionTask.swift; sourceTree = "<group>"; };
 		11B3567B8F9696AA05DFFADE /* EthereumKitState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumKitState.swift; sourceTree = "<group>"; };
+		11B35696DB7F799E4CFC7FD9 /* TransactionSender.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionSender.swift; sourceTree = "<group>"; };
 		11B356EE4167A9EF2D429826 /* BlockHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockHelper.swift; sourceTree = "<group>"; };
 		11B3573C09B1BA0CBB48642F /* MainNet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainNet.swift; sourceTree = "<group>"; };
 		11B357626B809CC6A964D5B1 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		11B3578B85EEEA759C6F86BF /* HandshakeTask.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HandshakeTask.swift; sourceTree = "<group>"; };
 		11B357A047DE71BAAF7B7429 /* BaseGrdbStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseGrdbStorage.swift; sourceTree = "<group>"; };
+		11B358912CDEB18091226B53 /* AccountStateTask.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountStateTask.swift; sourceTree = "<group>"; };
 		11B35893177645F06E2AE8FB /* NetworkManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 		11B358B81C30D5D2AAD8B85C /* BlockValidator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockValidator.swift; sourceTree = "<group>"; };
 		11B359B70EC74CF5E6CFBC0C /* Transaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
@@ -164,6 +186,8 @@
 		11B35CC13BE2809A1D47FC37 /* DevP2PConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DevP2PConnection.swift; sourceTree = "<group>"; };
 		11B35CF0B3192008B47AAACB /* MaxCost.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MaxCost.swift; sourceTree = "<group>"; };
 		11B35D26672131FDD0A04A33 /* Signature.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Signature.swift; sourceTree = "<group>"; };
+		11B35E3869D7E09B9EE6D85A /* SendTransactionTaskHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SendTransactionTaskHandler.swift; sourceTree = "<group>"; };
+		11B35EE8C760174703AB8A60 /* BlockSyncer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlockSyncer.swift; sourceTree = "<group>"; };
 		11B35EF3E13F7755732C2765 /* EthereumBalance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumBalance.swift; sourceTree = "<group>"; };
 		11B35FF015ED96B91156834F /* AccountStateRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountStateRequest.swift; sourceTree = "<group>"; };
 		11B35FFC4D818569376084A3 /* LESPeerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LESPeerTests.swift; sourceTree = "<group>"; };
@@ -306,6 +330,18 @@
 			path = Requests;
 			sourceTree = "<group>";
 		};
+		11B3565648386727C1E8CF87 /* Handlers */ = {
+			isa = PBXGroup;
+			children = (
+				11B3514226119A9DEF9DD4EE /* HandshakeTaskHandler.swift */,
+				11B3512961C15B9B7E4F382B /* AnnouncedBlockHandler.swift */,
+				11B35E3869D7E09B9EE6D85A /* SendTransactionTaskHandler.swift */,
+				11B3535B14F6926AADF8B4CF /* AccountStateTaskHandler.swift */,
+				11B35161EEDCBE3D6CBC64B1 /* BlockHeadersTaskHandler.swift */,
+			);
+			path = Handlers;
+			sourceTree = "<group>";
+		};
 		11B358D909B2539577DCF7E9 /* Api */ = {
 			isa = PBXGroup;
 			children = (
@@ -313,6 +349,17 @@
 				2FA5D47A79A46E66BC4CE93A /* Core */,
 			);
 			path = Api;
+			sourceTree = "<group>";
+		};
+		11B35C008CD2501AC9F64AE8 /* Tasks */ = {
+			isa = PBXGroup;
+			children = (
+				11B3578B85EEEA759C6F86BF /* HandshakeTask.swift */,
+				11B3565B5E1A0CE6F6D95742 /* SendTransactionTask.swift */,
+				11B358912CDEB18091226B53 /* AccountStateTask.swift */,
+				11B3509FF4A0989B661AFBEF /* BlockHeadersTask.swift */,
+			);
+			path = Tasks;
 			sourceTree = "<group>";
 		};
 		11B35F4F299FD99CFF8E479E /* DevP2P */ = {
@@ -570,6 +617,8 @@
 				D02934432213E1A000ED63C6 /* Connection */,
 				D07C3ECF221ACAA60081DCD2 /* DevP2P */,
 				D07C3ED1221ACADA0081DCD2 /* LES */,
+				11B35C008CD2501AC9F64AE8 /* Tasks */,
+				11B3565648386727C1E8CF87 /* Handlers */,
 				2FA5DC4BD52779213E1952A6 /* PeerGroup.swift */,
 				2FA5D05F4E0D54E432282958 /* Ropsten.swift */,
 				2FA5D51BD89CC6356F1E6138 /* Node.swift */,
@@ -624,6 +673,9 @@
 				D0D75FF32227F160005808FB /* SpvExtensions.swift */,
 				2FA5D934DC75ADCB54EAC6AE /* SpvGrdbStorage.swift */,
 				2FA5D5A69DC77DC29BA1D6E7 /* SpvProtocols.swift */,
+				11B35EE8C760174703AB8A60 /* BlockSyncer.swift */,
+				11B355A89D6D5BF7AF5F41E8 /* AccountStateSyncer.swift */,
+				11B35696DB7F799E4CFC7FD9 /* TransactionSender.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -1019,6 +1071,18 @@
 				2FA5D916D6B4917E4C19B3E1 /* GetStorageAtRequest.swift in Sources */,
 				2FA5D21EE88B9D877156DAA8 /* GetStorageAtResponse.swift in Sources */,
 				11B35776F4FF3AFEBC314BA5 /* MainNet.swift in Sources */,
+				11B35B65C97F913BD1A1A642 /* HandshakeTask.swift in Sources */,
+				11B3541D943BA9C17AC16FC5 /* HandshakeTaskHandler.swift in Sources */,
+				11B354E7538AAC8BD4EC2CCC /* AnnouncedBlockHandler.swift in Sources */,
+				11B359EA926091E3A178C144 /* SendTransactionTaskHandler.swift in Sources */,
+				11B352B4C8412AF6E0620673 /* SendTransactionTask.swift in Sources */,
+				11B35A522F721BD7EB5865E7 /* AccountStateTaskHandler.swift in Sources */,
+				11B358E04F5FCE05AFF6D8CF /* AccountStateTask.swift in Sources */,
+				11B359319508B0650143AF44 /* BlockHeadersTaskHandler.swift in Sources */,
+				11B35BCB3417A9AE2D3E16A9 /* BlockHeadersTask.swift in Sources */,
+				11B356CC4CF9CFAED632A4AF /* BlockSyncer.swift in Sources */,
+				11B35FA3B698C36863DA5F70 /* AccountStateSyncer.swift in Sources */,
+				11B3593AA91D8A1D6E00CF89 /* TransactionSender.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

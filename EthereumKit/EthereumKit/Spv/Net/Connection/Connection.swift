@@ -1,4 +1,5 @@
 import Foundation
+import HSHDWalletKit
 
 class Connection: NSObject {
     enum PeerConnectionError: Error {
@@ -31,13 +32,8 @@ class Connection: NSObject {
 
     private var packets: Data = Data()
 
-
     var connected: Bool = false
     var handshakeSent: Bool = false
-
-    var logName: String {
-        return "\(nodeId.toHexString())@\(host):\(port)'"
-    }
 
     init(connectionKey: ECKey, node: Node, factory: IFactory = Factory.shared, logger: Logger? = nil) {
         self.connectionKey = connectionKey
@@ -149,8 +145,8 @@ class Connection: NSObject {
         }
     }
 
-    private func log(_ msg: String) {
-        print(msg)
+    private func log(_ message: String, level: Logger.Level = .debug) {
+        logger?.log(level: level, message: message, context: logName)
     }
 
 }
@@ -165,7 +161,7 @@ extension Connection: IConnection {
                 self.connectAsync()
             }
         } else {
-            log("ALREADY CONNECTED")
+            log("ALREADY CONNECTED", level: .warning)
         }
     }
 
@@ -187,17 +183,22 @@ extension Connection: IConnection {
 
         delegate?.didDisconnect(error: error)
 
-//        logger?.verbose("DISCONNECTED: \(error?.localizedDescription ?? "nil")")
+        log("DISCONNECTED: \(error?.localizedDescription ?? "nil")")
     }
 
     func send(frame: Frame) {
         guard let frameCodec = self.frameCodec else {
-            log("ERROR: trying to send frames before RLPx handshake")
+            log("ERROR: trying to send frames before RLPx handshake", level: .error)
             return
         }
 
         let encodedFrame = frameCodec.encodeFrame(frame: frame)
         sendPackets(data: encodedFrame)
+    }
+
+    var logName: String {
+        let index = abs(host.hash) % WordList.english.count
+        return "[\(WordList.english[index])]".uppercased()
     }
 
 }
@@ -210,7 +211,7 @@ extension Connection: StreamDelegate {
         case let stream as InputStream:
             switch eventCode {
             case .openCompleted:
-                logger?.verbose("CONNECTION ESTABLISHED")
+                log("CONNECTION ESTABLISHED")
                 connected = true
                 break
             case .hasBytesAvailable:
@@ -218,7 +219,7 @@ extension Connection: StreamDelegate {
             case .hasSpaceAvailable:
                 break
             case .errorOccurred:
-                log("IN ERROR OCCURRED")
+                log("IN ERROR OCCURRED", level: .error)
                 if connected {
                     // If connected, then error is related not to peer, but to network
                     disconnect()
@@ -240,7 +241,7 @@ extension Connection: StreamDelegate {
             case .hasSpaceAvailable:
                 initiateHandshake()
             case .errorOccurred:
-                log("OUT ERROR OCCURRED")
+                log("OUT ERROR OCCURRED", level: .error)
                 disconnect()
             case .endEncountered:
                 log("OUT CLOSED")

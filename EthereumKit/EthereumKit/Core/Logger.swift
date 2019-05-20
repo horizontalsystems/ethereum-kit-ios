@@ -89,9 +89,9 @@ public class Logger {
         //        var str = "\(dateFormatter.string(from: Date())) \(colors[level]!)[\(threadName())]"
         var str = "\(dateFormatter.string(from: Date())) \(colors[level]!)"
 
-        //        if let context = context {
-        //            str = str + " \(context)"
-        //        }
+        if let context = context {
+            str = str + " \(context) "
+        }
 
         //        str = str + " \(file).\(functionName(function)):\(line) - \(message())"
         str = str + "\(message())"
