@@ -13,11 +13,9 @@ class SpvBlockchain {
     private let network: INetwork
     private let rpcApiProvider: IRpcApiProvider
 
-    let address: Data
-
     private var sendingTransactions = [Int: PublishSubject<Transaction>]()
 
-    private init(peer: IPeer, blockSyncer: BlockSyncer, accountStateSyncer: AccountStateSyncer, transactionSender: TransactionSender, storage: ISpvStorage, transactionsProvider: ITransactionsProvider, network: INetwork, rpcApiProvider: IRpcApiProvider, address: Data) {
+    private init(peer: IPeer, blockSyncer: BlockSyncer, accountStateSyncer: AccountStateSyncer, transactionSender: TransactionSender, storage: ISpvStorage, transactionsProvider: ITransactionsProvider, network: INetwork, rpcApiProvider: IRpcApiProvider) {
         self.peer = peer
         self.blockSyncer = blockSyncer
         self.accountStateSyncer = accountStateSyncer
@@ -26,7 +24,6 @@ class SpvBlockchain {
         self.transactionsProvider = transactionsProvider
         self.network = network
         self.rpcApiProvider = rpcApiProvider
-        self.address = address
     }
 
 }
@@ -170,9 +167,9 @@ extension SpvBlockchain {
 
         let blockSyncer = BlockSyncer(storage: storage, blockHelper: blockHelper, validator: validator, logger: logger)
         let accountStateSyncer = AccountStateSyncer(storage: storage, address: address)
-        let transactionSender = TransactionSender(address: address, storage: storage, transactionBuilder: transactionBuilder, transactionSigner: transactionSigner)
+        let transactionSender = TransactionSender(storage: storage, transactionBuilder: transactionBuilder, transactionSigner: transactionSigner)
 
-        let spvBlockchain = SpvBlockchain(peer: peer, blockSyncer: blockSyncer, accountStateSyncer: accountStateSyncer, transactionSender: transactionSender, storage: storage, transactionsProvider: transactionsProvider, network: network, rpcApiProvider: rpcApiProvider, address: address)
+        let spvBlockchain = SpvBlockchain(peer: peer, blockSyncer: blockSyncer, accountStateSyncer: accountStateSyncer, transactionSender: transactionSender, storage: storage, transactionsProvider: transactionsProvider, network: network, rpcApiProvider: rpcApiProvider)
 
         peer.delegate = spvBlockchain
         blockSyncer.delegate = spvBlockchain

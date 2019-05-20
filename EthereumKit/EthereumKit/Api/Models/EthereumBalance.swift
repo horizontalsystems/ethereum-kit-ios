@@ -2,34 +2,35 @@ import GRDB
 import BigInt
 
 class EthereumBalance: Record {
-    let address: Data
+    private static let primaryKey = "primaryKey"
+
+    private let primaryKey: String = EthereumBalance.primaryKey
+
     let value: BigUInt
 
-    init(address: Data, value: BigUInt) {
-        self.address = address
+    init(value: BigUInt) {
         self.value = value
 
         super.init()
     }
 
     override class var databaseTableName: String {
-        return "balances"
+        return "ethereumBalance"
     }
 
     enum Columns: String, ColumnExpression {
-        case address
+        case primaryKey
         case value
     }
 
     required init(row: Row) {
-        address = row[Columns.address]
         value = row[Columns.value]
 
         super.init(row: row)
     }
 
     override func encode(to container: inout PersistenceContainer) {
-        container[Columns.address] = address
+        container[Columns.primaryKey] = primaryKey
         container[Columns.value] = value
     }
 

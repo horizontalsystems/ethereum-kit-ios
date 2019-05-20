@@ -3,8 +3,8 @@ import BigInt
 
 protocol IRpcApiProvider {
     func lastBlockHeightSingle() -> Single<Int>
-    func transactionCountSingle(address: Data) -> Single<Int>
-    func balanceSingle(address: Data) -> Single<BigUInt>
+    func transactionCountSingle() -> Single<Int>
+    func balanceSingle() -> Single<BigUInt>
     func sendSingle(signedTransaction: Data) -> Single<Void>
     func getLogs(address: Data?, fromBlock: Int?, toBlock: Int?, topics: [Any]) -> Single<[EthereumLog]>
     func getStorageAt(contractAddress: String, position: String, blockNumber: Int?) -> Single<String>
@@ -16,8 +16,8 @@ protocol IApiStorage: IStorage {
     var lastBlockHeight: Int? { get }
     func save(lastBlockHeight: Int)
 
-    func balance(forAddress address: Data) -> BigUInt?
-    func save(balance: BigUInt, address: Data)
+    var balance: BigUInt? { get }
+    func save(balance: BigUInt)
 
     func lastTransactionBlockHeight() -> Int?
 }

@@ -10,7 +10,7 @@ public protocol IResponse {
 }
 
 protocol ITransactionsProvider {
-    func transactionsSingle(address: Data, startBlock: Int) -> Single<[Transaction]>
+    func transactionsSingle(startBlock: Int) -> Single<[Transaction]>
 }
 
 protocol IStorage {
@@ -20,8 +20,6 @@ protocol IStorage {
 
 protocol IBlockchain {
     var delegate: IBlockchainDelegate? { get set }
-
-    var address: Data { get }
 
     func start()
     func stop()

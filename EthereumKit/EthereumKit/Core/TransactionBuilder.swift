@@ -2,12 +2,17 @@ import HSCryptoKit
 import BigInt
 
 class TransactionBuilder {
+    private let address: Data
+
+    init(address: Data) {
+        self.address = address
+    }
 
     func rawTransaction(gasPrice: Int, gasLimit: Int, to: Data, value: BigUInt, data: Data = Data()) -> RawTransaction {
         return RawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: to, value: value, data: data)
     }
 
-    func transaction(rawTransaction: RawTransaction, nonce: Int, signature: Signature, address: Data) -> Transaction {
+    func transaction(rawTransaction: RawTransaction, nonce: Int, signature: Signature) -> Transaction {
         let transactionHash = CryptoKit.sha3(encode(rawTransaction: rawTransaction, signature: signature, nonce: nonce))
 
         return Transaction(

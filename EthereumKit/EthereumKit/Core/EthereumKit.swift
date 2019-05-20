@@ -16,14 +16,17 @@ public class EthereumKit {
     private let transactionBuilder: TransactionBuilder
     private let state: EthereumKitState
 
+    public let address: Data
+
     public let uniqueId: String
     public let logger: Logger
 
-    init(blockchain: IBlockchain, addressValidator: IAddressValidator, transactionBuilder: TransactionBuilder, state: EthereumKitState = EthereumKitState(), uniqueId: String, logger: Logger) {
+    init(blockchain: IBlockchain, addressValidator: IAddressValidator, transactionBuilder: TransactionBuilder, state: EthereumKitState = EthereumKitState(), address: Data, uniqueId: String, logger: Logger) {
         self.blockchain = blockchain
         self.addressValidator = addressValidator
         self.transactionBuilder = transactionBuilder
         self.state = state
+        self.address = address
         self.uniqueId = uniqueId
         self.logger = logger
 
@@ -78,11 +81,7 @@ extension EthereumKit {
     }
 
     public var receiveAddress: String {
-        return blockchain.address.toEIP55Address()
-    }
-
-    public var receiveAddressData: Data {
-        return blockchain.address
+        return address.toEIP55Address()
     }
 
     public func validate(address: String) throws {
@@ -125,7 +124,7 @@ extension EthereumKit {
     public var debugInfo: String {
         var lines = [String]()
 
-        lines.append("ADDRESS: \(blockchain.address)")
+        lines.append("ADDRESS: \(address.toEIP55Address())")
 
         return lines.joined(separator: "\n")
     }
@@ -189,17 +188,17 @@ extension EthereumKit {
 
         let network: INetwork = networkType.network
         let transactionSigner = TransactionSigner(network: network, privateKey: privateKey)
-        let transactionBuilder = TransactionBuilder()
+        let transactionBuilder = TransactionBuilder(address: address)
         let networkManager = NetworkManager(logger: logger)
-        let transactionsProvider: ITransactionsProvider = EtherscanApiProvider(networkManager: networkManager, network: network, etherscanApiKey: etherscanApiKey)
-        let rpcApiProvider: IRpcApiProvider = InfuraApiProvider(networkManager: networkManager, network: network, credentials: infuraCredentials)
+        let transactionsProvider: ITransactionsProvider = EtherscanApiProvider(networkManager: networkManager, network: network, etherscanApiKey: etherscanApiKey, address: address)
+        let rpcApiProvider: IRpcApiProvider = InfuraApiProvider(networkManager: networkManager, network: network, credentials: infuraCredentials, address: address)
 
         var blockchain: IBlockchain
 
         switch syncMode {
         case .api:
             let storage: IApiStorage = try ApiGrdbStorage(databaseDirectoryUrl: databaseDirectoryUrl(), databaseFileName: "api-\(uniqueId)")
-            blockchain = ApiBlockchain.instance(storage: storage, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, address: address, rpcApiProvider: rpcApiProvider, transactionsProvider: transactionsProvider, logger: logger)
+            blockchain = ApiBlockchain.instance(storage: storage, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, rpcApiProvider: rpcApiProvider, transactionsProvider: transactionsProvider, logger: logger)
         case .spv(let nodePrivateKey):
             let storage: ISpvStorage = try SpvGrdbStorage(databaseDirectoryUrl: databaseDirectoryUrl(), databaseFileName: "spv-\(uniqueId)")
 
@@ -210,7 +209,7 @@ extension EthereumKit {
         }
 
         let addressValidator: IAddressValidator = AddressValidator()
-        let ethereumKit = EthereumKit(blockchain: blockchain, addressValidator: addressValidator, transactionBuilder: transactionBuilder, uniqueId: uniqueId, logger: logger)
+        let ethereumKit = EthereumKit(blockchain: blockchain, addressValidator: addressValidator, transactionBuilder: transactionBuilder, address: address, uniqueId: uniqueId, logger: logger)
 
         blockchain.delegate = ethereumKit
 

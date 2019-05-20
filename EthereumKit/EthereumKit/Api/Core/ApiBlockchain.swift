@@ -24,16 +24,13 @@ class ApiBlockchain {
         }
     }
 
-    let address: Data
-
-    init(storage: IApiStorage, transactionsProvider: ITransactionsProvider, rpcApiProvider: IRpcApiProvider, reachabilityManager: IReachabilityManager, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, address: Data, logger: Logger? = nil) {
+    init(storage: IApiStorage, transactionsProvider: ITransactionsProvider, rpcApiProvider: IRpcApiProvider, reachabilityManager: IReachabilityManager, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, logger: Logger? = nil) {
         self.storage = storage
         self.transactionsProvider = transactionsProvider
         self.rpcApiProvider = rpcApiProvider
         self.reachabilityManager = reachabilityManager
         self.transactionSigner = transactionSigner
         self.transactionBuilder = transactionBuilder
-        self.address = address
         self.logger = logger
 
         reachabilityManager.reachabilitySignal
@@ -61,7 +58,7 @@ class ApiBlockchain {
 
         Single.zip(
                         rpcApiProvider.lastBlockHeightSingle(),
-                        rpcApiProvider.balanceSingle(address: address)
+                        rpcApiProvider.balanceSingle()
                 )
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(onSuccess: { [weak self] lastBlockHeight, balance in
@@ -80,7 +77,7 @@ class ApiBlockchain {
     private func refreshTransactions() {
         let lastTransactionBlockHeight = storage.lastTransactionBlockHeight() ?? 0
 
-        transactionsProvider.transactionsSingle(address: address, startBlock: lastTransactionBlockHeight + 1)
+        transactionsProvider.transactionsSingle(startBlock: lastTransactionBlockHeight + 1)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(onSuccess: { [weak self] transactions in
                     self?.update(transactions: transactions)
@@ -97,7 +94,7 @@ class ApiBlockchain {
     }
 
     private func update(balance: BigUInt) {
-        storage.save(balance: balance, address: address)
+        storage.save(balance: balance)
         delegate?.onUpdate(balance: balance)
     }
 
@@ -110,7 +107,7 @@ class ApiBlockchain {
 
     private func sendSingle(rawTransaction: RawTransaction, nonce: Int) throws -> Single<Transaction> {
         let signature = try transactionSigner.sign(rawTransaction: rawTransaction, nonce: nonce)
-        let transaction = transactionBuilder.transaction(rawTransaction: rawTransaction, nonce: nonce, signature: signature, address: address)
+        let transaction = transactionBuilder.transaction(rawTransaction: rawTransaction, nonce: nonce, signature: signature)
         let encoded = transactionBuilder.encode(rawTransaction: rawTransaction, signature: signature, nonce: nonce)
 
         return rpcApiProvider.sendSingle(signedTransaction: encoded)
@@ -169,7 +166,7 @@ extension ApiBlockchain: IBlockchain {
     }
 
     var balance: BigUInt? {
-        return storage.balance(forAddress: address)
+        return storage.balance
     }
 
     func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[Transaction]> {
@@ -177,7 +174,7 @@ extension ApiBlockchain: IBlockchain {
     }
 
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction> {
-        return rpcApiProvider.transactionCountSingle(address: address)
+        return rpcApiProvider.transactionCountSingle()
                 .flatMap { [unowned self] nonce -> Single<Transaction> in
                     return try self.sendSingle(rawTransaction: rawTransaction, nonce: nonce)
                 }
@@ -224,10 +221,10 @@ extension ApiBlockchain: IBlockchain {
 
 extension ApiBlockchain {
 
-    static func instance(storage: IApiStorage, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, address: Data, rpcApiProvider: IRpcApiProvider, transactionsProvider: ITransactionsProvider, logger: Logger? = nil) -> ApiBlockchain {
+    static func instance(storage: IApiStorage, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, rpcApiProvider: IRpcApiProvider, transactionsProvider: ITransactionsProvider, logger: Logger? = nil) -> ApiBlockchain {
         let reachabilityManager: IReachabilityManager = ReachabilityManager()
 
-        return ApiBlockchain(storage: storage, transactionsProvider: transactionsProvider, rpcApiProvider: rpcApiProvider, reachabilityManager: reachabilityManager, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, address: address, logger: logger)
+        return ApiBlockchain(storage: storage, transactionsProvider: transactionsProvider, rpcApiProvider: rpcApiProvider, reachabilityManager: reachabilityManager, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, logger: logger)
     }
 
 }

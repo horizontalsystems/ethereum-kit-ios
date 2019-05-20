@@ -8,13 +8,11 @@ protocol ITransactionSenderDelegate: AnyObject {
 class TransactionSender {
     weak var delegate: ITransactionSenderDelegate?
 
-    private let address: Data
     private let storage: ISpvStorage
     private let transactionBuilder: TransactionBuilder
     private let transactionSigner: TransactionSigner
 
-    init(address: Data, storage: ISpvStorage, transactionBuilder: TransactionBuilder, transactionSigner: TransactionSigner) {
-        self.address = address
+    init(storage: ISpvStorage, transactionBuilder: TransactionBuilder, transactionSigner: TransactionSigner) {
         self.storage = storage
         self.transactionBuilder = transactionBuilder
         self.transactionSigner = transactionSigner
@@ -35,7 +33,7 @@ class TransactionSender {
 extension TransactionSender: ISendTransactionTaskHandlerDelegate {
 
     func onSendSuccess(task: SendTransactionTask) {
-        let transaction = transactionBuilder.transaction(rawTransaction: task.rawTransaction, nonce: task.nonce, signature: task.signature, address: address)
+        let transaction = transactionBuilder.transaction(rawTransaction: task.rawTransaction, nonce: task.nonce, signature: task.signature)
 
         storage.save(transactions: [transaction])
 

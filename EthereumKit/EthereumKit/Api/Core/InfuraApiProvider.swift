@@ -6,11 +6,13 @@ class InfuraApiProvider {
     private let network: INetwork
 
     private let credentials: (id: String, secret: String?)
+    private let address: Data
 
-    init(networkManager: NetworkManager, network: INetwork, credentials: (id: String, secret: String?)) {
+    init(networkManager: NetworkManager, network: INetwork, credentials: (id: String, secret: String?), address: Data) {
         self.networkManager = networkManager
         self.network = network
         self.credentials = credentials
+        self.address = address
     }
 
 }
@@ -87,11 +89,11 @@ extension InfuraApiProvider: IRpcApiProvider {
         return infuraIntSingle(method: "eth_blockNumber", params: [])
     }
 
-    func transactionCountSingle(address: Data) -> Single<Int> {
+    func transactionCountSingle() -> Single<Int> {
         return infuraIntSingle(method: "eth_getTransactionCount", params: [address.toHexString(), "pending"])
     }
 
-    func balanceSingle(address: Data) -> Single<BigUInt> {
+    func balanceSingle() -> Single<BigUInt> {
         return infuraBigIntSingle(method: "eth_getBalance", params: [address.toHexString(), "latest"])
     }
 

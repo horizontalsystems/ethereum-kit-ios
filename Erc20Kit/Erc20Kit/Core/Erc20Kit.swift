@@ -148,7 +148,7 @@ extension Erc20Kit {
             throw TokenError.invalidAddress
         }
 
-        let address = ethereumKit.receiveAddressData
+        let address = ethereumKit.address
 
         let storage: ITransactionStorage & ITokenBalanceStorage = try GrdbStorage(databaseDirectoryUrl: databaseDirectoryUrl(), databaseFileName: databaseFileName)
 
