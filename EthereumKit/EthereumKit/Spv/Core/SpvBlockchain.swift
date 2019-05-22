@@ -12,10 +12,11 @@ class SpvBlockchain {
     private let transactionsProvider: ITransactionsProvider
     private let network: INetwork
     private let rpcApiProvider: IRpcApiProvider
+    private let logger: Logger?
 
     private var sendingTransactions = [Int: PublishSubject<Transaction>]()
 
-    private init(peer: IPeer, blockSyncer: BlockSyncer, accountStateSyncer: AccountStateSyncer, transactionSender: TransactionSender, storage: ISpvStorage, transactionsProvider: ITransactionsProvider, network: INetwork, rpcApiProvider: IRpcApiProvider) {
+    private init(peer: IPeer, blockSyncer: BlockSyncer, accountStateSyncer: AccountStateSyncer, transactionSender: TransactionSender, storage: ISpvStorage, transactionsProvider: ITransactionsProvider, network: INetwork, rpcApiProvider: IRpcApiProvider, logger: Logger? = nil) {
         self.peer = peer
         self.blockSyncer = blockSyncer
         self.accountStateSyncer = accountStateSyncer
@@ -24,6 +25,7 @@ class SpvBlockchain {
         self.transactionsProvider = transactionsProvider
         self.network = network
         self.rpcApiProvider = rpcApiProvider
+        self.logger = logger
     }
 
 }
@@ -31,10 +33,14 @@ class SpvBlockchain {
 extension SpvBlockchain: IBlockchain {
 
     func start() {
+        logger?.verbose("SpvBlockchain started")
+
         peer.connect()
     }
 
     func stop() {
+        logger?.verbose("SpvBlockchain stopped")
+
         // todo
     }
 
@@ -108,13 +114,13 @@ extension SpvBlockchain: IPeerDelegate {
 extension SpvBlockchain: IBlockSyncerDelegate {
 
     func onSuccess(taskPerformer: ITaskPerformer, lastBlockHeader: BlockHeader) {
-        print("IBD SUCCESS: \(lastBlockHeader.height)")
+        logger?.debug("Blocks synced successfully up to \(lastBlockHeader.height). Starting account state sync...")
 
         accountStateSyncer.sync(taskPerformer: taskPerformer, blockHeader: lastBlockHeader)
     }
 
     func onFailure(error: Error) {
-        print("IBD FAILURE")
+        logger?.error("Blocks sync failed: \(error)")
     }
 
     func onUpdate(lastBlockHeader: BlockHeader) {
@@ -131,7 +137,7 @@ extension SpvBlockchain: IAccountStateSyncerDelegate {
 
 }
 
-extension SpvBlockchain: ITransactionSenderDelegate{
+extension SpvBlockchain: ITransactionSenderDelegate {
 
     func onSendSuccess(sendId: Int, transaction: Transaction) {
         guard let subject = sendingTransactions.removeValue(forKey: sendId) else {
@@ -169,7 +175,7 @@ extension SpvBlockchain {
         let accountStateSyncer = AccountStateSyncer(storage: storage, address: address)
         let transactionSender = TransactionSender(storage: storage, transactionBuilder: transactionBuilder, transactionSigner: transactionSigner)
 
-        let spvBlockchain = SpvBlockchain(peer: peer, blockSyncer: blockSyncer, accountStateSyncer: accountStateSyncer, transactionSender: transactionSender, storage: storage, transactionsProvider: transactionsProvider, network: network, rpcApiProvider: rpcApiProvider)
+        let spvBlockchain = SpvBlockchain(peer: peer, blockSyncer: blockSyncer, accountStateSyncer: accountStateSyncer, transactionSender: transactionSender, storage: storage, transactionsProvider: transactionsProvider, network: network, rpcApiProvider: rpcApiProvider, logger: logger)
 
         peer.delegate = spvBlockchain
         blockSyncer.delegate = spvBlockchain
