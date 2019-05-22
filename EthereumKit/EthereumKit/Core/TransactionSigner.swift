@@ -10,7 +10,7 @@ class TransactionSigner {
         self.privateKey = privateKey
     }
 
-    func sign(rawTransaction: RawTransaction, nonce: Int) throws -> Signature {
+    func sign(rawTransaction: RawTransaction, nonce: Int) throws -> Data {
         var toEncode: [Any] = [
             nonce,
             rawTransaction.gasPrice,
@@ -27,16 +27,20 @@ class TransactionSigner {
         let encodedData = RLP.encode(toEncode)
         let rawTransactionHash = CryptoKit.sha3(encodedData)
 
-        let signature = try CryptoKit.ellipticSign(rawTransactionHash, privateKey: privateKey)
-
-        return calculateVRS(signature: signature)
+        return try CryptoKit.ellipticSign(rawTransactionHash, privateKey: privateKey)
     }
 
-    private func calculateVRS(signature: Data) -> Signature {
+    func signature(rawTransaction: RawTransaction, nonce: Int) throws -> Signature {
+        let signatureData: Data = try sign(rawTransaction: rawTransaction, nonce: nonce)
+
+        return signature(from: signatureData)
+    }
+
+    func signature(from data: Data) -> Signature {
         return Signature(
-                v: Int(signature[64]) + (chainId == 0 ? 27 : (35 + 2 * chainId)),
-                r: BigUInt(signature[..<32].toRawHexString(), radix: 16)!,
-                s: BigUInt(signature[32..<64].toRawHexString(), radix: 16)!
+                v: Int(data[64]) + (chainId == 0 ? 27 : (35 + 2 * chainId)),
+                r: BigUInt(data[..<32].toRawHexString(), radix: 16)!,
+                s: BigUInt(data[32..<64].toRawHexString(), radix: 16)!
         )
     }
 

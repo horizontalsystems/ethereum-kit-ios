@@ -23,7 +23,7 @@ class TransactionSender {
             throw SendError.noAccountState
         }
 
-        let signature = try transactionSigner.sign(rawTransaction: rawTransaction, nonce: accountState.nonce)
+        let signature = try transactionSigner.signature(rawTransaction: rawTransaction, nonce: accountState.nonce)
 
         taskPerformer.add(task: SendTransactionTask(sendId: sendId, rawTransaction: rawTransaction, nonce: accountState.nonce, signature: signature))
     }

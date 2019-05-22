@@ -206,6 +206,9 @@ extension EthereumKit {
             let nodeKey = ECKey(privateKey: nodePrivateKey, publicKeyPoint: ECPoint(nodeId: nodePublicKey))
 
             blockchain = SpvBlockchain.instance(storage: storage, transactionsProvider: transactionsProvider, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, rpcApiProvider: rpcApiProvider, network: network, address: address, nodeKey: nodeKey, logger: logger)
+        case .geth:
+            let storage: IApiStorage = try ApiGrdbStorage(databaseDirectoryUrl: databaseDirectoryUrl(), databaseFileName: "geth-\(uniqueId)")
+            blockchain = try GethBlockchain.instance(network: network, storage: storage, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, address: address, logger: logger)
         }
 
         let addressValidator: IAddressValidator = AddressValidator()
@@ -227,6 +230,7 @@ extension EthereumKit {
         switch wordsSyncMode {
         case .api: syncMode = .api
         case .spv: syncMode = .spv(nodePrivateKey: try hdWallet.privateKey(account: 100, index: 100, chain: .external).raw)
+        case .geth: syncMode = .geth
         }
 
         return try instance(privateKey: privateKey, syncMode: syncMode, networkType: networkType, infuraCredentials: infuraCredentials, etherscanApiKey: etherscanApiKey, walletId: walletId, minLogLevel: minLogLevel)
@@ -276,20 +280,30 @@ extension EthereumKit {
         case invalidData
     }
 
-    public enum SyncState {
+    public enum SyncState: Equatable {
         case synced
-        case syncing
+        case syncing(progress: Double?)
         case notSynced
+
+        public static func ==(lhs: EthereumKit.SyncState, rhs: EthereumKit.SyncState) -> Bool {
+            switch (lhs, rhs) {
+            case (.synced, .synced), (.notSynced, .notSynced): return true
+            case (.syncing(let lhsProgress), .syncing(let rhsProgress)): return lhsProgress == rhsProgress
+            default: return false
+            }
+        }
     }
 
     public enum SyncMode {
         case api
         case spv(nodePrivateKey: Data)
+        case geth
     }
 
     public enum WordsSyncMode {
         case api
         case spv
+        case geth
     }
 
     public enum NetworkType {

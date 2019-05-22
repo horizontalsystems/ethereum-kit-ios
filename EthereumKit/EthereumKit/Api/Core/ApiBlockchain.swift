@@ -50,11 +50,12 @@ class ApiBlockchain {
             syncState = .notSynced
             return
         }
-        guard syncState != .syncing else {
+
+        if case .syncing = syncState {
             return
         }
 
-        syncState = .syncing
+        syncState = .syncing(progress: nil)
 
         Single.zip(
                         rpcApiProvider.lastBlockHeightSingle(),
@@ -106,7 +107,7 @@ class ApiBlockchain {
     }
 
     private func sendSingle(rawTransaction: RawTransaction, nonce: Int) throws -> Single<Transaction> {
-        let signature = try transactionSigner.sign(rawTransaction: rawTransaction, nonce: nonce)
+        let signature = try transactionSigner.signature(rawTransaction: rawTransaction, nonce: nonce)
         let transaction = transactionBuilder.transaction(rawTransaction: rawTransaction, nonce: nonce, signature: signature)
         let encoded = transactionBuilder.encode(rawTransaction: rawTransaction, signature: signature, nonce: nonce)
 

@@ -30,7 +30,10 @@ end
 
 target :EthereumKit do
   project 'EthereumKit/EthereumKit'
+
   common_pods
+
+  pod 'Geth', '~> 1.8'
 end
 
 target :Erc20Kit do
