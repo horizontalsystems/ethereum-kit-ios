@@ -121,6 +121,34 @@ class GethBlockchain: NSObject {
         delegate?.onUpdate(balance: balance)
     }
 
+    private func send(rawTransaction: RawTransaction) throws -> Transaction {
+        var nonce: Int64 = 0
+        try node.getEthereumClient().getNonceAt(context, account: account, number: -1, nonce: &nonce)
+
+        logger?.info("NONCE: \(nonce)")
+
+        let toAccount = GethAddress(fromBytes: rawTransaction.to)
+
+        let amount = GethBigInt(0)
+        amount?.setString(rawTransaction.value.description, base: 10)
+
+        let gethTransaction = GethTransaction(
+                nonce,
+                to: toAccount,
+                amount: amount,
+                gasLimit: Int64(rawTransaction.gasLimit),
+                gasPrice: GethBigInt(Int64(rawTransaction.gasPrice)),
+                data: rawTransaction.data
+        )
+
+        let signature = try transactionSigner.sign(rawTransaction: rawTransaction, nonce: Int(nonce))
+        let signedTransaction = try gethTransaction?.withSignature(signature, chainID: GethBigInt(Int64(network.chainId)))
+
+        try node.getEthereumClient().sendTransaction(context, tx: signedTransaction)
+
+        return transactionBuilder.transaction(rawTransaction: rawTransaction, nonce: Int(nonce), signature: transactionSigner.signature(from: signature))
+    }
+
 }
 
 extension GethBlockchain: IBlockchain {
@@ -166,38 +194,18 @@ extension GethBlockchain: IBlockchain {
     }
 
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction> {
-        do {
-            var nonce: Int64 = 0
-            try node.getEthereumClient().getNonceAt(context, account: account, number: -1, nonce: &nonce)
+        return Single.create { [unowned self] observer in
+            do {
+                let transaction = try self.send(rawTransaction: rawTransaction)
 
-            logger?.info("NONCE: \(nonce)")
+                observer(.success(transaction))
+            } catch {
+                self.logger?.error("Send error: \(error)")
 
-            let toAccount = GethAddress(fromBytes: rawTransaction.to)
+                observer(.error(error))
+            }
 
-            let amount = GethBigInt(0)
-            amount?.setString(rawTransaction.value.description, base: 10)
-
-            let gethTransaction = GethTransaction(
-                    nonce,
-                    to: toAccount,
-                    amount: amount,
-                    gasLimit: Int64(rawTransaction.gasLimit),
-                    gasPrice: GethBigInt(Int64(rawTransaction.gasPrice)),
-                    data: rawTransaction.data
-            )
-
-            let signature = try transactionSigner.sign(rawTransaction: rawTransaction, nonce: Int(nonce))
-            let transaction = transactionBuilder.transaction(rawTransaction: rawTransaction, nonce: Int(nonce), signature: transactionSigner.signature(from: signature))
-
-            let signedTransaction = try gethTransaction?.withSignature(signature, chainID: GethBigInt(Int64(network.chainId)))
-
-            try node.getEthereumClient().sendTransaction(context, tx: signedTransaction)
-
-            return Single.just(transaction)
-        } catch {
-            logger?.error("Send error: \(error)")
-
-            return Single.error(error)
+            return Disposables.create()
         }
     }
 
