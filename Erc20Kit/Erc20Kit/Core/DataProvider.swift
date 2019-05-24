@@ -21,11 +21,13 @@ extension DataProvider: IDataProvider {
         let addressTopic = Data(repeating: 0, count: 12) + address
         let transferTopic = ERC20.ContractLogs.transfer.topic
 
-        let outgoingTopics = [transferTopic, addressTopic]
-        let incomingTopics = [transferTopic, nil, addressTopic]
+        let topics: [[Any?]] = [
+            [transferTopic, addressTopic],
+            [transferTopic, nil, addressTopic]
+        ]
 
-        let singles = [incomingTopics, outgoingTopics].map {
-            ethereumKit.getLogsSingle(address: contractAddress, topics: $0 as [Any], fromBlock: from, toBlock: to, pullTimestamps: true)
+        let singles = topics.map {
+            ethereumKit.getLogsSingle(address: contractAddress, topics: $0, fromBlock: from, toBlock: to, pullTimestamps: true)
         }
 
         return Single.zip(singles) { logsArray -> [EthereumLog] in

@@ -28,42 +28,20 @@ class GethBlockchain: NSObject {
         }
     }
 
-    private init(network: INetwork, storage: IApiStorage, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, address: Data, logger: Logger? = nil) throws {
+    private init(node: GethNode, network: INetwork, storage: IApiStorage, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, account: GethAddress?, logger: Logger? = nil) throws {
+        self.node = node
         self.network = network
         self.storage = storage
         self.transactionSigner = transactionSigner
         self.transactionBuilder = transactionBuilder
+        self.account = account
         self.logger = logger
-
-        account = GethAddress(fromBytes: address)
 
         guard let context = GethContext() else {
             throw InitError.contextFailed
         }
 
         self.context = context
-
-        var error: NSError?
-
-        let config = GethNewNodeConfig()
-        config?.ethereumGenesis = network is Ropsten ? GethTestnetGenesis() : GethMainnetGenesis()
-        config?.ethereumNetworkID = Int64(network.chainId)
-        config?.bootstrapNodes = GethFoundationBootnodes()
-        config?.ethereumEnabled = true
-        config?.maxPeers = 25
-        config?.whisperEnabled = false
-
-        let fileManager = FileManager.default
-
-        let nodeDir = try! fileManager
-                .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-                .appendingPathComponent("geth", isDirectory: true)
-
-        guard let node = GethNewNode(nodeDir.path, config, &error) else {
-            throw InitError.nodeFailed
-        }
-
-        self.node = node
 
         super.init()
 
@@ -149,6 +127,112 @@ class GethBlockchain: NSObject {
         return transactionBuilder.transaction(rawTransaction: rawTransaction, nonce: Int(nonce), signature: transactionSigner.signature(from: signature))
     }
 
+    private func call(contractAddress: Data, data: Data, blockHeight: Int?) throws -> Data {
+        logger?.verbose("Calling \(contractAddress.toHexString()), blockHeight: \(blockHeight ?? -1)")
+
+        let message = GethCallMsg()
+        message?.setTo(GethAddress(fromBytes: contractAddress))
+        message?.setData(data)
+
+        let data = try node.getEthereumClient().callContract(context, msg: message, number: Int64(blockHeight ?? -1))
+
+        logger?.verbose("Call result: \(data.toHexString())")
+
+        return data
+    }
+
+    private func getLogs(address: Data?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) throws -> [EthereumLog] {
+        logger?.verbose("Get logs: \(address?.toHexString() ?? "nil"), \(fromBlock) -- \(toBlock), topics: \(topics.count)")
+
+        let addresses = GethNewAddressesEmpty()
+        addresses?.append(GethAddress(fromBytes: address))
+
+        let gethTopics = GethNewTopics(topics.count)
+        for (index, topic) in topics.enumerated() {
+            if let array = topic as? [Data?] {
+                let hashes = GethNewHashes(array.count)
+
+                for (index, topic) in array.enumerated() {
+                    if let data = topic {
+                        try hashes?.set(index, hash: GethHash(fromBytes: data))
+                    }
+                }
+
+                try gethTopics?.set(index, topics: hashes)
+            } else if let data = topic as? Data {
+                let hashes = GethNewHashesEmpty()
+                hashes?.append(GethHash(fromBytes: data))
+                try gethTopics?.set(index, topics: hashes)
+            }
+        }
+
+        let query = GethFilterQuery()
+        query?.setAddresses(addresses)
+        query?.setFromBlock(GethBigInt(Int64(fromBlock)))
+        query?.setToBlock(GethBigInt(Int64(toBlock)))
+        query?.setTopics(gethTopics)
+
+        let ethLogs = try node.getEthereumClient().filterLogs(context, query: query)
+
+        logger?.verbose("Eth logs result: \(ethLogs.size())")
+
+        var logs = [EthereumLog]()
+
+        for i in 0..<ethLogs.size() {
+            if let ethLog = try? ethLogs.get(i), let log = log(fromGethLog: ethLog) {
+                logs.append(log)
+            }
+        }
+
+        logger?.verbose("Logs result: \(ethLogs.size())")
+
+        return logs
+    }
+
+    private func log(fromGethLog gethLog: GethLog) -> EthereumLog? {
+        guard let address = gethLog.getAddress()?.getBytes() else {
+            return nil
+        }
+
+        guard let blockHash = gethLog.getBlockHash()?.getBytes() else {
+            return nil
+        }
+
+        guard let data = gethLog.getData() else {
+            return nil
+        }
+
+        guard let gethTopics = gethLog.getTopics() else {
+            return nil
+        }
+
+        guard let transactionHash = gethLog.getTxHash()?.getBytes() else {
+            return nil
+        }
+
+        var topics = [Data]()
+
+        for i in 0..<gethTopics.size() {
+            guard let hash = try? gethTopics.get(i), let bytes = hash.getBytes() else {
+                return nil
+            }
+
+            topics.append(bytes)
+        }
+
+        return EthereumLog(
+                address: address,
+                blockHash: blockHash,
+                blockNumber: Int(gethLog.getBlockNumber()),
+                data: data,
+                logIndex: gethLog.getIndex(),
+                removed: false,
+                topics: topics,
+                transactionHash: transactionHash,
+                transactionIndex: gethLog.getTxIndex()
+        )
+    }
+
 }
 
 extension GethBlockchain: IBlockchain {
@@ -209,16 +293,40 @@ extension GethBlockchain: IBlockchain {
         }
     }
 
-    func getLogsSingle(address: Data?, topics: [Any], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
-        return Single.just([])
+    func getLogsSingle(address: Data?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
+        return Single.create { [unowned self] observer in
+            do {
+                let logs = try self.getLogs(address: address, topics: topics, fromBlock: fromBlock, toBlock: toBlock, pullTimestamps: pullTimestamps)
+
+                observer(.success(logs))
+            } catch {
+                self.logger?.error("Logs error: \(error)")
+
+                observer(.error(error))
+            }
+
+            return Disposables.create()
+        }
     }
 
     func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data> {
-        return Single.just(Data())
+        fatalError("Not implemented yet")
     }
 
     func call(contractAddress: Data, data: Data, blockHeight: Int?) -> Single<Data> {
-        fatalError()
+        return Single.create { [unowned self] observer in
+            do {
+                let data: Data = try self.call(contractAddress: contractAddress, data: data, blockHeight: blockHeight)
+
+                observer(.success(data))
+            } catch {
+                self.logger?.error("Call error: \(error)")
+
+                observer(.error(error))
+            }
+
+            return Disposables.create()
+        }
     }
 
 }
@@ -241,8 +349,23 @@ extension GethBlockchain: GethNewHeadHandlerProtocol {
 
 extension GethBlockchain {
 
-    static func instance(network: INetwork, storage: IApiStorage, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, address: Data, logger: Logger? = nil) throws -> GethBlockchain {
-        let blockchain = try GethBlockchain(network: network, storage: storage, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, address: address, logger: logger)
+    static func instance(nodeDirectory: URL, network: INetwork, storage: IApiStorage, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, address: Data, logger: Logger? = nil) throws -> GethBlockchain {
+        let account = GethAddress(fromBytes: address)
+
+        let config = GethNewNodeConfig()
+        config?.ethereumGenesis = network is Ropsten ? GethTestnetGenesis() : GethMainnetGenesis()
+        config?.ethereumNetworkID = Int64(network.chainId)
+        config?.bootstrapNodes = GethFoundationBootnodes()
+        config?.ethereumEnabled = true
+        config?.maxPeers = 25
+        config?.whisperEnabled = false
+
+        var error: NSError?
+        guard let node = GethNewNode(nodeDirectory.path, config, &error) else {
+            throw InitError.nodeFailed
+        }
+
+        let blockchain = try GethBlockchain(node: node, network: network, storage: storage, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, account: account, logger: logger)
 
         return blockchain
     }

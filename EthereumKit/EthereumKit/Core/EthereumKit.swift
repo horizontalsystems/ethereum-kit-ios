@@ -129,7 +129,7 @@ extension EthereumKit {
         return lines.joined(separator: "\n")
     }
 
-    public func getLogsSingle(address: Data?, topics: [Any], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
+    public func getLogsSingle(address: Data?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
         return blockchain.getLogsSingle(address: address, topics: topics, fromBlock: fromBlock, toBlock: toBlock, pullTimestamps: pullTimestamps)
     }
 
@@ -197,18 +197,20 @@ extension EthereumKit {
 
         switch syncMode {
         case .api:
-            let storage: IApiStorage = try ApiGrdbStorage(databaseDirectoryUrl: databaseDirectoryUrl(), databaseFileName: "api-\(uniqueId)")
+            let storage: IApiStorage = try ApiGrdbStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "api-\(uniqueId)")
             blockchain = ApiBlockchain.instance(storage: storage, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, rpcApiProvider: rpcApiProvider, transactionsProvider: transactionsProvider, logger: logger)
         case .spv(let nodePrivateKey):
-            let storage: ISpvStorage = try SpvGrdbStorage(databaseDirectoryUrl: databaseDirectoryUrl(), databaseFileName: "spv-\(uniqueId)")
+            let storage: ISpvStorage = try SpvGrdbStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "spv-\(uniqueId)")
 
             let nodePublicKey = Data(CryptoKit.createPublicKey(fromPrivateKeyData: nodePrivateKey, compressed: false).dropFirst())
             let nodeKey = ECKey(privateKey: nodePrivateKey, publicKeyPoint: ECPoint(nodeId: nodePublicKey))
 
             blockchain = SpvBlockchain.instance(storage: storage, transactionsProvider: transactionsProvider, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, rpcApiProvider: rpcApiProvider, network: network, address: address, nodeKey: nodeKey, logger: logger)
         case .geth:
-            let storage: IApiStorage = try ApiGrdbStorage(databaseDirectoryUrl: databaseDirectoryUrl(), databaseFileName: "geth-\(uniqueId)")
-            blockchain = try GethBlockchain.instance(network: network, storage: storage, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, address: address, logger: logger)
+            let directoryUrl = try dataDirectoryUrl()
+            let storage: IApiStorage = ApiGrdbStorage(databaseDirectoryUrl: directoryUrl, databaseFileName: "geth-\(uniqueId)")
+            let nodeDirectory = directoryUrl.appendingPathComponent("node-\(uniqueId)", isDirectory: true)
+            blockchain = try GethBlockchain.instance(nodeDirectory: nodeDirectory, network: network, storage: storage, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, address: address, logger: logger)
         }
 
         let addressValidator: IAddressValidator = AddressValidator()
@@ -239,14 +241,14 @@ extension EthereumKit {
     public static func clear() throws {
         let fileManager = FileManager.default
 
-        let urls = try fileManager.contentsOfDirectory(at: databaseDirectoryUrl(), includingPropertiesForKeys: nil)
+        let urls = try fileManager.contentsOfDirectory(at: dataDirectoryUrl(), includingPropertiesForKeys: nil)
 
         for url in urls {
             try fileManager.removeItem(at: url)
         }
     }
 
-    private static func databaseDirectoryUrl() throws -> URL {
+    private static func dataDirectoryUrl() throws -> URL {
         let fileManager = FileManager.default
 
         let url = try fileManager

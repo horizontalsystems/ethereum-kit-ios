@@ -101,7 +101,7 @@ extension InfuraApiProvider: IRpcApiProvider {
         return infuraVoidSingle(method: "eth_sendRawTransaction", params: [signedTransaction.toHexString()])
     }
 
-    func getLogs(address: Data?, fromBlock: Int?, toBlock: Int?, topics: [Any]) -> Single<[EthereumLog]> {
+    func getLogs(address: Data?, fromBlock: Int?, toBlock: Int?, topics: [Any?]) -> Single<[EthereumLog]> {
         var toBlockStr = "latest"
         if let toBlockInt = toBlock {
             toBlockStr = "0x" + String(toBlockInt, radix: 16)
@@ -111,23 +111,23 @@ extension InfuraApiProvider: IRpcApiProvider {
             fromBlockStr = "0x" + String(fromBlockInt, radix: 16)
         }
 
-        var jsonValueTopics = [Any?]()
-        for topic in topics {
-            if let data = topic as? Data {
-                jsonValueTopics.append(data.toHexString())
-            } else if let string = topic as? String {
-                jsonValueTopics.append(string)
+        let jsonTopics: [Any?] = topics.map {
+            if let array = $0 as? [Data?] {
+                return array.map { topic -> String? in
+                    return topic?.toHexString()
+                }
+            } else if let data = $0 as? Data {
+                return data.toHexString()
             } else {
-                jsonValueTopics.append(nil)
+                return nil
             }
         }
-
 
         let params: [String: Any] = [
             "fromBlock": fromBlockStr,
             "toBlock": toBlockStr,
             "address": address?.toHexString() as Any,
-            "topics": jsonValueTopics
+            "topics": jsonTopics
         ]
 
         return infuraSingle(method: "eth_getLogs", params: [params]) {data -> [EthereumLog] in

@@ -32,7 +32,7 @@ protocol IBlockchain {
     func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[Transaction]>
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction>
 
-    func getLogsSingle(address: Data?, topics: [Any], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]>
+    func getLogsSingle(address: Data?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]>
     func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data>
     func call(contractAddress: Data, data: Data, blockHeight: Int?) -> Single<Data>
 }
