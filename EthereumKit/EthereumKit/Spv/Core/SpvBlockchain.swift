@@ -4,33 +4,26 @@ import BigInt
 class SpvBlockchain {
     weak var delegate: IBlockchainDelegate?
 
-    private let peerGroup: IPeerGroup
+    private let peer: IPeer
+    private let blockSyncer: BlockSyncer
+    private let accountStateSyncer: AccountStateSyncer
+    private let transactionSender: TransactionSender
     private let storage: ISpvStorage
-    private let transactionsProvider: ITransactionsProvider
     private let network: INetwork
-    private let transactionSigner: TransactionSigner
-    private let transactionBuilder: TransactionBuilder
     private let rpcApiProvider: IRpcApiProvider
+    private let logger: Logger?
 
-    let address: Data
+    private var sendingTransactions = [Int: PublishSubject<Transaction>]()
 
-    private init(peerGroup: IPeerGroup, storage: ISpvStorage, transactionsProvider: ITransactionsProvider, network: INetwork, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, rpcApiProvider: IRpcApiProvider, address: Data) {
-        self.peerGroup = peerGroup
+    private init(peer: IPeer, blockSyncer: BlockSyncer, accountStateSyncer: AccountStateSyncer, transactionSender: TransactionSender, storage: ISpvStorage, network: INetwork, rpcApiProvider: IRpcApiProvider, logger: Logger? = nil) {
+        self.peer = peer
+        self.blockSyncer = blockSyncer
+        self.accountStateSyncer = accountStateSyncer
+        self.transactionSender = transactionSender
         self.storage = storage
-        self.transactionsProvider = transactionsProvider
         self.network = network
-        self.transactionSigner = transactionSigner
-        self.transactionBuilder = transactionBuilder
         self.rpcApiProvider = rpcApiProvider
-        self.address = address
-    }
-
-    private func sendSingle(rawTransaction: RawTransaction, nonce: Int) throws -> Transaction {
-        let signature = try transactionSigner.sign(rawTransaction: rawTransaction, nonce: nonce)
-
-        peerGroup.send(rawTransaction: rawTransaction, nonce: nonce, signature: signature)
-
-        return transactionBuilder.transaction(rawTransaction: rawTransaction, nonce: nonce, signature: signature, address: address)
+        self.logger = logger
     }
 
 }
@@ -38,10 +31,14 @@ class SpvBlockchain {
 extension SpvBlockchain: IBlockchain {
 
     func start() {
-        peerGroup.start()
+        logger?.verbose("SpvBlockchain started")
+
+        peer.connect()
     }
 
     func stop() {
+        logger?.verbose("SpvBlockchain stopped")
+
         // todo
     }
 
@@ -50,7 +47,7 @@ extension SpvBlockchain: IBlockchain {
     }
 
     var syncState: EthereumKit.SyncState {
-        return peerGroup.syncState
+        return .notSynced
     }
 
     var lastBlockHeight: Int? {
@@ -61,34 +58,21 @@ extension SpvBlockchain: IBlockchain {
         return storage.accountState?.balance
     }
 
-    func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[Transaction]> {
-        return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: nil)
-    }
-
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction> {
-        let single: Single<Transaction> = Single.create { [unowned self] observer in
-            do {
-                guard let accountState = self.storage.accountState else {
-                    throw SendError.noAccountState
-                }
+        let sendId = RandomHelper.shared.randomInt
 
-                let transaction = try self.sendSingle(rawTransaction: rawTransaction, nonce: accountState.nonce)
+        do {
+            try transactionSender.send(sendId: sendId, taskPerformer: peer, rawTransaction: rawTransaction)
 
-                observer(.success(transaction))
-            } catch {
-                observer(.error(error))
-            }
-
-            return Disposables.create()
+            let subject = PublishSubject<Transaction>()
+            sendingTransactions[sendId] = subject
+            return subject.asSingle()
+        } catch {
+            return Single.error(error)
         }
-
-        return single.do(onSuccess: { [weak self] transaction in
-            self?.storage.save(transactions: [transaction])
-            self?.delegate?.onUpdate(transactions: [transaction])
-        })
     }
 
-    func getLogsSingle(address: Data?, topics: [Any], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
+    func getLogsSingle(address: Data?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
         return Single.just([])
     }
 
@@ -109,43 +93,104 @@ extension SpvBlockchain: IBlockchain {
 
 }
 
-extension SpvBlockchain: IPeerGroupDelegate {
+extension SpvBlockchain: IPeerDelegate {
+
+    func didConnect(peer: IPeer) {
+        let lastBlockHeader = storage.lastBlockHeader ?? network.checkpointBlock
+        peer.add(task: HandshakeTask(peerId: peer.id, network: network, blockHeader: lastBlockHeader))
+    }
+
+    func didDisconnect(peer: IPeer, error: Error?) {
+    }
+
+}
+
+extension SpvBlockchain: IBlockSyncerDelegate {
+
+    func onSuccess(taskPerformer: ITaskPerformer, lastBlockHeader: BlockHeader) {
+        logger?.debug("Blocks synced successfully up to \(lastBlockHeader.height). Starting account state sync...")
+
+        accountStateSyncer.sync(taskPerformer: taskPerformer, blockHeader: lastBlockHeader)
+    }
+
+    func onFailure(error: Error) {
+        logger?.error("Blocks sync failed: \(error)")
+    }
 
     func onUpdate(lastBlockHeader: BlockHeader) {
         delegate?.onUpdate(lastBlockHeight: lastBlockHeader.height)
     }
 
-    func onUpdate(syncState: EthereumKit.SyncState) {
-        delegate?.onUpdate(syncState: syncState)
-    }
+}
+
+extension SpvBlockchain: IAccountStateSyncerDelegate {
 
     func onUpdate(accountState: AccountState) {
-        storage.save(accountState: accountState)
-
         delegate?.onUpdate(balance: accountState.balance)
     }
 
 }
 
-extension SpvBlockchain {
+extension SpvBlockchain: ITransactionSenderDelegate {
 
-    enum SendError: Error {
-        case noAccountState
+    func onSendSuccess(sendId: Int, transaction: Transaction) {
+        guard let subject = sendingTransactions.removeValue(forKey: sendId) else {
+            return
+        }
+
+        subject.onNext(transaction)
+        subject.onCompleted()
+    }
+
+    func onSendFailure(sendId: Int, error: Error) {
+        guard let subject = sendingTransactions.removeValue(forKey: sendId) else {
+            return
+        }
+
+        subject.onError(error)
     }
 
 }
 
 extension SpvBlockchain {
 
-    static func instance(storage: ISpvStorage, transactionsProvider: ITransactionsProvider, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, rpcApiProvider: IRpcApiProvider, network: INetwork, address: Data, nodeKey: ECKey, logger: Logger? = nil) -> SpvBlockchain {
-        let peerProvider = PeerProvider(network: network, storage: storage, connectionKey: nodeKey, logger: logger)
+    static func instance(storage: ISpvStorage, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, rpcApiProvider: IRpcApiProvider, network: INetwork, address: Data, nodeKey: ECKey, logger: Logger? = nil) -> SpvBlockchain {
         let validator = BlockValidator()
         let blockHelper = BlockHelper(storage: storage, network: network)
-        let peerGroup = PeerGroup(storage: storage, peerProvider: peerProvider, validator: validator, blockHelper: blockHelper, address: address, logger: logger)
 
-        let spvBlockchain = SpvBlockchain(peerGroup: peerGroup, storage: storage, transactionsProvider: transactionsProvider, network: network, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, rpcApiProvider: rpcApiProvider, address: address)
+        let peerProvider = PeerProvider(network: network, connectionKey: nodeKey, logger: logger)
 
-        peerGroup.delegate = spvBlockchain
+        let peer = PeerGroup(peerProvider: peerProvider, logger: logger)
+//        let peer = peerProvider.peer()
+
+        let blockSyncer = BlockSyncer(storage: storage, blockHelper: blockHelper, validator: validator, logger: logger)
+        let accountStateSyncer = AccountStateSyncer(storage: storage, address: address)
+        let transactionSender = TransactionSender(storage: storage, transactionBuilder: transactionBuilder, transactionSigner: transactionSigner)
+
+        let spvBlockchain = SpvBlockchain(peer: peer, blockSyncer: blockSyncer, accountStateSyncer: accountStateSyncer, transactionSender: transactionSender, storage: storage, network: network, rpcApiProvider: rpcApiProvider, logger: logger)
+
+        peer.delegate = spvBlockchain
+        blockSyncer.delegate = spvBlockchain
+        accountStateSyncer.delegate = spvBlockchain
+        transactionSender.delegate = spvBlockchain
+
+        let handshakeHandler = HandshakeTaskHandler(delegate: blockSyncer)
+        peer.register(taskHandler: handshakeHandler)
+        peer.register(messageHandler: handshakeHandler)
+
+        let blockHeadersHandler = BlockHeadersTaskHandler(delegate: blockSyncer)
+        peer.register(taskHandler: blockHeadersHandler)
+        peer.register(messageHandler: blockHeadersHandler)
+
+        let accountStateHandler = AccountStateTaskHandler(delegate: accountStateSyncer)
+        peer.register(taskHandler: accountStateHandler)
+        peer.register(messageHandler: accountStateHandler)
+
+        let sendTransactionHandler = SendTransactionTaskHandler(delegate: transactionSender)
+        peer.register(taskHandler: sendTransactionHandler)
+        peer.register(messageHandler: sendTransactionHandler)
+
+        peer.register(messageHandler: AnnouncedBlockHandler(delegate: blockSyncer))
 
         return spvBlockchain
     }

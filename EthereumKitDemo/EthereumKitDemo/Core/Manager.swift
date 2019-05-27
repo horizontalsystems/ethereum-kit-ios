@@ -43,6 +43,7 @@ class Manager {
         switch configuration.syncMode {
         case .api: syncMode = .api
         case .spv: syncMode = .spv
+        case .geth: syncMode = .geth
         }
 
         let ethereumKit = try! EthereumKit.instance(

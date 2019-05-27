@@ -1,7 +1,7 @@
 import RxSwift
 import HSCryptoKit
 
-protocol ISpvStorage: IStorage {
+protocol ISpvStorage {
     var lastBlockHeader: BlockHeader? { get }
     func blockHeader(height: Int) -> BlockHeader?
     func reversedLastBlockHeaders(from height: Int, limit: Int) -> [BlockHeader]
@@ -54,15 +54,6 @@ protocol ICryptoUtils: class {
     func aesEncrypt(_ data: Data, withKey: Data, keySize: Int) -> Data
 }
 
-protocol IPeerDelegate: class {
-    func didConnect()
-    func didDisconnect(error: Error?)
-
-    func didReceive(blockHeaders: [BlockHeader], blockHeader: BlockHeader, reverse: Bool)
-    func didReceive(accountState: AccountState, address: Data, blockHeader: BlockHeader)
-    func didAnnounce(blockHash: Data, blockHeight: Int)
-}
-
 protocol IDevP2PPeerDelegate: class {
     func didConnect()
     func didDisconnect(error: Error?)
@@ -75,16 +66,25 @@ protocol IConnectionDelegate: class {
     func didReceive(frame: Frame)
 }
 
-protocol IPeer: class {
+protocol IPeer: ITaskPerformer {
+    var id: String { get }
+
     var delegate: IPeerDelegate? { get set }
 
+    func register(messageHandler: IMessageHandler)
+
     func connect()
-    func disconnect(error: Error?)
+//    func disconnect(error: Error?)
+}
 
-    func requestBlockHeaders(blockHeader: BlockHeader, limit: Int, reverse: Bool)
-    func requestAccountState(address: Data, blockHeader: BlockHeader)
+protocol ITaskPerformer: AnyObject {
+    func register(taskHandler: ITaskHandler)
+    func add(task: ITask)
+}
 
-    func send(rawTransaction: RawTransaction, nonce: Int, signature: Signature)
+protocol IPeerDelegate: class {
+    func didConnect(peer: IPeer)
+    func didDisconnect(peer: IPeer, error: Error?)
 }
 
 protocol IConnection: class {
@@ -93,6 +93,8 @@ protocol IConnection: class {
     func connect()
     func disconnect(error: Error?)
     func send(frame: Frame)
+
+    var logName: String { get }
 }
 
 protocol IFrameConnection: class {
@@ -101,6 +103,8 @@ protocol IFrameConnection: class {
     func connect()
     func disconnect(error: Error?)
     func send(packetType: Int, payload: Data)
+
+    var logName: String { get }
 }
 
 protocol IFrameConnectionDelegate: class {
@@ -117,6 +121,8 @@ protocol IDevP2PConnection: class {
     func connect()
     func disconnect(error: Error?)
     func send(message: IOutMessage)
+
+    var logName: String { get }
 }
 
 protocol IDevP2PConnectionDelegate: class {
@@ -131,26 +137,12 @@ protocol INetwork {
     var checkpointBlock: BlockHeader { get }
 }
 
-protocol IPeerGroupDelegate: class {
-    func onUpdate(lastBlockHeader: BlockHeader)
-    func onUpdate(syncState: EthereumKit.SyncState)
-    func onUpdate(accountState: AccountState)
-}
-
-protocol IPeerGroup {
-    var delegate: IPeerGroupDelegate? { get set }
-
-    var syncState: EthereumKit.SyncState { get }
-
-    func start()
-
-    func send(rawTransaction: RawTransaction, nonce: Int, signature: Signature)
-}
-
 protocol IDevP2PPeer {
     func connect()
     func disconnect(error: Error?)
     func send(message: IOutMessage)
+
+    var logName: String { get }
 }
 
 protocol IMessage {
@@ -175,4 +167,19 @@ protocol IPeerProvider {
 
 protocol IBlockHelper {
     var lastBlockHeader: BlockHeader { get }
+}
+
+protocol ITask {
+}
+
+protocol ITaskHandler {
+    func perform(task: ITask, requester: ITaskHandlerRequester) -> Bool
+}
+
+protocol IMessageHandler {
+    func handle(peer: IPeer, message: IInMessage) throws -> Bool
+}
+
+protocol ITaskHandlerRequester: AnyObject {
+    func send(message: IOutMessage)
 }

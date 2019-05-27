@@ -1,10 +1,19 @@
 import RxSwift
 import GRDB
 
-class SpvGrdbStorage: BaseGrdbStorage {
+class SpvStorage {
+    private let dbPool: DatabasePool
 
-    override var migrator: DatabaseMigrator {
-        var migrator = super.migrator
+    init(databaseDirectoryUrl: URL, databaseFileName: String) {
+        let databaseURL = databaseDirectoryUrl.appendingPathComponent("\(databaseFileName).sqlite")
+
+        dbPool = try! DatabasePool(path: databaseURL.path)
+
+        try? migrator.migrate(dbPool)
+    }
+
+    var migrator: DatabaseMigrator {
+        var migrator = DatabaseMigrator()
 
         migrator.registerMigration("createBlockHeaders") { db in
             try db.create(table: BlockHeader.databaseTableName) { t in
@@ -47,7 +56,7 @@ class SpvGrdbStorage: BaseGrdbStorage {
 
 }
 
-extension SpvGrdbStorage: ISpvStorage {
+extension SpvStorage: ISpvStorage {
 
     // BlockHeader
 

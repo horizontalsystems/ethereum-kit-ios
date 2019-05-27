@@ -1,8 +1,8 @@
 import RxSwift
 import GRDB
 
-class BaseGrdbStorage {
-    internal let dbPool: DatabasePool
+class TransactionStorage {
+    private let dbPool: DatabasePool
 
     init(databaseDirectoryUrl: URL, databaseFileName: String) {
         let databaseURL = databaseDirectoryUrl.appendingPathComponent("\(databaseFileName).sqlite")
@@ -43,9 +43,13 @@ class BaseGrdbStorage {
 
 }
 
-extension BaseGrdbStorage {
+extension TransactionStorage: ITransactionStorage {
 
-    // Transactions
+    var lastTransactionBlockHeight: Int? {
+        return try! dbPool.read { db in
+            return try Transaction.order(Transaction.Columns.blockNumber.desc).fetchOne(db)?.blockNumber
+        }
+    }
 
     func transactionsSingle(fromHash: Data?, limit: Int?, contractAddress: Data?) -> Single<[Transaction]> {
         return Single.create { [weak self] observer in

@@ -4,12 +4,19 @@ import HSCryptoKit
 class RandomHelper: IRandomHelper {
     static let shared = RandomHelper()
 
+    let ecKeyQueue = DispatchQueue(label: "ecKeyQueue", qos: .userInitiated)
+
     var randomInt: Int {
         return Int.random(in: 0..<Int.max)
     }
 
     func randomKey() -> ECKey {
-        let key: _ECKey = _ECKey.random()
+        var key: _ECKey!
+
+        ecKeyQueue.sync {
+            key = _ECKey.random()
+        }
+
         return ECKey(privateKey: key.privateKey, publicKeyPoint: ECPoint(nodeId: key.publicKey.subdata(in: 1..<65)))
     }
 

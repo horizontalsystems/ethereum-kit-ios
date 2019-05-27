@@ -12,6 +12,18 @@ public class EthereumLog {
 
     public var timestamp: TimeInterval?
 
+    init(address: Data, blockHash: Data, blockNumber: Int, data: Data, logIndex: Int, removed: Bool, topics: [Data], transactionHash: Data, transactionIndex: Int) {
+        self.address = address
+        self.blockHash = blockHash
+        self.blockNumber = blockNumber
+        self.data = data
+        self.logIndex = logIndex
+        self.removed = removed
+        self.topics = topics
+        self.transactionHash = transactionHash
+        self.transactionIndex = transactionIndex
+    }
+
     init?(json: Any) {
         guard let log = json as? [String: Any] else {
             return nil

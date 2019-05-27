@@ -51,6 +51,10 @@ class DevP2PPeer {
         // no actions required
     }
 
+    private func log(_ message: String, level: Logger.Level = .debug) {
+        logger?.log(level: level, message: message, context: logName)
+    }
+
 }
 
 extension DevP2PPeer: IDevP2PPeer {
@@ -67,6 +71,10 @@ extension DevP2PPeer: IDevP2PPeer {
         devP2PConnection.send(message: message)
     }
 
+    var logName: String {
+        return devP2PConnection.logName
+    }
+
 }
 
 extension DevP2PPeer: IDevP2PConnectionDelegate {
@@ -81,7 +89,7 @@ extension DevP2PPeer: IDevP2PConnectionDelegate {
     }
 
     func didReceive(message: IInMessage) {
-        logger?.verbose("<<< \(message.toString())")
+        log("<<< \(message.toString())")
 
         do {
             try handle(message: message)

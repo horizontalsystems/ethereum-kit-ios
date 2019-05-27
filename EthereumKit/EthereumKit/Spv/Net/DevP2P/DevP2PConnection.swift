@@ -31,10 +31,14 @@ class DevP2PConnection {
             let message = try inMessageClass.init(data: payload)
             delegate?.didReceive(message: message)
         } catch {
-            logger?.debug("Could not create message \(inMessageClass): \(error)")
+            log("Could not create message \(inMessageClass): \(error)")
             throw DeserializeError.invalidPayload
         }
 
+    }
+
+    private func log(_ message: String, level: Logger.Level = .debug) {
+        logger?.log(level: level, message: message, context: logName)
     }
 
 }
@@ -65,12 +69,16 @@ extension DevP2PConnection: IDevP2PConnection {
     func send(message: IOutMessage) {
         for (packetType, messageClass) in packetTypesMap {
             if (messageClass == type(of: message)) {
-                logger?.verbose(">>> \(message.toString())")
+                log(">>> \(message.toString())")
 
                 frameConnection.send(packetType: packetType, payload: message.encoded())
                 break
             }
         }
+    }
+
+    var logName: String {
+        return frameConnection.logName
     }
 
 }

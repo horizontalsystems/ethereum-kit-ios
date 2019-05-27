@@ -1,9 +1,5 @@
-import Foundation
 import Alamofire
 import RxSwift
-
-import RxSwift
-import Alamofire
 
 class ReachabilityManager {
     private let manager: NetworkReachabilityManager?
@@ -11,12 +7,8 @@ class ReachabilityManager {
     private(set) var isReachable: Bool
     let reachabilitySignal = Signal()
 
-    init(configProvider: IApiConfigProvider? = nil) {
-        if let configProvider = configProvider {
-            manager = NetworkReachabilityManager(host: configProvider.reachabilityHost)
-        } else {
-            manager = NetworkReachabilityManager()
-        }
+    init() {
+        manager = NetworkReachabilityManager()
 
         isReachable = manager?.isReachable ?? false
 

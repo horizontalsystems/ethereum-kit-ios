@@ -21,11 +21,13 @@ extension DataProvider: IDataProvider {
         let addressTopic = Data(repeating: 0, count: 12) + address
         let transferTopic = ERC20.ContractLogs.transfer.topic
 
-        let outgoingTopics = [transferTopic, addressTopic]
-        let incomingTopics = [transferTopic, nil, addressTopic]
+        let topics: [[Any?]] = [
+            [transferTopic, addressTopic],
+            [transferTopic, nil, addressTopic]
+        ]
 
-        let singles = [incomingTopics, outgoingTopics].map {
-            ethereumKit.getLogsSingle(address: contractAddress, topics: $0 as [Any], fromBlock: from, toBlock: to, pullTimestamps: true)
+        let singles = topics.map {
+            ethereumKit.getLogsSingle(address: contractAddress, topics: $0, fromBlock: from, toBlock: to, pullTimestamps: true)
         }
 
         return Single.zip(singles) { logsArray -> [EthereumLog] in
@@ -54,7 +56,7 @@ extension DataProvider: IDataProvider {
     }
 
     func sendSingle(contractAddress: Data, transactionInput: Data, gasPrice: Int, gasLimit: Int) -> Single<Data> {
-        return ethereumKit.sendSingle(to: contractAddress, value: "0", transactionInput: transactionInput, gasPrice: gasPrice, gasLimit: gasLimit)
+        return ethereumKit.sendSingle(to: contractAddress, value: 0, transactionInput: transactionInput, gasPrice: gasPrice, gasLimit: gasLimit)
                 .map { transactionInfo in
                     Data(hex: transactionInfo.hash)!
                 }

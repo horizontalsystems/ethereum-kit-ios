@@ -6,11 +6,13 @@ class EtherscanApiProvider {
     private let network: INetwork
 
     private let etherscanApiKey: String
+    private let address: Data
 
-    init(networkManager: NetworkManager, network: INetwork, etherscanApiKey: String) {
+    init(networkManager: NetworkManager, network: INetwork, etherscanApiKey: String, address: Data) {
         self.networkManager = networkManager
         self.network = network
         self.etherscanApiKey = etherscanApiKey
+        self.address = address
     }
 
 }
@@ -47,7 +49,7 @@ extension EtherscanApiProvider {
 
 extension EtherscanApiProvider: ITransactionsProvider {
 
-    func transactionsSingle(address: Data, startBlock: Int) -> Single<[Transaction]> {
+    func transactionsSingle(startBlock: Int) -> Single<[Transaction]> {
         let params: [String: Any] = [
             "module": "account",
             "action": "txlist",

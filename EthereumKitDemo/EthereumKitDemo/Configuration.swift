@@ -36,6 +36,7 @@ extension Configuration {
     enum SyncMode {
         case api
         case spv
+        case geth
     }
 
 }
