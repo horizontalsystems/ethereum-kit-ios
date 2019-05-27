@@ -45,7 +45,7 @@ class GethBlockchain: NSObject {
 
         super.init()
 
-        lastBlockHeightSubject.throttle(1, scheduler: ConcurrentDispatchQueueScheduler(qos: .background))
+        lastBlockHeightSubject.throttle(.seconds(1), scheduler: ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(onNext: { [weak self] in
                     self?.update(lastBlockHeight: $0)

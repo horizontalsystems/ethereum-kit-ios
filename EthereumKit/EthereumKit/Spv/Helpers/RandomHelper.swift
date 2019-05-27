@@ -26,9 +26,8 @@ class RandomHelper: IRandomHelper {
 
     func randomBytes(length: Int) -> Data {
         var bytes = Data(count: length)
-        let _ = bytes.withUnsafeMutableBytes {
-            (mutableBytes: UnsafeMutablePointer<UInt8>) -> Int32 in
-            SecRandomCopyBytes(kSecRandomDefault, length, mutableBytes)
+        let _ = bytes.withUnsafeMutableBytes { mutableBytes -> Int32 in
+            SecRandomCopyBytes(kSecRandomDefault, length, mutableBytes.baseAddress!.assumingMemoryBound(to: UInt8.self))
         }
 
         return bytes

@@ -1,5 +1,5 @@
 class PingMessage: IInMessage {
-    private static let payload = Data(bytes: [UInt8(0xc0)])
+    private static let payload = Data([UInt8(0xc0)])
 
     init() {
     }

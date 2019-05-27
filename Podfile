@@ -10,12 +10,12 @@ project 'Erc20Kit/Erc20Kit'
 project 'EthereumKitDemo/EthereumKitDemo'
 
 def common_pods
-  pod 'RxSwift', '~> 4.0'
+  pod 'RxSwift', '~> 5.0'
 
-  pod 'HSCryptoKit', git: 'https://github.com/horizontalsystems/crypto-kit-ios'
-  pod 'HSHDWalletKit', '~> 1.0'
+  pod 'HSCryptoKit', '~> 1.4'
+  pod 'HSHDWalletKit', '~> 1.1'
 
-  pod 'GRDB.swift', '~> 3.0'
+  pod 'GRDB.swift', '~> 4.0'
 
   pod 'Alamofire', '~> 4.0'
 

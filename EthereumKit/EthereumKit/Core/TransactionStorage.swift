@@ -46,7 +46,7 @@ class TransactionStorage {
 extension TransactionStorage: ITransactionStorage {
 
     var lastTransactionBlockHeight: Int? {
-        return try! dbPool.read { db in
+        return try? dbPool.read { db in
             return try Transaction.order(Transaction.Columns.blockNumber.desc).fetchOne(db)?.blockNumber
         }
     }

@@ -141,7 +141,7 @@ class Connection: NSObject {
 
     private func sendPackets(data: Data) {
         _ = data.withUnsafeBytes {
-            outputStream?.write($0, maxLength: data.count)
+            outputStream?.write($0.baseAddress!.assumingMemoryBound(to: UInt8.self), maxLength: data.count)
         }
     }
 

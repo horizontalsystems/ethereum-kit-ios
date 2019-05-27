@@ -150,7 +150,7 @@ struct RLP {
     private static func encode(bigInt: BigUInt) -> Data {
         let data = bigInt.serialize()
         if data.isEmpty {
-            return Data(bytes: [0x80])
+            return Data([0x80])
         }
         return encode(data: data)
     }

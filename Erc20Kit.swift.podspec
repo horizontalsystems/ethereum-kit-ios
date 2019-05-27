@@ -13,11 +13,11 @@ Pod::Spec.new do |spec|
   spec.source = { git: 'https://github.com/horizontalsystems/ethereum-kit-ios.git', tag: "#{spec.version}" }
   spec.source_files = 'Erc20Kit/Erc20Kit/**/*.{h,m,swift}'
   spec.ios.deployment_target = '11.0'
-  spec.swift_version = '4.2'
+  spec.swift_version = '5'
 
   spec.dependency 'EthereumKit.swift', '~> 0.6'
-  spec.dependency 'HSCryptoKit', '~> 1.0'
-  spec.dependency 'RxSwift', '~> 4.0'
-  spec.dependency 'GRDB.swift', '~> 3.0'
+  spec.dependency 'HSCryptoKit', '~> 1.4'
+  spec.dependency 'RxSwift', '~> 5.0'
+  spec.dependency 'GRDB.swift', '~> 4.0'
   spec.dependency 'BigInt', '~> 4.0'
 end
