@@ -56,7 +56,7 @@ extension DataProvider: IDataProvider {
     }
 
     func sendSingle(contractAddress: Data, transactionInput: Data, gasPrice: Int, gasLimit: Int) -> Single<Data> {
-        return ethereumKit.sendSingle(to: contractAddress, value: "0", transactionInput: transactionInput, gasPrice: gasPrice, gasLimit: gasLimit)
+        return ethereumKit.sendSingle(to: contractAddress, value: 0, transactionInput: transactionInput, gasPrice: gasPrice, gasLimit: gasLimit)
                 .map { transactionInfo in
                     Data(hex: transactionInfo.hash)!
                 }

@@ -35,8 +35,6 @@ extension TransactionSender: ISendTransactionTaskHandlerDelegate {
     func onSendSuccess(task: SendTransactionTask) {
         let transaction = transactionBuilder.transaction(rawTransaction: task.rawTransaction, nonce: task.nonce, signature: task.signature)
 
-        storage.save(transactions: [transaction])
-
         delegate?.onSendSuccess(sendId: task.sendId, transaction: transaction)
     }
 

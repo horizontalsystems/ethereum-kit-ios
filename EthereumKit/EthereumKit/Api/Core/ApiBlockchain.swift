@@ -7,7 +7,6 @@ class ApiBlockchain {
     weak var delegate: IBlockchainDelegate?
 
     private let storage: IApiStorage
-    private let transactionsProvider: ITransactionsProvider
     private let rpcApiProvider: IRpcApiProvider
     private let reachabilityManager: IReachabilityManager
     private let transactionSigner: TransactionSigner
@@ -24,9 +23,8 @@ class ApiBlockchain {
         }
     }
 
-    init(storage: IApiStorage, transactionsProvider: ITransactionsProvider, rpcApiProvider: IRpcApiProvider, reachabilityManager: IReachabilityManager, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, logger: Logger? = nil) {
+    init(storage: IApiStorage, rpcApiProvider: IRpcApiProvider, reachabilityManager: IReachabilityManager, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, logger: Logger? = nil) {
         self.storage = storage
-        self.transactionsProvider = transactionsProvider
         self.rpcApiProvider = rpcApiProvider
         self.reachabilityManager = reachabilityManager
         self.transactionSigner = transactionSigner
@@ -66,27 +64,13 @@ class ApiBlockchain {
                     self?.update(lastBlockHeight: lastBlockHeight)
                     self?.update(balance: balance)
 
-                    self?.refreshTransactions()
+                    self?.syncState = .synced
                 }, onError: { [weak self] error in
                     self?.syncState = .notSynced
                     self?.logger?.error("Sync Failed: lastBlockHeight and balance: \(error)")
                 })
                 .disposed(by: disposeBag)
 
-    }
-
-    private func refreshTransactions() {
-        let lastTransactionBlockHeight = storage.lastTransactionBlockHeight() ?? 0
-
-        transactionsProvider.transactionsSingle(startBlock: lastTransactionBlockHeight + 1)
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                .subscribe(onSuccess: { [weak self] transactions in
-                    self?.update(transactions: transactions)
-                    self?.syncState = .synced
-                }, onError: { [weak self] _ in
-                    self?.syncState = .notSynced
-                })
-                .disposed(by: disposeBag)
     }
 
     private func update(lastBlockHeight: Int) {
@@ -97,13 +81,6 @@ class ApiBlockchain {
     private func update(balance: BigUInt) {
         storage.save(balance: balance)
         delegate?.onUpdate(balance: balance)
-    }
-
-    private func update(transactions: [Transaction]) {
-        storage.save(transactions: transactions)
-        delegate?.onUpdate(transactions: transactions.filter {
-            $0.input == Data()
-        })
     }
 
     private func sendSingle(rawTransaction: RawTransaction, nonce: Int) throws -> Single<Transaction> {
@@ -170,17 +147,12 @@ extension ApiBlockchain: IBlockchain {
         return storage.balance
     }
 
-    func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[Transaction]> {
-        return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: nil)
-    }
-
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction> {
         return rpcApiProvider.transactionCountSingle()
                 .flatMap { [unowned self] nonce -> Single<Transaction> in
                     return try self.sendSingle(rawTransaction: rawTransaction, nonce: nonce)
                 }
                 .do(onSuccess: { [weak self] transaction in
-                    self?.update(transactions: [transaction])
                     self?.sync()
                 })
     }
@@ -222,10 +194,10 @@ extension ApiBlockchain: IBlockchain {
 
 extension ApiBlockchain {
 
-    static func instance(storage: IApiStorage, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, rpcApiProvider: IRpcApiProvider, transactionsProvider: ITransactionsProvider, logger: Logger? = nil) -> ApiBlockchain {
+    static func instance(storage: IApiStorage, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, rpcApiProvider: IRpcApiProvider, logger: Logger? = nil) -> ApiBlockchain {
         let reachabilityManager: IReachabilityManager = ReachabilityManager()
 
-        return ApiBlockchain(storage: storage, transactionsProvider: transactionsProvider, rpcApiProvider: rpcApiProvider, reachabilityManager: reachabilityManager, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, logger: logger)
+        return ApiBlockchain(storage: storage, rpcApiProvider: rpcApiProvider, reachabilityManager: reachabilityManager, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, logger: logger)
     }
 
 }

@@ -12,12 +12,10 @@ protocol IRpcApiProvider {
     func getBlock(byNumber: Int) -> Single<Block>
 }
 
-protocol IApiStorage: IStorage {
+protocol IApiStorage {
     var lastBlockHeight: Int? { get }
     func save(lastBlockHeight: Int)
 
     var balance: BigUInt? { get }
     func save(balance: BigUInt)
-
-    func lastTransactionBlockHeight() -> Int?
 }

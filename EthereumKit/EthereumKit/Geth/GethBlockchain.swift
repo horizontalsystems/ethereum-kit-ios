@@ -273,10 +273,6 @@ extension GethBlockchain: IBlockchain {
         return storage.balance
     }
 
-    func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[Transaction]> {
-        return Single.just([])
-    }
-
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction> {
         return Single.create { [unowned self] observer in
             do {

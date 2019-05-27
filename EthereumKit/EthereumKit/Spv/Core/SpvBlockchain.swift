@@ -9,20 +9,18 @@ class SpvBlockchain {
     private let accountStateSyncer: AccountStateSyncer
     private let transactionSender: TransactionSender
     private let storage: ISpvStorage
-    private let transactionsProvider: ITransactionsProvider
     private let network: INetwork
     private let rpcApiProvider: IRpcApiProvider
     private let logger: Logger?
 
     private var sendingTransactions = [Int: PublishSubject<Transaction>]()
 
-    private init(peer: IPeer, blockSyncer: BlockSyncer, accountStateSyncer: AccountStateSyncer, transactionSender: TransactionSender, storage: ISpvStorage, transactionsProvider: ITransactionsProvider, network: INetwork, rpcApiProvider: IRpcApiProvider, logger: Logger? = nil) {
+    private init(peer: IPeer, blockSyncer: BlockSyncer, accountStateSyncer: AccountStateSyncer, transactionSender: TransactionSender, storage: ISpvStorage, network: INetwork, rpcApiProvider: IRpcApiProvider, logger: Logger? = nil) {
         self.peer = peer
         self.blockSyncer = blockSyncer
         self.accountStateSyncer = accountStateSyncer
         self.transactionSender = transactionSender
         self.storage = storage
-        self.transactionsProvider = transactionsProvider
         self.network = network
         self.rpcApiProvider = rpcApiProvider
         self.logger = logger
@@ -58,10 +56,6 @@ extension SpvBlockchain: IBlockchain {
 
     var balance: BigUInt? {
         return storage.accountState?.balance
-    }
-
-    func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[Transaction]> {
-        return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: nil)
     }
 
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction> {
@@ -146,8 +140,6 @@ extension SpvBlockchain: ITransactionSenderDelegate {
 
         subject.onNext(transaction)
         subject.onCompleted()
-
-        delegate?.onUpdate(transactions: [transaction])
     }
 
     func onSendFailure(sendId: Int, error: Error) {
@@ -162,7 +154,7 @@ extension SpvBlockchain: ITransactionSenderDelegate {
 
 extension SpvBlockchain {
 
-    static func instance(storage: ISpvStorage, transactionsProvider: ITransactionsProvider, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, rpcApiProvider: IRpcApiProvider, network: INetwork, address: Data, nodeKey: ECKey, logger: Logger? = nil) -> SpvBlockchain {
+    static func instance(storage: ISpvStorage, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, rpcApiProvider: IRpcApiProvider, network: INetwork, address: Data, nodeKey: ECKey, logger: Logger? = nil) -> SpvBlockchain {
         let validator = BlockValidator()
         let blockHelper = BlockHelper(storage: storage, network: network)
 
@@ -175,7 +167,7 @@ extension SpvBlockchain {
         let accountStateSyncer = AccountStateSyncer(storage: storage, address: address)
         let transactionSender = TransactionSender(storage: storage, transactionBuilder: transactionBuilder, transactionSigner: transactionSigner)
 
-        let spvBlockchain = SpvBlockchain(peer: peer, blockSyncer: blockSyncer, accountStateSyncer: accountStateSyncer, transactionSender: transactionSender, storage: storage, transactionsProvider: transactionsProvider, network: network, rpcApiProvider: rpcApiProvider, logger: logger)
+        let spvBlockchain = SpvBlockchain(peer: peer, blockSyncer: blockSyncer, accountStateSyncer: accountStateSyncer, transactionSender: transactionSender, storage: storage, network: network, rpcApiProvider: rpcApiProvider, logger: logger)
 
         peer.delegate = spvBlockchain
         blockSyncer.delegate = spvBlockchain

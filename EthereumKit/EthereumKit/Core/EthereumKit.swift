@@ -12,6 +12,7 @@ public class EthereumKit {
     private let transactionsSubject = PublishSubject<[TransactionInfo]>()
 
     private let blockchain: IBlockchain
+    private let transactionManager: TransactionManager
     private let addressValidator: IAddressValidator
     private let transactionBuilder: TransactionBuilder
     private let state: EthereumKitState
@@ -21,8 +22,9 @@ public class EthereumKit {
     public let uniqueId: String
     public let logger: Logger
 
-    init(blockchain: IBlockchain, addressValidator: IAddressValidator, transactionBuilder: TransactionBuilder, state: EthereumKitState = EthereumKitState(), address: Data, uniqueId: String, logger: Logger) {
+    init(blockchain: IBlockchain, transactionManager: TransactionManager, addressValidator: IAddressValidator, transactionBuilder: TransactionBuilder, state: EthereumKitState = EthereumKitState(), address: Data, uniqueId: String, logger: Logger) {
         self.blockchain = blockchain
+        self.transactionManager = transactionManager
         self.addressValidator = addressValidator
         self.transactionBuilder = transactionBuilder
         self.state = state
@@ -42,6 +44,7 @@ extension EthereumKit {
 
     public func start() {
         blockchain.start()
+        transactionManager.refresh()
     }
 
     public func stop() {
@@ -50,6 +53,7 @@ extension EthereumKit {
 
     public func refresh() {
         blockchain.refresh()
+        transactionManager.refresh()
     }
 
     public var lastBlockHeight: Int? {
@@ -93,17 +97,17 @@ extension EthereumKit {
     }
 
     public func transactionsSingle(fromHash: String? = nil, limit: Int? = nil) -> Single<[TransactionInfo]> {
-        return blockchain.transactionsSingle(fromHash: fromHash.flatMap { Data(hex: $0) }, limit: limit)
+        return transactionManager.transactionsSingle(fromHash: fromHash.flatMap { Data(hex: $0) }, limit: limit)
                 .map { $0.map { TransactionInfo(transaction: $0) } }
     }
 
-    public func sendSingle(to: Data, value: String, transactionInput: Data, gasPrice: Int, gasLimit: Int) -> Single<TransactionInfo> {
-        guard let value = BigUInt(value) else {
-            return Single.error(EthereumKit.SendError.invalidValue)
-        }
-
+    public func sendSingle(to: Data, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int) -> Single<TransactionInfo> {
         let rawTransaction = transactionBuilder.rawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: to, value: value, data: transactionInput)
+
         return blockchain.sendSingle(rawTransaction: rawTransaction)
+                .do(onSuccess: { [weak self] transaction in
+                    self?.transactionManager.handle(sentTransaction: transaction)
+                })
                 .map { TransactionInfo(transaction: $0) }
     }
 
@@ -116,9 +120,7 @@ extension EthereumKit {
             return Single.error(SendError.invalidValue)
         }
 
-        let rawTransaction = transactionBuilder.rawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: to, value: value)
-        return blockchain.sendSingle(rawTransaction: rawTransaction)
-                .map { TransactionInfo(transaction: $0) }
+        return sendSingle(to: to, value: value, gasPrice: gasPrice, gasLimit: gasLimit)
     }
 
     public var debugInfo: String {
@@ -170,6 +172,10 @@ extension EthereumKit: IBlockchainDelegate {
         syncStateSubject.onNext(syncState)
     }
 
+}
+
+extension EthereumKit: ITransactionManagerDelegate {
+
     func onUpdate(transactions: [Transaction]) {
         transactionsSubject.onNext(transactions.map { TransactionInfo(transaction: $0) })
     }
@@ -197,26 +203,30 @@ extension EthereumKit {
 
         switch syncMode {
         case .api:
-            let storage: IApiStorage = try ApiGrdbStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "api-\(uniqueId)")
-            blockchain = ApiBlockchain.instance(storage: storage, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, rpcApiProvider: rpcApiProvider, transactionsProvider: transactionsProvider, logger: logger)
+            let storage: IApiStorage = try ApiStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "api-\(uniqueId)")
+            blockchain = ApiBlockchain.instance(storage: storage, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, rpcApiProvider: rpcApiProvider, logger: logger)
         case .spv(let nodePrivateKey):
-            let storage: ISpvStorage = try SpvGrdbStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "spv-\(uniqueId)")
+            let storage: ISpvStorage = try SpvStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "spv-\(uniqueId)")
 
             let nodePublicKey = Data(CryptoKit.createPublicKey(fromPrivateKeyData: nodePrivateKey, compressed: false).dropFirst())
             let nodeKey = ECKey(privateKey: nodePrivateKey, publicKeyPoint: ECPoint(nodeId: nodePublicKey))
 
-            blockchain = SpvBlockchain.instance(storage: storage, transactionsProvider: transactionsProvider, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, rpcApiProvider: rpcApiProvider, network: network, address: address, nodeKey: nodeKey, logger: logger)
+            blockchain = SpvBlockchain.instance(storage: storage, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, rpcApiProvider: rpcApiProvider, network: network, address: address, nodeKey: nodeKey, logger: logger)
         case .geth:
             let directoryUrl = try dataDirectoryUrl()
-            let storage: IApiStorage = ApiGrdbStorage(databaseDirectoryUrl: directoryUrl, databaseFileName: "geth-\(uniqueId)")
+            let storage: IApiStorage = ApiStorage(databaseDirectoryUrl: directoryUrl, databaseFileName: "geth-\(uniqueId)")
             let nodeDirectory = directoryUrl.appendingPathComponent("node-\(uniqueId)", isDirectory: true)
             blockchain = try GethBlockchain.instance(nodeDirectory: nodeDirectory, network: network, storage: storage, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, address: address, logger: logger)
         }
 
+        let transactionStorage: ITransactionStorage = TransactionStorage(databaseDirectoryUrl: try dataDirectoryUrl(), databaseFileName: "transactions-\(uniqueId)")
+        let transactionManager = TransactionManager(storage: transactionStorage, transactionsProvider: transactionsProvider)
+
         let addressValidator: IAddressValidator = AddressValidator()
-        let ethereumKit = EthereumKit(blockchain: blockchain, addressValidator: addressValidator, transactionBuilder: transactionBuilder, address: address, uniqueId: uniqueId, logger: logger)
+        let ethereumKit = EthereumKit(blockchain: blockchain, transactionManager: transactionManager, addressValidator: addressValidator, transactionBuilder: transactionBuilder, address: address, uniqueId: uniqueId, logger: logger)
 
         blockchain.delegate = ethereumKit
+        transactionManager.delegate = ethereumKit
 
         return ethereumKit
     }

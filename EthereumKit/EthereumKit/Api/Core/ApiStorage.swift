@@ -2,10 +2,19 @@ import RxSwift
 import GRDB
 import BigInt
 
-class ApiGrdbStorage: BaseGrdbStorage {
+class ApiStorage {
+    private let dbPool: DatabasePool
 
-    override var migrator: DatabaseMigrator {
-        var migrator = super.migrator
+    init(databaseDirectoryUrl: URL, databaseFileName: String) {
+        let databaseURL = databaseDirectoryUrl.appendingPathComponent("\(databaseFileName).sqlite")
+
+        dbPool = try! DatabasePool(path: databaseURL.path)
+
+        try? migrator.migrate(dbPool)
+    }
+
+    var migrator: DatabaseMigrator {
+        var migrator = DatabaseMigrator()
 
         migrator.registerMigration("createEthereumBalance") { db in
             try db.create(table: EthereumBalance.databaseTableName) { t in
@@ -30,7 +39,7 @@ class ApiGrdbStorage: BaseGrdbStorage {
 
 }
 
-extension ApiGrdbStorage: IApiStorage {
+extension ApiStorage: IApiStorage {
 
     var lastBlockHeight: Int? {
         return try! dbPool.read { db in
@@ -56,12 +65,6 @@ extension ApiGrdbStorage: IApiStorage {
         _ = try? dbPool.write { db in
             let balanceObject = EthereumBalance(value: balance)
             try balanceObject.insert(db)
-        }
-    }
-
-    func lastTransactionBlockHeight() -> Int? {
-        return try! dbPool.read { db in
-            return try Transaction.order(Transaction.Columns.blockNumber.desc).fetchOne(db)?.blockNumber
         }
     }
 

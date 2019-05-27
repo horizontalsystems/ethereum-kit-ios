@@ -1,7 +1,7 @@
 import RxSwift
 import HSCryptoKit
 
-protocol ISpvStorage: IStorage {
+protocol ISpvStorage {
     var lastBlockHeader: BlockHeader? { get }
     func blockHeader(height: Int) -> BlockHeader?
     func reversedLastBlockHeaders(from height: Int, limit: Int) -> [BlockHeader]
