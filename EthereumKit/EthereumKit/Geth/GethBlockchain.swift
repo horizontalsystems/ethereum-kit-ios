@@ -316,7 +316,7 @@ extension GethBlockchain: IBlockchain {
 
                 observer(.success(data))
             } catch {
-                self.logger?.error("Call error: \(error)")
+                self.logger?.error("Call error: \(error.localizedDescription)")
 
                 observer(.error(error))
             }
