@@ -25,5 +25,6 @@ Pod::Spec.new do |spec|
   spec.dependency 'GRDB.swift', '~> 4.0'
   spec.dependency 'BigInt', '~> 4.0'
 
+  spec.preserve_paths = ['prepare_geth.sh']
   spec.prepare_command = 'sh prepare_geth.sh'
 end
