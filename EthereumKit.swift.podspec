@@ -1,7 +1,7 @@
 Pod::Spec.new do |spec|
   spec.name = 'EthereumKit.swift'
   spec.module_name = 'EthereumKit'
-  spec.version = '0.6.1'
+  spec.version = '0.6.2'
   spec.summary = 'Ethereum wallet library for Swift'
   spec.description = <<-DESC
                        EthereumKit.swift implements Ethereum protocol in Swift.
@@ -24,5 +24,6 @@ Pod::Spec.new do |spec|
   spec.dependency 'Alamofire', '~> 4.0'
   spec.dependency 'GRDB.swift', '~> 4.0'
   spec.dependency 'BigInt', '~> 4.0'
-  spec.dependency 'Geth', '~> 1.8'
+
+  spec.prepare_command = 'sh prepare_geth.sh'
 end
