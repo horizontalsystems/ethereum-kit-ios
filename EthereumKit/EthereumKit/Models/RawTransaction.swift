@@ -16,3 +16,11 @@ class RawTransaction {
     }
 
 }
+
+extension RawTransaction: CustomStringConvertible {
+
+    public var description: String {
+        return "RAW TRANSACTION [gasPrice: \(gasPrice); gasLimit: \(gasLimit); to: \(to.toHexString()); value: \(value); data: \(data.toHexString())]"
+    }
+
+}
