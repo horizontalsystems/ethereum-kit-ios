@@ -135,6 +135,7 @@ protocol INetwork {
     var chainId: Int { get }
     var genesisBlockHash: Data { get }
     var checkpointBlock: BlockHeader { get }
+    var bootnodes: [String] { get }
 }
 
 protocol IDevP2PPeer {

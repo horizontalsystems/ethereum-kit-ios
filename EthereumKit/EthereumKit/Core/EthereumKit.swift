@@ -211,7 +211,28 @@ extension EthereumKit {
             let nodePublicKey = Data(CryptoKit.createPublicKey(fromPrivateKeyData: nodePrivateKey, compressed: false).dropFirst())
             let nodeKey = ECKey(privateKey: nodePrivateKey, publicKeyPoint: ECPoint(nodeId: nodePublicKey))
 
-            blockchain = SpvBlockchain.instance(storage: storage, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, rpcApiProvider: rpcApiProvider, network: network, address: address, nodeKey: nodeKey, logger: logger)
+            let discoveryStorage = try DiscoveryStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "dcvr-\(uniqueId)")
+
+            let packetSerializer = PacketSerializer(serializers: [
+                PingPackageSerializer(),
+                PongPackageSerializer(),
+                FindNodePackageSerializer(),
+            ], privateKey: nodeKey.privateKey)
+
+            let packetParser = PacketParser(parsers: [
+                0x01: PingPackageParser(),
+                0x02: PongPackageParser(),
+                0x04: NeighborsPackageParser(),
+            ])
+
+            let udpFactory = UdpFactory(packetSerializer: packetSerializer)
+            let nodeFactory = NodeFactory()
+
+            let nodeDiscovery = NodeDiscovery(ecKey: nodeKey, factory: udpFactory, discoveryStorage: discoveryStorage, nodeParser: NodeParser(), packetParser: packetParser)
+            let nodeManager = NodeManager(storage: discoveryStorage, nodeDiscovery: nodeDiscovery, nodeFactory: nodeFactory, logger: logger)
+            nodeDiscovery.nodeManager = nodeManager
+
+            blockchain = SpvBlockchain.instance(storage: storage, nodeManager: nodeManager, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, rpcApiProvider: rpcApiProvider, network: network, address: address, nodeKey: nodeKey, logger: logger)
         case .geth:
             fatalError("Geth is not supported")
 //            let directoryUrl = try dataDirectoryUrl()

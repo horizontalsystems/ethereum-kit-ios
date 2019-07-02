@@ -1,5 +1,10 @@
 public extension Data {
 
+    init<T>(from value: T) {
+        var value = value
+        self.init(buffer: UnsafeBufferPointer(start: &value, count: 1))
+    }
+
     init?(hex: String) {
         let hex = hex.stripHexPrefix()
 

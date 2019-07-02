@@ -20,6 +20,7 @@ def common_pods
   pod 'Alamofire', '~> 4.0'
 
   pod 'BigInt', '~> 4.0'
+  pod 'BlueSocket'
 end
 
 def test_pods
