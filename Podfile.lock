@@ -1,6 +1,7 @@
 PODS:
   - Alamofire (4.8.2)
   - BigInt (4.0.0)
+  - BlueSocket (1.0.46)
   - Cuckoo (1.0.6)
   - GRDB.swift (4.0.1):
     - GRDB.swift/standard (= 4.0.1)
@@ -15,6 +16,7 @@ PODS:
 DEPENDENCIES:
   - Alamofire (~> 4.0)
   - BigInt (~> 4.0)
+  - BlueSocket
   - Cuckoo
   - GRDB.swift (~> 4.0)
   - HSCryptoKit (~> 1.4)
@@ -27,6 +29,7 @@ SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - Alamofire
     - BigInt
+    - BlueSocket
     - Cuckoo
     - GRDB.swift
     - HSCryptoKit
@@ -38,6 +41,7 @@ SPEC REPOS:
 SPEC CHECKSUMS:
   Alamofire: ae5c501addb7afdbb13687d7f2f722c78734c2d3
   BigInt: 2aad1a9942dc932ec8b84290d2c564a3d76f97ab
+  BlueSocket: 6010272ac622367b8461f26280e22c693715726f
   Cuckoo: 8074fc309159c4862665b83798f5ad03e061e8bd
   GRDB.swift: 106a830decf1d92a3fc63c6d6a2f6586f6187297
   HSCryptoKit: 4dcb2506b5d8d85c4a31ab57734df3d1f7ea17f9
@@ -46,6 +50,6 @@ SPEC CHECKSUMS:
   Quick: 4be43f6634acfa727dd106bdf3929ce125ffa79d
   RxSwift: 8b0671caa829a763bbce7271095859121cbd895f
 
-PODFILE CHECKSUM: 661e693955a1346d6fac903ec1fec8ef9a6b6eb8
+PODFILE CHECKSUM: 699d1cc98db39a82d53b9bc53b7fb18aff80859e
 
 COCOAPODS: 1.7.1

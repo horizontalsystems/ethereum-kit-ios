@@ -1,6 +1,7 @@
 import XCTest
 import Cuckoo
 import BigInt
+import Socket
 @testable import EthereumKit
 @testable import HSCryptoKit
 
@@ -12,6 +13,16 @@ func equal<T, T2: AnyObject>(to value: T, type: T2.Type) -> ParameterMatcher<T> 
 
 func equal<T, T2: Equatable>(to value: T, type: T2.Type) -> ParameterMatcher<T> {
     return equal(to: value) { $0 as! T2 == $1 as! T2 }
+}
+
+extension XCTestCase {
+
+    func waitForMainQueue(queue: DispatchQueue = DispatchQueue.main) {
+        let e = expectation(description: "Wait for Main Queue")
+        queue.async { e.fulfill() }
+        waitForExpectations(timeout: 2)
+    }
+
 }
 
 extension ECPoint: Equatable {
@@ -131,10 +142,35 @@ extension AccountState {
 
 }
 
-extension RawTransaction {
+//extension RawTransaction {
+//
+//    convenience init(wei: String = "1") {
+//        self.init(wei: wei, to: "", gasPrice: 0, gasLimit: 0, nonce: 0)
+//    }
+//
+//}
 
-    convenience init(wei: String = "1") {
-        self.init(wei: wei, to: "", gasPrice: 0, gasLimit: 0, nonce: 0)
+extension Node: Equatable {
+
+    static public func ==(lhs: Node, rhs: Node) -> Bool {
+        return lhs.id == rhs.id && lhs.discoveryPort == rhs.discoveryPort
+    }
+
+}
+
+extension NodeRecord: Equatable {
+
+    static public func ==(lhs: NodeRecord, rhs: NodeRecord) -> Bool {
+        return lhs.id == rhs.id && lhs.discoveryPort == rhs.discoveryPort &&
+                lhs.used == rhs.used && lhs.eligible == rhs.eligible
+    }
+
+}
+
+extension Socket.Address: Equatable {
+
+    static public func ==(lhs: Socket.Address, rhs: Socket.Address) -> Bool {
+        return lhs.family == rhs.family && lhs.size == rhs.size
     }
 
 }

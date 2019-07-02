@@ -113,11 +113,31 @@
 		3A38F9EF216B78EE00A764EB /* RawTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A38F9B6216B78EE00A764EB /* RawTransaction.swift */; };
 		3A3B59A9216B1B13001C5E99 /* EthereumKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A3B59A7216B1B13001C5E99 /* EthereumKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3C7B97D4EA0867E5FC827D07 /* EIP55Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C7B927263342DD6964CFE2F /* EIP55Tests.swift */; };
+		58AAA1A0BEED2D09430C3E20 /* HostHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA77EC78C2A6472B4A6D2 /* HostHelper.swift */; };
+		58AAA25B1F03B240AD1A916C /* NodeManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAEE9B6C91B9A5685ECA4 /* NodeManagerTests.swift */; };
+		58AAA28D1166F2990217DA4F /* NodeDiscoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA03967CBB0247AD67A04 /* NodeDiscoveryTests.swift */; };
+		58AAA29F8610D333608FD8DA /* NodeParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA1FD179A556C65F4CDBB /* NodeParserTests.swift */; };
+		58AAA2D71EED7314A073C90D /* NodeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA5A96DF30BF23B9BD68E /* NodeManager.swift */; };
+		58AAA2FA6610ADA31B6B1346 /* Packages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAC43336075477676DBA9 /* Packages.swift */; };
 		58AAA52235D840702E55CAF4 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAE7DC330A2628E515477 /* Extensions.swift */; };
+		58AAA57CB292DC9D500932BF /* Packet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA60BB16EC2324B09F10C /* Packet.swift */; };
+		58AAA5B7FC9AD086723B8AA5 /* NodeManagerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA04CBFC634F71E044397 /* NodeManagerState.swift */; };
 		58AAA609C234AA48E23F4AE9 /* ReachabilityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA0F77F10D6C404DFCD55 /* ReachabilityManager.swift */; };
+		58AAA6721D1DB86146CC0BEE /* UdpFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAC72187736DC22A09D84 /* UdpFactory.swift */; };
+		58AAA6F0D6DFD2B196B38A27 /* UdpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAABC3E634FB4001C81DF2 /* UdpClient.swift */; };
+		58AAA76E6F4C2C7552F0A7B2 /* DiscoveryProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA09D9069D1F47EDA357A /* DiscoveryProtocols.swift */; };
+		58AAA7752BD7AF6C86AF3B90 /* DiscoveryStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA94D042314A2ECA8465D /* DiscoveryStorage.swift */; };
 		58AAA7C99F4D8FD7DF51C749 /* AddressValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA4CC1551836BE97FA9EA /* AddressValidatorTests.swift */; };
+		58AAAA3E961AABE54F93ECA7 /* NodeDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA7AC88202C7454A51331 /* NodeDiscovery.swift */; };
+		58AAABF004A0630A0941890B /* NodeDiscoveryState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAE7D6CE3E5214616290E /* NodeDiscoveryState.swift */; };
 		58AAABF92F0BD40996C36D0F /* Signal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAD5B009D6666F3821F02 /* Signal.swift */; };
+		58AAAC5407F75BA795BFFBC2 /* UdpClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA4F9013BE6EFE4C68465 /* UdpClientTests.swift */; };
+		58AAACC0A99DBD7D92CBDFE5 /* NodeFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA415B540026E0DD817E0 /* NodeFactory.swift */; };
+		58AAAD1775AD132D915D30B7 /* NodeParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAEBAE3E3F0ADEA4D1539 /* NodeParser.swift */; };
+		58AAADF6A5E4AD4AE0616C18 /* NodeRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAABE886A95CE7D77EC63F /* NodeRecord.swift */; };
+		58AAAF4C54A904CBC94C310A /* UdpSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA31399018127F6BC30DA /* UdpSocket.swift */; };
 		58AAAF70BEF433B84C1AC0CD /* Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA69FB6E04728EDC5A525 /* Protocols.swift */; };
+		58AAAFF7787FC1B058299FA7 /* HostHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA177B1ED8254DA85D279 /* HostHelperTests.swift */; };
 		D045FC22221C1A290009BEF6 /* EncryptionHandshakeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D045FC21221C1A290009BEF6 /* EncryptionHandshakeTests.swift */; };
 		D07C3ED3221ACBDA0081DCD2 /* Capability.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07C3ED2221ACBDA0081DCD2 /* Capability.swift */; };
 		D0B13ED9222504A700C7C2CA /* AESCipher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B13ED8222504A700C7C2CA /* AESCipher.swift */; };
@@ -255,11 +275,31 @@
 		3A3B59A8216B1B13001C5E99 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.info; path = Info.plist; sourceTree = "<group>"; };
 		3C7B927263342DD6964CFE2F /* EIP55Tests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EIP55Tests.swift; sourceTree = "<group>"; };
 		3F05A0499B3B9EDC904E9325 /* Pods-EthereumKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EthereumKit.debug.xcconfig"; path = "Target Support Files/Pods-EthereumKit/Pods-EthereumKit.debug.xcconfig"; sourceTree = "<group>"; };
+		58AAA03967CBB0247AD67A04 /* NodeDiscoveryTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeDiscoveryTests.swift; sourceTree = "<group>"; };
+		58AAA04CBFC634F71E044397 /* NodeManagerState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeManagerState.swift; sourceTree = "<group>"; };
+		58AAA09D9069D1F47EDA357A /* DiscoveryProtocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiscoveryProtocols.swift; sourceTree = "<group>"; };
 		58AAA0F77F10D6C404DFCD55 /* ReachabilityManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReachabilityManager.swift; sourceTree = "<group>"; };
+		58AAA177B1ED8254DA85D279 /* HostHelperTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HostHelperTests.swift; sourceTree = "<group>"; };
+		58AAA1FD179A556C65F4CDBB /* NodeParserTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeParserTests.swift; sourceTree = "<group>"; };
+		58AAA31399018127F6BC30DA /* UdpSocket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UdpSocket.swift; sourceTree = "<group>"; };
+		58AAA415B540026E0DD817E0 /* NodeFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeFactory.swift; sourceTree = "<group>"; };
 		58AAA4CC1551836BE97FA9EA /* AddressValidatorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddressValidatorTests.swift; sourceTree = "<group>"; };
+		58AAA4F9013BE6EFE4C68465 /* UdpClientTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UdpClientTests.swift; sourceTree = "<group>"; };
+		58AAA5A96DF30BF23B9BD68E /* NodeManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeManager.swift; sourceTree = "<group>"; };
+		58AAA60BB16EC2324B09F10C /* Packet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Packet.swift; sourceTree = "<group>"; };
 		58AAA69FB6E04728EDC5A525 /* Protocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Protocols.swift; sourceTree = "<group>"; };
+		58AAA77EC78C2A6472B4A6D2 /* HostHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HostHelper.swift; sourceTree = "<group>"; };
+		58AAA7AC88202C7454A51331 /* NodeDiscovery.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeDiscovery.swift; sourceTree = "<group>"; };
+		58AAA94D042314A2ECA8465D /* DiscoveryStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiscoveryStorage.swift; sourceTree = "<group>"; };
+		58AAABC3E634FB4001C81DF2 /* UdpClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UdpClient.swift; sourceTree = "<group>"; };
+		58AAABE886A95CE7D77EC63F /* NodeRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeRecord.swift; sourceTree = "<group>"; };
+		58AAAC43336075477676DBA9 /* Packages.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Packages.swift; sourceTree = "<group>"; };
+		58AAAC72187736DC22A09D84 /* UdpFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UdpFactory.swift; sourceTree = "<group>"; };
 		58AAAD5B009D6666F3821F02 /* Signal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Signal.swift; sourceTree = "<group>"; };
+		58AAAE7D6CE3E5214616290E /* NodeDiscoveryState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeDiscoveryState.swift; sourceTree = "<group>"; };
 		58AAAE7DC330A2628E515477 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		58AAAEBAE3E3F0ADEA4D1539 /* NodeParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeParser.swift; sourceTree = "<group>"; };
+		58AAAEE9B6C91B9A5685ECA4 /* NodeManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeManagerTests.swift; sourceTree = "<group>"; };
 		596741140BF72953EA371834 /* Pods_EthereumKitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_EthereumKitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D045FC21221C1A290009BEF6 /* EncryptionHandshakeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptionHandshakeTests.swift; sourceTree = "<group>"; };
 		D07C3ED2221ACBDA0081DCD2 /* Capability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Capability.swift; sourceTree = "<group>"; };
@@ -403,6 +443,7 @@
 				11B359F34D40C2E21B4CD620 /* GeneratedMocks.swift */,
 				3A19DED0216F4422009109F2 /* Info.plist */,
 				2FA5D13230B8A0C65D36EB88 /* Extensions.swift */,
+				58AAA73DC2EC08DB47B331B0 /* NodeDiscovery */,
 			);
 			path = EthereumKitTests;
 			sourceTree = "<group>";
@@ -458,8 +499,39 @@
 				58AAAD0293AB2F9E1C035A26 /* Models */,
 				3A3B59A7216B1B13001C5E99 /* EthereumKit.h */,
 				3A3B59A8216B1B13001C5E99 /* Info.plist */,
+				58AAAD7BAF08D99292352D55 /* NodeDiscovery */,
 			);
 			path = EthereumKit;
+			sourceTree = "<group>";
+		};
+		58AAA17CD1834EBAC89B6D8B /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				58AAA177B1ED8254DA85D279 /* HostHelperTests.swift */,
+				58AAA4F9013BE6EFE4C68465 /* UdpClientTests.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
+		58AAA73DC2EC08DB47B331B0 /* NodeDiscovery */ = {
+			isa = PBXGroup;
+			children = (
+				58AAA17CD1834EBAC89B6D8B /* Helpers */,
+				58AAA03967CBB0247AD67A04 /* NodeDiscoveryTests.swift */,
+				58AAAEE9B6C91B9A5685ECA4 /* NodeManagerTests.swift */,
+				58AAA1FD179A556C65F4CDBB /* NodeParserTests.swift */,
+			);
+			path = NodeDiscovery;
+			sourceTree = "<group>";
+		};
+		58AAA82D13E6F7CB237524DC /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				58AAAC43336075477676DBA9 /* Packages.swift */,
+				58AAA60BB16EC2324B09F10C /* Packet.swift */,
+				58AAABE886A95CE7D77EC63F /* NodeRecord.swift */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 		58AAAAEDBCD0E5DDE0F7E9D4 /* Managers */ = {
@@ -469,6 +541,16 @@
 				11B35893177645F06E2AE8FB /* NetworkManager.swift */,
 			);
 			path = Managers;
+			sourceTree = "<group>";
+		};
+		58AAACA11706DC797B2E0AD3 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				58AAA77EC78C2A6472B4A6D2 /* HostHelper.swift */,
+				58AAABC3E634FB4001C81DF2 /* UdpClient.swift */,
+				58AAA31399018127F6BC30DA /* UdpSocket.swift */,
+			);
+			path = Helpers;
 			sourceTree = "<group>";
 		};
 		58AAAD0293AB2F9E1C035A26 /* Models */ = {
@@ -499,6 +581,32 @@
 				2FA5DE6BB6E11DFF4999703A /* EtherscanApiProvider.swift */,
 				11B355BAABC9A03AA09B19FF /* TransactionManager.swift */,
 				11B35DFD6794681C5FDB5E2A /* TransactionStorage.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		58AAAD7BAF08D99292352D55 /* NodeDiscovery */ = {
+			isa = PBXGroup;
+			children = (
+				58AAAFF337144A99A46CD134 /* Core */,
+				58AAACA11706DC797B2E0AD3 /* Helpers */,
+				58AAA82D13E6F7CB237524DC /* Models */,
+				58AAA09D9069D1F47EDA357A /* DiscoveryProtocols.swift */,
+				58AAA7AC88202C7454A51331 /* NodeDiscovery.swift */,
+				58AAAE7D6CE3E5214616290E /* NodeDiscoveryState.swift */,
+				58AAA415B540026E0DD817E0 /* NodeFactory.swift */,
+				58AAA5A96DF30BF23B9BD68E /* NodeManager.swift */,
+				58AAA04CBFC634F71E044397 /* NodeManagerState.swift */,
+				58AAAEBAE3E3F0ADEA4D1539 /* NodeParser.swift */,
+				58AAAC72187736DC22A09D84 /* UdpFactory.swift */,
+			);
+			path = NodeDiscovery;
+			sourceTree = "<group>";
+		};
+		58AAAFF337144A99A46CD134 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				58AAA94D042314A2ECA8465D /* DiscoveryStorage.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -873,6 +981,7 @@
 				"$(SRCROOT)/EthereumKit/Spv/Net/LES/Requests/AccountStateRequest.swift",
 				"$(SRCROOT)/EthereumKit/Spv/Net/PeerGroupState.swift",
 				"$(SRCROOT)/EthereumKit/Spv/Net/BlockValidator.swift",
+				"$(SRCROOT)/EthereumKit/NodeDiscovery/DiscoveryProtocols.swift",
 			);
 			name = Cuckoo;
 			outputPaths = (
@@ -942,6 +1051,11 @@
 				11B3563CCAB1B50D85984C7E /* CapabilityHelperTests.swift in Sources */,
 				11B35D680CDB83B30D29187F /* PeerGroupTests.swift in Sources */,
 				11B359FF9CFC6CEFEECFBEAC /* BlockValidatorTests.swift in Sources */,
+				58AAA29F8610D333608FD8DA /* NodeParserTests.swift in Sources */,
+				58AAA28D1166F2990217DA4F /* NodeDiscoveryTests.swift in Sources */,
+				58AAAFF7787FC1B058299FA7 /* HostHelperTests.swift in Sources */,
+				58AAAC5407F75BA795BFFBC2 /* UdpClientTests.swift in Sources */,
+				58AAA25B1F03B240AD1A916C /* NodeManagerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1055,6 +1169,21 @@
 				11B35FFC5E396F503C455573 /* GethBlockchain.swift in Sources */,
 				11B35149C184CDFD76F5CCE2 /* TransactionManager.swift in Sources */,
 				11B359EECF9CF7F415743351 /* TransactionStorage.swift in Sources */,
+				58AAAD1775AD132D915D30B7 /* NodeParser.swift in Sources */,
+				58AAAA3E961AABE54F93ECA7 /* NodeDiscovery.swift in Sources */,
+				58AAA2FA6610ADA31B6B1346 /* Packages.swift in Sources */,
+				58AAA1A0BEED2D09430C3E20 /* HostHelper.swift in Sources */,
+				58AAA57CB292DC9D500932BF /* Packet.swift in Sources */,
+				58AAA7752BD7AF6C86AF3B90 /* DiscoveryStorage.swift in Sources */,
+				58AAADF6A5E4AD4AE0616C18 /* NodeRecord.swift in Sources */,
+				58AAA2D71EED7314A073C90D /* NodeManager.swift in Sources */,
+				58AAA5B7FC9AD086723B8AA5 /* NodeManagerState.swift in Sources */,
+				58AAA6F0D6DFD2B196B38A27 /* UdpClient.swift in Sources */,
+				58AAABF004A0630A0941890B /* NodeDiscoveryState.swift in Sources */,
+				58AAAF4C54A904CBC94C310A /* UdpSocket.swift in Sources */,
+				58AAA76E6F4C2C7552F0A7B2 /* DiscoveryProtocols.swift in Sources */,
+				58AAA6721D1DB86146CC0BEE /* UdpFactory.swift in Sources */,
+				58AAACC0A99DBD7D92CBDFE5 /* NodeFactory.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

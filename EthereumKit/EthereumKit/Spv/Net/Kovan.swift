@@ -22,4 +22,9 @@ class Kovan: INetwork {
             nonce: Data()
     )
 
+
+// TestnetBootnodes are the enode URLs of the P2P bootstrap nodes running on the
+// Kovan test network.
+    let bootnodes: [String] = []
+
 }
