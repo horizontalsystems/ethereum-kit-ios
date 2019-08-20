@@ -165,13 +165,14 @@ extension Erc20Kit {
         return erc20Kit
     }
 
-    public static func clear() throws {
+    public static func clear(exceptFor excludedFiles: [String]) throws {
         let fileManager = FileManager.default
+        let fileUrls = try fileManager.contentsOfDirectory(at: databaseDirectoryUrl(), includingPropertiesForKeys: nil)
 
-        let urls = try fileManager.contentsOfDirectory(at: databaseDirectoryUrl(), includingPropertiesForKeys: nil)
-
-        for url in urls {
-            try fileManager.removeItem(at: url)
+        for filename in fileUrls {
+            if !excludedFiles.contains(where: { filename.lastPathComponent.contains($0) }) {
+                try fileManager.removeItem(at: filename)
+            }
         }
     }
 

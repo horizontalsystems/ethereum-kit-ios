@@ -20,8 +20,8 @@ class Manager {
     }
 
     func login(words: [String]) {
-        try! EthereumKit.clear()
-        try! Erc20Kit.clear()
+        try! EthereumKit.clear(exceptFor: ["walletId"])
+        try! Erc20Kit.clear(exceptFor: ["walletId"])
 
         save(words: words)
         initEthereumKit(words: words)
@@ -52,6 +52,7 @@ class Manager {
                 networkType: configuration.networkType,
                 infuraCredentials: configuration.infuraCredentials,
                 etherscanApiKey: configuration.etherscanApiKey,
+                walletId: "walletId",
                 minLogLevel: configuration.minLogLevel
         )
 
