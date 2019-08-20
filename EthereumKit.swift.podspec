@@ -24,6 +24,7 @@ Pod::Spec.new do |spec|
   spec.dependency 'Alamofire', '~> 4.0'
   spec.dependency 'GRDB.swift', '~> 4.0'
   spec.dependency 'BigInt', '~> 4.0'
+  spec.dependency 'BlueSocket', '~> 1.0'
 
 #  spec.ios.vendored_frameworks = 'Frameworks/Geth.framework'
 
