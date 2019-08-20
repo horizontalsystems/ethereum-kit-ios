@@ -184,7 +184,7 @@ extension EthereumKit: ITransactionManagerDelegate {
 
 extension EthereumKit {
 
-    public static func instance(privateKey: Data, syncMode: SyncMode, networkType: NetworkType = .mainNet, infuraCredentials: (id: String, secret: String?), etherscanApiKey: String, walletId: String = "default", minLogLevel: Logger.Level = .error) throws -> EthereumKit {
+    public static func instance(privateKey: Data, syncMode: SyncMode, networkType: NetworkType = .mainNet, infuraCredentials: (id: String, secret: String?), etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> EthereumKit {
         let logger = Logger(minLogLevel: minLogLevel)
 
         let uniqueId = "\(walletId)-\(networkType)"
@@ -253,7 +253,7 @@ extension EthereumKit {
         return ethereumKit
     }
 
-    public static func instance(words: [String], syncMode wordsSyncMode: WordsSyncMode, networkType: NetworkType = .mainNet, infuraCredentials: (id: String, secret: String?), etherscanApiKey: String, walletId: String = "default", minLogLevel: Logger.Level = .error) throws -> EthereumKit {
+    public static func instance(words: [String], syncMode wordsSyncMode: WordsSyncMode, networkType: NetworkType = .mainNet, infuraCredentials: (id: String, secret: String?), etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> EthereumKit {
         let coinType: UInt32 = networkType == .mainNet ? 60 : 1
 
         let hdWallet = HDWallet(seed: Mnemonic.seed(mnemonic: words), coinType: coinType, xPrivKey: 0, xPubKey: 0)
@@ -270,13 +270,14 @@ extension EthereumKit {
         return try instance(privateKey: privateKey, syncMode: syncMode, networkType: networkType, infuraCredentials: infuraCredentials, etherscanApiKey: etherscanApiKey, walletId: walletId, minLogLevel: minLogLevel)
     }
 
-    public static func clear() throws {
+    public static func clear(exceptFor excludedFiles: [String]) throws {
         let fileManager = FileManager.default
+        let fileUrls = try fileManager.contentsOfDirectory(at: dataDirectoryUrl(), includingPropertiesForKeys: nil)
 
-        let urls = try fileManager.contentsOfDirectory(at: dataDirectoryUrl(), includingPropertiesForKeys: nil)
-
-        for url in urls {
-            try fileManager.removeItem(at: url)
+        for filename in fileUrls {
+            if !excludedFiles.contains(where: { filename.lastPathComponent.contains($0) }) {
+                try fileManager.removeItem(at: filename)
+            }
         }
     }
 
