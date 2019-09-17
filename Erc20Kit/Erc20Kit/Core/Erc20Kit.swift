@@ -4,21 +4,20 @@ import HSCryptoKit
 import BigInt
 
 public class Erc20Kit {
-    private let gasLimit = 150_000
-    private let estimateGasLimit = 100_000
-
     private let disposeBag = DisposeBag()
 
     private let ethereumKit: EthereumKit
     private let transactionManager: ITransactionManager
     private let balanceManager: IBalanceManager
 
+    private let gasLimit: Int
     private let state: KitState
 
-    init(ethereumKit: EthereumKit, transactionManager: ITransactionManager, balanceManager: IBalanceManager, state: KitState = KitState()) {
+    init(ethereumKit: EthereumKit, transactionManager: ITransactionManager, balanceManager: IBalanceManager, gasLimit: Int, state: KitState = KitState()) {
         self.ethereumKit = ethereumKit
         self.transactionManager = transactionManager
         self.balanceManager = balanceManager
+        self.gasLimit = gasLimit
         self.state = state
 
         onUpdateSyncState(syncState: ethereumKit.syncState)
@@ -63,7 +62,7 @@ extension Erc20Kit {
     }
 
     public func fee(gasPrice: Int) -> Decimal {
-        return Decimal(gasPrice) * Decimal(estimateGasLimit)
+        return Decimal(gasPrice) * Decimal(gasLimit)
     }
 
     public func sendSingle(to: String, value: String, gasPrice: Int) throws -> Single<TransactionInfo> {
@@ -141,7 +140,7 @@ extension Erc20Kit: IBalanceManagerDelegate {
 
 extension Erc20Kit {
 
-    public static func instance(ethereumKit: EthereumKit, contractAddress: String) throws -> Erc20Kit {
+    public static func instance(ethereumKit: EthereumKit, contractAddress: String, gasLimit: Int = 100_000) throws -> Erc20Kit {
         let databaseFileName = "\(ethereumKit.uniqueId)-\(contractAddress)"
 
         guard let contractAddress = Data(hex: contractAddress) else {
@@ -157,7 +156,7 @@ extension Erc20Kit {
         var transactionManager: ITransactionManager = TransactionManager(contractAddress: contractAddress, address: address, storage: storage, dataProvider: dataProvider, transactionBuilder: transactionBuilder)
         var balanceManager: IBalanceManager = BalanceManager(contractAddress: contractAddress, address: address, storage: storage, dataProvider: dataProvider)
 
-        let erc20Kit = Erc20Kit(ethereumKit: ethereumKit, transactionManager: transactionManager, balanceManager: balanceManager)
+        let erc20Kit = Erc20Kit(ethereumKit: ethereumKit, transactionManager: transactionManager, balanceManager: balanceManager, gasLimit: gasLimit)
 
         transactionManager.delegate = erc20Kit
         balanceManager.delegate = erc20Kit
