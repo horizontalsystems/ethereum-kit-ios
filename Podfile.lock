@@ -1,16 +1,18 @@
 PODS:
-  - Alamofire (4.8.2)
+  - Alamofire (4.9.0)
   - BigInt (4.0.0)
-  - BlueSocket (1.0.46)
-  - Cuckoo (1.0.6)
-  - GRDB.swift (4.0.1):
-    - GRDB.swift/standard (= 4.0.1)
-  - GRDB.swift/standard (4.0.1)
-  - HSCryptoKit (1.4.2)
-  - HSHDWalletKit (1.1):
-    - HSCryptoKit (~> 1.4)
-  - Nimble (8.0.1)
-  - Quick (2.1.0)
+  - BlueSocket (1.0.49)
+  - Cuckoo (1.2.0):
+    - Cuckoo/Swift (= 1.2.0)
+  - Cuckoo/Swift (1.2.0)
+  - GRDB.swift (4.4.0):
+    - GRDB.swift/standard (= 4.4.0)
+  - GRDB.swift/standard (4.4.0)
+  - HSCryptoKit (1.5.0)
+  - HSHDWalletKit (1.2.0):
+    - HSCryptoKit (~> 1)
+  - Nimble (8.0.4)
+  - Quick (2.2.0)
   - RxSwift (5.0.0)
 
 DEPENDENCIES:
@@ -39,15 +41,15 @@ SPEC REPOS:
     - RxSwift
 
 SPEC CHECKSUMS:
-  Alamofire: ae5c501addb7afdbb13687d7f2f722c78734c2d3
+  Alamofire: afc3e7c6db61476cb45cdd23fed06bad03bbc321
   BigInt: 2aad1a9942dc932ec8b84290d2c564a3d76f97ab
-  BlueSocket: 6010272ac622367b8461f26280e22c693715726f
-  Cuckoo: 8074fc309159c4862665b83798f5ad03e061e8bd
-  GRDB.swift: 106a830decf1d92a3fc63c6d6a2f6586f6187297
-  HSCryptoKit: 4dcb2506b5d8d85c4a31ab57734df3d1f7ea17f9
-  HSHDWalletKit: 1d946bd24bd307cc494141f4e518d25db814f050
-  Nimble: 45f786ae66faa9a709624227fae502db55a8bdd0
-  Quick: 4be43f6634acfa727dd106bdf3929ce125ffa79d
+  BlueSocket: 973993722fd579a62bb6469cdf7f1ccc8054796c
+  Cuckoo: f5f4e7c308c512cc2dedbdce23f5dc6985cb5173
+  GRDB.swift: 4f9b6e7efc9470426f6a6de10ec1fee798ff7e43
+  HSCryptoKit: 514a3111fd37ad18b7261d4a55271daaba3b0eb9
+  HSHDWalletKit: 6f5d5b1f9b1f950c948bdff13f5f52e5c5bcb7bb
+  Nimble: 18d5360282923225d62b09d781f63abc1a0111fc
+  Quick: 7fb19e13be07b5dfb3b90d4f9824c855a11af40e
   RxSwift: 8b0671caa829a763bbce7271095859121cbd895f
 
 PODFILE CHECKSUM: 699d1cc98db39a82d53b9bc53b7fb18aff80859e
