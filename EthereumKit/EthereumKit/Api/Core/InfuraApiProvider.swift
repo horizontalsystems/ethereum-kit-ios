@@ -85,6 +85,10 @@ extension InfuraApiProvider {
 
 extension InfuraApiProvider: IRpcApiProvider {
 
+    var source: String {
+        "infura.io"
+    }
+
     func lastBlockHeightSingle() -> Single<Int> {
         return infuraIntSingle(method: "eth_blockNumber", params: [])
     }

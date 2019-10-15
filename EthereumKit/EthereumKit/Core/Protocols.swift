@@ -4,6 +4,7 @@ import BigInt
 protocol IBlockchain {
     var delegate: IBlockchainDelegate? { get set }
 
+    var source: String { get }
     func start()
     func stop()
     func refresh()
@@ -25,6 +26,15 @@ protocol IBlockchainDelegate: class {
     func onUpdate(syncState: EthereumKit.SyncState)
 }
 
+protocol ITransactionManager {
+    var source: String { get }
+    var delegate: ITransactionManagerDelegate? { get set }
+
+    func refresh()
+    func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[Transaction]>
+    func handle(sentTransaction: Transaction)
+}
+
 protocol ITransactionStorage {
     var lastTransactionBlockHeight: Int? { get }
 
@@ -33,6 +43,8 @@ protocol ITransactionStorage {
 }
 
 protocol ITransactionsProvider {
+    var source: String { get }
+
     func transactionsSingle(startBlock: Int) -> Single<[Transaction]>
 }
 

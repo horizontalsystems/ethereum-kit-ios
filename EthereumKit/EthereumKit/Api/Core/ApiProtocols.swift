@@ -2,6 +2,8 @@ import RxSwift
 import BigInt
 
 protocol IRpcApiProvider {
+    var source: String { get }
+
     func lastBlockHeightSingle() -> Single<Int>
     func transactionCountSingle() -> Single<Int>
     func balanceSingle() -> Single<BigUInt>

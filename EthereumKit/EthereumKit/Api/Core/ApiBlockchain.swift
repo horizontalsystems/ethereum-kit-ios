@@ -125,6 +125,10 @@ class ApiBlockchain {
 
 extension ApiBlockchain: IBlockchain {
 
+    var source: String {
+        "RPC \(rpcApiProvider.source)"
+    }
+
     func start() {
         started = true
 
