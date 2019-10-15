@@ -12,7 +12,7 @@ public class EthereumKit {
     private let transactionsSubject = PublishSubject<[TransactionInfo]>()
 
     private let blockchain: IBlockchain
-    private let transactionManager: TransactionManager
+    private let transactionManager: ITransactionManager
     private let addressValidator: IAddressValidator
     private let transactionBuilder: TransactionBuilder
     private let state: EthereumKitState
@@ -22,7 +22,7 @@ public class EthereumKit {
     public let uniqueId: String
     public let logger: Logger
 
-    init(blockchain: IBlockchain, transactionManager: TransactionManager, addressValidator: IAddressValidator, transactionBuilder: TransactionBuilder, state: EthereumKitState = EthereumKitState(), address: Data, uniqueId: String, logger: Logger) {
+    init(blockchain: IBlockchain, transactionManager: ITransactionManager, addressValidator: IAddressValidator, transactionBuilder: TransactionBuilder, state: EthereumKitState = EthereumKitState(), address: Data, uniqueId: String, logger: Logger) {
         self.blockchain = blockchain
         self.transactionManager = transactionManager
         self.addressValidator = addressValidator
@@ -42,6 +42,38 @@ public class EthereumKit {
 
 extension EthereumKit {
 
+    public var lastBlockHeight: Int? {
+        state.lastBlockHeight
+    }
+
+    public var balance: String? {
+        state.balance?.description
+    }
+
+    public var syncState: SyncState {
+        blockchain.syncState
+    }
+
+    public var receiveAddress: String {
+        address.toEIP55Address()
+    }
+
+    public var lastBlockHeightObservable: Observable<Int> {
+        lastBlockHeightSubject.asObservable()
+    }
+
+    public var syncStateObservable: Observable<SyncState> {
+        syncStateSubject.asObservable()
+    }
+
+    public var balanceObservable: Observable<String> {
+        balanceSubject.asObservable()
+    }
+
+    public var transactionsObservable: Observable<[TransactionInfo]> {
+        transactionsSubject.asObservable()
+    }
+
     public func start() {
         blockchain.start()
         transactionManager.refresh()
@@ -56,48 +88,16 @@ extension EthereumKit {
         transactionManager.refresh()
     }
 
-    public var lastBlockHeight: Int? {
-        return state.lastBlockHeight
-    }
-
-    public var lastBlockHeightObservable: Observable<Int> {
-        return lastBlockHeightSubject.asObservable()
-    }
-
-    public var balance: String? {
-        return state.balance?.description
-    }
-
-    public var balanceObservable: Observable<String> {
-        return balanceSubject.asObservable()
-    }
-
-    public var syncState: SyncState {
-        return blockchain.syncState
-    }
-
-    public var syncStateObservable: Observable<SyncState> {
-        return syncStateSubject.asObservable()
-    }
-
-    public var transactionsObservable: Observable<[TransactionInfo]> {
-        return transactionsSubject.asObservable()
-    }
-
-    public var receiveAddress: String {
-        return address.toEIP55Address()
-    }
-
     public func validate(address: String) throws {
         try addressValidator.validate(address: address)
     }
 
     public func fee(gasPrice: Int) -> Decimal {
-        return Decimal(gasPrice) * Decimal(gasLimit)
+        Decimal(gasPrice) * Decimal(gasLimit)
     }
 
     public func transactionsSingle(fromHash: String? = nil, limit: Int? = nil) -> Single<[TransactionInfo]> {
-        return transactionManager.transactionsSingle(fromHash: fromHash.flatMap { Data(hex: $0) }, limit: limit)
+        transactionManager.transactionsSingle(fromHash: fromHash.flatMap { Data(hex: $0) }, limit: limit)
                 .map { $0.map { TransactionInfo(transaction: $0) } }
     }
 
@@ -132,15 +132,24 @@ extension EthereumKit {
     }
 
     public func getLogsSingle(address: Data?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
-        return blockchain.getLogsSingle(address: address, topics: topics, fromBlock: fromBlock, toBlock: toBlock, pullTimestamps: pullTimestamps)
+        blockchain.getLogsSingle(address: address, topics: topics, fromBlock: fromBlock, toBlock: toBlock, pullTimestamps: pullTimestamps)
     }
 
     public func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data> {
-        return blockchain.getStorageAt(contractAddress: contractAddress, positionData: positionData, blockHeight: blockHeight)
+        blockchain.getStorageAt(contractAddress: contractAddress, positionData: positionData, blockHeight: blockHeight)
     }
 
     public func call(contractAddress: Data, data: Data, blockHeight: Int? = nil) -> Single<Data> {
-        return blockchain.call(contractAddress: contractAddress, data: data, blockHeight: blockHeight)
+        blockchain.call(contractAddress: contractAddress, data: data, blockHeight: blockHeight)
+    }
+
+    public func statusInfo() -> [(String, Any)] {
+        [
+            ("Synced Until", "Block Number \(state.lastBlockHeight ?? 0)"),
+            ("Sync State", blockchain.syncState.description),
+            ("Blockchain source", blockchain.source),
+            ("Transactions source", transactionManager.source)
+        ]
     }
 
 }
@@ -315,7 +324,7 @@ extension EthereumKit {
         case invalidData
     }
 
-    public enum SyncState: Equatable {
+    public enum SyncState: Equatable, CustomStringConvertible {
         case synced
         case syncing(progress: Double?)
         case notSynced
@@ -327,6 +336,15 @@ extension EthereumKit {
             default: return false
             }
         }
+
+        public var description: String {
+            switch self {
+            case .synced: return "synced"
+            case .syncing(let progress): return "syncing \(progress ?? 0)"
+            case .notSynced: return "not synced"
+            }
+        }
+
     }
 
     public enum SyncMode {

@@ -13,6 +13,22 @@ class TransactionManager {
         self.transactionsProvider = transactionsProvider
     }
 
+    private func update(transactions: [Transaction]) {
+        storage.save(transactions: transactions)
+
+        delegate?.onUpdate(transactions: transactions.filter {
+            $0.input == Data()
+        })
+    }
+
+}
+
+extension TransactionManager: ITransactionManager {
+
+    var source: String {
+        transactionsProvider.source
+    }
+
     func refresh() {
         let lastTransactionBlockHeight = storage.lastTransactionBlockHeight ?? 0
 
@@ -25,19 +41,11 @@ class TransactionManager {
     }
 
     func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[Transaction]> {
-        return storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: nil)
+        storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: nil)
     }
 
     func handle(sentTransaction: Transaction) {
         update(transactions: [sentTransaction])
-    }
-
-    private func update(transactions: [Transaction]) {
-        storage.save(transactions: transactions)
-
-        delegate?.onUpdate(transactions: transactions.filter {
-            $0.input == Data()
-        })
     }
 
 }

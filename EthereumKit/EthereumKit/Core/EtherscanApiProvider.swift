@@ -49,6 +49,10 @@ extension EtherscanApiProvider {
 
 extension EtherscanApiProvider: ITransactionsProvider {
 
+    var source: String {
+        "etherscan.io"
+    }
+
     func transactionsSingle(startBlock: Int) -> Single<[Transaction]> {
         let params: [String: Any] = [
             "module": "account",

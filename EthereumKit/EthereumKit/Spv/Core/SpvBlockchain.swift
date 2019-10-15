@@ -32,6 +32,10 @@ class SpvBlockchain {
 
 extension SpvBlockchain: IBlockchain {
 
+    var source: String {
+        "SPV"
+    }
+
     func start() {
         logger?.verbose("SpvBlockchain started")
 
