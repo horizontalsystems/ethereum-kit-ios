@@ -145,10 +145,10 @@ extension EthereumKit {
 
     public func statusInfo() -> [(String, Any)] {
         [
-            ("Synced Until", "Block Number \(state.lastBlockHeight ?? 0)"),
+            ("Last Block Height", "\(state.lastBlockHeight.map { "\($0)" } ?? "N/A")"),
             ("Sync State", blockchain.syncState.description),
-            ("Blockchain source", blockchain.source),
-            ("Transactions source", transactionManager.source)
+            ("Blockchain Source", blockchain.source),
+            ("Transactions Source", transactionManager.source)
         ]
     }
 
