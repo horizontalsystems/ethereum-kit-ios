@@ -30,7 +30,7 @@ class TransactionManager {
             let from = log.topics[1].suffix(from: 12)
             let to = log.topics[2].suffix(from: 12)
 
-            if pendingTransactions.contains(where: { $0.transactionHash == log.transactionHash && $0.value == value && $0.from == from && $0.to == to }) {
+            if pendingTransactions.contains(where: { $0.transactionHash == log.transactionHash && $0.from == from && $0.to == to }) {
                 index = 0
             }
 
