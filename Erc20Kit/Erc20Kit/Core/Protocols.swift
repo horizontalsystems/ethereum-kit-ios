@@ -23,6 +23,7 @@ protocol ITransactionManager {
     func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[Transaction]>
 
     func sync()
+    func transactionContractData(to: Data, value: BigUInt) -> Data
     func sendSingle(to: Data, value: BigUInt, gasPrice: Int, gasLimit: Int) -> Single<Transaction>
 }
 

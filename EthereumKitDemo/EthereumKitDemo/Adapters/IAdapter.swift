@@ -18,7 +18,8 @@ protocol IAdapter {
     var transactionsObservable: Observable<Void> { get }
 
     func validate(address: String) throws
-    func sendSingle(to address: String, amount: Decimal) -> Single<Void>
+    func sendSingle(to address: String, amount: Decimal, gasLimit: Int) -> Single<Void>
     func transactionsSingle(from: (hash: String, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionRecord]>
 
+    func estimatedGasLimit(to address: String, value: Decimal) -> Single<Int>
 }

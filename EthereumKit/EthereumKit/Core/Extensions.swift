@@ -25,23 +25,23 @@ public extension Data {
     }
 
     func toHexString() -> String {
-        return "0x" + self.toRawHexString()
+        "0x" + self.toRawHexString()
     }
 
     func toRawHexString() -> String {
-        return reduce("") { $0 + String(format: "%02x", $1) }
+        reduce("") { $0 + String(format: "%02x", $1) }
     }
 
     func toEIP55Address() -> String {
-        return EIP55.format(address: self.toRawHexString())
+        EIP55.format(address: self.toRawHexString())
     }
 
     var bytes: Array<UInt8> {
-        return Array(self)
+        Array(self)
     }
 
     func to<T>(type: T.Type) -> T {
-        return self.withUnsafeBytes { $0.load(as: T.self) }
+        self.withUnsafeBytes { $0.load(as: T.self) }
     }
 
 }
@@ -49,12 +49,16 @@ public extension Data {
 extension Int {
 
     var flowControlLog: String {
-        return "\(Double(self) / 1_000_000)"
+        "\(Double(self) / 1_000_000)"
     }
 
 }
 
 extension String {
+
+    func removeLeadingZeros() -> String {
+        self.replacingOccurrences(of: "^0+", with: "", options: .regularExpression)
+    }
 
     func stripHexPrefix() -> String {
         let prefix = "0x"
@@ -74,6 +78,18 @@ extension String {
         }
 
         return prefix.appending(self)
+    }
+
+}
+
+extension Decimal {
+
+    public func roundedString(decimal: Int) -> String {
+        let poweredDecimal = self * pow(10, decimal)
+        let handler = NSDecimalNumberHandler(roundingMode: .plain, scale: 0, raiseOnExactness: false, raiseOnOverflow: false, raiseOnUnderflow: false, raiseOnDivideByZero: false)
+        let roundedDecimal = NSDecimalNumber(decimal: poweredDecimal).rounding(accordingToBehavior: handler).decimalValue
+
+        return String(describing: roundedDecimal)
     }
 
 }

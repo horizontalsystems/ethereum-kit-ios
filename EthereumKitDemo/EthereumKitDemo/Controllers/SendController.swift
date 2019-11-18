@@ -3,14 +3,19 @@ import EthereumKit
 import RxSwift
 
 class SendController: UIViewController {
+    private let gasLimitPrefix = "Gas Limit: "
     private let disposeBag = DisposeBag()
 
     @IBOutlet weak var addressTextField: UITextField?
     @IBOutlet weak var amountTextField: UITextField?
+    @IBOutlet weak var gasPriceLabel: UILabel?
     @IBOutlet weak var coinLabel: UILabel?
+    @IBOutlet weak var sendButton: UIButton?
 
     private var adapters = [IAdapter]()
     private let segmentedControl = UISegmentedControl()
+
+    private var estimateGasLimit: Int?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,6 +33,9 @@ class SendController: UIViewController {
 
         segmentedControl.selectedSegmentIndex = 0
         segmentedControl.sendActions(for: .valueChanged)
+
+        addressTextField?.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        amountTextField?.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -38,13 +46,15 @@ class SendController: UIViewController {
 
     @objc func onSegmentChanged() {
         coinLabel?.text = currentAdapter.coin
+
+        updateEstimatedGasPrice()
     }
 
     @IBAction func send() {
-        guard let address = addressTextField?.text?.trimmingCharacters(in: .whitespaces) else {
+        guard let address = addressTextField?.text?.trimmingCharacters(in: .whitespaces),
+              let estimateGasLimit = estimateGasLimit else {
             return
         }
-
         do {
             try currentAdapter.validate(address: address)
         } catch {
@@ -57,7 +67,7 @@ class SendController: UIViewController {
             return
         }
 
-        currentAdapter.sendSingle(to: address, amount: amount)
+        currentAdapter.sendSingle(to: address, amount: amount, gasLimit: estimateGasLimit)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { [weak self] _ in
@@ -83,8 +93,46 @@ class SendController: UIViewController {
         present(alert, animated: true)
     }
 
+    private func updateGasLimit(value: Int?) {
+        sendButton?.isEnabled = value != nil
+        estimateGasLimit = value
+
+        guard let value = value else {
+            gasPriceLabel?.text = gasLimitPrefix + " n/a"
+            return
+        }
+        gasPriceLabel?.text = gasLimitPrefix + "\(value)"
+    }
+
+    private func updateEstimatedGasPrice() {
+        updateGasLimit(value: nil)
+
+        guard let address = addressTextField?.text?.trimmingCharacters(in: .whitespaces),
+              let valueText = amountTextField?.text,
+              let value = Decimal(string: valueText),
+              !value.isZero else {
+            return
+        }
+
+        gasPriceLabel?.text = "Loading..."
+
+        currentAdapter.estimatedGasLimit(to: address, value: value)
+            .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+            .observeOn(MainScheduler.instance)
+            .subscribe(onSuccess: { [weak self] gasLimit in
+                self?.updateGasLimit(value: gasLimit)
+            }, onError: { [weak self] error in
+                self?.updateGasLimit(value: nil)
+            })
+            .disposed(by: disposeBag)
+    }
+
     private var currentAdapter: IAdapter {
-        return adapters[segmentedControl.selectedSegmentIndex]
+        adapters[segmentedControl.selectedSegmentIndex]
+    }
+
+    @objc func textFieldDidChange() {
+        updateEstimatedGasPrice()
     }
 
 }

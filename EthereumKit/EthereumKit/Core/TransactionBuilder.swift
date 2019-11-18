@@ -9,7 +9,7 @@ class TransactionBuilder {
     }
 
     func rawTransaction(gasPrice: Int, gasLimit: Int, to: Data, value: BigUInt, data: Data = Data()) -> RawTransaction {
-        return RawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: to, value: value, data: data)
+        RawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: to, value: value, data: data)
     }
 
     func transaction(rawTransaction: RawTransaction, nonce: Int, signature: Signature) -> Transaction {
@@ -28,7 +28,7 @@ class TransactionBuilder {
     }
 
     func encode(rawTransaction: RawTransaction, signature: Signature, nonce: Int) -> Data {
-        return RLP.encode([
+        RLP.encode([
             nonce,
             rawTransaction.gasPrice,
             rawTransaction.gasLimit,

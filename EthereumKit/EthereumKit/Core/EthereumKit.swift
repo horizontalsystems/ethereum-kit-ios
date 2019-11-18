@@ -4,7 +4,7 @@ import HSHDWalletKit
 import BigInt
 
 public class EthereumKit {
-    private let gasLimit = 21_000
+    public let gasLimit = 21_000
 
     private let lastBlockHeightSubject = PublishSubject<Int>()
     private let syncStateSubject = PublishSubject<SyncState>()
@@ -141,6 +141,10 @@ extension EthereumKit {
 
     public func call(contractAddress: Data, data: Data, blockHeight: Int? = nil) -> Single<Data> {
         blockchain.call(contractAddress: contractAddress, data: data, blockHeight: blockHeight)
+    }
+
+    public func estimateGas(contractAddress: String, amount: BigUInt?, gasLimit: Int?, data: Data?) -> Single<Int> {
+        blockchain.estimateGas(from: receiveAddress, contractAddress: contractAddress, amount: amount, gasLimit: gasLimit, data: data)
     }
 
     public func statusInfo() -> [(String, Any)] {

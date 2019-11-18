@@ -53,15 +53,15 @@ extension SpvBlockchain: IBlockchain {
     }
 
     var syncState: EthereumKit.SyncState {
-        return .notSynced
+        .notSynced
     }
 
     var lastBlockHeight: Int? {
-        return storage.lastBlockHeader?.height
+        storage.lastBlockHeader?.height
     }
 
     var balance: BigUInt? {
-        return storage.accountState?.balance
+        storage.accountState?.balance
     }
 
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction> {
@@ -79,17 +79,28 @@ extension SpvBlockchain: IBlockchain {
     }
 
     func getLogsSingle(address: Data?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
-        return Single.just([])
+        Single.just([])
     }
 
     func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data> {
-        return Single.just(Data())
+        Single.just(Data())
     }
 
     func call(contractAddress: Data, data: Data, blockHeight: Int?) -> Single<Data> {
-        return rpcApiProvider.call(contractAddress: contractAddress.toHexString(), data: data.toHexString(), blockNumber: blockHeight)
+        rpcApiProvider.call(contractAddress: contractAddress.toHexString(), data: data.toHexString(), blockNumber: blockHeight)
                 .flatMap { value -> Single<Data> in
                     guard let data = Data(hex: value) else {
+                        return Single.error(EthereumKit.ApiError.invalidData)
+                    }
+
+                    return Single.just(data)
+                }
+    }
+
+    func estimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, data: Data?) -> Single<Int> {
+        rpcApiProvider.getEstimateGas(from: from, contractAddress: contractAddress, amount: amount, gasLimit: gasLimit, data: data?.toHexString())
+                .flatMap { (value: String) -> Single<Int> in
+                    guard let data = Int(value.stripHexPrefix(), radix: 16) else {
                         return Single.error(EthereumKit.ApiError.invalidData)
                     }
 
