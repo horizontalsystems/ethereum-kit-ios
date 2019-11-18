@@ -101,8 +101,8 @@ extension EthereumKit {
                 .map { $0.map { TransactionInfo(transaction: $0) } }
     }
 
-    public func sendSingle(to: Data, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int) -> Single<TransactionInfo> {
-        let rawTransaction = transactionBuilder.rawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: to, value: value, data: transactionInput)
+    public func sendSingle(address: Data, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int) -> Single<TransactionInfo> {
+        let rawTransaction = transactionBuilder.rawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: address, value: value, data: transactionInput)
 
         return blockchain.sendSingle(rawTransaction: rawTransaction)
                 .do(onSuccess: { [weak self] transaction in
@@ -111,7 +111,7 @@ extension EthereumKit {
                 .map { TransactionInfo(transaction: $0) }
     }
 
-    public func sendSingle(to: String, value: String, gasPrice: Int) -> Single<TransactionInfo> {
+    public func sendSingle(to: String, value: String, gasPrice: Int, gasLimit: Int? = nil) -> Single<TransactionInfo> {
         guard let to = Data(hex: to) else {
             return Single.error(SendError.invalidAddress)
         }
@@ -120,7 +120,7 @@ extension EthereumKit {
             return Single.error(SendError.invalidValue)
         }
 
-        return sendSingle(to: to, value: value, gasPrice: gasPrice, gasLimit: gasLimit)
+        return sendSingle(address: to, value: value, gasPrice: gasPrice, gasLimit: gasLimit ?? self.gasLimit)
     }
 
     public var debugInfo: String {
