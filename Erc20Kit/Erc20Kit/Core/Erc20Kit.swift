@@ -4,7 +4,7 @@ import HSCryptoKit
 import BigInt
 
 public class Erc20Kit {
-    private let gasLimit = 1_000_000
+    private let gasLimit: Int
     private let disposeBag = DisposeBag()
 
     private let ethereumKit: EthereumKit
@@ -13,10 +13,11 @@ public class Erc20Kit {
 
     private let state: KitState
 
-    init(ethereumKit: EthereumKit, transactionManager: ITransactionManager, balanceManager: IBalanceManager, state: KitState = KitState()) {
+    init(ethereumKit: EthereumKit, transactionManager: ITransactionManager, balanceManager: IBalanceManager, gasLimit: Int = 1_000_000, state: KitState = KitState()) {
         self.ethereumKit = ethereumKit
         self.transactionManager = transactionManager
         self.balanceManager = balanceManager
+        self.gasLimit = gasLimit
         self.state = state
 
         onUpdateSyncState(syncState: ethereumKit.syncState)
@@ -104,15 +105,14 @@ extension Erc20Kit {
             return Single.error(ValidationError.invalidValue)
         }
 
-        var data: Data?
         do {
             let toAddress = try convert(address: to)
-            data = transactionManager.transactionContractData(to: toAddress, value: amountValue)
+            let data = transactionManager.transactionContractData(to: toAddress, value: amountValue)
+
+            return ethereumKit.estimateGas(contractAddress: contractAddress, amount: nil, gasLimit: gasLimit, data: data)
         } catch {
             return Single.error(ValidationError.invalidAddress)
         }
-
-        return ethereumKit.estimateGas(contractAddress: contractAddress, amount: nil, gasLimit: gasLimit, data: data)
     }
 
 }
