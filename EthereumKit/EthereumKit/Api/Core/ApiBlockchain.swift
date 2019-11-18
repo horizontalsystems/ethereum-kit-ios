@@ -95,7 +95,7 @@ class ApiBlockchain {
     }
 
     private func pullTransactionTimestamps(ethereumLogs: [EthereumLog]) -> Single<[EthereumLog]> {
-        var logsByBlockNumber = Dictionary(grouping: ethereumLogs, by: { $0.blockNumber })
+        let logsByBlockNumber = Dictionary(grouping: ethereumLogs, by: { $0.blockNumber })
 
         var requestSingles = [Single<Block>]()
         for blockNumber in logsByBlockNumber.keys {
@@ -144,17 +144,17 @@ extension ApiBlockchain: IBlockchain {
     }
 
     var lastBlockHeight: Int? {
-        return storage.lastBlockHeight
+        storage.lastBlockHeight
     }
 
     var balance: BigUInt? {
-        return storage.balance
+        storage.balance
     }
 
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction> {
-        return rpcApiProvider.transactionCountSingle()
+        rpcApiProvider.transactionCountSingle()
                 .flatMap { [unowned self] nonce -> Single<Transaction> in
-                    return try self.sendSingle(rawTransaction: rawTransaction, nonce: nonce)
+                    try self.sendSingle(rawTransaction: rawTransaction, nonce: nonce)
                 }
                 .do(onSuccess: { [weak self] transaction in
                     self?.sync()
@@ -162,7 +162,7 @@ extension ApiBlockchain: IBlockchain {
     }
 
     func getLogsSingle(address: Data?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
-        return rpcApiProvider.getLogs(address: address, fromBlock: fromBlock, toBlock: toBlock, topics: topics)
+        rpcApiProvider.getLogs(address: address, fromBlock: fromBlock, toBlock: toBlock, topics: topics)
                 .flatMap { [unowned self] logs in
                     if pullTimestamps {
                         return self.pullTransactionTimestamps(ethereumLogs: logs)
@@ -173,7 +173,7 @@ extension ApiBlockchain: IBlockchain {
     }
 
     func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data> {
-        return rpcApiProvider.getStorageAt(contractAddress: contractAddress.toHexString(), position: positionData.toHexString(), blockNumber: blockHeight)
+        rpcApiProvider.getStorageAt(contractAddress: contractAddress.toHexString(), position: positionData.toHexString(), blockNumber: blockHeight)
                 .flatMap { value -> Single<Data> in
                     guard let data = Data(hex: value) else {
                         return Single.error(EthereumKit.ApiError.invalidData)
@@ -184,9 +184,20 @@ extension ApiBlockchain: IBlockchain {
     }
 
     func call(contractAddress: Data, data: Data, blockHeight: Int?) -> Single<Data> {
-        return rpcApiProvider.call(contractAddress: contractAddress.toHexString(), data: data.toHexString(), blockNumber: blockHeight)
+        rpcApiProvider.call(contractAddress: contractAddress.toHexString(), data: data.toHexString(), blockNumber: blockHeight)
                 .flatMap { value -> Single<Data> in
                     guard let data = Data(hex: value) else {
+                        return Single.error(EthereumKit.ApiError.invalidData)
+                    }
+
+                    return Single.just(data)
+                }
+    }
+
+    func estimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, data: Data?) -> Single<Int> {
+        rpcApiProvider.getEstimateGas(from: from, contractAddress: contractAddress, amount: amount, gasLimit: gasLimit, data: data?.toHexString())
+                .flatMap { (value: String) -> Single<Int> in
+                    guard let data = Int(value.stripHexPrefix(), radix: 16) else {
                         return Single.error(EthereumKit.ApiError.invalidData)
                     }
 

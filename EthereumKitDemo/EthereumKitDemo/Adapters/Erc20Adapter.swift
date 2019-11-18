@@ -11,6 +11,7 @@ class Erc20Adapter {
     let name: String
     let coin: String
 
+    private let contractAddress: String
     private let decimal: Int
 
     init(ethereumKit: EthereumKit, name: String, coin: String, contractAddress: String, decimal: Int) {
@@ -23,6 +24,7 @@ class Erc20Adapter {
         self.name = name
         self.coin = coin
 
+        self.contractAddress = contractAddress
         self.decimal = decimal
     }
 
@@ -63,7 +65,7 @@ class Erc20Adapter {
 extension Erc20Adapter: IAdapter {
 
     var lastBlockHeight: Int? {
-        return ethereumKit.lastBlockHeight
+        ethereumKit.lastBlockHeight
     }
 
     var syncState: EthereumKit.SyncState {
@@ -83,46 +85,44 @@ extension Erc20Adapter: IAdapter {
     }
 
     var receiveAddress: String {
-        return ethereumKit.receiveAddress
+        ethereumKit.receiveAddress
     }
 
     var lastBlockHeightObservable: Observable<Void> {
-        return ethereumKit.lastBlockHeightObservable.map { _ in () }
+        ethereumKit.lastBlockHeightObservable.map { _ in () }
     }
 
     var syncStateObservable: Observable<Void> {
-        return erc20Kit.syncStateObservable.map { _ in () }
+        erc20Kit.syncStateObservable.map { _ in () }
     }
 
     var balanceObservable: Observable<Void> {
-        return erc20Kit.balanceObservable.map { _ in () }
+        erc20Kit.balanceObservable.map { _ in () }
     }
 
     var transactionsObservable: Observable<Void> {
-        return erc20Kit.transactionsObservable.map { _ in () }
+        erc20Kit.transactionsObservable.map { _ in () }
     }
 
     func validate(address: String) throws {
         try ethereumKit.validate(address: address)
     }
 
-    func sendSingle(to: String, amount: Decimal) -> Single<Void> {
-        let poweredDecimal = amount * pow(10, decimal)
-        let handler = NSDecimalNumberHandler(roundingMode: .plain, scale: 0, raiseOnExactness: false, raiseOnOverflow: false, raiseOnUnderflow: false, raiseOnDivideByZero: false)
-        let roundedDecimal = NSDecimalNumber(decimal: poweredDecimal).rounding(accordingToBehavior: handler).decimalValue
-
-        let value = String(describing: roundedDecimal)
-
-        return try! erc20Kit.sendSingle(to: to, value: value, gasPrice: 5_000_000_000).map { _ in ()}
+    func sendSingle(to: String, amount: Decimal, gasLimit: Int) -> Single<Void> {
+        try! erc20Kit.sendSingle(to: to, value: amount.roundedString(decimal: decimal), gasPrice: 5_000_000_000, gasLimit: gasLimit).map { _ in ()}
     }
 
     func transactionsSingle(from: (hash: String, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionRecord]> {
-        return try! erc20Kit.transactionsSingle(from: from, limit: limit)
+        try! erc20Kit.transactionsSingle(from: from, limit: limit)
                 .map { [weak self] in
                     $0.compactMap {
                         self?.transactionRecord(fromTransaction: $0)
                     }
                 }
+    }
+
+    func estimatedGasLimit(to address: String, value: Decimal) -> Single<Int> {
+        erc20Kit.estimateGas(to: address, contractAddress: contractAddress, value: value.roundedString(decimal: decimal))
     }
 
 }

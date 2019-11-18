@@ -52,11 +52,15 @@ class TransactionManager {
 extension TransactionManager: ITransactionManager {
 
     var lastTransactionBlockHeight: Int? {
-        return storage.lastTransactionBlockHeight
+        storage.lastTransactionBlockHeight
     }
 
     func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[Transaction]> {
-        return storage.transactionsSingle(from: from, limit: limit)
+        storage.transactionsSingle(from: from, limit: limit)
+    }
+
+    func transactionContractData(to: Data, value: BigUInt) -> Data {
+        transactionBuilder.transferTransactionInput(to: to, value: value)
     }
 
     func sendSingle(to: Data, value: BigUInt, gasPrice: Int, gasLimit: Int) -> Single<Transaction> {
