@@ -150,7 +150,7 @@ extension InfuraApiProvider: IRpcApiProvider {
         infuraStringSingle(method: "eth_call", params: [["to": contractAddress, "data": data], "latest"])
     }
 
-    func getEstimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, data: String?) -> Single<String> {
+    func getEstimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: String?) -> Single<String> {
         var params = [String: Any]()
         if let from = from {
             params["from"] = from.lowercased()
@@ -160,6 +160,9 @@ extension InfuraApiProvider: IRpcApiProvider {
         }
         if let gasLimit = gasLimit {
             params["gas"] = "0x" + String(gasLimit, radix: 16).removeLeadingZeros()
+        }
+        if let gasPrice = gasPrice {
+            params["gas"] = "0x" + String(gasPrice, radix: 16).removeLeadingZeros()
         }
         params["to"] = contractAddress.lowercased()
         params["data"] = data

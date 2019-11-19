@@ -194,8 +194,8 @@ extension ApiBlockchain: IBlockchain {
                 }
     }
 
-    func estimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, data: Data?) -> Single<Int> {
-        rpcApiProvider.getEstimateGas(from: from, contractAddress: contractAddress, amount: amount, gasLimit: gasLimit, data: data?.toHexString())
+    func estimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int> {
+        rpcApiProvider.getEstimateGas(from: from, contractAddress: contractAddress, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice, data: data?.toHexString())
                 .flatMap { (value: String) -> Single<Int> in
                     guard let data = Int(value.stripHexPrefix(), radix: 16) else {
                         return Single.error(EthereumKit.ApiError.invalidData)

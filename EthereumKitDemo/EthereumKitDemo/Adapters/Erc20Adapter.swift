@@ -122,7 +122,7 @@ extension Erc20Adapter: IAdapter {
     }
 
     func estimatedGasLimit(to address: String, value: Decimal) -> Single<Int> {
-        erc20Kit.estimateGas(to: address, contractAddress: contractAddress, value: value.roundedString(decimal: decimal))
+        erc20Kit.estimateGas(to: address, contractAddress: contractAddress, value: value.roundedString(decimal: decimal), gasPrice: 5_000_000_000)
     }
 
 }

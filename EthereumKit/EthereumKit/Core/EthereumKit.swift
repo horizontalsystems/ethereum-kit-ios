@@ -143,8 +143,8 @@ extension EthereumKit {
         blockchain.call(contractAddress: contractAddress, data: data, blockHeight: blockHeight)
     }
 
-    public func estimateGas(contractAddress: String, amount: BigUInt?, gasLimit: Int?, data: Data?) -> Single<Int> {
-        blockchain.estimateGas(from: receiveAddress, contractAddress: contractAddress, amount: amount, gasLimit: gasLimit, data: data)
+    public func estimateGas(contractAddress: String, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int> {
+        blockchain.estimateGas(from: receiveAddress, contractAddress: contractAddress, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice, data: data)
     }
 
     public func statusInfo() -> [(String, Any)] {
