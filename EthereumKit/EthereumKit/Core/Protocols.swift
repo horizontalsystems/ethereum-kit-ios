@@ -18,7 +18,7 @@ protocol IBlockchain {
     func getLogsSingle(address: Data?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]>
     func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data>
     func call(contractAddress: Data, data: Data, blockHeight: Int?) -> Single<Data>
-    func estimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, data: Data?) -> Single<Int>
+    func estimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int>
 }
 
 protocol IBlockchainDelegate: class {

@@ -11,7 +11,7 @@ protocol IRpcApiProvider {
     func getLogs(address: Data?, fromBlock: Int?, toBlock: Int?, topics: [Any?]) -> Single<[EthereumLog]>
     func getStorageAt(contractAddress: String, position: String, blockNumber: Int?) -> Single<String>
     func call(contractAddress: String, data: String, blockNumber: Int?) -> Single<String>
-    func getEstimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, data: String?) -> Single<String>
+    func getEstimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: String?) -> Single<String>
     func getBlock(byNumber: Int) -> Single<Block>
 }
 
