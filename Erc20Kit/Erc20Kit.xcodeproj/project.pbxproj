@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		11B3588565C278E3276C5280 /* TokenBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B356EBA7F3536B9A691B73 /* TokenBalance.swift */; };
 		11B35B8F4851F92695D232C7 /* KitState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B357B5C09A5E64C5EA0615 /* KitState.swift */; };
-		2FA5D2F8ABDFB907536308D3 /* Erc20Kit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5DBFF8094999891470F26 /* Erc20Kit.swift */; };
+		2FA5D2F8ABDFB907536308D3 /* Kit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5DBFF8094999891470F26 /* Kit.swift */; };
 		2FA5D511E296A8D98629DC2C /* TransactionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D605318BC6D83F0F8871 /* TransactionManager.swift */; };
 		2FA5D57B96B3FC698F1E9370 /* Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5DEAC9C95ECFFB1054F23 /* Protocols.swift */; };
 		2FA5D8120ED290898312D6DC /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D186C22D1A5217D44790 /* Transaction.swift */; };
@@ -20,6 +20,9 @@
 		2FA5DF1F9375720B34B4F445 /* TransactionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5DDC47CB76FAD28B5DBFD /* TransactionBuilder.swift */; };
 		2FA5DFE69ED8711073AEE5A4 /* TransactionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D26E2F762277566B99E6 /* TransactionInfo.swift */; };
 		519182226D3BA819F8EE180A /* Pods_Erc20Kit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CCE8AB802620D775CD3A8CB /* Pods_Erc20Kit.framework */; };
+		58AAACF01FEB4BC8DE6772C4 /* SyncState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA64081F18523ACC385DA /* SyncState.swift */; };
+		58AAAE0CD708E5358413E457 /* TokenError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAB22D846FB64C48420BE /* TokenError.swift */; };
+		58AAAF6F55F26AEBA56B645D /* ValidationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA95EF3CBCCCA509E426B /* ValidationError.swift */; };
 		BD177B2E8C7EBF85EAA1B3E7 /* Pods_Erc20KitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46B7C6CA4D8EC838E225F7E7 /* Pods_Erc20KitTests.framework */; };
 		D001D2F12251CC7F00165546 /* Erc20Kit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D001D2E72251CC7F00165546 /* Erc20Kit.framework */; };
 		D001D2F62251CC7F00165546 /* Erc20KitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D001D2F52251CC7F00165546 /* Erc20KitTests.swift */; };
@@ -45,13 +48,16 @@
 		2FA5D605318BC6D83F0F8871 /* TransactionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionManager.swift; sourceTree = "<group>"; };
 		2FA5D62B268E97C692098E83 /* GrdbStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GrdbStorage.swift; sourceTree = "<group>"; };
 		2FA5D87E7CF0B5A799E27ED1 /* BalanceManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BalanceManager.swift; sourceTree = "<group>"; };
-		2FA5DBFF8094999891470F26 /* Erc20Kit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Erc20Kit.swift; sourceTree = "<group>"; };
+		2FA5DBFF8094999891470F26 /* Kit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Kit.swift; sourceTree = "<group>"; };
 		2FA5DC75DEDD9B83143FAF32 /* ERC20.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ERC20.swift; sourceTree = "<group>"; };
 		2FA5DDC47CB76FAD28B5DBFD /* TransactionBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionBuilder.swift; sourceTree = "<group>"; };
 		2FA5DEAC9C95ECFFB1054F23 /* Protocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Protocols.swift; sourceTree = "<group>"; };
 		2FA5DF526D8DC26011DF61D6 /* DataProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataProvider.swift; sourceTree = "<group>"; };
 		3763C500FE21015F66912C11 /* Pods-Erc20KitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Erc20KitTests.release.xcconfig"; path = "Target Support Files/Pods-Erc20KitTests/Pods-Erc20KitTests.release.xcconfig"; sourceTree = "<group>"; };
 		46B7C6CA4D8EC838E225F7E7 /* Pods_Erc20KitTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Erc20KitTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		58AAA64081F18523ACC385DA /* SyncState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SyncState.swift; sourceTree = "<group>"; };
+		58AAA95EF3CBCCCA509E426B /* ValidationError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ValidationError.swift; sourceTree = "<group>"; };
+		58AAAB22D846FB64C48420BE /* TokenError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TokenError.swift; sourceTree = "<group>"; };
 		5CCE8AB802620D775CD3A8CB /* Pods_Erc20Kit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Erc20Kit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C02A03BF0EC84E891C7D1067 /* Pods-Erc20KitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Erc20KitTests.debug.xcconfig"; path = "Target Support Files/Pods-Erc20KitTests/Pods-Erc20KitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		D001D2E72251CC7F00165546 /* Erc20Kit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Erc20Kit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -103,13 +109,13 @@
 			isa = PBXGroup;
 			children = (
 				2FA5D87E7CF0B5A799E27ED1 /* BalanceManager.swift */,
-				2FA5DBFF8094999891470F26 /* Erc20Kit.swift */,
+				2FA5DF526D8DC26011DF61D6 /* DataProvider.swift */,
 				2FA5D62B268E97C692098E83 /* GrdbStorage.swift */,
+				2FA5DBFF8094999891470F26 /* Kit.swift */,
+				11B357B5C09A5E64C5EA0615 /* KitState.swift */,
 				2FA5DEAC9C95ECFFB1054F23 /* Protocols.swift */,
 				2FA5DDC47CB76FAD28B5DBFD /* TransactionBuilder.swift */,
 				2FA5D605318BC6D83F0F8871 /* TransactionManager.swift */,
-				2FA5DF526D8DC26011DF61D6 /* DataProvider.swift */,
-				11B357B5C09A5E64C5EA0615 /* KitState.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -120,6 +126,9 @@
 				2FA5D186C22D1A5217D44790 /* Transaction.swift */,
 				2FA5D26E2F762277566B99E6 /* TransactionInfo.swift */,
 				11B356EBA7F3536B9A691B73 /* TokenBalance.swift */,
+				58AAAB22D846FB64C48420BE /* TokenError.swift */,
+				58AAA64081F18523ACC385DA /* SyncState.swift */,
+				58AAA95EF3CBCCCA509E426B /* ValidationError.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -363,7 +372,7 @@
 				2FA5D88789CD8077E3931C3D /* ERC20.swift in Sources */,
 				2FA5DF1F9375720B34B4F445 /* TransactionBuilder.swift in Sources */,
 				2FA5D8120ED290898312D6DC /* Transaction.swift in Sources */,
-				2FA5D2F8ABDFB907536308D3 /* Erc20Kit.swift in Sources */,
+				2FA5D2F8ABDFB907536308D3 /* Kit.swift in Sources */,
 				2FA5D57B96B3FC698F1E9370 /* Protocols.swift in Sources */,
 				2FA5DFE69ED8711073AEE5A4 /* TransactionInfo.swift in Sources */,
 				2FA5DD3FBD282AFF2E02C2E5 /* GrdbStorage.swift in Sources */,
@@ -372,6 +381,9 @@
 				2FA5D897C88DE11C9B5FEA13 /* DataProvider.swift in Sources */,
 				11B3588565C278E3276C5280 /* TokenBalance.swift in Sources */,
 				11B35B8F4851F92695D232C7 /* KitState.swift in Sources */,
+				58AAAE0CD708E5358413E457 /* TokenError.swift in Sources */,
+				58AAAF6F55F26AEBA56B645D /* ValidationError.swift in Sources */,
+				58AAACF01FEB4BC8DE6772C4 /* SyncState.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -47,7 +47,7 @@ extension InfuraApiProvider {
             data as? [String: Any]
         }.flatMap { data -> Single<Void> in
             guard data["result"] != nil else {
-                return Single.error(EthereumKit.SendError.infuraError(message: (data["error"] as? [String: Any])?["message"] as? String ?? ""))
+                return Single.error(SendError.infuraError(message: (data["error"] as? [String: Any])?["message"] as? String ?? ""))
             }
 
             return Single.just(())
@@ -139,6 +139,27 @@ extension InfuraApiProvider: IRpcApiProvider {
                 return result.compactMap { EthereumLog(json: $0) }
             }
             return []
+        }
+    }
+
+    func transactionReceiptStatusSingle(transactionHash: Data) -> Single<TransactionStatus> {
+        infuraSingle(method: "eth_getTransactionReceipt", params: [transactionHash.toHexString()]) { data -> TransactionStatus in
+            guard let map = data as? [String: Any],
+                  let log = map["result"] as? [String: Any],
+                  let statusString = log["status"] as? String,
+                  let success = Int(statusString.stripHexPrefix(), radix: 16) else {
+                return .notFound
+            }
+            return success == 0 ? .failed : .success
+        }
+    }
+
+    func transactionExistSingle(transactionHash: Data) -> Single<Bool> {
+        infuraSingle(method: "eth_getTransactionByHash", params: [transactionHash.toHexString()]) {data -> Bool in
+            guard let map = data as? [String: Any], let _ = map["result"] as? [String: Any] else {
+                return false
+            }
+            return true
         }
     }
 

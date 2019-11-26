@@ -9,13 +9,15 @@ protocol IBlockchain {
     func stop()
     func refresh()
 
-    var syncState: EthereumKit.SyncState { get }
+    var syncState: SyncState { get }
     var lastBlockHeight: Int? { get }
     var balance: BigUInt? { get }
 
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction>
 
     func getLogsSingle(address: Data?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]>
+    func transactionReceiptStatusSingle(transactionHash: Data) -> Single<TransactionStatus>
+    func transactionExistSingle(transactionHash: Data) -> Single<Bool>
     func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data>
     func call(contractAddress: Data, data: Data, blockHeight: Int?) -> Single<Data>
     func estimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int>
@@ -24,7 +26,7 @@ protocol IBlockchain {
 protocol IBlockchainDelegate: class {
     func onUpdate(lastBlockHeight: Int)
     func onUpdate(balance: BigUInt)
-    func onUpdate(syncState: EthereumKit.SyncState)
+    func onUpdate(syncState: SyncState)
 }
 
 protocol ITransactionManager {

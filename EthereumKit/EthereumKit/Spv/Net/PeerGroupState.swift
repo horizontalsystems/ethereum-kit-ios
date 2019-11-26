@@ -1,4 +1,4 @@
 class PeerGroupState {
     var syncPeer: IPeer?
-    var syncState: EthereumKit.SyncState = .notSynced
+    var syncState: SyncState = .notSynced
 }

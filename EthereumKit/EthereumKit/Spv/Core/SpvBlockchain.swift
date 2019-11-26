@@ -52,7 +52,7 @@ extension SpvBlockchain: IBlockchain {
         // todo
     }
 
-    var syncState: EthereumKit.SyncState {
+    var syncState: SyncState {
         .notSynced
     }
 
@@ -82,6 +82,14 @@ extension SpvBlockchain: IBlockchain {
         Single.just([])
     }
 
+    func transactionReceiptStatusSingle(transactionHash: Data) -> Single<TransactionStatus> {
+        rpcApiProvider.transactionReceiptStatusSingle(transactionHash: transactionHash)
+    }
+
+    func transactionExistSingle(transactionHash: Data) -> Single<Bool> {
+        rpcApiProvider.transactionExistSingle(transactionHash: transactionHash)
+    }
+
     func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data> {
         Single.just(Data())
     }
@@ -90,7 +98,7 @@ extension SpvBlockchain: IBlockchain {
         rpcApiProvider.call(contractAddress: contractAddress.toHexString(), data: data.toHexString(), blockNumber: blockHeight)
                 .flatMap { value -> Single<Data> in
                     guard let data = Data(hex: value) else {
-                        return Single.error(EthereumKit.ApiError.invalidData)
+                        return Single.error(ApiError.invalidData)
                     }
 
                     return Single.just(data)
@@ -101,7 +109,7 @@ extension SpvBlockchain: IBlockchain {
         rpcApiProvider.getEstimateGas(from: from, contractAddress: contractAddress, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice, data: data?.toHexString())
                 .flatMap { (value: String) -> Single<Int> in
                     guard let data = Int(value.stripHexPrefix(), radix: 16) else {
-                        return Single.error(EthereumKit.ApiError.invalidData)
+                        return Single.error(ApiError.invalidData)
                     }
 
                     return Single.just(data)

@@ -3,17 +3,17 @@ import EthereumKit
 import HSCryptoKit
 import BigInt
 
-public class Erc20Kit {
+public class Kit {
     private let gasLimit: Int
     private let disposeBag = DisposeBag()
 
-    private let ethereumKit: EthereumKit
+    private let ethereumKit: EthereumKit.Kit
     private let transactionManager: ITransactionManager
     private let balanceManager: IBalanceManager
 
     private let state: KitState
 
-    init(ethereumKit: EthereumKit, transactionManager: ITransactionManager, balanceManager: IBalanceManager, gasLimit: Int, state: KitState = KitState()) {
+    init(ethereumKit: EthereumKit.Kit, transactionManager: ITransactionManager, balanceManager: IBalanceManager, gasLimit: Int, state: KitState = KitState()) {
         self.ethereumKit = ethereumKit
         self.transactionManager = transactionManager
         self.balanceManager = balanceManager
@@ -51,7 +51,7 @@ public class Erc20Kit {
 
 }
 
-extension Erc20Kit {
+extension Kit {
 
     public var syncState: SyncState {
         state.syncState
@@ -117,7 +117,7 @@ extension Erc20Kit {
 
 }
 
-extension Erc20Kit: ITransactionManagerDelegate {
+extension Kit: ITransactionManagerDelegate {
 
     func onSyncSuccess(transactions: [Transaction]) {
         state.syncState = .synced
@@ -135,7 +135,7 @@ extension Erc20Kit: ITransactionManagerDelegate {
 
 }
 
-extension Erc20Kit: IBalanceManagerDelegate {
+extension Kit: IBalanceManagerDelegate {
 
     func onSyncBalanceSuccess(balance: BigUInt) {
         state.balance = balance
@@ -149,9 +149,9 @@ extension Erc20Kit: IBalanceManagerDelegate {
 
 }
 
-extension Erc20Kit {
+extension Kit {
 
-    public static func instance(ethereumKit: EthereumKit, contractAddress: String, gasLimit: Int = 1_000_000) throws -> Erc20Kit {
+    public static func instance(ethereumKit: EthereumKit.Kit, contractAddress: String, gasLimit: Int = 1_000_000) throws -> Kit {
         let databaseFileName = "\(ethereumKit.uniqueId)-\(contractAddress)"
 
         guard let contractAddress = Data(hex: contractAddress) else {
@@ -167,7 +167,7 @@ extension Erc20Kit {
         var transactionManager: ITransactionManager = TransactionManager(contractAddress: contractAddress, address: address, storage: storage, dataProvider: dataProvider, transactionBuilder: transactionBuilder)
         var balanceManager: IBalanceManager = BalanceManager(contractAddress: contractAddress, address: address, storage: storage, dataProvider: dataProvider)
 
-        let erc20Kit = Erc20Kit(ethereumKit: ethereumKit, transactionManager: transactionManager, balanceManager: balanceManager, gasLimit: gasLimit)
+        let erc20Kit = Kit(ethereumKit: ethereumKit, transactionManager: transactionManager, balanceManager: balanceManager, gasLimit: gasLimit)
 
         transactionManager.delegate = erc20Kit
         balanceManager.delegate = erc20Kit
@@ -196,28 +196,6 @@ extension Erc20Kit {
         try fileManager.createDirectory(at: url, withIntermediateDirectories: true)
 
         return url
-    }
-
-}
-
-extension Erc20Kit {
-
-    public enum TokenError: Error {
-        case invalidAddress
-        case notRegistered
-        case alreadyRegistered
-    }
-
-    public enum ValidationError: Error {
-        case invalidAddress
-        case invalidContractAddress
-        case invalidValue
-    }
-
-    public enum SyncState {
-        case notSynced
-        case syncing
-        case synced
     }
 
 }

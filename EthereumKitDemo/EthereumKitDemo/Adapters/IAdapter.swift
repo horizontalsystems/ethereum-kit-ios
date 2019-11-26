@@ -7,7 +7,7 @@ protocol IAdapter {
     var coin: String { get }
 
     var lastBlockHeight: Int? { get }
-    var syncState: EthereumKit.SyncState { get }
+    var syncState: SyncState { get }
     var balance: Decimal { get }
 
     var receiveAddress: String { get }

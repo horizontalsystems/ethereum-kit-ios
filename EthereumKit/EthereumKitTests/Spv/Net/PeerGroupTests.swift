@@ -28,7 +28,7 @@ class PeerGroupTests: QuickSpec {
         }
 
         describe("#syncState") {
-            let syncState: EthereumKit.SyncState = .syncing
+            let syncState: Kit.SyncState = .syncing
 
             beforeEach {
                 stub(mockState) { mock in
@@ -68,11 +68,11 @@ class PeerGroupTests: QuickSpec {
             }
 
             it("sets `syncing` sync state to state") {
-                verify(mockState).syncState.set(equal(to: EthereumKit.SyncState.syncing))
+                verify(mockState).syncState.set(equal(to: SyncState.syncing))
             }
 
             it("notifies delegate that sync state changed to `syncing`") {
-                verify(mockDelegate).onUpdate(syncState: equal(to: EthereumKit.SyncState.syncing))
+                verify(mockDelegate).onUpdate(syncState: equal(to: Kit.SyncState.syncing))
             }
 
             it("sets sync peer delegate to self") {
@@ -349,11 +349,11 @@ class PeerGroupTests: QuickSpec {
             }
 
             it("sets `synced` sync state to state") {
-                verify(mockState).syncState.set(equal(to: EthereumKit.SyncState.synced))
+                verify(mockState).syncState.set(equal(to: Kit.SyncState.synced))
             }
 
             it("notifies delegate that sync state changed to `synced`") {
-                verify(mockDelegate).onUpdate(syncState: equal(to: EthereumKit.SyncState.synced))
+                verify(mockDelegate).onUpdate(syncState: equal(to: Kit.SyncState.synced))
             }
         }
 
@@ -373,7 +373,7 @@ class PeerGroupTests: QuickSpec {
             context("when sync state is not `synced`") {
                 beforeEach {
                     stub(mockState) { mock in
-                        when(mock.syncState.get).thenReturn(EthereumKit.SyncState.syncing)
+                        when(mock.syncState.get).thenReturn(Kit.SyncState.syncing)
                     }
 
                     peerGroup.didAnnounce(blockHash: Data(), blockHeight: 0)
@@ -389,7 +389,7 @@ class PeerGroupTests: QuickSpec {
 
                 beforeEach {
                     stub(mockState) { mock in
-                        when(mock.syncState.get).thenReturn(EthereumKit.SyncState.synced)
+                        when(mock.syncState.get).thenReturn(Kit.SyncState.synced)
                     }
                     stub(mockBlockHelper) { mock in
                         when(mock.lastBlockHeader.get).thenReturn(lastBlockHeader)

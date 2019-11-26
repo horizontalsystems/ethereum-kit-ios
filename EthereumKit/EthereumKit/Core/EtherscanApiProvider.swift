@@ -37,7 +37,7 @@ extension EtherscanApiProvider {
     }
 
     private func etherscanTransactionsSingle(params: [String: Any]) -> Single<[[String: String]]> {
-        return etherscanSingle(params: params) { data -> [[String: String]]? in
+        etherscanSingle(params: params) { data -> [[String: String]]? in
             if let map = data as? [String: Any], let result = map["result"] as? [[String: String]] {
                 return result
             }
@@ -64,7 +64,7 @@ extension EtherscanApiProvider: ITransactionsProvider {
         ]
 
         return etherscanTransactionsSingle(params: params).map { array -> [Transaction] in
-            return array.compactMap { data -> Transaction? in
+            array.compactMap { data -> Transaction? in
                 guard let hash = data["hash"].flatMap({ Data(hex: $0) }) else { return nil }
                 guard let nonce = data["nonce"].flatMap({ Int($0) }) else { return nil }
                 guard let from = data["from"].flatMap({ Data(hex: $0) }) else { return nil }

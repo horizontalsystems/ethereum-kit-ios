@@ -28,6 +28,7 @@ class TransactionCell: UITableViewCell {
                     \(transaction.from.mine ? "To" : "From")
                     Block:
                     Confirmations:
+                    Failed:
                     """, alignment: .left, label: titleLabel)
 
         set(string: """
@@ -39,6 +40,7 @@ class TransactionCell: UITableViewCell {
                     \(format(hash: transaction.from.mine ? transaction.to.address : transaction.from.address))
                     \(transaction.blockHeight.map { "# \($0)" } ?? "n/a")
                     \(confirmations)
+                    \(transaction.isError)
                     """, alignment: .right, label: valueLabel)
     }
 

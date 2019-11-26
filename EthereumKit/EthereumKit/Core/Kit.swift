@@ -3,7 +3,7 @@ import HSCryptoKit
 import HSHDWalletKit
 import BigInt
 
-public class EthereumKit {
+public class Kit {
     public let gasLimit = 21_000
 
     private let lastBlockHeightSubject = PublishSubject<Int>()
@@ -40,7 +40,7 @@ public class EthereumKit {
 
 // Public API Extension
 
-extension EthereumKit {
+extension Kit {
 
     public var lastBlockHeight: Int? {
         state.lastBlockHeight
@@ -135,6 +135,19 @@ extension EthereumKit {
         blockchain.getLogsSingle(address: address, topics: topics, fromBlock: fromBlock, toBlock: toBlock, pullTimestamps: pullTimestamps)
     }
 
+    public func transactionStatus(transactionHash: Data) -> Single<TransactionStatus> {
+        blockchain.transactionReceiptStatusSingle(transactionHash: transactionHash).flatMap { [unowned self] transactionStatus -> Single<TransactionStatus> in
+            switch transactionStatus {
+            case .success, .failed:
+                return Single.just(transactionStatus)
+            default:
+                return self.blockchain.transactionExistSingle(transactionHash: transactionHash).flatMap { exist -> Single<TransactionStatus> in
+                    Single.just(exist ? .pending : .notFound)
+                }
+            }
+        }
+    }
+
     public func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data> {
         blockchain.getStorageAt(contractAddress: contractAddress, positionData: positionData, blockHeight: blockHeight)
     }
@@ -159,7 +172,7 @@ extension EthereumKit {
 }
 
 
-extension EthereumKit: IBlockchainDelegate {
+extension Kit: IBlockchainDelegate {
 
     func onUpdate(lastBlockHeight: Int) {
         guard state.lastBlockHeight != lastBlockHeight else {
@@ -187,7 +200,7 @@ extension EthereumKit: IBlockchainDelegate {
 
 }
 
-extension EthereumKit: ITransactionManagerDelegate {
+extension Kit: ITransactionManagerDelegate {
 
     func onUpdate(transactions: [Transaction]) {
         transactionsSubject.onNext(transactions.map { TransactionInfo(transaction: $0) })
@@ -195,9 +208,9 @@ extension EthereumKit: ITransactionManagerDelegate {
 
 }
 
-extension EthereumKit {
+extension Kit {
 
-    public static func instance(privateKey: Data, syncMode: SyncMode, networkType: NetworkType = .mainNet, infuraCredentials: (id: String, secret: String?), etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> EthereumKit {
+    public static func instance(privateKey: Data, syncMode: SyncMode, networkType: NetworkType = .mainNet, infuraCredentials: (id: String, secret: String?), etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
         let logger = Logger(minLogLevel: minLogLevel)
 
         let uniqueId = "\(walletId)-\(networkType)"
@@ -258,7 +271,7 @@ extension EthereumKit {
         let transactionManager = TransactionManager(storage: transactionStorage, transactionsProvider: transactionsProvider)
 
         let addressValidator: IAddressValidator = AddressValidator()
-        let ethereumKit = EthereumKit(blockchain: blockchain, transactionManager: transactionManager, addressValidator: addressValidator, transactionBuilder: transactionBuilder, address: address, uniqueId: uniqueId, logger: logger)
+        let ethereumKit = Kit(blockchain: blockchain, transactionManager: transactionManager, addressValidator: addressValidator, transactionBuilder: transactionBuilder, address: address, uniqueId: uniqueId, logger: logger)
 
         blockchain.delegate = ethereumKit
         transactionManager.delegate = ethereumKit
@@ -266,7 +279,7 @@ extension EthereumKit {
         return ethereumKit
     }
 
-    public static func instance(words: [String], syncMode wordsSyncMode: WordsSyncMode, networkType: NetworkType = .mainNet, infuraCredentials: (id: String, secret: String?), etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> EthereumKit {
+    public static func instance(words: [String], syncMode wordsSyncMode: WordsSyncMode, networkType: NetworkType = .mainNet, infuraCredentials: (id: String, secret: String?), etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
         let coinType: UInt32 = networkType == .mainNet ? 60 : 1
 
         let hdWallet = HDWallet(seed: Mnemonic.seed(mnemonic: words), coinType: coinType, xPrivKey: 0, xPubKey: 0)
@@ -304,80 +317,6 @@ extension EthereumKit {
         try fileManager.createDirectory(at: url, withIntermediateDirectories: true)
 
         return url
-    }
-
-}
-
-extension EthereumKit {
-
-    public enum NetworkError: Error {
-        case invalidUrl
-        case mappingError
-        case noConnection
-        case serverError(status: Int, data: Any?)
-    }
-
-    public enum SendError: Error {
-        case invalidAddress
-        case invalidContractAddress
-        case invalidValue
-        case infuraError(message: String)
-    }
-
-    public enum ApiError: Error {
-        case invalidData
-    }
-
-    public enum SyncState: Equatable, CustomStringConvertible {
-        case synced
-        case syncing(progress: Double?)
-        case notSynced
-
-        public static func ==(lhs: EthereumKit.SyncState, rhs: EthereumKit.SyncState) -> Bool {
-            switch (lhs, rhs) {
-            case (.synced, .synced), (.notSynced, .notSynced): return true
-            case (.syncing(let lhsProgress), .syncing(let rhsProgress)): return lhsProgress == rhsProgress
-            default: return false
-            }
-        }
-
-        public var description: String {
-            switch self {
-            case .synced: return "synced"
-            case .syncing(let progress): return "syncing \(progress ?? 0)"
-            case .notSynced: return "not synced"
-            }
-        }
-
-    }
-
-    public enum SyncMode {
-        case api
-        case spv(nodePrivateKey: Data)
-        case geth
-    }
-
-    public enum WordsSyncMode {
-        case api
-        case spv
-        case geth
-    }
-
-    public enum NetworkType {
-        case mainNet
-        case ropsten
-        case kovan
-
-        var network: INetwork {
-            switch self {
-            case .mainNet:
-                return MainNet()
-            case .ropsten:
-                return Ropsten()
-            case .kovan:
-                return Kovan()
-            }
-        }
     }
 
 }

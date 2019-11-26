@@ -8,7 +8,7 @@ class Manager {
 
     private let keyWords = "mnemonic_words"
 
-    var ethereumKit: EthereumKit!
+    var ethereumKit: EthereumKit.Kit!
 
     var ethereumAdapter: EthereumAdapter!
     var erc20Adapters = [Erc20Adapter]()
@@ -20,8 +20,8 @@ class Manager {
     }
 
     func login(words: [String]) {
-        try! EthereumKit.clear(exceptFor: ["walletId"])
-        try! Erc20Kit.clear(exceptFor: ["walletId"])
+        try! EthereumKit.Kit.clear(exceptFor: ["walletId"])
+        try! Erc20Kit.Kit.clear(exceptFor: ["walletId"])
 
         save(words: words)
         initEthereumKit(words: words)
@@ -38,7 +38,7 @@ class Manager {
     private func initEthereumKit(words: [String]) {
         let configuration = Configuration.shared
 
-        let syncMode: EthereumKit.WordsSyncMode
+        let syncMode: WordsSyncMode
 
         switch configuration.syncMode {
         case .api: syncMode = .api
@@ -46,7 +46,7 @@ class Manager {
         case .geth: syncMode = .geth
         }
 
-        let ethereumKit = try! EthereumKit.instance(
+        let ethereumKit = try! Kit.instance(
                 words: words,
                 syncMode: syncMode,
                 networkType: configuration.networkType,

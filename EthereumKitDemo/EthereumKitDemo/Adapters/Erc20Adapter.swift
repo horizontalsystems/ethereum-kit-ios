@@ -5,8 +5,8 @@ import class Erc20Kit.TransactionInfo
 import RxSwift
 
 class Erc20Adapter {
-    private let ethereumKit: EthereumKit
-    private let erc20Kit: Erc20Kit
+    private let ethereumKit: EthereumKit.Kit
+    private let erc20Kit: Erc20Kit.Kit
 
     let name: String
     let coin: String
@@ -14,9 +14,9 @@ class Erc20Adapter {
     private let contractAddress: String
     private let decimal: Int
 
-    init(ethereumKit: EthereumKit, name: String, coin: String, contractAddress: String, decimal: Int) {
+    init(ethereumKit: EthereumKit.Kit, name: String, coin: String, contractAddress: String, decimal: Int) {
         self.ethereumKit = ethereumKit
-        self.erc20Kit = try! Erc20Kit.instance(
+        self.erc20Kit = try! Kit.instance(
                 ethereumKit: ethereumKit,
                 contractAddress: contractAddress
         )
@@ -56,7 +56,8 @@ class Erc20Adapter {
                 timestamp: transaction.timestamp,
                 from: from,
                 to: to,
-                blockHeight: transaction.blockNumber
+                blockHeight: transaction.blockNumber,
+                isError: transaction.isError
         )
     }
 
