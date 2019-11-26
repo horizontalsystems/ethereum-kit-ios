@@ -15,8 +15,9 @@ class Transaction: Record {
     var logIndex: Int?
     var blockHash: Data?
     var blockNumber: Int?
+    var isError: Bool
 
-    init(transactionHash: Data, transactionIndex: Int? = nil, from: Data, to: Data, value: BigUInt, timestamp: TimeInterval = Date().timeIntervalSince1970, interTransactionIndex: Int = 0) {
+    init(transactionHash: Data, transactionIndex: Int? = nil, from: Data, to: Data, value: BigUInt, timestamp: TimeInterval = Date().timeIntervalSince1970, interTransactionIndex: Int = 0, isError: Bool = false) {
         self.transactionHash = transactionHash
         self.transactionIndex = transactionIndex
         self.from = from
@@ -24,12 +25,13 @@ class Transaction: Record {
         self.value = value
         self.timestamp = timestamp
         self.interTransactionIndex = interTransactionIndex
+        self.isError = isError
 
         super.init()
     }
 
     override class var databaseTableName: String {
-        return "transactions"
+        "transactions"
     }
 
     enum Columns: String, ColumnExpression {
@@ -43,6 +45,7 @@ class Transaction: Record {
         case logIndex
         case blockHash
         case blockNumber
+        case isError
     }
 
     required init(row: Row) {
@@ -56,6 +59,7 @@ class Transaction: Record {
         logIndex = row[Columns.logIndex]
         blockHash = row[Columns.blockHash]
         blockNumber = row[Columns.blockNumber]
+        isError = row[Columns.isError]
 
         super.init(row: row)
     }
@@ -71,6 +75,7 @@ class Transaction: Record {
         container[Columns.logIndex] = logIndex
         container[Columns.blockHash] = blockHash
         container[Columns.blockNumber] = blockNumber
+        container[Columns.isError] = isError
     }
 
 }

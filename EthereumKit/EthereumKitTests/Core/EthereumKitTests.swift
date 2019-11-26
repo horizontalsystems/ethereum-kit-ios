@@ -9,7 +9,7 @@ class EthereumKitTests: XCTestCase {
     private var mockAddressValidator: MockIAddressValidator!
     private var mockState: MockEthereumKitState!
 
-    private var kit: EthereumKit!
+    private var kit: Kit!
 
     private let ethereumAddress = "ethereum_address"
 
@@ -35,8 +35,8 @@ class EthereumKitTests: XCTestCase {
         kit.delegate = mockDelegate
     }
 
-    private func createKit() -> EthereumKit {
-        return EthereumKit(blockchain: mockBlockchain, addressValidator: mockAddressValidator, state: mockState)
+    private func createKit() -> Kit {
+        return Kit(blockchain: mockBlockchain, addressValidator: mockAddressValidator, state: mockState)
     }
 
     override func tearDown() {
@@ -205,7 +205,7 @@ class EthereumKitTests: XCTestCase {
     }
 
     func testSyncState() {
-        let syncState: EthereumKit.SyncState = .synced
+        let syncState: SyncState = .synced
 
         stub(mockBlockchain) { mock in
             when(mock.syncState.get).thenReturn(syncState)
@@ -245,7 +245,7 @@ class EthereumKitTests: XCTestCase {
 
     func testSyncStateErc20() {
         let contractAddress = "contract_address"
-        let syncState: EthereumKit.SyncState = .synced
+        let syncState: SyncState = .synced
 
         stub(mockBlockchain) { mock in
             when(mock.syncStateErc20(contractAddress: contractAddress)).thenReturn(syncState)

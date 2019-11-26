@@ -22,15 +22,16 @@ class TransactionManager {
     }
 
     private func handle(logs: [EthereumLog]) {
-        let pendingTransactions = storage.pendingTransactions
+        var pendingTransactions = storage.pendingTransactions
 
-        let transactions = logs.map { log -> Transaction in
+        let updatedTransactions = logs.map { log -> Transaction in
             var index = log.logIndex
             let value = BigUInt(log.data.toRawHexString(), radix: 16)!
             let from = log.topics[1].suffix(from: 12)
             let to = log.topics[2].suffix(from: 12)
 
-            if pendingTransactions.contains(where: { $0.transactionHash == log.transactionHash && $0.from == from && $0.to == to }) {
+            if let txIndex = pendingTransactions.firstIndex(where: { $0.transactionHash == log.transactionHash && $0.from == from && $0.to == to }) {
+                pendingTransactions.remove(at: txIndex)
                 index = 0
             }
 
@@ -43,8 +44,33 @@ class TransactionManager {
             return transaction
         }
 
+        dataProvider.getTransactionStatuses(transactionHashes: pendingTransactions.map { $0.transactionHash })
+                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+                .map { [weak self] statuses -> [Transaction] in
+                    self?.updateFailStatus(pendingTransactions: pendingTransactions, statuses: statuses) ?? []
+                }
+                .subscribe(onSuccess: { [weak self] failedTransactions in
+                    self?.finishSync(transactions: updatedTransactions + failedTransactions)
+                }, onError: { [weak self] _ in
+                    self?.finishSync(transactions: updatedTransactions)
+                })
+                .disposed(by: disposeBag)
+    }
+
+    private func finishSync(transactions: [Transaction]) {
         storage.save(transactions: transactions)
         delegate?.onSyncSuccess(transactions: transactions)
+    }
+
+    private func updateFailStatus(pendingTransactions: [Transaction], statuses: [(Data, TransactionStatus)]) -> [Transaction] {
+        statuses.compactMap { (hash, status) -> Transaction? in
+            if status == .failed || status == .notFound,
+               let txIndex = pendingTransactions.firstIndex(where: { $0.transactionHash == hash }) {
+                pendingTransactions[txIndex].isError = true
+                return pendingTransactions[txIndex]
+            }
+            return nil
+        }
     }
 
 }

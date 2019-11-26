@@ -3,9 +3,9 @@ import RxSwift
 import BigInt
 
 class DataProvider {
-    private let ethereumKit: EthereumKit
+    private let ethereumKit: EthereumKit.Kit
 
-    init(ethereumKit: EthereumKit) {
+    init(ethereumKit: EthereumKit.Kit) {
         self.ethereumKit = ethereumKit
     }
 
@@ -40,6 +40,13 @@ extension DataProvider: IDataProvider {
                               log.topics[1].count == 32 && log.topics[2].count == 32
                         }
                     }
+    }
+    
+    func getTransactionStatuses(transactionHashes: [Data]) -> Single<[(Data, TransactionStatus)]> {
+        let singles = transactionHashes.map { hash in
+            ethereumKit.transactionStatus(transactionHash: hash).map { status -> (Data, TransactionStatus) in (hash, status) }
+        }
+        return Single.zip(singles)
     }
 
     func getBalance(contractAddress: Data, address: Data) -> Single<BigUInt> {

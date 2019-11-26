@@ -44,14 +44,14 @@ class NetworkManager {
                         if let value = mapper(result) {
                             return Single.just(value)
                         } else {
-                            return Single.error(EthereumKit.NetworkError.mappingError)
+                            return Single.error(NetworkError.mappingError)
                         }
                     case .failure:
                         if let response = dataResponse.response {
                             let data = dataResponse.data.flatMap { try? JSONSerialization.jsonObject(with: $0, options: .allowFragments) }
-                            return Single.error(EthereumKit.NetworkError.serverError(status: response.statusCode, data: data))
+                            return Single.error(NetworkError.serverError(status: response.statusCode, data: data))
                         } else {
-                            return Single.error(EthereumKit.NetworkError.noConnection)
+                            return Single.error(NetworkError.noConnection)
                         }
                     }
                 }
@@ -63,7 +63,7 @@ extension NetworkManager {
 
     func single<T>(urlString: String, httpMethod: HTTPMethod, basicAuth: (user: String, password: String)? = nil, parameters: [String: Any], mapper: @escaping (Any) -> T?) -> Single<T> {
         guard let url = URL(string: urlString) else {
-            return Single.error(EthereumKit.NetworkError.invalidUrl)
+            return Single.error(NetworkError.invalidUrl)
         }
 
         var urlRequest = URLRequest(url: url)

@@ -15,7 +15,7 @@ class ApiBlockchain {
 
     private var started = false
 
-    private(set) var syncState: EthereumKit.SyncState = .notSynced {
+    private(set) var syncState: SyncState = .notSynced {
         didSet {
             if syncState != oldValue {
                 delegate?.onUpdate(syncState: syncState)
@@ -172,11 +172,19 @@ extension ApiBlockchain: IBlockchain {
                 }
     }
 
+    func transactionReceiptStatusSingle(transactionHash: Data) -> Single<TransactionStatus> {
+        rpcApiProvider.transactionReceiptStatusSingle(transactionHash: transactionHash)
+    }
+
+    func transactionExistSingle(transactionHash: Data) -> Single<Bool> {
+        rpcApiProvider.transactionExistSingle(transactionHash: transactionHash)
+    }
+
     func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data> {
         rpcApiProvider.getStorageAt(contractAddress: contractAddress.toHexString(), position: positionData.toHexString(), blockNumber: blockHeight)
                 .flatMap { value -> Single<Data> in
                     guard let data = Data(hex: value) else {
-                        return Single.error(EthereumKit.ApiError.invalidData)
+                        return Single.error(ApiError.invalidData)
                     }
 
                     return Single.just(data)
@@ -187,7 +195,7 @@ extension ApiBlockchain: IBlockchain {
         rpcApiProvider.call(contractAddress: contractAddress.toHexString(), data: data.toHexString(), blockNumber: blockHeight)
                 .flatMap { value -> Single<Data> in
                     guard let data = Data(hex: value) else {
-                        return Single.error(EthereumKit.ApiError.invalidData)
+                        return Single.error(ApiError.invalidData)
                     }
 
                     return Single.just(data)
@@ -198,7 +206,7 @@ extension ApiBlockchain: IBlockchain {
         rpcApiProvider.getEstimateGas(from: from, contractAddress: contractAddress, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice, data: data?.toHexString())
                 .flatMap { (value: String) -> Single<Int> in
                     guard let data = Int(value.stripHexPrefix(), radix: 16) else {
-                        return Single.error(EthereumKit.ApiError.invalidData)
+                        return Single.error(ApiError.invalidData)
                     }
 
                     return Single.just(data)

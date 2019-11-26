@@ -45,6 +45,11 @@ class GrdbStorage {
             }
         }
 
+        migrator.registerMigration("addIsErrorToTransactions") { db in
+            try db.alter(table: Transaction.databaseTableName) { t in
+                t.add(column: Transaction.Columns.isError.name, .blob).notNull().defaults(to: false)
+            }
+        }
         return migrator
     }
 }
@@ -72,19 +77,19 @@ extension GrdbStorage: ITokenBalanceStorage {
 extension GrdbStorage: ITransactionStorage {
 
     var lastTransactionBlockHeight: Int? {
-        return try! dbPool.read { db in
+        try! dbPool.read { db in
             try Transaction.order(Transaction.Columns.blockNumber.desc).fetchOne(db)?.blockNumber
         }
     }
 
     var pendingTransactions: [Transaction] {
-        return try! dbPool.read { db in
-            try Transaction.filter(Transaction.Columns.logIndex == nil).fetchAll(db)
+        try! dbPool.read { db in
+            try Transaction.filter(Transaction.Columns.logIndex == nil && Transaction.Columns.isError == false).fetchAll(db)
         }
     }
 
     func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[Transaction]> {
-        return Single.create { [weak self] observer in
+        Single.create { [weak self] observer in
             try! self?.dbPool.read { db in
                 var request = Transaction.order(Transaction.Columns.timestamp.desc, Transaction.Columns.transactionIndex.desc, Transaction.Columns.interTransactionIndex.desc)
 

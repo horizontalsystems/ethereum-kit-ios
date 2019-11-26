@@ -35,7 +35,7 @@ class Transaction: Record {
     }
 
     override class var databaseTableName: String {
-        return "transactions"
+        "transactions"
     }
 
     enum Columns: String, ColumnExpression {

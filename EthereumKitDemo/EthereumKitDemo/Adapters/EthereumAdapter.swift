@@ -3,10 +3,10 @@ import EthereumKit
 import RxSwift
 
 class EthereumAdapter {
-    private let ethereumKit: EthereumKit
+    private let ethereumKit: Kit
     private let decimal = 18
 
-    init(ethereumKit: EthereumKit) {
+    init(ethereumKit: Kit) {
         self.ethereumKit = ethereumKit
     }
 
@@ -27,6 +27,7 @@ class EthereumAdapter {
             let sign: FloatingPointSign = from.mine ? .minus : .plus
             amount = Decimal(sign: sign, exponent: -decimal, significand: significand)
         }
+        let isError = (transaction.isError ?? 0) != 0
 
         return TransactionRecord(
                 transactionHash: transaction.hash,
@@ -36,7 +37,8 @@ class EthereumAdapter {
                 timestamp: transaction.timestamp,
                 from: from,
                 to: to,
-                blockHeight: transaction.blockNumber
+                blockHeight: transaction.blockNumber,
+                isError: isError
         )
     }
 
@@ -56,7 +58,7 @@ extension EthereumAdapter: IAdapter {
         ethereumKit.lastBlockHeight
     }
 
-    var syncState: EthereumKit.SyncState {
+    var syncState: SyncState {
         ethereumKit.syncState
     }
 

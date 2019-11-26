@@ -14,6 +14,8 @@ public class TransactionInfo {
     public var blockHash: String?
     public var blockNumber: Int?
 
+    public var isError: Bool
+
     init(transaction: Transaction) {
         self.transactionHash = transaction.transactionHash.toHexString()
         self.transactionIndex = transaction.transactionIndex
@@ -25,6 +27,7 @@ public class TransactionInfo {
         self.timestamp = transaction.timestamp
         self.blockHash = transaction.blockHash?.toHexString()
         self.blockNumber = transaction.blockNumber
+        self.isError = transaction.isError
     }
 
 }
