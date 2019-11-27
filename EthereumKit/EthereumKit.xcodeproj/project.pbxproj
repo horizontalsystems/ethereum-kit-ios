@@ -125,6 +125,7 @@
 		58AAA52235D840702E55CAF4 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAE7DC330A2628E515477 /* Extensions.swift */; };
 		58AAA57CB292DC9D500932BF /* Packet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA60BB16EC2324B09F10C /* Packet.swift */; };
 		58AAA5B7FC9AD086723B8AA5 /* NodeManagerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA04CBFC634F71E044397 /* NodeManagerState.swift */; };
+		58AAA5C8D5A7CE0D55FA733A /* InfuraGasLimitResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA89A932C67870168D48A /* InfuraGasLimitResponse.swift */; };
 		58AAA5FDC21A45CA78BF64D8 /* NetworkError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAF82A19ABD9E07509740 /* NetworkError.swift */; };
 		58AAA609C234AA48E23F4AE9 /* ReachabilityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA0F77F10D6C404DFCD55 /* ReachabilityManager.swift */; };
 		58AAA6721D1DB86146CC0BEE /* UdpFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAC72187736DC22A09D84 /* UdpFactory.swift */; };
@@ -302,6 +303,7 @@
 		58AAA740A5DAA64BB2434CA7 /* ApiError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApiError.swift; sourceTree = "<group>"; };
 		58AAA77EC78C2A6472B4A6D2 /* HostHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HostHelper.swift; sourceTree = "<group>"; };
 		58AAA7AC88202C7454A51331 /* NodeDiscovery.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeDiscovery.swift; sourceTree = "<group>"; };
+		58AAA89A932C67870168D48A /* InfuraGasLimitResponse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InfuraGasLimitResponse.swift; sourceTree = "<group>"; };
 		58AAA94D042314A2ECA8465D /* DiscoveryStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiscoveryStorage.swift; sourceTree = "<group>"; };
 		58AAABC3E634FB4001C81DF2 /* UdpClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UdpClient.swift; sourceTree = "<group>"; };
 		58AAABE886A95CE7D77EC63F /* NodeRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NodeRecord.swift; sourceTree = "<group>"; };
@@ -585,6 +587,7 @@
 				11B352DAE427B837007007B2 /* TransactionInfo.swift */,
 				58AAAE60AAD79B5BBBFB18ED /* TransactionStatus.swift */,
 				58AAA5FD05D1899ADA0FBAF8 /* WordsSyncMode.swift */,
+				58AAA89A932C67870168D48A /* InfuraGasLimitResponse.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -1218,6 +1221,7 @@
 				58AAA0427F9D7734AEBC24F0 /* SyncMode.swift in Sources */,
 				58AAA4A6C8017AC07022F7B0 /* WordsSyncMode.swift in Sources */,
 				58AAA1C93922DB80C74A3D48 /* NetworkType.swift in Sources */,
+				58AAA5C8D5A7CE0D55FA733A /* InfuraGasLimitResponse.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
