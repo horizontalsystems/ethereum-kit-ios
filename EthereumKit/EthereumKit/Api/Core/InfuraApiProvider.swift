@@ -187,7 +187,28 @@ extension InfuraApiProvider: IRpcApiProvider {
         }
         params["to"] = contractAddress.lowercased()
         params["data"] = data
-        return infuraStringSingle(method: "eth_estimateGas", params: [params])
+
+        return infuraSingle(method: "eth_estimateGas", params: [params]) { data -> InfuraGasLimitResponse? in
+            guard let map = data as? [String: Any] else {
+                return nil
+            }
+            if let result = map["result"] as? String {
+                return InfuraGasLimitResponse(value: result, error: nil)
+            } else if let error = map["error"] as? [String: Any],
+                      let message = error["message"] as? String,
+                      let codeString = error["code"] as? String,
+                      let code = Int(codeString) {
+                return InfuraGasLimitResponse(value: nil, error: InfuraError(errorMessage: message, errorCode: code))
+            }
+            return nil
+        }.flatMap { response -> Single<String> in
+            if let value = response.value {
+                return Single.just(value)
+            } else if let error = response.error {
+                return Single.error(error)
+            }
+            return Single.error(NetworkError.mappingError)
+        }
     }
 
     func getBlock(byNumber number: Int) -> Single<Block> {
