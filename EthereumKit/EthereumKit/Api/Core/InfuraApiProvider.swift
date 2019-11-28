@@ -42,12 +42,22 @@ extension InfuraApiProvider {
         return networkManager.single(urlString: urlString, httpMethod: .post, basicAuth: basicAuth, parameters: parameters, mapper: mapper)
     }
 
+    private static func parseInfuraError(data: [String: Any]) -> Error {
+        if let error = data["error"] as? [String: Any] {
+            let message = (error["message"] as? String) ?? ""
+            let code = (error["message"] as? Int) ?? -1
+
+            return ApiError.infuraError(code: code, message: message)
+        }
+        return ApiError.invalidData
+    }
+
     private func infuraVoidSingle(method: String, params: [Any]) -> Single<Void> {
         infuraSingle(method: method, params: params) { data -> [String: Any]? in
             data as? [String: Any]
         }.flatMap { data -> Single<Void> in
             guard data["result"] != nil else {
-                return Single.error(SendError.infuraError(message: (data["error"] as? [String: Any])?["message"] as? String ?? ""))
+                return Single.error(InfuraApiProvider.parseInfuraError(data: data))
             }
 
             return Single.just(())
@@ -188,28 +198,16 @@ extension InfuraApiProvider: IRpcApiProvider {
         params["to"] = contractAddress.lowercased()
         params["data"] = data
 
-        return infuraSingle(method: "eth_estimateGas", params: [params]) { data -> InfuraGasLimitResponse? in
-            guard let map = data as? [String: Any] else {
-                return nil
+        return infuraSingle(method: "eth_estimateGas", params: [params]) { data -> [String: Any]? in
+            data as? [String: Any]
+        }.flatMap { data -> Single<String> in
+            if let result = data["result"] as? String {
+                return Single.just(result)
+            } else {
+                return Single.error(InfuraApiProvider.parseInfuraError(data: data))
             }
-            if let result = map["result"] as? String {
-                return InfuraGasLimitResponse(value: result, error: nil)
-            } else if let error = map["error"] as? [String: Any],
-                      let message = error["message"] as? String,
-                      let codeString = error["code"] as? String,
-                      let code = Int(codeString) {
-                return InfuraGasLimitResponse(value: nil, error: InfuraError(errorMessage: message, errorCode: code))
-            }
-            return nil
-        }.flatMap { response -> Single<String> in
-            if let value = response.value {
-                return Single.just(value)
-            } else if let error = response.error {
-                return Single.error(error)
-            }
-            return Single.error(NetworkError.mappingError)
         }
-    }
+   }
 
     func getBlock(byNumber number: Int) -> Single<Block> {
         infuraSingle(method: "eth_getBlockByNumber", params: ["0x" + String(number, radix: 16), false]) {data -> Block? in
