@@ -113,11 +113,11 @@ extension Kit {
 
     public func sendSingle(to: String, value: String, gasPrice: Int, gasLimit: Int? = nil) -> Single<TransactionInfo> {
         guard let to = Data(hex: to) else {
-            return Single.error(SendError.invalidAddress)
+            return Single.error(ValidationError.invalidAddress)
         }
 
         guard let value = BigUInt(value) else {
-            return Single.error(SendError.invalidValue)
+            return Single.error(ValidationError.invalidValue)
         }
 
         return sendSingle(address: to, value: value, gasPrice: gasPrice, gasLimit: gasLimit ?? self.gasLimit)
