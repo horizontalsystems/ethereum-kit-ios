@@ -3,9 +3,10 @@ import BigInt
 import EthereumKit
 
 class TransactionManager {
-    weak var delegate: ITransactionManagerDelegate?
-
+    private let scheduler = ConcurrentDispatchQueueScheduler(queue: DispatchQueue(label: "transactionManager.handle_logs", qos: .background))
     private let disposeBag = DisposeBag()
+
+    weak var delegate: ITransactionManagerDelegate?
 
     private let contractAddress: Data
     private let address: Data
@@ -22,9 +23,13 @@ class TransactionManager {
     }
 
     private func handle(logs: [EthereumLog]) {
+        // remove all logs with zero value which has another log with same txHash
+        let nonZeroLogs = logs.filter { log in
+            logs.filter { $0.transactionHash == log.transactionHash }.count == 1 || log.data.contains { element in element != 0 }
+        }
         var pendingTransactions = storage.pendingTransactions
 
-        let updatedTransactions = logs.map { log -> Transaction in
+        let updatedTransactions = nonZeroLogs.map { log -> Transaction in
             var index = log.logIndex
             let value = BigUInt(log.data.toRawHexString(), radix: 16)!
             let from = log.topics[1].suffix(from: 12)
@@ -44,8 +49,13 @@ class TransactionManager {
             return transaction
         }
 
+        guard !pendingTransactions.isEmpty else {
+            finishSync(transactions: updatedTransactions)
+            return
+        }
+
         dataProvider.getTransactionStatuses(transactionHashes: pendingTransactions.map { $0.transactionHash })
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+                .observeOn(scheduler)
                 .map { [weak self] statuses -> [Transaction] in
                     self?.updateFailStatus(pendingTransactions: pendingTransactions, statuses: statuses) ?? []
                 }
@@ -106,7 +116,7 @@ extension TransactionManager: ITransactionManager {
         let lastTransactionBlockHeight = storage.lastTransactionBlockHeight ?? 0
 
         dataProvider.getTransactionLogs(contractAddress: contractAddress, address: address, from: lastTransactionBlockHeight + 1, to: lastBlockHeight)
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+                .subscribeOn(scheduler)
                 .subscribe(onSuccess: { [weak self] logs in
                     self?.handle(logs: logs)
                 }, onError: { [weak self] error in
