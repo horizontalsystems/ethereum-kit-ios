@@ -1,0 +1,80 @@
+PODS:
+  - Alamofire (4.9.1)
+  - BigInt (4.0.0)
+  - BlueSocket (1.0.52)
+  - Cuckoo (1.3.0):
+    - Cuckoo/Swift (= 1.3.0)
+  - Cuckoo/Swift (1.3.0)
+  - Erc20Kit.swift (0.8):
+    - BigInt (~> 4.0)
+    - EthereumKit.swift (~> 0.8)
+    - GRDB.swift (~> 4.0)
+    - OpenSslKit.swift (~> 1.0)
+    - RxSwift (~> 5.0)
+    - Secp256k1Kit.swift (~> 1.0)
+  - EthereumKit.swift (0.8):
+    - Alamofire (~> 4.0)
+    - BigInt (~> 4.0)
+    - BlueSocket (~> 1.0)
+    - GRDB.swift (~> 4.0)
+    - HSHDWalletKit (~> 1.3)
+    - OpenSslKit.swift (~> 1.0)
+    - RxSwift (~> 5.0)
+    - Secp256k1Kit.swift (~> 1.0)
+  - GRDB.swift (4.6.2):
+    - GRDB.swift/standard (= 4.6.2)
+  - GRDB.swift/standard (4.6.2)
+  - HSHDWalletKit (1.3):
+    - OpenSslKit.swift (~> 1.0)
+    - Secp256k1Kit.swift (~> 1.0)
+  - Nimble (8.0.4)
+  - OpenSslKit.swift (1.0)
+  - Quick (2.2.0)
+  - RxSwift (5.0.1)
+  - Secp256k1Kit.swift (1.0)
+
+DEPENDENCIES:
+  - Cuckoo
+  - Erc20Kit.swift (from `../`)
+  - EthereumKit.swift (from `../`)
+  - Nimble
+  - Quick
+
+SPEC REPOS:
+  trunk:
+    - Alamofire
+    - BigInt
+    - BlueSocket
+    - Cuckoo
+    - GRDB.swift
+    - HSHDWalletKit
+    - Nimble
+    - OpenSslKit.swift
+    - Quick
+    - RxSwift
+    - Secp256k1Kit.swift
+
+EXTERNAL SOURCES:
+  Erc20Kit.swift:
+    :path: "../"
+  EthereumKit.swift:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  Alamofire: 85e8a02c69d6020a0d734f6054870d7ecb75cf18
+  BigInt: 2aad1a9942dc932ec8b84290d2c564a3d76f97ab
+  BlueSocket: 1acd943acb07b55905291d608649fcfbf8cbd57d
+  Cuckoo: 4045c5a8ce378c919c20c5ff3d6dd11ded0ec699
+  Erc20Kit.swift: fc066841a8bd9f1a5a3a35345b68a1f557a5ad4b
+  EthereumKit.swift: fd9fc1eae2f96313efd8d0115a76cff7e7c3ceb0
+  GRDB.swift: 258520e10b49ff55307cbb0bec701af0742ae621
+  HSHDWalletKit: 32f4be6c71cd986dcbdcd057d224638d0ff80445
+  Nimble: 18d5360282923225d62b09d781f63abc1a0111fc
+  OpenSslKit.swift: 6e699e0d69fae6b306eaca0b8971c59bc45546ab
+  Quick: 7fb19e13be07b5dfb3b90d4f9824c855a11af40e
+  RxSwift: e2dc62b366a3adf6a0be44ba9f405efd4c94e0c4
+  Secp256k1Kit.swift: 93b1bfbb8909c12605666cc3b1e59d1d1fde7322
+
+PODFILE CHECKSUM: c25b12d2de95d682da62ce98d2cb9a1eab8bb33d
+
+COCOAPODS: 1.8.4

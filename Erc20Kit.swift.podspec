@@ -1,23 +1,27 @@
-Pod::Spec.new do |spec|
-  spec.name = 'Erc20Kit.swift'
-  spec.module_name = 'Erc20Kit'
-  spec.version = '0.7.2'
-  spec.summary = 'Erc20 token library for Swift'
+Pod::Spec.new do |s|
+  s.name             = 'Erc20Kit.swift'
+  s.module_name      = 'Erc20Kit'
+  s.version          = '0.8'
+  s.summary          = 'Erc20 token library for Swift.'
 
-  spec.homepage = 'https://github.com/horizontalsystems/ethereum-kit-ios'
-  spec.license = { :type => 'Apache 2.0', :file => 'LICENSE' }
-  spec.author = { 'Horizontal Systems' => 'hsdao@protonmail.ch' }
-  spec.social_media_url = 'http://horizontalsystems.io/'
+  s.homepage         = 'https://github.com/horizontalsystems/ethereum-kit-ios'
+  s.license          = { :type => 'MIT', :file => 'LICENSE' }
+  s.author           = { 'Horizontal Systems' => 'hsdao@protonmail.ch' }
+  s.source           = { git: 'https://github.com/horizontalsystems/ethereum-kit-ios.git', tag: "#{s.version}" }
+  s.social_media_url = 'http://horizontalsystems.io/'
 
-  spec.requires_arc = true
-  spec.source = { git: 'https://github.com/horizontalsystems/ethereum-kit-ios.git', tag: "#{spec.version}" }
-  spec.source_files = 'Erc20Kit/Erc20Kit/**/*.{h,m,swift}'
-  spec.ios.deployment_target = '11.0'
-  spec.swift_version = '5'
+  s.ios.deployment_target = '11.0'
+  s.swift_version = '5'
 
-  spec.dependency 'EthereumKit.swift', '~> 0.6'
-  spec.dependency 'HSCryptoKit', '~> 1.4'
-  spec.dependency 'RxSwift', '~> 5.0'
-  spec.dependency 'GRDB.swift', '~> 4.0'
-  spec.dependency 'BigInt', '~> 4.0'
+  s.source_files = 'Erc20Kit/Classes/**/*'
+
+  s.requires_arc = true
+
+  s.dependency 'EthereumKit.swift', '~> 0.8'
+  s.dependency 'OpenSslKit.swift', '~> 1.0'
+  s.dependency 'Secp256k1Kit.swift', '~> 1.0'
+
+  s.dependency 'RxSwift', '~> 5.0'
+  s.dependency 'BigInt', '~> 4.0'
+  s.dependency 'GRDB.swift', '~> 4.0'
 end

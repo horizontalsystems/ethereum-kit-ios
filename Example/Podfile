@@ -1,0 +1,18 @@
+platform :ios, '11'
+use_modular_headers!
+
+target 'EthereumKitExample' do
+  pod 'EthereumKit.swift', :path => '../'
+  pod 'Erc20Kit.swift', :path => '../'
+end
+
+def testPods
+  pod 'Cuckoo'
+  pod 'Quick'
+  pod 'Nimble'
+end
+
+target 'EthereumKitTests' do
+  pod 'EthereumKit.swift', :path => '../'
+  testPods
+end
