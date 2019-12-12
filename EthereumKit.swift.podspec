@@ -1,37 +1,33 @@
-Pod::Spec.new do |spec|
-  spec.name = 'EthereumKit.swift'
-  spec.module_name = 'EthereumKit'
-  spec.version = '0.7.2'
-  spec.summary = 'Ethereum wallet library for Swift'
-  spec.description = <<-DESC
-                       EthereumKit.swift implements Ethereum protocol in Swift.
-                       ```
-                    DESC
-  spec.homepage = 'https://github.com/horizontalsystems/ethereum-kit-ios'
-  spec.license = { :type => 'Apache 2.0', :file => 'LICENSE' }
-  spec.author = { 'Horizontal Systems' => 'hsdao@protonmail.ch' }
-  spec.social_media_url = 'http://horizontalsystems.io/'
+Pod::Spec.new do |s|
+  s.name             = 'EthereumKit.swift'
+  s.module_name      = 'EthereumKit'
+  s.version          = '0.8'
+  s.summary          = 'Ethereum wallet library for Swift.'
 
-  spec.requires_arc = true
-  spec.source = { git: 'https://github.com/horizontalsystems/ethereum-kit-ios.git', tag: "#{spec.version}" }
-  spec.source_files = 'EthereumKit/EthereumKit/**/*.{h,m,swift}'
-  spec.ios.deployment_target = '11.0'
-  spec.swift_version = '5'
+  s.description      = <<-DESC
+EthereumKit.swift implements Ethereum protocol in Swift.
+                       DESC
 
-  spec.dependency 'HSCryptoKit', '~> 1.4'
-  spec.dependency 'HSHDWalletKit', '~> 1.1'
-  spec.dependency 'RxSwift', '~> 5.0'
-  spec.dependency 'Alamofire', '~> 4.0'
-  spec.dependency 'GRDB.swift', '~> 4.0'
-  spec.dependency 'BigInt', '~> 4.0'
-  spec.dependency 'BlueSocket', '~> 1.0'
+  s.homepage         = 'https://github.com/horizontalsystems/ethereum-kit-ios'
+  s.license          = { :type => 'MIT', :file => 'LICENSE' }
+  s.author           = { 'Horizontal Systems' => 'hsdao@protonmail.ch' }
+  s.source           = { git: 'https://github.com/horizontalsystems/ethereum-kit-ios.git', tag: "#{s.version}" }
+  s.social_media_url = 'http://horizontalsystems.io/'
 
-#  spec.ios.vendored_frameworks = 'Frameworks/Geth.framework'
+  s.ios.deployment_target = '11.0'
+  s.swift_version = '5'
 
-#  spec.prepare_command = <<-CMD
-#      curl https://gethstore.blob.core.windows.net/builds/geth-ios-all-1.9.0-unstable-30263ad3.tar.gz | tar -xvz
-#      mkdir Frameworks
-#      mv geth-ios-all-1.9.0-unstable-30263ad3/Geth.framework Frameworks
-#      rm -rf geth-ios-all-1.9.0-unstable-30263ad3
-#    CMD
+  s.source_files = 'EthereumKit/Classes/**/*'
+
+  s.requires_arc = true
+
+  s.dependency 'OpenSslKit.swift', '~> 1.0'
+  s.dependency 'Secp256k1Kit.swift', '~> 1.0'
+  s.dependency 'HSHDWalletKit', '~> 1.3'
+
+  s.dependency 'Alamofire', '~> 4.0'
+  s.dependency 'RxSwift', '~> 5.0'
+  s.dependency 'BigInt', '~> 4.0'
+  s.dependency 'GRDB.swift', '~> 4.0'
+  s.dependency 'BlueSocket', '~> 1.0'
 end
