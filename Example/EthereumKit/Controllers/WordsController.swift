@@ -1,6 +1,6 @@
 import UIKit
 import EthereumKit
-import HSHDWalletKit
+import HdWalletKit
 
 class WordsController: UIViewController {
 

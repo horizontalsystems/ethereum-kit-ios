@@ -1,30 +1,30 @@
 PODS:
   - Alamofire (4.9.1)
-  - BigInt (4.0.0)
+  - BigInt (5.0.0)
   - BlueSocket (1.0.52)
   - Cuckoo (1.3.0):
     - Cuckoo/Swift (= 1.3.0)
   - Cuckoo/Swift (1.3.0)
-  - Erc20Kit.swift (0.8):
-    - BigInt (~> 4.0)
-    - EthereumKit.swift (~> 0.8)
+  - Erc20Kit.swift (0.9):
+    - BigInt (~> 5.0)
+    - EthereumKit.swift (~> 0.9)
     - GRDB.swift (~> 4.0)
     - OpenSslKit.swift (~> 1.0)
     - RxSwift (~> 5.0)
     - Secp256k1Kit.swift (~> 1.0)
-  - EthereumKit.swift (0.8):
+  - EthereumKit.swift (0.9):
     - Alamofire (~> 4.0)
-    - BigInt (~> 4.0)
+    - BigInt (~> 5.0)
     - BlueSocket (~> 1.0)
     - GRDB.swift (~> 4.0)
-    - HSHDWalletKit (~> 1.3)
+    - HdWalletKit.swift (~> 1.4)
     - OpenSslKit.swift (~> 1.0)
     - RxSwift (~> 5.0)
     - Secp256k1Kit.swift (~> 1.0)
   - GRDB.swift (4.6.2):
     - GRDB.swift/standard (= 4.6.2)
   - GRDB.swift/standard (4.6.2)
-  - HSHDWalletKit (1.3):
+  - HdWalletKit.swift (1.4):
     - OpenSslKit.swift (~> 1.0)
     - Secp256k1Kit.swift (~> 1.0)
   - Nimble (8.0.4)
@@ -47,7 +47,7 @@ SPEC REPOS:
     - BlueSocket
     - Cuckoo
     - GRDB.swift
-    - HSHDWalletKit
+    - HdWalletKit.swift
     - Nimble
     - OpenSslKit.swift
     - Quick
@@ -62,13 +62,13 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Alamofire: 85e8a02c69d6020a0d734f6054870d7ecb75cf18
-  BigInt: 2aad1a9942dc932ec8b84290d2c564a3d76f97ab
+  BigInt: 74b4d88367b0e819d9f77393549226d36faeb0d8
   BlueSocket: 1acd943acb07b55905291d608649fcfbf8cbd57d
   Cuckoo: 4045c5a8ce378c919c20c5ff3d6dd11ded0ec699
-  Erc20Kit.swift: fc066841a8bd9f1a5a3a35345b68a1f557a5ad4b
-  EthereumKit.swift: fd9fc1eae2f96313efd8d0115a76cff7e7c3ceb0
+  Erc20Kit.swift: 6b2e531860457ace083f30762db0a6b9e76bfbd5
+  EthereumKit.swift: 409a1beedd2e414e9f40f662668b0294b206c575
   GRDB.swift: 258520e10b49ff55307cbb0bec701af0742ae621
-  HSHDWalletKit: 32f4be6c71cd986dcbdcd057d224638d0ff80445
+  HdWalletKit.swift: 45af883b0aa722a56ed9a0de82121ba6c43cce3f
   Nimble: 18d5360282923225d62b09d781f63abc1a0111fc
   OpenSslKit.swift: 6e699e0d69fae6b306eaca0b8971c59bc45546ab
   Quick: 7fb19e13be07b5dfb3b90d4f9824c855a11af40e
