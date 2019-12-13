@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name             = 'EthereumKit.swift'
   s.module_name      = 'EthereumKit'
-  s.version          = '0.8'
+  s.version          = '0.9'
   s.summary          = 'Ethereum wallet library for Swift.'
 
   s.description      = <<-DESC
@@ -23,11 +23,11 @@ EthereumKit.swift implements Ethereum protocol in Swift.
 
   s.dependency 'OpenSslKit.swift', '~> 1.0'
   s.dependency 'Secp256k1Kit.swift', '~> 1.0'
-  s.dependency 'HSHDWalletKit', '~> 1.3'
+  s.dependency 'HdWalletKit.swift', '~> 1.4'
 
   s.dependency 'Alamofire', '~> 4.0'
   s.dependency 'RxSwift', '~> 5.0'
-  s.dependency 'BigInt', '~> 4.0'
+  s.dependency 'BigInt', '~> 5.0'
   s.dependency 'GRDB.swift', '~> 4.0'
   s.dependency 'BlueSocket', '~> 1.0'
 end

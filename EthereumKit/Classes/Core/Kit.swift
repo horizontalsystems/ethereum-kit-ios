@@ -1,5 +1,5 @@
 import RxSwift
-import HSHDWalletKit
+import HdWalletKit
 import BigInt
 import OpenSslKit
 import Secp256k1Kit

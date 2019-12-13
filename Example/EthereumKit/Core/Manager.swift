@@ -1,7 +1,7 @@
 import RxSwift
 import EthereumKit
 import Erc20Kit
-import HSHDWalletKit
+import HdWalletKit
 
 class Manager {
     static let shared = Manager()

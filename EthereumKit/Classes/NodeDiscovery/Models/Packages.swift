@@ -1,4 +1,4 @@
-import HSHDWalletKit
+import HdWalletKit
 
 // packet-data = [version, from, to, expiration, ...]
 // version = 4
