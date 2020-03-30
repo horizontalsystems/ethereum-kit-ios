@@ -163,7 +163,8 @@ extension Kit {
 
         let dataProvider: IDataProvider = DataProvider(ethereumKit: ethereumKit)
         let transactionBuilder: ITransactionBuilder = TransactionBuilder()
-        let transactionProvider: ITransactionProvider = TransactionProvider(dataProvider: dataProvider)
+//        let transactionProvider: ITransactionProvider = TransactionProvider(dataProvider: dataProvider)
+        let transactionProvider: ITransactionProvider = EtherscanTransactionProvider(provider: ethereumKit.etherscanApiProvider)
         var transactionManager: ITransactionManager = TransactionManager(contractAddress: contractAddress, address: address, storage: storage, transactionProvider: transactionProvider, dataProvider: dataProvider, transactionBuilder: transactionBuilder)
         var balanceManager: IBalanceManager = BalanceManager(contractAddress: contractAddress, address: address, storage: storage, dataProvider: dataProvider)
 

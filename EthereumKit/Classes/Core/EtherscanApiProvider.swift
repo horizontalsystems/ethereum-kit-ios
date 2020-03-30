@@ -1,7 +1,7 @@
 import RxSwift
 import BigInt
 
-class EtherscanApiProvider {
+public class EtherscanApiProvider {
     private let networkManager: NetworkManager
     private let network: INetwork
 
@@ -15,11 +15,7 @@ class EtherscanApiProvider {
         self.address = address
     }
 
-}
-
-extension EtherscanApiProvider {
-
-    private var etherscanBaseUrl: String {
+    private var baseUrl: String {
         switch network {
         case is Ropsten: return "https://ropsten.etherscan.io"
         case is Kovan: return "https://kovan.etherscan.io"
@@ -27,8 +23,8 @@ extension EtherscanApiProvider {
         }
     }
 
-    private func etherscanSingle<T>(params: [String: Any], mapper: @escaping (Any) -> T?) -> Single<T> {
-        let urlString = "\(etherscanBaseUrl)/api"
+    private func apiSingle<T>(params: [String: Any], mapper: @escaping (Any) -> T?) -> Single<T> {
+        let urlString = "\(baseUrl)/api"
 
         var parameters = params
         parameters["apikey"] = etherscanApiKey
@@ -36,8 +32,40 @@ extension EtherscanApiProvider {
         return networkManager.single(urlString: urlString, httpMethod: .get, parameters: parameters, mapper: mapper)
     }
 
-    private func etherscanTransactionsSingle(params: [String: Any]) -> Single<[[String: String]]> {
-        etherscanSingle(params: params) { data -> [[String: String]]? in
+}
+
+extension EtherscanApiProvider {
+
+    public func transactionsSingle(startBlock: Int) -> Single<[[String: String]]> {
+        let params: [String: Any] = [
+            "module": "account",
+            "action": "txlist",
+            "address": address.toHexString(),
+            "startblock": startBlock,
+            "endblock": 99999999,
+            "sort": "desc"
+        ]
+
+        return apiSingle(params: params) { data -> [[String: String]]? in
+            if let map = data as? [String: Any], let result = map["result"] as? [[String: String]] {
+                return result
+            }
+            return nil
+        }
+    }
+
+    public func tokenTransactionsSingle(contractAddress: Data, startBlock: Int) -> Single<[[String: String]]> {
+        let params: [String: Any] = [
+            "module": "account",
+            "action": "tokentx",
+            "contractaddress": contractAddress.toHexString(),
+            "address": address.toHexString(),
+            "startblock": startBlock,
+            "endblock": 99999999,
+            "sort": "desc"
+        ]
+
+        return apiSingle(params: params) { data -> [[String: String]]? in
             if let map = data as? [String: Any], let result = map["result"] as? [[String: String]] {
                 return result
             }
@@ -47,23 +75,19 @@ extension EtherscanApiProvider {
 
 }
 
-extension EtherscanApiProvider: ITransactionsProvider {
+class EtherscanTransactionProvider: ITransactionsProvider {
+    private let provider: EtherscanApiProvider
+
+    init(provider: EtherscanApiProvider) {
+        self.provider = provider
+    }
 
     var source: String {
         "etherscan.io"
     }
 
     func transactionsSingle(startBlock: Int) -> Single<[Transaction]> {
-        let params: [String: Any] = [
-            "module": "account",
-            "action": "txlist",
-            "address": address.toHexString(),
-            "startblock": startBlock,
-            "endblock": 99999999,
-            "sort": "asc"
-        ]
-
-        return etherscanTransactionsSingle(params: params).map { array -> [Transaction] in
+        provider.transactionsSingle(startBlock: startBlock).map { array -> [Transaction] in
             array.compactMap { data -> Transaction? in
                 guard let hash = data["hash"].flatMap({ Data(hex: $0) }) else { return nil }
                 guard let nonce = data["nonce"].flatMap({ Int($0) }) else { return nil }
