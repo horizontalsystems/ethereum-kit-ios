@@ -211,7 +211,7 @@ extension Kit: ITransactionManagerDelegate {
 
 extension Kit {
 
-    public static func instance(privateKey: Data, syncMode: SyncMode, networkType: NetworkType = .mainNet, infuraCredentials: (id: String, secret: String?), etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
+    public static func instance(privateKey: Data, syncMode: SyncMode, networkType: NetworkType = .mainNet, rpcApi: RpcApi, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
         let logger = Logger(minLogLevel: minLogLevel)
 
         let uniqueId = "\(walletId)-\(networkType)"
@@ -224,7 +224,14 @@ extension Kit {
         let transactionBuilder = TransactionBuilder(address: address)
         let networkManager = NetworkManager(logger: logger)
         let transactionsProvider: ITransactionsProvider = EtherscanApiProvider(networkManager: networkManager, network: network, etherscanApiKey: etherscanApiKey, address: address)
-        let rpcApiProvider: IRpcApiProvider = InfuraApiProvider(networkManager: networkManager, network: network, credentials: infuraCredentials, address: address)
+
+        let rpcApiProvider: IRpcApiProvider
+        switch rpcApi {
+        case let .infura(id, secret):
+            rpcApiProvider = InfuraApiProvider(networkManager: networkManager, network: network, id: id, secret: secret, address: address)
+        case .incubed:
+            fatalError()
+        }
 
         var blockchain: IBlockchain
 
@@ -280,7 +287,7 @@ extension Kit {
         return ethereumKit
     }
 
-    public static func instance(words: [String], syncMode wordsSyncMode: WordsSyncMode, networkType: NetworkType = .mainNet, infuraCredentials: (id: String, secret: String?), etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
+    public static func instance(words: [String], syncMode wordsSyncMode: WordsSyncMode, networkType: NetworkType = .mainNet, rpcApi: RpcApi, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
         let coinType: UInt32 = networkType == .mainNet ? 60 : 1
 
         let hdWallet = HDWallet(seed: Mnemonic.seed(mnemonic: words), coinType: coinType, xPrivKey: 0, xPubKey: 0)
@@ -294,7 +301,7 @@ extension Kit {
         case .geth: syncMode = .geth
         }
 
-        return try instance(privateKey: privateKey, syncMode: syncMode, networkType: networkType, infuraCredentials: infuraCredentials, etherscanApiKey: etherscanApiKey, walletId: walletId, minLogLevel: minLogLevel)
+        return try instance(privateKey: privateKey, syncMode: syncMode, networkType: networkType, rpcApi: rpcApi, etherscanApiKey: etherscanApiKey, walletId: walletId, minLogLevel: minLogLevel)
     }
 
     public static func clear(exceptFor excludedFiles: [String]) throws {
