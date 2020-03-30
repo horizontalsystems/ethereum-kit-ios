@@ -163,7 +163,8 @@ extension Kit {
 
         let dataProvider: IDataProvider = DataProvider(ethereumKit: ethereumKit)
         let transactionBuilder: ITransactionBuilder = TransactionBuilder()
-        var transactionManager: ITransactionManager = TransactionManager(contractAddress: contractAddress, address: address, storage: storage, dataProvider: dataProvider, transactionBuilder: transactionBuilder)
+        let transactionProvider: ITransactionProvider = TransactionProvider(dataProvider: dataProvider)
+        var transactionManager: ITransactionManager = TransactionManager(contractAddress: contractAddress, address: address, storage: storage, transactionProvider: transactionProvider, dataProvider: dataProvider, transactionBuilder: transactionBuilder)
         var balanceManager: IBalanceManager = BalanceManager(contractAddress: contractAddress, address: address, storage: storage, dataProvider: dataProvider)
 
         let erc20Kit = Kit(ethereumKit: ethereumKit, transactionManager: transactionManager, balanceManager: balanceManager, gasLimit: gasLimit)

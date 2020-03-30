@@ -11,58 +11,45 @@ class TransactionManager {
     private let contractAddress: Data
     private let address: Data
     private let storage: ITransactionStorage
+    private let transactionProvider: ITransactionProvider
     private let dataProvider: IDataProvider
     private let transactionBuilder: ITransactionBuilder
 
-    init(contractAddress: Data, address: Data, storage: ITransactionStorage, dataProvider: IDataProvider, transactionBuilder: ITransactionBuilder) {
+    init(contractAddress: Data, address: Data, storage: ITransactionStorage, transactionProvider: ITransactionProvider, dataProvider: IDataProvider, transactionBuilder: ITransactionBuilder) {
         self.contractAddress = contractAddress
         self.address = address
         self.storage = storage
+        self.transactionProvider = transactionProvider
         self.dataProvider = dataProvider
         self.transactionBuilder = transactionBuilder
     }
 
-    private func handle(logs: [EthereumLog]) {
-        // remove all logs with zero value which has another log with same txHash
-        let nonZeroLogs = logs.filter { log in
-            logs.filter { $0.transactionHash == log.transactionHash }.count == 1 || log.data.contains { element in element != 0 }
-        }
+    private func handle(transactions: [Transaction]) {
         var pendingTransactions = storage.pendingTransactions
 
-        let updatedTransactions = nonZeroLogs.map { log -> Transaction in
-            var index = log.logIndex
-            let value = BigUInt(log.data.toRawHexString(), radix: 16)!
-            let from = log.topics[1].suffix(from: 12)
-            let to = log.topics[2].suffix(from: 12)
-
-            if let txIndex = pendingTransactions.firstIndex(where: { $0.transactionHash == log.transactionHash && $0.from == from && $0.to == to }) {
+        for transaction in transactions {
+            if let txIndex = pendingTransactions.firstIndex(where: { $0.transactionHash == transaction.transactionHash && $0.from == transaction.from && $0.to == transaction.to }) {
                 pendingTransactions.remove(at: txIndex)
-                index = 0
+
+                // when this transaction was sent interTransactionIndex was set to 0, so we need it to set 0 for it to replace the transaction in database
+                transaction.interTransactionIndex = 0
             }
-
-            let transaction = Transaction(transactionHash: log.transactionHash, transactionIndex: log.transactionIndex, from: from, to: to, value: value, timestamp: log.timestamp ?? Date().timeIntervalSince1970, interTransactionIndex: index)
-
-            transaction.logIndex = log.logIndex
-            transaction.blockHash = log.blockHash
-            transaction.blockNumber = log.blockNumber
-
-            return transaction
         }
 
         guard !pendingTransactions.isEmpty else {
-            finishSync(transactions: updatedTransactions)
+            finishSync(transactions: transactions)
             return
         }
 
         dataProvider.getTransactionStatuses(transactionHashes: pendingTransactions.map { $0.transactionHash })
                 .observeOn(scheduler)
                 .map { [weak self] statuses -> [Transaction] in
-                    self?.updateFailStatus(pendingTransactions: pendingTransactions, statuses: statuses) ?? []
+                    self?.failedTransactions(pendingTransactions: pendingTransactions, statuses: statuses) ?? []
                 }
                 .subscribe(onSuccess: { [weak self] failedTransactions in
-                    self?.finishSync(transactions: updatedTransactions + failedTransactions)
+                    self?.finishSync(transactions: transactions + failedTransactions)
                 }, onError: { [weak self] _ in
-                    self?.finishSync(transactions: updatedTransactions)
+                    self?.finishSync(transactions: transactions)
                 })
                 .disposed(by: disposeBag)
     }
@@ -72,7 +59,7 @@ class TransactionManager {
         delegate?.onSyncSuccess(transactions: transactions)
     }
 
-    private func updateFailStatus(pendingTransactions: [Transaction], statuses: [(Data, TransactionStatus)]) -> [Transaction] {
+    private func failedTransactions(pendingTransactions: [Transaction], statuses: [(Data, TransactionStatus)]) -> [Transaction] {
         statuses.compactMap { (hash, status) -> Transaction? in
             if status == .failed || status == .notFound,
                let txIndex = pendingTransactions.firstIndex(where: { $0.transactionHash == hash }) {
@@ -86,10 +73,6 @@ class TransactionManager {
 }
 
 extension TransactionManager: ITransactionManager {
-
-    var lastTransactionBlockHeight: Int? {
-        storage.lastTransactionBlockHeight
-    }
 
     func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[Transaction]> {
         storage.transactionsSingle(from: from, limit: limit)
@@ -115,10 +98,10 @@ extension TransactionManager: ITransactionManager {
         let lastBlockHeight = dataProvider.lastBlockHeight
         let lastTransactionBlockHeight = storage.lastTransactionBlockHeight ?? 0
 
-        dataProvider.getTransactionLogs(contractAddress: contractAddress, address: address, from: lastTransactionBlockHeight + 1, to: lastBlockHeight)
+        transactionProvider.transactions(contractAddress: contractAddress, address: address, from: lastTransactionBlockHeight + 1, to: lastBlockHeight)
                 .subscribeOn(scheduler)
-                .subscribe(onSuccess: { [weak self] logs in
-                    self?.handle(logs: logs)
+                .subscribe(onSuccess: { [weak self] transactions in
+                    self?.handle(transactions: transactions.filter { $0.value != 0 })
                 }, onError: { [weak self] error in
                     self?.delegate?.onSyncTransactionsError()
                 })

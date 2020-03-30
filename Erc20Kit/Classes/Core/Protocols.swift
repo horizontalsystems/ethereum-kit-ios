@@ -19,12 +19,15 @@ protocol ITransactionBuilder {
 protocol ITransactionManager {
     var delegate: ITransactionManagerDelegate? { get set }
 
-    var lastTransactionBlockHeight: Int? { get }
     func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[Transaction]>
 
     func sync()
     func transactionContractData(to: Data, value: BigUInt) -> Data
     func sendSingle(to: Data, value: BigUInt, gasPrice: Int, gasLimit: Int) -> Single<Transaction>
+}
+
+protocol ITransactionProvider {
+    func transactions(contractAddress: Data, address: Data, from: Int, to: Int) -> Single<[Transaction]>
 }
 
 protocol IBalanceManager {
