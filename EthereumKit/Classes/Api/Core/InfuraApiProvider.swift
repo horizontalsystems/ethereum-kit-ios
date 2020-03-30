@@ -5,13 +5,15 @@ class InfuraApiProvider {
     private let networkManager: NetworkManager
     private let network: INetwork
 
-    private let credentials: (id: String, secret: String?)
+    private let id: String
+    private var secret: String?
     private let address: Data
 
-    init(networkManager: NetworkManager, network: INetwork, credentials: (id: String, secret: String?), address: Data) {
+    init(networkManager: NetworkManager, network: INetwork, id: String, secret: String?, address: Data) {
         self.networkManager = networkManager
         self.network = network
-        self.credentials = credentials
+        self.id = id
+        self.secret = secret
         self.address = address
     }
 
@@ -28,9 +30,9 @@ extension InfuraApiProvider {
     }
 
     private func infuraSingle<T>(method: String, params: [Any], mapper: @escaping (Any) -> T?) -> Single<T> {
-        let urlString = "\(infuraBaseUrl)/v3/\(credentials.id)"
+        let urlString = "\(infuraBaseUrl)/v3/\(id)"
 
-        let basicAuth = credentials.secret.map { (user: "", password: $0) }
+        let basicAuth = secret.map { (user: "", password: $0) }
 
         let parameters: [String: Any] = [
             "jsonrpc": "2.0",
