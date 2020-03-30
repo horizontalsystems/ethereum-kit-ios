@@ -84,7 +84,7 @@ extension GrdbStorage: ITransactionStorage {
 
     var pendingTransactions: [Transaction] {
         try! dbPool.read { db in
-            try Transaction.filter(Transaction.Columns.logIndex == nil && Transaction.Columns.isError == false).fetchAll(db)
+            try Transaction.filter(Transaction.Columns.blockNumber == nil && Transaction.Columns.isError == false).fetchAll(db)
         }
     }
 
