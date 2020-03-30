@@ -10,7 +10,7 @@ class Transaction: Record {
     let to: Data
     let value: BigUInt
     let timestamp: TimeInterval
-    let interTransactionIndex: Int
+    var interTransactionIndex: Int
 
     var logIndex: Int?
     var blockHash: Data?
