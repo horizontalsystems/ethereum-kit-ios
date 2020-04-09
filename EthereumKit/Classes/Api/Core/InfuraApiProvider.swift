@@ -117,15 +117,9 @@ extension InfuraApiProvider: IRpcApiProvider {
         infuraVoidSingle(method: "eth_sendRawTransaction", params: [signedTransaction.toHexString()])
     }
 
-    func getLogs(address: Data?, fromBlock: Int?, toBlock: Int?, topics: [Any?]) -> Single<[EthereumLog]> {
-        var toBlockStr = "latest"
-        if let toBlockInt = toBlock {
-            toBlockStr = "0x" + String(toBlockInt, radix: 16)
-        }
-        var fromBlockStr = "latest"
-        if let fromBlockInt = fromBlock {
-            fromBlockStr = "0x" + String(fromBlockInt, radix: 16)
-        }
+    func getLogs(address: Data?, fromBlock: Int, toBlock: Int, topics: [Any?]) -> Single<[EthereumLog]> {
+        let toBlockStr = "0x" + String(toBlock, radix: 16)
+        let fromBlockStr = "0x" + String(fromBlock, radix: 16)
 
         let jsonTopics: [Any?] = topics.map {
             if let array = $0 as? [Data?] {

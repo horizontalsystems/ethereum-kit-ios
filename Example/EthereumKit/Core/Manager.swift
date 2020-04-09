@@ -50,7 +50,7 @@ class Manager {
                 words: words,
                 syncMode: syncMode,
                 networkType: configuration.networkType,
-                rpcApi: .infura(id: configuration.infuraCredentials.id, secret: configuration.infuraCredentials.secret),
+                rpcApi: configuration.useInfuraAsDefault ? .infura(id: configuration.infuraCredentials.id, secret: configuration.infuraCredentials.secret) : .incubed,
                 etherscanApiKey: configuration.etherscanApiKey,
                 walletId: "walletId",
                 minLogLevel: configuration.minLogLevel

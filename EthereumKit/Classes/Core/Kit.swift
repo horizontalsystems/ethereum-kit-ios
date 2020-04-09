@@ -235,7 +235,7 @@ extension Kit {
         case let .infura(id, secret):
             rpcApiProvider = InfuraApiProvider(networkManager: networkManager, network: network, id: id, secret: secret, address: address)
         case .incubed:
-            fatalError()
+            rpcApiProvider = IncubedRpcApiProvider(address: address, logger: logger)
         }
 
         var blockchain: IBlockchain
