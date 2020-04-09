@@ -21,6 +21,14 @@ EthereumKit.swift implements Ethereum protocol in Swift.
 
   s.requires_arc = true
 
+  s.preserve_paths = ['EthereumKit/Libraries']
+  s.vendored_libraries  = 'EthereumKit/Libraries/lib/libincubed.a'
+
+  s.pod_target_xcconfig = {
+    'HEADER_SEARCH_PATHS' => '"${PODS_TARGET_SRCROOT}/EthereumKit/Libraries/include"',
+    'LIBRARY_SEARCH_PATHS' => '"${PODS_TARGET_SRCROOT}/EthereumKit/Libraries/lib"'
+  }
+
   s.dependency 'OpenSslKit.swift', '~> 1.0'
   s.dependency 'Secp256k1Kit.swift', '~> 1.0'
   s.dependency 'HdWalletKit.swift', '~> 1.4'

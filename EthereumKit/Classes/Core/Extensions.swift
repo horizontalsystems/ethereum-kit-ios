@@ -1,3 +1,5 @@
+import RxSwift
+
 public extension Data {
 
     init<T>(from value: T) {
@@ -90,6 +92,34 @@ extension Decimal {
         let roundedDecimal = NSDecimalNumber(decimal: poweredDecimal).rounding(accordingToBehavior: handler).decimalValue
 
         return String(describing: roundedDecimal)
+    }
+
+}
+
+extension Collection {
+
+    var json: String? {
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: self) else {
+            return nil
+        }
+        return String(bytes: jsonData, encoding: String.Encoding.utf8)
+    }
+
+}
+
+extension PrimitiveSequence where Trait == SingleTrait {
+
+    static func from(callable: @escaping () throws -> Element) -> Single<Element> {
+        Single.create { observer in
+            do {
+                let result = try callable()
+                observer(SingleEvent.success(result))
+            } catch {
+                observer(SingleEvent.error(error))
+            }
+
+            return Disposables.create()
+        }
     }
 
 }

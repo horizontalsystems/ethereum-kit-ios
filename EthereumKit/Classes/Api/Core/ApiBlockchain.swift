@@ -3,6 +3,7 @@ import BigInt
 
 class ApiBlockchain {
     private var disposeBag = DisposeBag()
+    private let serialQueueScheduler = SerialDispatchQueueScheduler(qos: .utility)
 
     weak var delegate: IBlockchainDelegate?
 
@@ -59,7 +60,7 @@ class ApiBlockchain {
                         rpcApiProvider.lastBlockHeightSingle(),
                         rpcApiProvider.balanceSingle()
                 )
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+                .subscribeOn(serialQueueScheduler)
                 .subscribe(onSuccess: { [weak self] lastBlockHeight, balance in
                     self?.update(lastBlockHeight: lastBlockHeight)
                     self?.update(balance: balance)
@@ -89,6 +90,7 @@ class ApiBlockchain {
         let encoded = transactionBuilder.encode(rawTransaction: rawTransaction, signature: signature, nonce: nonce)
 
         return rpcApiProvider.sendSingle(signedTransaction: encoded)
+                .subscribeOn(serialQueueScheduler)
                 .map {
                     transaction
                 }
@@ -153,6 +155,7 @@ extension ApiBlockchain: IBlockchain {
 
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction> {
         rpcApiProvider.transactionCountSingle()
+                .subscribeOn(serialQueueScheduler)
                 .flatMap { [unowned self] nonce -> Single<Transaction> in
                     try self.sendSingle(rawTransaction: rawTransaction, nonce: nonce)
                 }
@@ -163,7 +166,11 @@ extension ApiBlockchain: IBlockchain {
 
     func getLogsSingle(address: Data?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
         rpcApiProvider.getLogs(address: address, fromBlock: fromBlock, toBlock: toBlock, topics: topics)
+                .subscribeOn(serialQueueScheduler)
                 .flatMap { [unowned self] logs in
+                    topics.enumerated().forEach { index, any in
+                        let anyData = (any as? Data) ?? Data([0])
+                    }
                     if pullTimestamps {
                         return self.pullTransactionTimestamps(ethereumLogs: logs)
                     } else {
@@ -174,14 +181,17 @@ extension ApiBlockchain: IBlockchain {
 
     func transactionReceiptStatusSingle(transactionHash: Data) -> Single<TransactionStatus> {
         rpcApiProvider.transactionReceiptStatusSingle(transactionHash: transactionHash)
+                .subscribeOn(serialQueueScheduler)
     }
 
     func transactionExistSingle(transactionHash: Data) -> Single<Bool> {
         rpcApiProvider.transactionExistSingle(transactionHash: transactionHash)
+                .subscribeOn(serialQueueScheduler)
     }
 
     func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data> {
         rpcApiProvider.getStorageAt(contractAddress: contractAddress.toHexString(), position: positionData.toHexString(), blockNumber: blockHeight)
+                .subscribeOn(serialQueueScheduler)
                 .flatMap { value -> Single<Data> in
                     guard let data = Data(hex: value) else {
                         return Single.error(ApiError.invalidData)
@@ -193,6 +203,7 @@ extension ApiBlockchain: IBlockchain {
 
     func call(contractAddress: Data, data: Data, blockHeight: Int?) -> Single<Data> {
         rpcApiProvider.call(contractAddress: contractAddress.toHexString(), data: data.toHexString(), blockNumber: blockHeight)
+                .subscribeOn(serialQueueScheduler)
                 .flatMap { value -> Single<Data> in
                     guard let data = Data(hex: value) else {
                         return Single.error(ApiError.invalidData)
@@ -204,6 +215,7 @@ extension ApiBlockchain: IBlockchain {
 
     func estimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int> {
         rpcApiProvider.getEstimateGas(from: from, contractAddress: contractAddress, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice, data: data?.toHexString())
+                .subscribeOn(serialQueueScheduler)
                 .flatMap { (value: String) -> Single<Int> in
                     guard let data = Int(value.stripHexPrefix(), radix: 16) else {
                         return Single.error(ApiError.invalidData)
