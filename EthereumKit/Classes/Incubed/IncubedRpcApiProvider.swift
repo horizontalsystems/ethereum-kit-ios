@@ -1,7 +1,7 @@
 import RxSwift
 import BigInt
 
-public class IncubedRpcApiProvider {    //TODO: Make internal
+class IncubedRpcApiProvider {
     private let GET_LOGS_REQUEST_MAX_BLOCKS_RANGE = 10000 // max blocks range for which eth_getLogs can be queried with no-proof, this limit is set by in3-c server
     private let serialQueueScheduler = SerialDispatchQueueScheduler(qos: .utility)
     private var disposeBag = DisposeBag()
@@ -48,7 +48,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
         "Incubed"
     }
 
-    public func lastBlockHeightSingle() -> Single<Int> {    // TODO: Make internal
+    func lastBlockHeightSingle() -> Single<Int> {
         Single.from {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: getLastBlockHeight")
             let height = try self.sendRpc(method: BLOCK_NUMBER, parameters: [])
