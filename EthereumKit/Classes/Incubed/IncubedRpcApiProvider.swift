@@ -32,7 +32,7 @@ extension IncubedRpcApiProvider {
             logger?.log(level: .debug, message: "IncubedRpcApiProvider: sendRpc ERROR: \(error)")
             throw error
         }
-        logger?.log(level: .debug, message: "IncubedRpcApiProvider: sendRpc ERROR: \(result)")
+        logger?.log(level: .debug, message: "IncubedRpcApiProvider: sendRpc Result: \(result)")
         return RpcParamsHelper.dropQuotes(text: result)
     }
 
@@ -49,11 +49,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
     }
 
     public func lastBlockHeightSingle() -> Single<Int> {    // TODO: Make internal
-        getBlock(byNumber: 100000).subscribe { block in
-            print(block)
-        }.disposed(by: disposeBag)
-
-        return Single.from {
+        Single.from {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: getLastBlockHeight")
             let height = try self.sendRpc(method: BLOCK_NUMBER, parameters: [])
 
@@ -183,8 +179,8 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
         Single.from {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: getEstimateGas \(from ?? "Nil") \(contractAddress) \(amount?.description ?? "Nil") \(data ?? "Nil")")
             let callParams: [String: Any] = [
-                "to": contractAddress,
-                "from": from as Any,
+                "to": contractAddress.lowercased(),
+                "from": from?.lowercased() as Any,
                 "gas": gasLimit as Any,
                 "gasPrice": gasPrice as Any,
                 "value": amount as Any,
