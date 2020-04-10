@@ -3,7 +3,7 @@ import BigInt
 
 class RpcParamsHelper {
 
-    private static func dropQuotesAndHex(text: String) -> String {
+    static func dropQuotes(text: String) -> String {
         var result = text
         if result.hasPrefix("\"") {
             result.removeFirst()
@@ -11,11 +11,11 @@ class RpcParamsHelper {
         if result.hasSuffix("\"") {
             result.removeLast()
         }
-        if result.hasPrefix("0x") {
-            result.removeFirst(2)
-        }
-
         return result
+    }
+
+    private static func dropHex(text: String) -> String {
+        text.hasPrefix("0x") ? String(text.dropFirst(2)) : text 
     }
 
     private static func map(_ any: Any) -> Any? {
@@ -47,12 +47,12 @@ class RpcParamsHelper {
 
 
     static func convert<T: FixedWidthInteger>(_ json: String) -> T? {
-        let numberString = dropQuotesAndHex(text: json)
+        let numberString = dropHex(text: json)
         return T(numberString, radix: 16)
     }
 
     static func convert(_ json: String) -> BigUInt? {
-        let numberString = dropQuotesAndHex(text: json)
+        let numberString = dropHex(text:json)
         return BigUInt(numberString, radix: 16)
     }
 
