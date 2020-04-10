@@ -29,11 +29,11 @@ extension IncubedRpcApiProvider {
         var error: NSError?
         let result = in3.rpcCall(method, params: RpcParamsHelper.convert(parameters).json ?? "[]", didFailWithError: &error)
         if let error = error {
-            print("error = \(error.localizedDescription)")
+            logger?.log(level: .debug, message: "IncubedRpcApiProvider: sendRpc ERROR: \(error)")
             throw error
         }
-        print("result = \(result)")
-        return result
+        logger?.log(level: .debug, message: "IncubedRpcApiProvider: sendRpc ERROR: \(result)")
+        return RpcParamsHelper.dropQuotes(text: result)
     }
 
 }
@@ -49,7 +49,11 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
     }
 
     public func lastBlockHeightSingle() -> Single<Int> {    // TODO: Make internal
-        Single.from {
+        getBlock(byNumber: 100000).subscribe { block in
+            print(block)
+        }.disposed(by: disposeBag)
+
+        return Single.from {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: getLastBlockHeight")
             let height = try self.sendRpc(method: BLOCK_NUMBER, parameters: [])
 
@@ -57,7 +61,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
                 throw IncubedError.wrongParsingResult
             }
             return intValue
-        }
+        }.subscribeOn(serialQueueScheduler)
     }
 
     func transactionCountSingle() -> Single<Int> {
@@ -66,7 +70,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
             let count = self.in3.transactionCount(self.address)
 
             return Int(count)
-        }
+        }.subscribeOn(serialQueueScheduler)
     }
 
     func balanceSingle() -> Single<BigUInt> {
@@ -78,7 +82,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
                 throw IncubedError.wrongParsingResult
             }
             return bigInt
-        }
+        }.subscribeOn(serialQueueScheduler)
     }
 
     func sendSingle(signedTransaction: Data) -> Single<Void> {
@@ -86,7 +90,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: sendSingle \(signedTransaction.toHexString())")
 
             _ = try self.sendRpc(method: SEND_RAW_TRANSACTION, parameters: [signedTransaction])
-        }
+        }.subscribeOn(serialQueueScheduler)
     }
 
     func getLogs(address: Data?, fromBlock: Int, toBlock: Int, topics: [Any?]) -> Single<[EthereumLog]> {
@@ -103,6 +107,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
                     requestTo = requestFrom + self.GET_LOGS_REQUEST_MAX_BLOCKS_RANGE
                 }
                 let partialLogs = try self.getLogsBlocking(address: address, fromBlock: requestFrom, toBlock: requestTo, topics: topics)
+                //TODO make GetLogs
                 print(partialLogs)
                 logs.append(contentsOf: [])
 
@@ -110,7 +115,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
             }
 
             return logs
-        }
+        }.subscribeOn(serialQueueScheduler)
     }
 
     func getLogsBlocking(address: Data?, fromBlock: Int, toBlock: Int, topics: [Any?]) throws -> String {
@@ -143,7 +148,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
 
             let success = self.in3.transactionReceipt(transactionHash)
             return success ? TransactionStatus.success : TransactionStatus.failed
-        }
+        }.subscribeOn(serialQueueScheduler)
     }
 
     func transactionExistSingle(transactionHash: Data) -> Single<Bool> {
@@ -151,7 +156,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: transactionExistSingle  \(transactionHash.toHexString())")
 
             return self.in3.transactionReceipt(transactionHash)
-        }
+        }.subscribeOn(serialQueueScheduler)
     }
 
     func getStorageAt(contractAddress: String, position: String, blockNumber: Int?) -> Single<String> {
@@ -159,7 +164,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: getStorageAt \(contractAddress) \(position) \(blockNumber ?? -1)")
 
             return try self.sendRpc(method: GET_STORAGE_AT, parameters: [contractAddress, position, blockNumber ?? "latest"])
-        }
+        }.subscribeOn(serialQueueScheduler)
     }
 
     func call(contractAddress: String, data: String, blockNumber: Int?) -> Single<String> {
@@ -171,7 +176,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
                 "data": data,
             ]
             return try self.sendRpc(method: CALL, parameters: [callParams, blockNumber ?? "latest"])
-        }
+        }.subscribeOn(serialQueueScheduler)
     }
 
     func getEstimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: String?) -> Single<String> {
@@ -180,13 +185,13 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
             let callParams: [String: Any] = [
                 "to": contractAddress,
                 "from": from as Any,
-                "gasLimit": gasLimit as Any,
+                "gas": gasLimit as Any,
                 "gasPrice": gasPrice as Any,
                 "value": amount as Any,
                 "data": data as Any
             ]
             return try self.sendRpc(method: ESTIMATE_GAS, parameters: [callParams, "latest"])
-        }
+        }.subscribeOn(serialQueueScheduler)
     }
 
     func getBlock(byNumber number: Int) -> Single<Block> {
@@ -199,7 +204,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
                 throw IncubedError.wrongParsingResult
             }
             return block
-        }
+        }.subscribeOn(serialQueueScheduler)
     }
 
 }
