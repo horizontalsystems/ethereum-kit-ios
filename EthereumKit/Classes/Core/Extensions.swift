@@ -129,7 +129,7 @@ extension PrimitiveSequence where Trait == SingleTrait {
                 return .error(error)
             }
 
-            .error(IncubedError.notReachable)
+            return .error(IncubedError.notReachable)
         }
     }
 
