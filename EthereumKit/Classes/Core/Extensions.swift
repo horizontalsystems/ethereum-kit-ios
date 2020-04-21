@@ -122,4 +122,15 @@ extension PrimitiveSequence where Trait == SingleTrait {
         }
     }
 
+    static func fromIncubed(callable: @escaping () throws -> Element) -> Single<Element> {
+        Single.from(callable: callable)
+        .catchError { error -> PrimitiveSequence<SingleTrait, Element> in
+            if error is IncubedError {
+                return .error(error)
+            }
+
+            .error(IncubedError.notReachable)
+        }
+    }
+
 }

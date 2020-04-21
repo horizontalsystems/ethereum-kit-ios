@@ -38,8 +38,9 @@ extension IncubedRpcApiProvider {
 
 }
 
-enum IncubedError: Error {
+public enum IncubedError: Error {
     case wrongParsingResult
+    case notReachable
 }
 
 extension IncubedRpcApiProvider: IRpcApiProvider {
@@ -49,7 +50,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
     }
 
     func lastBlockHeightSingle() -> Single<Int> {
-        Single.from {
+        Single.fromIncubed {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: getLastBlockHeight")
             let height = try self.sendRpc(method: BLOCK_NUMBER, parameters: [])
 
@@ -61,7 +62,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
     }
 
     func transactionCountSingle() -> Single<Int> {
-        Single.from {
+        Single.fromIncubed {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: transactionCountSingle \(self.address.toHexString())")
             let count = self.in3.transactionCount(self.address)
 
@@ -70,7 +71,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
     }
 
     func balanceSingle() -> Single<BigUInt> {
-        Single.from {
+        Single.fromIncubed {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: balanceSingle \(self.address.toHexString())")
 
             let balance = try self.sendRpc(method: GET_BALANCE, parameters: [self.address, "latest"])
@@ -82,7 +83,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
     }
 
     func sendSingle(signedTransaction: Data) -> Single<Void> {
-        Single.from {
+        Single.fromIncubed {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: sendSingle \(signedTransaction.toHexString())")
 
             _ = try self.sendRpc(method: SEND_RAW_TRANSACTION, parameters: [signedTransaction])
@@ -90,7 +91,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
     }
 
     func getLogs(address: Data?, fromBlock: Int, toBlock: Int, topics: [Any?]) -> Single<[EthereumLog]> {
-        Single.from {
+        Single.fromIncubed {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: getLogs \(address?.toHexString() ?? "Nil") \(fromBlock) - \(toBlock)")
 
             var requestFrom = fromBlock
@@ -139,7 +140,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
     }
 
     func transactionReceiptStatusSingle(transactionHash: Data) -> Single<TransactionStatus> {
-        Single.from {
+        Single.fromIncubed {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: transactionReceiptStatusSingle \(transactionHash.toHexString())")
 
             let success = self.in3.transactionReceipt(transactionHash)
@@ -148,7 +149,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
     }
 
     func transactionExistSingle(transactionHash: Data) -> Single<Bool> {
-        Single.from {
+        Single.fromIncubed {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: transactionExistSingle  \(transactionHash.toHexString())")
 
             return self.in3.transactionReceipt(transactionHash)
@@ -156,7 +157,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
     }
 
     func getStorageAt(contractAddress: String, position: String, blockNumber: Int?) -> Single<String> {
-        Single.from {
+        Single.fromIncubed {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: getStorageAt \(contractAddress) \(position) \(blockNumber ?? -1)")
 
             return try self.sendRpc(method: GET_STORAGE_AT, parameters: [contractAddress, position, blockNumber ?? "latest"])
@@ -164,7 +165,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
     }
 
     func call(contractAddress: String, data: String, blockNumber: Int?) -> Single<String> {
-        Single.from {
+        Single.fromIncubed {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: call \(contractAddress) \(data) \(blockNumber ?? -1)")
 
             let callParams: [String: Any] = [
@@ -176,7 +177,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
     }
 
     func getEstimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: String?) -> Single<String> {
-        Single.from {
+        Single.fromIncubed {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: getEstimateGas \(from ?? "Nil") \(contractAddress) \(amount?.description ?? "Nil") \(data ?? "Nil")")
             let callParams: [String: Any] = [
                 "to": contractAddress.lowercased(),
@@ -191,7 +192,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
     }
 
     func getBlock(byNumber number: Int) -> Single<Block> {
-        Single.from {
+        Single.fromIncubed {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: getBlock \(number)")
 
             let json = try self.sendRpc(method: GET_BLOCK_BY_NUMBER, parameters: [number, false])
