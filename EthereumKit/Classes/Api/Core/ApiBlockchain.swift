@@ -15,7 +15,7 @@ class ApiBlockchain {
 
     private var started = false
 
-    private(set) var syncState: SyncState = .notSynced {
+    private(set) var syncState: SyncState = .notSynced(error: SyncError.notStarted) {
         didSet {
             if syncState != oldValue {
                 delegate?.onUpdate(syncState: syncState)
@@ -45,7 +45,7 @@ class ApiBlockchain {
         }
 
         guard reachabilityManager.isReachable else {
-            syncState = .notSynced
+            syncState = .notSynced(error: SyncError.noNetworkConnection)
             return
         }
 
@@ -66,7 +66,7 @@ class ApiBlockchain {
 
                     self?.syncState = .synced
                 }, onError: { [weak self] error in
-                    self?.syncState = .notSynced
+                    self?.syncState = .notSynced(error: error)
                     self?.logger?.error("Sync Failed: lastBlockHeight and balance: \(error)")
                 })
                 .disposed(by: disposeBag)
@@ -221,6 +221,15 @@ extension ApiBlockchain {
         let reachabilityManager: IReachabilityManager = ReachabilityManager()
 
         return ApiBlockchain(storage: storage, rpcApiProvider: rpcApiProvider, reachabilityManager: reachabilityManager, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, logger: logger)
+    }
+
+}
+
+extension ApiBlockchain {
+
+    public enum SyncError: Error {
+        case notStarted
+        case noNetworkConnection
     }
 
 }

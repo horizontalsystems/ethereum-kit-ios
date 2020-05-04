@@ -23,13 +23,33 @@ public class EtherscanApiProvider {
         }
     }
 
-    private func apiSingle<T>(params: [String: Any], mapper: @escaping (Any) -> T?) -> Single<T> {
+    private func apiSingle(params: [String: Any]) -> Single<[[String: String]]> {
         let urlString = "\(baseUrl)/api"
 
         var parameters = params
         parameters["apikey"] = etherscanApiKey
 
-        return networkManager.single(urlString: urlString, httpMethod: .get, parameters: parameters, mapper: mapper)
+        return networkManager.single(urlString: urlString, httpMethod: .get, parameters: parameters)
+                { data -> [String: Any]? in
+                    data as? [String: Any]
+                }
+                .flatMap { map -> Single<[[String: String]]> in
+                    guard let status = map["status"] as? String else {
+                        return Single.error(ApiError.invalidStatus)
+                    }
+
+                    guard status == "1" else {
+                        let message = map["message"] as? String
+                        let result = map["result"] as? String
+                        return Single.error(ApiError.responseError(message: message, result: result))
+                    }
+
+                    guard let result = map["result"] as? [[String: String]] else {
+                        return Single.error(ApiError.invalidResult)
+                    }
+
+                    return Single.just(result)
+                }
     }
 
 }
@@ -46,12 +66,13 @@ extension EtherscanApiProvider {
             "sort": "desc"
         ]
 
-        return apiSingle(params: params) { data -> [[String: String]]? in
-            if let map = data as? [String: Any], let result = map["result"] as? [[String: String]] {
-                return result
-            }
-            return nil
-        }
+        return apiSingle(params: params)
+                .catchError { error in
+                    if case let ApiError.responseError(message, _) = error, message == "No transactions found" {
+                        return Single.just([])
+                    }
+                    return Single.error(error)
+                }
     }
 
     public func tokenTransactionsSingle(contractAddress: Data, startBlock: Int) -> Single<[[String: String]]> {
@@ -65,12 +86,13 @@ extension EtherscanApiProvider {
             "sort": "desc"
         ]
 
-        return apiSingle(params: params) { data -> [[String: String]]? in
-            if let map = data as? [String: Any], let result = map["result"] as? [[String: String]] {
-                return result
-            }
-            return nil
-        }
+        return apiSingle(params: params)
+                .catchError { error in
+                    if case let ApiError.responseError(message, _) = error, message == "No transactions found" {
+                        return Single.just([])
+                    }
+                    return Single.error(error)
+                }
     }
 
 }
@@ -112,6 +134,16 @@ class EtherscanTransactionProvider: ITransactionsProvider {
                 return transaction
             }
         }
+    }
+
+}
+
+extension EtherscanApiProvider {
+
+    public enum ApiError: Error {
+        case invalidStatus
+        case responseError(message: String?, result: String?)
+        case invalidResult
     }
 
 }

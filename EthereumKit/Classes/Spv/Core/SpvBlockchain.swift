@@ -53,7 +53,7 @@ extension SpvBlockchain: IBlockchain {
     }
 
     var syncState: SyncState {
-        .notSynced
+        .notSynced(error: SyncError.stubError)
     }
 
     var lastBlockHeight: Int? {
@@ -218,6 +218,14 @@ extension SpvBlockchain {
         peer.register(messageHandler: AnnouncedBlockHandler(delegate: blockSyncer))
 
         return spvBlockchain
+    }
+
+}
+
+extension SpvBlockchain {
+
+    public enum SyncError: Error {
+        case stubError
     }
 
 }
