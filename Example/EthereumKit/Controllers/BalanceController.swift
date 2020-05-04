@@ -21,7 +21,7 @@ class BalanceController: UITableViewController {
         adapters.append(contentsOf: Manager.shared.erc20Adapters)
 
         for (index, adapter) in adapters.enumerated() {
-            Observable.merge([adapter.lastBlockHeightObservable, adapter.syncStateObservable, adapter.balanceObservable])
+            Observable.merge([adapter.lastBlockHeightObservable, adapter.syncStateObservable, adapter.transactionsSyncStateObservable, adapter.balanceObservable])
                     .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                     .observeOn(MainScheduler.instance)
                     .subscribe(onNext: { [weak self] in
@@ -42,7 +42,9 @@ class BalanceController: UITableViewController {
     }
 
     @objc func refresh() {
-        Manager.shared.ethereumKit.refresh()
+        for adapter in adapters {
+            adapter.refresh()
+        }
     }
 
     @IBAction func showDebugInfo() {
@@ -54,7 +56,7 @@ class BalanceController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        160
+        180
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

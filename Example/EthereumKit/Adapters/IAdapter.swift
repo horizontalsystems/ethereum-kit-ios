@@ -2,18 +2,21 @@ import EthereumKit
 import RxSwift
 
 protocol IAdapter {
+    func refresh()
 
     var name: String { get }
     var coin: String { get }
 
     var lastBlockHeight: Int? { get }
     var syncState: SyncState { get }
+    var transactionsSyncState: SyncState { get }
     var balance: Decimal { get }
 
     var receiveAddress: String { get }
 
     var lastBlockHeightObservable: Observable<Void> { get }
     var syncStateObservable: Observable<Void> { get }
+    var transactionsSyncStateObservable: Observable<Void> { get }
     var balanceObservable: Observable<Void> { get }
     var transactionsObservable: Observable<Void> { get }
 

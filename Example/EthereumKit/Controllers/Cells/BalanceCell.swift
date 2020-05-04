@@ -9,8 +9,9 @@ class BalanceCell: UITableViewCell {
 
     func bind(adapter: IAdapter) {
         let syncStateString: String
+        let txSyncStateString: String
 
-        errorLabel?.text = ""
+        var errorTexts = [String]()
 
         switch adapter.syncState {
         case .synced:
@@ -23,19 +24,36 @@ class BalanceCell: UITableViewCell {
             }
         case .notSynced(let error):
             syncStateString = "Not Synced"
-            errorLabel?.text = "\(error)"
+            errorTexts.append("Sync Error: \(error)")
+        }
+
+        switch adapter.transactionsSyncState {
+        case .synced:
+            txSyncStateString = "Synced!"
+        case .syncing(let progress):
+            if let progress = progress {
+                txSyncStateString = "Syncing \(Int(progress * 100)) %"
+            } else {
+                txSyncStateString = "Syncing"
+            }
+        case .notSynced(let error):
+            txSyncStateString = "Not Synced"
+            errorTexts.append("Tx Sync Error: \(error)")
         }
 
         nameLabel?.text = adapter.name
+        errorLabel?.text = errorTexts.joined(separator: "\n")
 
         set(string: """
                     Sync state:
+                    Tx Sync state:
                     Last block height:
                     Balance:
                     """, alignment: .left, label: titleLabel)
 
         set(string: """
                     \(syncStateString)
+                    \(txSyncStateString)
                     \(adapter.lastBlockHeight.map { "# \($0)" } ?? "n/a")
                     \(adapter.balance) \(adapter.coin)
                     """, alignment: .right, label: valueLabel)

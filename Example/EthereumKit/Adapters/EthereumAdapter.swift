@@ -46,6 +46,10 @@ class EthereumAdapter {
 
 extension EthereumAdapter: IAdapter {
 
+    func refresh() {
+        ethereumKit.refresh()
+    }
+
     var name: String {
         "Ethereum"
     }
@@ -60,6 +64,10 @@ extension EthereumAdapter: IAdapter {
 
     var syncState: SyncState {
         ethereumKit.syncState
+    }
+
+    var transactionsSyncState: SyncState {
+        ethereumKit.transactionsSyncState
     }
 
     var balance: Decimal {
@@ -80,6 +88,10 @@ extension EthereumAdapter: IAdapter {
 
     var syncStateObservable: Observable<Void> {
         ethereumKit.syncStateObservable.map { _ in () }
+    }
+
+    var transactionsSyncStateObservable: Observable<Void> {
+        ethereumKit.transactionsSyncStateObservable.map { _ in () }
     }
 
     var balanceObservable: Observable<Void> {

@@ -8,6 +8,14 @@ class TransactionManager {
     private let storage: ITransactionStorage
     private let transactionsProvider: ITransactionsProvider
 
+    private(set) var syncState: SyncState = .notSynced(error: Kit.SyncError.notStarted) {
+        didSet {
+            if syncState != oldValue {
+                delegate?.onUpdate(transactionsSyncState: syncState)
+            }
+        }
+    }
+
     init(storage: ITransactionStorage, transactionsProvider: ITransactionsProvider) {
         self.storage = storage
         self.transactionsProvider = transactionsProvider
@@ -30,12 +38,17 @@ extension TransactionManager: ITransactionManager {
     }
 
     func refresh() {
+        syncState = .syncing(progress: nil)
+
         let lastTransactionBlockHeight = storage.lastTransactionBlockHeight ?? 0
 
         transactionsProvider.transactionsSingle(startBlock: lastTransactionBlockHeight + 1)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(onSuccess: { [weak self] transactions in
                     self?.update(transactions: transactions)
+                    self?.syncState = .synced
+                }, onError: { [weak self] error in
+                    self?.syncState = .notSynced(error: error)
                 })
                 .disposed(by: disposeBag)
     }

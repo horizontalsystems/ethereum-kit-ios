@@ -54,8 +54,17 @@ public class Kit {
 
 extension Kit {
 
+    public func refresh() {
+        state.transactionsSyncState = .syncing
+        transactionManager.sync()
+    }
+
     public var syncState: SyncState {
         state.syncState
+    }
+
+    public var transactionsSyncState: SyncState {
+        state.transactionsSyncState
     }
 
     public var balance: String? {
@@ -93,6 +102,10 @@ extension Kit {
         state.syncStateSubject.asObservable()
     }
 
+    public var transactionsSyncStateObservable: Observable<SyncState> {
+        state.transactionsSyncStateSubject.asObservable()
+    }
+
     public var balanceObservable: Observable<String> {
         state.balanceSubject.asObservable()
     }
@@ -121,17 +134,15 @@ extension Kit {
 extension Kit: ITransactionManagerDelegate {
 
     func onSyncSuccess(transactions: [Transaction]) {
-        state.syncState = .synced
-
-        guard !transactions.isEmpty else {
-            return
+        if !transactions.isEmpty {
+            state.transactionsSubject.onNext(transactions.map { TransactionInfo(transaction: $0) })
         }
 
-        state.transactionsSubject.onNext(transactions.map { TransactionInfo(transaction: $0) })
+        state.transactionsSyncState = .synced
     }
 
     func onSyncTransactionsFailed(error: Error) {
-        state.syncState = .notSynced(error: error)
+        state.transactionsSyncState = .notSynced(error: error)
     }
 
 }
@@ -140,8 +151,7 @@ extension Kit: IBalanceManagerDelegate {
 
     func onSyncBalanceSuccess(balance: BigUInt) {
         state.balance = balance
-
-        transactionManager.sync()
+        state.syncState = .synced
     }
 
     func onSyncBalanceFailed(error: Error) {

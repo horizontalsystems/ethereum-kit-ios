@@ -9,6 +9,7 @@ public class Kit {
 
     private let lastBlockHeightSubject = PublishSubject<Int>()
     private let syncStateSubject = PublishSubject<SyncState>()
+    private let transactionsSyncStateSubject = PublishSubject<SyncState>()
     private let balanceSubject = PublishSubject<String>()
     private let transactionsSubject = PublishSubject<[TransactionInfo]>()
 
@@ -58,6 +59,10 @@ extension Kit {
         blockchain.syncState
     }
 
+    public var transactionsSyncState: SyncState {
+        transactionManager.syncState
+    }
+
     public var receiveAddress: String {
         address.toEIP55Address()
     }
@@ -68,6 +73,10 @@ extension Kit {
 
     public var syncStateObservable: Observable<SyncState> {
         syncStateSubject.asObservable()
+    }
+
+    public var transactionsSyncStateObservable: Observable<SyncState> {
+        transactionsSyncStateSubject.asObservable()
     }
 
     public var balanceObservable: Observable<String> {
@@ -210,6 +219,10 @@ extension Kit: ITransactionManagerDelegate {
         transactionsSubject.onNext(transactions.map { TransactionInfo(transaction: $0) })
     }
 
+    func onUpdate(transactionsSyncState: SyncState) {
+        transactionsSyncStateSubject.onNext(syncState)
+    }
+
 }
 
 extension Kit {
@@ -330,6 +343,15 @@ extension Kit {
         try fileManager.createDirectory(at: url, withIntermediateDirectories: true)
 
         return url
+    }
+
+}
+
+extension Kit {
+
+    public enum SyncError: Error {
+        case notStarted
+        case noNetworkConnection
     }
 
 }
