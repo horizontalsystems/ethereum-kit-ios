@@ -66,6 +66,10 @@ class Manager {
         self.ethereumKit = ethereumKit
 
         ethereumKit.start()
+
+        for adapter in erc20Adapters {
+            adapter.refresh()
+        }
     }
 
     private var savedWords: [String]? {

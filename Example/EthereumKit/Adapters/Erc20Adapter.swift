@@ -65,12 +65,24 @@ class Erc20Adapter {
 
 extension Erc20Adapter: IAdapter {
 
+    func refresh() {
+        erc20Kit.refresh()
+    }
+
     var lastBlockHeight: Int? {
         ethereumKit.lastBlockHeight
     }
 
     var syncState: EthereumKit.SyncState {
         switch erc20Kit.syncState {
+        case .synced: return EthereumKit.SyncState.synced
+        case .syncing: return EthereumKit.SyncState.syncing(progress: nil)
+        case .notSynced(let error): return EthereumKit.SyncState.notSynced(error: error)
+        }
+    }
+
+    var transactionsSyncState: EthereumKit.SyncState {
+        switch erc20Kit.transactionsSyncState {
         case .synced: return EthereumKit.SyncState.synced
         case .syncing: return EthereumKit.SyncState.syncing(progress: nil)
         case .notSynced(let error): return EthereumKit.SyncState.notSynced(error: error)
@@ -95,6 +107,10 @@ extension Erc20Adapter: IAdapter {
 
     var syncStateObservable: Observable<Void> {
         erc20Kit.syncStateObservable.map { _ in () }
+    }
+
+    var transactionsSyncStateObservable: Observable<Void> {
+        erc20Kit.transactionsSyncStateObservable.map { _ in () }
     }
 
     var balanceObservable: Observable<Void> {

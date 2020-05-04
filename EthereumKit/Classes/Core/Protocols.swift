@@ -30,6 +30,7 @@ protocol IBlockchainDelegate: class {
 }
 
 protocol ITransactionManager {
+    var syncState: SyncState { get }
     var source: String { get }
     var delegate: ITransactionManagerDelegate? { get set }
 
@@ -52,6 +53,7 @@ protocol ITransactionsProvider {
 }
 
 protocol ITransactionManagerDelegate: AnyObject {
+    func onUpdate(transactionsSyncState: SyncState)
     func onUpdate(transactions: [Transaction])
 }
 
