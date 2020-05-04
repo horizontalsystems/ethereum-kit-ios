@@ -33,7 +33,7 @@ extension BalanceManager: IBalanceManager {
                     self?.storage.balance = balance
                     self?.delegate?.onSyncBalanceSuccess(balance: balance)
                 }, onError: { error in
-                    self.delegate?.onSyncBalanceError()
+                    self.delegate?.onSyncBalanceFailed(error: error)
                 })
                 .disposed(by: disposeBag)
     }

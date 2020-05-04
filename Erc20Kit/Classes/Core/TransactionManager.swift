@@ -103,7 +103,7 @@ extension TransactionManager: ITransactionManager {
                 .subscribe(onSuccess: { [weak self] transactions in
                     self?.handle(transactions: transactions.filter { $0.value != 0 })
                 }, onError: { [weak self] error in
-                    self?.delegate?.onSyncTransactionsError()
+                    self?.delegate?.onSyncTransactionsFailed(error: error)
                 })
                 .disposed(by: disposeBag)
     }

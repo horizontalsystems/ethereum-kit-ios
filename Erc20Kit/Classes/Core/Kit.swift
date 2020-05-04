@@ -40,11 +40,13 @@ public class Kit {
 
     private func onUpdateSyncState(syncState: EthereumKit.SyncState) {
         switch syncState {
-        case .notSynced: state.syncState = .notSynced
-        case .syncing: state.syncState = .syncing
         case .synced:
             state.syncState = .syncing
             balanceManager.sync()
+        case .syncing:
+            state.syncState = .syncing
+        case .notSynced(let error):
+            state.syncState = .notSynced(error: error)
         }
     }
 
@@ -128,8 +130,8 @@ extension Kit: ITransactionManagerDelegate {
         state.transactionsSubject.onNext(transactions.map { TransactionInfo(transaction: $0) })
     }
 
-    func onSyncTransactionsError() {
-        state.syncState = .notSynced
+    func onSyncTransactionsFailed(error: Error) {
+        state.syncState = .notSynced(error: error)
     }
 
 }
@@ -142,8 +144,8 @@ extension Kit: IBalanceManagerDelegate {
         transactionManager.sync()
     }
 
-    func onSyncBalanceError() {
-        state.syncState = .notSynced
+    func onSyncBalanceFailed(error: Error) {
+        state.syncState = .notSynced(error: error)
     }
 
 }

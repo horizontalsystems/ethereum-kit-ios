@@ -5,19 +5,25 @@ class BalanceCell: UITableViewCell {
     @IBOutlet weak var nameLabel: UILabel?
     @IBOutlet weak var titleLabel: UILabel?
     @IBOutlet weak var valueLabel: UILabel?
+    @IBOutlet weak var errorLabel: UILabel?
 
     func bind(adapter: IAdapter) {
         let syncStateString: String
 
+        errorLabel?.text = ""
+
         switch adapter.syncState {
-        case .synced: syncStateString = "Synced!"
+        case .synced:
+            syncStateString = "Synced!"
         case .syncing(let progress):
             if let progress = progress {
                 syncStateString = "Syncing \(Int(progress * 100)) %"
             } else {
                 syncStateString = "Syncing"
             }
-        case .notSynced: syncStateString = "Not Synced"
+        case .notSynced(let error):
+            syncStateString = "Not Synced"
+            errorLabel?.text = "\(error)"
         }
 
         nameLabel?.text = adapter.name

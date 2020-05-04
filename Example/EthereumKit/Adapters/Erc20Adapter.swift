@@ -71,9 +71,9 @@ extension Erc20Adapter: IAdapter {
 
     var syncState: EthereumKit.SyncState {
         switch erc20Kit.syncState {
-        case .notSynced: return EthereumKit.SyncState.notSynced
-        case .syncing: return EthereumKit.SyncState.syncing(progress: nil)
         case .synced: return EthereumKit.SyncState.synced
+        case .syncing: return EthereumKit.SyncState.syncing(progress: nil)
+        case .notSynced(let error): return EthereumKit.SyncState.notSynced(error: error)
         }
     }
 

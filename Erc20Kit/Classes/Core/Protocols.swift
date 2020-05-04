@@ -4,12 +4,12 @@ import EthereumKit
 
 protocol IBalanceManagerDelegate: class {
     func onSyncBalanceSuccess(balance: BigUInt)
-    func onSyncBalanceError()
+    func onSyncBalanceFailed(error: Error)
 }
 
 protocol ITransactionManagerDelegate: class {
     func onSyncSuccess(transactions: [Transaction])
-    func onSyncTransactionsError()
+    func onSyncTransactionsFailed(error: Error)
 }
 
 protocol ITransactionBuilder {
