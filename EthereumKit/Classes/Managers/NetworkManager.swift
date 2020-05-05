@@ -2,15 +2,35 @@ import RxSwift
 import Alamofire
 
 class NetworkManager {
-    private var logger: Logger?
+    let session: Session
 
     init(logger: Logger? = nil) {
-        self.logger = logger
+        let networkLogger = NetworkLogger(logger: logger)
+        session = Session(eventMonitors: [networkLogger])
     }
 
-    private func single(forRequest request: URLRequestConvertible) -> Single<DataResponse<Any>> {
-        let single = Single<DataResponse<Any>>.create { observer in
-            let requestReference = Alamofire.request(request)
+    func single<T>(request: DataRequest, mapper: @escaping (Any) throws -> T) -> Single<T> {
+        Single<T>.create { observer in
+            let requestReference = request
+                    .validate()
+                    .response(queue: DispatchQueue.global(qos: .background), responseSerializer: JsonMapperResponseSerializer<T>(mapper: mapper)) { response in
+                        switch response.result {
+                        case .success(let result):
+                            observer(.success(result))
+                        case .failure(let error):
+                            observer(.error(error))
+                        }
+                    }
+
+            return Disposables.create {
+                requestReference.cancel()
+            }
+        }
+    }
+
+    private func singleOld(request: DataRequest) -> Single<AFDataResponse<Any>> {
+        Single<AFDataResponse<Any>>.create { observer in
+            let requestReference = request
                     .validate()
                     .responseJSON(queue: DispatchQueue.global(qos: .background), completionHandler: { response in
                         observer(.success(response))
@@ -20,24 +40,10 @@ class NetworkManager {
                 requestReference.cancel()
             }
         }
-
-        return single
-                .do(onSuccess: { [weak self] dataResponse in
-                    switch dataResponse.result {
-                    case .success(let result):
-                        self?.logger?.verbose("API IN: \(dataResponse.request?.url?.absoluteString ?? "")\n\(result)")
-                    case .failure:
-                        let data = dataResponse.data.flatMap {
-                            try? JSONSerialization.jsonObject(with: $0, options: .allowFragments)
-                        }
-
-                        self?.logger?.error("API IN: \(dataResponse.response?.statusCode ?? 0): \(dataResponse.request?.url?.absoluteString ?? "")\n\(data.map { "\($0)" } ?? "nil")")
-                    }
-                })
     }
 
-    private func single<T>(forRequest request: URLRequestConvertible, mapper: @escaping (Any) -> T?) -> Single<T> {
-        return single(forRequest: request)
+    func singleOld<T>(request: DataRequest, mapper: @escaping (Any) -> T?) -> Single<T> {
+        singleOld(request: request)
                 .flatMap { dataResponse -> Single<T> in
                     switch dataResponse.result {
                     case .success(let result):
@@ -61,44 +67,46 @@ class NetworkManager {
 
 extension NetworkManager {
 
-    func single<T>(urlString: String, httpMethod: HTTPMethod, basicAuth: (user: String, password: String)? = nil, parameters: [String: Any], mapper: @escaping (Any) -> T?) -> Single<T> {
-        guard let url = URL(string: urlString) else {
-            return Single.error(NetworkError.invalidUrl)
+    class NetworkLogger: EventMonitor {
+        private var logger: Logger?
+
+        let queue = DispatchQueue(label: "Network Logger", qos: .background)
+
+        init(logger: Logger?) {
+            self.logger = logger
         }
 
-        var urlRequest = URLRequest(url: url)
-        urlRequest.httpMethod = httpMethod.rawValue
-        urlRequest.setValue("application/json", forHTTPHeaderField: "Accept")
-
-        if let basicAuth = basicAuth, let header = Alamofire.Request.authorizationHeader(user: basicAuth.user, password: basicAuth.password) {
-            urlRequest.setValue(header.value, forHTTPHeaderField: header.key)
+        func requestDidResume(_ request: Request) {
+            logger?.verbose("API OUT: \(request)")
         }
 
-        let request = Request(urlRequest: urlRequest, encoding: httpMethod == .get ? URLEncoding.default : JSONEncoding.default, parameters: parameters)
+        func request<Value>(_ request: DataRequest, didParseResponse response: DataResponse<Value, AFError>) {
+            switch response.result {
+            case .success(let result):
+                logger?.verbose("API IN: \(request)\n\(result)")
+            case .failure:
+                logger?.error("API IN: \(request)\n\(response)")
+            }
+        }
 
-        return single(forRequest: request, mapper: mapper)
-                .do(onSubscribe: { [weak self] in
-                    self?.logger?.verbose("API OUT: \(httpMethod.rawValue): \(url.absoluteString)\n\(parameters as AnyObject)")
-                })
     }
 
 }
 
 extension NetworkManager {
 
-    class Request: URLRequestConvertible {
-        private let urlRequest: URLRequest
-        private let encoding: ParameterEncoding
-        private let parameters: [String: Any]?
+    class JsonMapperResponseSerializer<T>: ResponseSerializer {
+        private let mapper: (Any) throws -> T
 
-        init(urlRequest: URLRequest, encoding: ParameterEncoding, parameters: [String: Any]?) {
-            self.urlRequest = urlRequest
-            self.encoding = encoding
-            self.parameters = parameters
+        private let jsonSerializer = JSONResponseSerializer()
+
+        init(mapper: @escaping (Any) throws -> T) {
+            self.mapper = mapper
         }
 
-        func asURLRequest() throws -> URLRequest {
-            return try encoding.encode(urlRequest, with: parameters)
+        func serialize(request: URLRequest?, response: HTTPURLResponse?, data: Data?, error: Error?) throws -> T {
+            let json = try jsonSerializer.serialize(request: request, response: response, data: data, error: error)
+            return try mapper(json)
         }
 
     }

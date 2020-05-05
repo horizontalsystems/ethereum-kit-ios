@@ -1,5 +1,6 @@
 import RxSwift
 import BigInt
+import Alamofire
 
 class InfuraApiProvider {
     private let networkManager: NetworkManager
@@ -32,8 +33,6 @@ extension InfuraApiProvider {
     private func infuraSingle<T>(method: String, params: [Any], mapper: @escaping (Any) -> T?) -> Single<T> {
         let urlString = "\(infuraBaseUrl)/v3/\(id)"
 
-        let basicAuth = secret.map { (user: "", password: $0) }
-
         let parameters: [String: Any] = [
             "jsonrpc": "2.0",
             "method": method,
@@ -41,7 +40,15 @@ extension InfuraApiProvider {
             "id": 1
         ]
 
-        return networkManager.single(urlString: urlString, httpMethod: .post, basicAuth: basicAuth, parameters: parameters, mapper: mapper)
+        var headers = HTTPHeaders()
+
+        if let secret = secret {
+            headers.add(.authorization(username: "", password: secret))
+        }
+
+        let request = networkManager.session.request(urlString, method: .post, parameters: parameters, encoding: JSONEncoding.default, headers: headers)
+
+        return networkManager.singleOld(request: request, mapper: mapper)
     }
 
     private static func parseInfuraError(data: [String: Any]) -> Error {

@@ -1,10 +1,10 @@
 PODS:
-  - Alamofire (4.9.1)
+  - Alamofire (5.1.0)
   - BigInt (5.0.0)
   - BlueSocket (1.0.52)
-  - Cuckoo (1.3.0):
-    - Cuckoo/Swift (= 1.3.0)
-  - Cuckoo/Swift (1.3.0)
+  - Cuckoo (1.3.2):
+    - Cuckoo/Swift (= 1.3.2)
+  - Cuckoo/Swift (1.3.2)
   - Erc20Kit.swift (0.9.1):
     - BigInt (~> 5.0)
     - EthereumKit.swift (~> 0.9)
@@ -13,7 +13,7 @@ PODS:
     - RxSwift (~> 5.0)
     - Secp256k1Kit.swift (~> 1.0)
   - EthereumKit.swift (0.9.1):
-    - Alamofire (~> 4.0)
+    - Alamofire (~> 5.0)
     - BigInt (~> 5.0)
     - BlueSocket (~> 1.0)
     - GRDB.swift (~> 4.0)
@@ -21,16 +21,16 @@ PODS:
     - OpenSslKit.swift (~> 1.0)
     - RxSwift (~> 5.0)
     - Secp256k1Kit.swift (~> 1.0)
-  - GRDB.swift (4.6.2):
-    - GRDB.swift/standard (= 4.6.2)
-  - GRDB.swift/standard (4.6.2)
+  - GRDB.swift (4.14.0):
+    - GRDB.swift/standard (= 4.14.0)
+  - GRDB.swift/standard (4.14.0)
   - HdWalletKit.swift (1.4):
     - OpenSslKit.swift (~> 1.0)
     - Secp256k1Kit.swift (~> 1.0)
-  - Nimble (8.0.4)
-  - OpenSslKit.swift (1.0)
+  - Nimble (8.0.7)
+  - OpenSslKit.swift (1.2)
   - Quick (2.2.0)
-  - RxSwift (5.0.1)
+  - RxSwift (5.1.1)
   - Secp256k1Kit.swift (1.0)
 
 DEPENDENCIES:
@@ -61,18 +61,18 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  Alamofire: 85e8a02c69d6020a0d734f6054870d7ecb75cf18
+  Alamofire: 9d5c5f602928e512395b30950c5984eca840093c
   BigInt: 74b4d88367b0e819d9f77393549226d36faeb0d8
   BlueSocket: 1acd943acb07b55905291d608649fcfbf8cbd57d
-  Cuckoo: 4045c5a8ce378c919c20c5ff3d6dd11ded0ec699
+  Cuckoo: 57f71c6616b6b08cd9fe27f803da056fb619ff3e
   Erc20Kit.swift: f0b8a17c0990b6d89f4ed2fe7dbee90cb729e9b8
-  EthereumKit.swift: e486bc18f8d6232b9d9fc8765bca1ec72b066635
-  GRDB.swift: 258520e10b49ff55307cbb0bec701af0742ae621
+  EthereumKit.swift: dffa842c7be9476caf326728eb17babc04649dd5
+  GRDB.swift: 8cc3ab7c8b8b4ac1761deb8dca4b51c1c9d429f8
   HdWalletKit.swift: 45af883b0aa722a56ed9a0de82121ba6c43cce3f
-  Nimble: 18d5360282923225d62b09d781f63abc1a0111fc
-  OpenSslKit.swift: 6e699e0d69fae6b306eaca0b8971c59bc45546ab
+  Nimble: a73af6ecd4c9106f434f3d55fc54570be3739e0b
+  OpenSslKit.swift: 168b059e3438c21994a3e9fe6c5648df96660d94
   Quick: 7fb19e13be07b5dfb3b90d4f9824c855a11af40e
-  RxSwift: e2dc62b366a3adf6a0be44ba9f405efd4c94e0c4
+  RxSwift: 81470a2074fa8780320ea5fe4102807cb7118178
   Secp256k1Kit.swift: 93b1bfbb8909c12605666cc3b1e59d1d1fde7322
 
 PODFILE CHECKSUM: c25b12d2de95d682da62ce98d2cb9a1eab8bb33d
