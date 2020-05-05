@@ -12,11 +12,9 @@ class ReachabilityManager {
 
         isReachable = manager?.isReachable ?? false
 
-        manager?.listener = { [weak self] _ in
+        manager?.startListening { [weak self] _ in
             self?.onUpdateStatus()
         }
-
-        manager?.startListening()
     }
 
     private func onUpdateStatus() {

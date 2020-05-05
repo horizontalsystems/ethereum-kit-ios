@@ -1,5 +1,6 @@
 import RxSwift
 import BigInt
+import Alamofire
 
 public class EtherscanApiProvider {
     private let networkManager: NetworkManager
@@ -7,6 +8,8 @@ public class EtherscanApiProvider {
 
     private let etherscanApiKey: String
     private let address: Data
+
+    private let rateLimitRetrier = RateLimitRetrier()
 
     init(networkManager: NetworkManager, network: INetwork, etherscanApiKey: String, address: Data) {
         self.networkManager = networkManager
@@ -29,26 +32,36 @@ public class EtherscanApiProvider {
         var parameters = params
         parameters["apikey"] = etherscanApiKey
 
-        return networkManager.single(urlString: urlString, httpMethod: .get, parameters: parameters)
-                { data -> [String: Any]? in
-                    data as? [String: Any]
-                }
-                .flatMap { map -> Single<[[String: String]]> in
+        let request = networkManager.session.request(urlString, method: .get, parameters: parameters, interceptor: rateLimitRetrier)
+
+        return networkManager.single(request: request)
+                { data throws -> [[String: String]] in
+                    guard let map = data as? [String: Any] else {
+                        throw ApiError.invalidResponse
+                    }
+
                     guard let status = map["status"] as? String else {
-                        return Single.error(ApiError.invalidStatus)
+                        throw ApiError.invalidStatus
                     }
 
                     guard status == "1" else {
                         let message = map["message"] as? String
                         let result = map["result"] as? String
-                        return Single.error(ApiError.responseError(message: message, result: result))
+
+                        // Etherscan API returns status 0 if no transactions found.
+                        // It is not error case, so we should not throw an error.
+                        if message == "No transactions found" {
+                            return []
+                        }
+
+                        throw ApiError.responseError(message: message, result: result)
                     }
 
                     guard let result = map["result"] as? [[String: String]] else {
-                        return Single.error(ApiError.invalidResult)
+                        throw ApiError.invalidResult
                     }
 
-                    return Single.just(result)
+                    return result
                 }
     }
 
@@ -67,12 +80,6 @@ extension EtherscanApiProvider {
         ]
 
         return apiSingle(params: params)
-                .catchError { error in
-                    if case let ApiError.responseError(message, _) = error, message == "No transactions found" {
-                        return Single.just([])
-                    }
-                    return Single.error(error)
-                }
     }
 
     public func tokenTransactionsSingle(contractAddress: Data, startBlock: Int) -> Single<[[String: String]]> {
@@ -87,12 +94,6 @@ extension EtherscanApiProvider {
         ]
 
         return apiSingle(params: params)
-                .catchError { error in
-                    if case let ApiError.responseError(message, _) = error, message == "No transactions found" {
-                        return Single.just([])
-                    }
-                    return Single.error(error)
-                }
     }
 
 }
@@ -141,9 +142,30 @@ class EtherscanTransactionProvider: ITransactionsProvider {
 extension EtherscanApiProvider {
 
     public enum ApiError: Error {
+        case invalidResponse
         case invalidStatus
         case responseError(message: String?, result: String?)
         case invalidResult
+    }
+
+}
+
+extension EtherscanApiProvider {
+
+    class RateLimitRetrier: RequestInterceptor {
+
+        func retry(_ request: Request, for session: Session, dueTo error: Error, completion: @escaping (RetryResult) -> ()) {
+            if case let AFError.responseSerializationFailed(reason) = error,
+               case let .customSerializationFailed(serializationError) = reason,
+               case let ApiError.responseError(message, result) = serializationError,
+               message == "NOTOK", result == "Max rate limit reached"
+            {
+                completion(.retryWithDelay(1))
+            } else {
+                completion(.doNotRetry)
+            }
+        }
+
     }
 
 }
