@@ -1,3 +1,5 @@
+import HsToolKit
+
 class DevP2PConnection {
     private static let devP2PMaxMessageCode = 0x10
     private static let devP2PPacketTypesMap: [Int: IMessage.Type] = [

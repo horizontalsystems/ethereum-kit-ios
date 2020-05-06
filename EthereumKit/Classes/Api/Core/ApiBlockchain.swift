@@ -1,5 +1,6 @@
 import RxSwift
 import BigInt
+import HsToolKit
 
 class ApiBlockchain {
     private var disposeBag = DisposeBag()
@@ -31,9 +32,9 @@ class ApiBlockchain {
         self.transactionBuilder = transactionBuilder
         self.logger = logger
 
-        reachabilityManager.reachabilitySignal
+        reachabilityManager.reachabilityObservable
                 .observeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
-                .subscribe(onNext: { [weak self] in
+                .subscribe(onNext: { [weak self] _ in
                     self?.sync()
                 })
                 .disposed(by: disposeBag)

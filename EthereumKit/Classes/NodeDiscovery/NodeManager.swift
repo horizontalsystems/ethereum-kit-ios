@@ -1,3 +1,5 @@
+import HsToolKit
+
 class NodeManager {
     weak var delegate: INodeManagerDelegate?
 

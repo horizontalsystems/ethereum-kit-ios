@@ -1,3 +1,5 @@
+import HsToolKit
+
 class FrameConnection {
     weak var delegate: IFrameConnectionDelegate?
 

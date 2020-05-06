@@ -1,3 +1,5 @@
+import HsToolKit
+
 class PeerGroup {
     weak var delegate: IPeerDelegate?
 

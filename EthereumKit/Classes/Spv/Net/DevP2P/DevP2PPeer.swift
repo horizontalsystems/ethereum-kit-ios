@@ -1,3 +1,5 @@
+import HsToolKit
+
 class DevP2PPeer {
     weak var delegate: IDevP2PPeerDelegate?
 

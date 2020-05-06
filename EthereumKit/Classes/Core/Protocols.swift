@@ -60,8 +60,3 @@ protocol ITransactionManagerDelegate: AnyObject {
 protocol IAddressValidator {
     func validate(address: String) throws
 }
-
-protocol IReachabilityManager {
-    var isReachable: Bool { get }
-    var reachabilitySignal: Signal { get }
-}

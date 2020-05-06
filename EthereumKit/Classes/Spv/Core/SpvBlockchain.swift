@@ -1,5 +1,6 @@
 import RxSwift
 import BigInt
+import HsToolKit
 
 class SpvBlockchain {
     weak var delegate: IBlockchainDelegate?
