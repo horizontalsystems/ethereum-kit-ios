@@ -1,3 +1,5 @@
+import HsToolKit
+
 class LESPeer {
     weak var delegate: IPeerDelegate?
 

@@ -13,11 +13,11 @@ PODS:
     - RxSwift (~> 5.0)
     - Secp256k1Kit.swift (~> 1.0)
   - EthereumKit.swift (0.9.1):
-    - Alamofire (~> 5.0)
     - BigInt (~> 5.0)
     - BlueSocket (~> 1.0)
     - GRDB.swift (~> 4.0)
     - HdWalletKit.swift (~> 1.4)
+    - HsToolKit.swift (~> 1.0)
     - OpenSslKit.swift (~> 1.0)
     - RxSwift (~> 5.0)
     - Secp256k1Kit.swift (~> 1.0)
@@ -27,7 +27,12 @@ PODS:
   - HdWalletKit.swift (1.4):
     - OpenSslKit.swift (~> 1.0)
     - Secp256k1Kit.swift (~> 1.0)
+  - HsToolKit.swift (1.0):
+    - Alamofire (~> 5.0)
+    - ObjectMapper (~> 3.0)
+    - RxSwift (~> 5.0)
   - Nimble (8.0.7)
+  - ObjectMapper (3.5.2)
   - OpenSslKit.swift (1.2)
   - Quick (2.2.0)
   - RxSwift (5.1.1)
@@ -37,6 +42,7 @@ DEPENDENCIES:
   - Cuckoo
   - Erc20Kit.swift (from `../`)
   - EthereumKit.swift (from `../`)
+  - HsToolKit.swift (from `https://github.com/horizontalsystems/hs-tool-kit-ios`)
   - Nimble
   - Quick
 
@@ -49,6 +55,7 @@ SPEC REPOS:
     - GRDB.swift
     - HdWalletKit.swift
     - Nimble
+    - ObjectMapper
     - OpenSslKit.swift
     - Quick
     - RxSwift
@@ -59,6 +66,13 @@ EXTERNAL SOURCES:
     :path: "../"
   EthereumKit.swift:
     :path: "../"
+  HsToolKit.swift:
+    :git: https://github.com/horizontalsystems/hs-tool-kit-ios
+
+CHECKOUT OPTIONS:
+  HsToolKit.swift:
+    :commit: 95152c6c3ca9a924f256c0c36de1a90caa02644b
+    :git: https://github.com/horizontalsystems/hs-tool-kit-ios
 
 SPEC CHECKSUMS:
   Alamofire: 9d5c5f602928e512395b30950c5984eca840093c
@@ -66,15 +80,17 @@ SPEC CHECKSUMS:
   BlueSocket: 1acd943acb07b55905291d608649fcfbf8cbd57d
   Cuckoo: 57f71c6616b6b08cd9fe27f803da056fb619ff3e
   Erc20Kit.swift: f0b8a17c0990b6d89f4ed2fe7dbee90cb729e9b8
-  EthereumKit.swift: dffa842c7be9476caf326728eb17babc04649dd5
+  EthereumKit.swift: 3a541a94c7b3443849cf9de19e65a1d22dbfa6dd
   GRDB.swift: 8cc3ab7c8b8b4ac1761deb8dca4b51c1c9d429f8
   HdWalletKit.swift: 45af883b0aa722a56ed9a0de82121ba6c43cce3f
+  HsToolKit.swift: b89273c4018e3b70894e820c88cee8b684be9305
   Nimble: a73af6ecd4c9106f434f3d55fc54570be3739e0b
+  ObjectMapper: b53ae947d370bf89423e86be7d4e2d2b2a8d3f40
   OpenSslKit.swift: 168b059e3438c21994a3e9fe6c5648df96660d94
   Quick: 7fb19e13be07b5dfb3b90d4f9824c855a11af40e
   RxSwift: 81470a2074fa8780320ea5fe4102807cb7118178
   Secp256k1Kit.swift: 93b1bfbb8909c12605666cc3b1e59d1d1fde7322
 
-PODFILE CHECKSUM: c25b12d2de95d682da62ce98d2cb9a1eab8bb33d
+PODFILE CHECKSUM: 1e0b3812405978621a7fc7d99249d6adf22940d8
 
 COCOAPODS: 1.9.1

@@ -1,5 +1,6 @@
 import RxSwift
 import BigInt
+import HsToolKit
 
 class IncubedRpcApiProvider {
     private let GET_LOGS_REQUEST_MAX_BLOCKS_RANGE = 10000 // max blocks range for which eth_getLogs can be queried with no-proof, this limit is set by in3-c server

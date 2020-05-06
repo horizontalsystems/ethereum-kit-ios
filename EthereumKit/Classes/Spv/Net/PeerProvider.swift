@@ -1,3 +1,5 @@
+import HsToolKit
+
 class PeerProvider {
     private let network: INetwork
     private let connectionKey: ECKey

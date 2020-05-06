@@ -3,6 +3,7 @@ import HdWalletKit
 import BigInt
 import OpenSslKit
 import Secp256k1Kit
+import HsToolKit
 
 public class Kit {
     public let gasLimit = 21_000

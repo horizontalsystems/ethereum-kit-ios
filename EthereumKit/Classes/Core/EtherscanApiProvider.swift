@@ -1,6 +1,7 @@
 import RxSwift
 import BigInt
 import Alamofire
+import HsToolKit
 
 public class EtherscanApiProvider {
     private let networkManager: NetworkManager
@@ -135,7 +136,7 @@ extension EtherscanApiProvider: RequestInterceptor {
 
 extension EtherscanApiProvider: IApiMapper {
 
-    func map(statusCode: Int, data: Any?) throws -> [[String: String]] {
+    public func map(statusCode: Int, data: Any?) throws -> [[String: String]] {
         guard let map = data as? [String: Any] else {
             throw NetworkManager.RequestError.invalidResponse(statusCode: statusCode, data: data)
         }

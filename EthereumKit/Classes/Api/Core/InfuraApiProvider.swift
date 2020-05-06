@@ -1,6 +1,7 @@
 import RxSwift
 import BigInt
 import Alamofire
+import HsToolKit
 
 class InfuraApiProvider {
     private let networkManager: NetworkManager

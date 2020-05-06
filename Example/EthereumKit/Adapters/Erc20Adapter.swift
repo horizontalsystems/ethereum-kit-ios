@@ -1,5 +1,4 @@
 import EthereumKit
-import class EthereumKit.Logger
 import Erc20Kit
 import class Erc20Kit.TransactionInfo
 import RxSwift

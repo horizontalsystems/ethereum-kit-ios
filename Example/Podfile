@@ -4,6 +4,7 @@ use_modular_headers!
 target 'EthereumKitExample' do
   pod 'EthereumKit.swift', :path => '../'
   pod 'Erc20Kit.swift', :path => '../'
+  pod 'HsToolKit.swift', git: 'https://github.com/horizontalsystems/hs-tool-kit-ios'
 end
 
 def testPods
