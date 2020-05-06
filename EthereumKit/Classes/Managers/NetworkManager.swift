@@ -9,18 +9,17 @@ class NetworkManager {
         session = Session(eventMonitors: [networkLogger])
     }
 
-    func single<T>(request: DataRequest, mapper: @escaping (Any) throws -> T) -> Single<T> {
-        Single<T>.create { observer in
-            let requestReference = request
-                    .validate()
-                    .response(queue: DispatchQueue.global(qos: .background), responseSerializer: JsonMapperResponseSerializer<T>(mapper: mapper)) { response in
-                        switch response.result {
-                        case .success(let result):
-                            observer(.success(result))
-                        case .failure(let error):
-                            observer(.error(error))
-                        }
-                    }
+    func single<Mapper: IApiMapper>(request: DataRequest, mapper: Mapper) -> Single<Mapper.T> {
+        Single<Mapper.T>.create { observer in
+            let requestReference = request.response(queue: DispatchQueue.global(qos: .background), responseSerializer: JsonMapperResponseSerializer<Mapper>(mapper: mapper))
+            { response in
+                switch response.result {
+                case .success(let result):
+                    observer(.success(result))
+                case .failure(let error):
+                    observer(.error(NetworkManager.unwrap(error: error)))
+                }
+            }
 
             return Disposables.create {
                 requestReference.cancel()
@@ -28,7 +27,89 @@ class NetworkManager {
         }
     }
 
-    private func singleOld(request: DataRequest) -> Single<AFDataResponse<Any>> {
+}
+
+extension NetworkManager {
+
+    class NetworkLogger: EventMonitor {
+        private var logger: Logger?
+
+        let queue = DispatchQueue(label: "Network Logger", qos: .background)
+
+        init(logger: Logger?) {
+            self.logger = logger
+        }
+
+        func requestDidResume(_ request: Request) {
+            logger?.verbose("API OUT: \(request)")
+        }
+
+        func request<Value>(_ request: DataRequest, didParseResponse response: DataResponse<Value, AFError>) {
+            switch response.result {
+            case .success(let result):
+                logger?.verbose("API IN: \(request)\n\(result)")
+            case .failure(let error):
+                logger?.error("API IN: \(request)\n\(NetworkManager.unwrap(error: error))")
+            }
+        }
+
+    }
+
+}
+
+extension NetworkManager {
+
+    class JsonMapperResponseSerializer<Mapper: IApiMapper>: ResponseSerializer {
+        private let mapper: Mapper
+
+        private let jsonSerializer = JSONResponseSerializer()
+
+        init(mapper: Mapper) {
+            self.mapper = mapper
+        }
+
+        func serialize(request: URLRequest?, response: HTTPURLResponse?, data: Data?, error: Error?) throws -> Mapper.T {
+            guard let response = response else {
+                throw RequestError.noResponse(reason: error?.localizedDescription)
+            }
+
+            let json = try? jsonSerializer.serialize(request: request, response: response, data: data, error: nil)
+            return try mapper.map(statusCode: response.statusCode, data: json)
+        }
+
+    }
+
+}
+
+extension NetworkManager {
+
+    static func unwrap(error: Error) -> Error {
+        if case let AFError.responseSerializationFailed(reason) = error, case let .customSerializationFailed(error) = reason {
+            return error
+        }
+
+        return error
+    }
+
+}
+
+extension NetworkManager {
+
+    enum RequestError: Error {
+        case invalidResponse(statusCode: Int, data: Any?)
+        case noResponse(reason: String?)
+    }
+
+}
+
+protocol IApiMapper {
+    associatedtype T
+    func map(statusCode: Int, data: Any?) throws -> T
+}
+
+extension NetworkManager {
+
+    func singleOld(request: DataRequest) -> Single<AFDataResponse<Any>> {
         Single<AFDataResponse<Any>>.create { observer in
             let requestReference = request
                     .validate()
@@ -61,54 +142,6 @@ class NetworkManager {
                         }
                     }
                 }
-    }
-
-}
-
-extension NetworkManager {
-
-    class NetworkLogger: EventMonitor {
-        private var logger: Logger?
-
-        let queue = DispatchQueue(label: "Network Logger", qos: .background)
-
-        init(logger: Logger?) {
-            self.logger = logger
-        }
-
-        func requestDidResume(_ request: Request) {
-            logger?.verbose("API OUT: \(request)")
-        }
-
-        func request<Value>(_ request: DataRequest, didParseResponse response: DataResponse<Value, AFError>) {
-            switch response.result {
-            case .success(let result):
-                logger?.verbose("API IN: \(request)\n\(result)")
-            case .failure:
-                logger?.error("API IN: \(request)\n\(response)")
-            }
-        }
-
-    }
-
-}
-
-extension NetworkManager {
-
-    class JsonMapperResponseSerializer<T>: ResponseSerializer {
-        private let mapper: (Any) throws -> T
-
-        private let jsonSerializer = JSONResponseSerializer()
-
-        init(mapper: @escaping (Any) throws -> T) {
-            self.mapper = mapper
-        }
-
-        func serialize(request: URLRequest?, response: HTTPURLResponse?, data: Data?, error: Error?) throws -> T {
-            let json = try jsonSerializer.serialize(request: request, response: response, data: data, error: error)
-            return try mapper(json)
-        }
-
     }
 
 }

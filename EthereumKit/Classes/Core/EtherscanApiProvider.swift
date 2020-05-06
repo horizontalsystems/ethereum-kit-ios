@@ -9,8 +9,6 @@ public class EtherscanApiProvider {
     private let etherscanApiKey: String
     private let address: Data
 
-    private let rateLimitRetrier = RateLimitRetrier()
-
     init(networkManager: NetworkManager, network: INetwork, etherscanApiKey: String, address: Data) {
         self.networkManager = networkManager
         self.network = network
@@ -32,37 +30,8 @@ public class EtherscanApiProvider {
         var parameters = params
         parameters["apikey"] = etherscanApiKey
 
-        let request = networkManager.session.request(urlString, method: .get, parameters: parameters, interceptor: rateLimitRetrier)
-
-        return networkManager.single(request: request)
-                { data throws -> [[String: String]] in
-                    guard let map = data as? [String: Any] else {
-                        throw ApiError.invalidResponse
-                    }
-
-                    guard let status = map["status"] as? String else {
-                        throw ApiError.invalidStatus
-                    }
-
-                    guard status == "1" else {
-                        let message = map["message"] as? String
-                        let result = map["result"] as? String
-
-                        // Etherscan API returns status 0 if no transactions found.
-                        // It is not error case, so we should not throw an error.
-                        if message == "No transactions found" {
-                            return []
-                        }
-
-                        throw ApiError.responseError(message: message, result: result)
-                    }
-
-                    guard let result = map["result"] as? [[String: String]] else {
-                        throw ApiError.invalidResult
-                    }
-
-                    return result
-                }
+        let request = networkManager.session.request(urlString, method: .get, parameters: parameters, interceptor: self)
+        return networkManager.single(request: request, mapper: self)
     }
 
 }
@@ -141,31 +110,62 @@ class EtherscanTransactionProvider: ITransactionsProvider {
 
 extension EtherscanApiProvider {
 
-    public enum ApiError: Error {
-        case invalidResponse
+    public enum RequestError: Error {
         case invalidStatus
         case responseError(message: String?, result: String?)
         case invalidResult
+        case rateLimitExceeded
     }
 
 }
 
-extension EtherscanApiProvider {
+extension EtherscanApiProvider: RequestInterceptor {
 
-    class RateLimitRetrier: RequestInterceptor {
+    public func retry(_ request: Request, for session: Session, dueTo error: Error, completion: @escaping (RetryResult) -> ()) {
+        let error = NetworkManager.unwrap(error: error)
 
-        func retry(_ request: Request, for session: Session, dueTo error: Error, completion: @escaping (RetryResult) -> ()) {
-            if case let AFError.responseSerializationFailed(reason) = error,
-               case let .customSerializationFailed(serializationError) = reason,
-               case let ApiError.responseError(message, result) = serializationError,
-               message == "NOTOK", result == "Max rate limit reached"
-            {
-                completion(.retryWithDelay(1))
-            } else {
-                completion(.doNotRetry)
-            }
+        if case RequestError.rateLimitExceeded = error {
+            completion(.retryWithDelay(1))
+        } else {
+            completion(.doNotRetry)
+        }
+    }
+
+}
+
+extension EtherscanApiProvider: IApiMapper {
+
+    func map(statusCode: Int, data: Any?) throws -> [[String: String]] {
+        guard let map = data as? [String: Any] else {
+            throw NetworkManager.RequestError.invalidResponse(statusCode: statusCode, data: data)
         }
 
+        guard let status = map["status"] as? String else {
+            throw RequestError.invalidStatus
+        }
+
+        guard status == "1" else {
+            let message = map["message"] as? String
+            let result = map["result"] as? String
+
+            // Etherscan API returns status 0 if no transactions found.
+            // It is not error case, so we should not throw an error.
+            if message == "No transactions found" {
+                return []
+            }
+
+            if message == "NOTOK", result == "Max rate limit reached" {
+                throw RequestError.rateLimitExceeded
+            }
+
+            throw RequestError.responseError(message: message, result: result)
+        }
+
+        guard let result = map["result"] as? [[String: String]] else {
+            throw RequestError.invalidResult
+        }
+
+        return result
     }
 
 }
