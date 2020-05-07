@@ -19,11 +19,7 @@ class InfuraApiProvider {
         self.address = address
     }
 
-}
-
-extension InfuraApiProvider {
-
-    private var infuraBaseUrl: String {
+    private var baseUrl: String {
         switch network {
         case is Ropsten: return "https://ropsten.infura.io"
         case is Kovan: return "https://kovan.infura.io"
@@ -31,8 +27,8 @@ extension InfuraApiProvider {
         }
     }
 
-    private func infuraSingle<T>(method: String, params: [Any], mapper: @escaping (Any) -> T?) -> Single<T> {
-        let urlString = "\(infuraBaseUrl)/v3/\(id)"
+    private func apiSingle(method: String, params: [Any]) -> Single<Any> {
+        let urlString = "\(baseUrl)/v3/\(id)"
 
         let parameters: [String: Any] = [
             "jsonrpc": "2.0",
@@ -49,56 +45,94 @@ extension InfuraApiProvider {
 
         let request = networkManager.session.request(urlString, method: .post, parameters: parameters, encoding: JSONEncoding.default, headers: headers)
 
-        return networkManager.singleOld(request: request, mapper: mapper)
+        return networkManager.single(request: request, mapper: self)
     }
 
-    private static func parseInfuraError(data: [String: Any]) -> Error {
-        if let error = data["error"] as? [String: Any] {
+    private func apiSingle<T>(method: String, params: [Any], converter: @escaping (String) -> T?) -> Single<T> {
+        apiSingle(method: method, params: params).flatMap { anyResult -> Single<T> in
+            if let result = anyResult as? String, let converted = converter(result) {
+                return Single.just(converted)
+            }
+
+            return Single.error(RequestError.invalidResult)
+        }
+    }
+
+    private func voidSingle(method: String, params: [Any]) -> Single<Void> {
+        apiSingle(method: method, params: params).map { _ in () }
+    }
+
+    private func stringSingle(method: String, params: [Any]) -> Single<String> {
+        apiSingle(method: method, params: params) { string -> String? in string }
+    }
+
+    private func intSingle(method: String, params: [Any]) -> Single<Int> {
+        apiSingle(method: method, params: params) { string -> Int? in Int(string.stripHexPrefix(), radix: 16) }
+    }
+
+    private func bigIntSingle(method: String, params: [Any]) -> Single<BigUInt> {
+        apiSingle(method: method, params: params) { string -> BigUInt? in BigUInt(string.stripHexPrefix(), radix: 16) }
+    }
+
+    private func dataSingle(method: String, params: [Any]) -> Single<Data> {
+        apiSingle(method: method, params: params) { string -> Data? in Data(hex: string) }
+    }
+
+}
+
+extension InfuraApiProvider {
+
+    public enum RequestError: Error {
+        case invalidResult
+        case rateLimitExceeded(backoffSeconds: TimeInterval)
+        case responseError(code: Int, message: String)
+    }
+
+}
+
+extension InfuraApiProvider: RequestInterceptor {
+
+    public func retry(_ request: Request, for session: Session, dueTo error: Error, completion: @escaping (RetryResult) -> ()) {
+        let error = NetworkManager.unwrap(error: error)
+
+        if case let RequestError.rateLimitExceeded(backoffSeconds) = error {
+            completion(.retryWithDelay(backoffSeconds))
+        } else {
+            completion(.doNotRetry)
+        }
+    }
+
+}
+
+extension InfuraApiProvider: IApiMapper {
+
+    func map(statusCode: Int, data: Any?) throws -> Any {
+        guard let map = data as? [String: Any] else {
+            throw NetworkManager.RequestError.invalidResponse(statusCode: statusCode, data: data)
+        }
+
+        if let error = map["error"] as? [String: Any] {
             let message = (error["message"] as? String) ?? ""
             let code = (error["message"] as? Int) ?? -1
 
-            return ApiError.infuraError(code: code, message: message)
-        }
-        return ApiError.invalidData
-    }
+            if code == -32005 {
+                var backoffSeconds = 1.0
 
-    private func infuraVoidSingle(method: String, params: [Any]) -> Single<Void> {
-        infuraSingle(method: method, params: params) { data -> [String: Any]? in
-            data as? [String: Any]
-        }.flatMap { data -> Single<Void> in
-            guard data["result"] != nil else {
-                return Single.error(InfuraApiProvider.parseInfuraError(data: data))
+                if let errorData = error["data"] as? [String: Any], let timeInterval = errorData["backoff_seconds"] as? TimeInterval {
+                    backoffSeconds = timeInterval
+                }
+
+                throw RequestError.rateLimitExceeded(backoffSeconds: backoffSeconds)
             }
 
-            return Single.just(())
+            throw RequestError.responseError(code: code, message: message)
         }
-    }
 
-    private func infuraIntSingle(method: String, params: [Any]) -> Single<Int> {
-        infuraSingle(method: method, params: params) { data -> Int? in
-            if let map = data as? [String: Any], let result = map["result"] as? String, let int = Int(result.stripHexPrefix(), radix: 16) {
-                return int
-            }
-            return nil
+        guard let result = map["result"] else {
+            throw RequestError.invalidResult
         }
-    }
 
-    private func infuraBigIntSingle(method: String, params: [Any]) -> Single<BigUInt> {
-        infuraSingle(method: method, params: params) { data -> BigUInt? in
-            if let map = data as? [String: Any], let result = map["result"] as? String, let bigInt = BigUInt(result.stripHexPrefix(), radix: 16) {
-                return bigInt
-            }
-            return nil
-        }
-    }
-
-    private func infuraStringSingle(method: String, params: [Any]) -> Single<String> {
-        infuraSingle(method: method, params: params) { data -> String? in
-            if let map = data as? [String: Any], let result = map["result"] as? String {
-                return result
-            }
-            return nil
-        }
+        return result
     }
 
 }
@@ -110,19 +144,21 @@ extension InfuraApiProvider: IRpcApiProvider {
     }
 
     func lastBlockHeightSingle() -> Single<Int> {
-        infuraIntSingle(method: "eth_blockNumber", params: [])
+        intSingle(method: "eth_blockNumber", params: [])
     }
 
     func transactionCountSingle() -> Single<Int> {
-        infuraIntSingle(method: "eth_getTransactionCount", params: [address.toHexString(), "pending"])
+        intSingle(method: "eth_getTransactionCount", params: [address.toHexString(), "pending"])
     }
 
     func balanceSingle() -> Single<BigUInt> {
-        infuraBigIntSingle(method: "eth_getBalance", params: [address.toHexString(), "latest"])
+        Single.zip([
+                bigIntSingle(method: "eth_getBalance", params: [address.toHexString(), "latest"])
+        ]).map { array -> BigUInt in array[0] }
     }
 
     func sendSingle(signedTransaction: Data) -> Single<Void> {
-        infuraVoidSingle(method: "eth_sendRawTransaction", params: [signedTransaction.toHexString()])
+        voidSingle(method: "eth_sendRawTransaction", params: [signedTransaction.toHexString()])
     }
 
     func getLogs(address: Data?, fromBlock: Int, toBlock: Int, topics: [Any?]) -> Single<[EthereumLog]> {
@@ -148,44 +184,42 @@ extension InfuraApiProvider: IRpcApiProvider {
             "topics": jsonTopics
         ]
 
-        return infuraSingle(method: "eth_getLogs", params: [params]) {data -> [EthereumLog] in
-            if let map = data as? [String: Any], let result = map["result"] as? [Any] {
-                return result.compactMap { EthereumLog(json: $0) }
+        return apiSingle(method: "eth_getLogs", params: [params]).flatMap { anyResult -> Single<[EthereumLog]> in
+            if let result = anyResult as? [Any] {
+                return Single.just(result.compactMap { EthereumLog(json: $0) })
             }
-            return []
+            return Single.just([])
         }
     }
 
     func transactionReceiptStatusSingle(transactionHash: Data) -> Single<TransactionStatus> {
-        infuraSingle(method: "eth_getTransactionReceipt", params: [transactionHash.toHexString()]) { data -> TransactionStatus in
-            guard let map = data as? [String: Any],
-                  let log = map["result"] as? [String: Any],
-                  let statusString = log["status"] as? String,
+        apiSingle(method: "eth_getTransactionReceipt", params: [transactionHash.toHexString()]).flatMap { anyResult -> Single<TransactionStatus> in
+            guard let resultMap = anyResult as? [String: Any], let statusString = resultMap["status"] as? String,
                   let success = Int(statusString.stripHexPrefix(), radix: 16) else {
-                return .notFound
+                return Single.just(.notFound)
             }
-            return success == 0 ? .failed : .success
+            return Single.just(success == 0 ? .failed : .success)
         }
     }
 
     func transactionExistSingle(transactionHash: Data) -> Single<Bool> {
-        infuraSingle(method: "eth_getTransactionByHash", params: [transactionHash.toHexString()]) {data -> Bool in
-            guard let map = data as? [String: Any], let _ = map["result"] as? [String: Any] else {
-                return false
+        apiSingle(method: "eth_getTransactionByHash", params: [transactionHash.toHexString()]).flatMap { anyResult -> Single<Bool> in
+            guard let _ = anyResult as? [String: Any] else {
+                return Single.just(false)
             }
-            return true
+            return Single.just(true)
         }
     }
 
-    func getStorageAt(contractAddress: String, position: String, blockNumber: Int?) -> Single<String> {
-        infuraStringSingle(method: "eth_getStorageAt", params: [contractAddress, position, "latest"])
+    func getStorageAt(contractAddress: String, position: String, blockNumber: Int?) -> Single<Data> {
+        dataSingle(method: "eth_getStorageAt", params: [contractAddress, position, "latest"])
     }
 
-    func call(contractAddress: String, data: String, blockNumber: Int?) -> Single<String> {
-        infuraStringSingle(method: "eth_call", params: [["to": contractAddress, "data": data], "latest"])
+    func call(contractAddress: String, data: String, blockNumber: Int?) -> Single<Data> {
+        dataSingle(method: "eth_call", params: [["to": contractAddress, "data": data], "latest"])
     }
 
-    func getEstimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: String?) -> Single<String> {
+    func getEstimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: String?) -> Single<Int> {
         var params = [String: Any]()
         if let from = from {
             params["from"] = from.lowercased()
@@ -202,23 +236,16 @@ extension InfuraApiProvider: IRpcApiProvider {
         params["to"] = contractAddress.lowercased()
         params["data"] = data
 
-        return infuraSingle(method: "eth_estimateGas", params: [params]) { data -> [String: Any]? in
-            data as? [String: Any]
-        }.flatMap { data -> Single<String> in
-            if let result = data["result"] as? String {
-                return Single.just(result)
-            } else {
-                return Single.error(InfuraApiProvider.parseInfuraError(data: data))
-            }
-        }
-   }
+        return intSingle(method: "eth_estimateGas", params: [params])
+    }
 
     func getBlock(byNumber number: Int) -> Single<Block> {
-        infuraSingle(method: "eth_getBlockByNumber", params: ["0x" + String(number, radix: 16), false]) {data -> Block? in
-            if let map = data as? [String: Any], let result = map["result"] {
-                return Block(json: result)
+        apiSingle(method: "eth_getBlockByNumber", params: ["0x" + String(number, radix: 16), false]).flatMap { anyResult -> Single<Block> in
+            if let block = Block(json: anyResult) {
+                return Single.just(block)
             }
-            return nil
+
+            return Single.error(RequestError.invalidResult)
         }
     }
 

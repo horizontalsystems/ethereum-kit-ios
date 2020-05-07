@@ -39,9 +39,14 @@ extension IncubedRpcApiProvider {
 
 }
 
-public enum IncubedError: Error {
-    case wrongParsingResult
-    case notReachable
+extension IncubedRpcApiProvider {
+
+    public enum IncubedError: Error {
+        case wrongParsingResult
+        case notReachable
+        case invalidData
+    }
+
 }
 
 extension IncubedRpcApiProvider: IRpcApiProvider {
@@ -157,16 +162,24 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
         }.subscribeOn(serialQueueScheduler)
     }
 
-    func getStorageAt(contractAddress: String, position: String, blockNumber: Int?) -> Single<String> {
-        Single.fromIncubed {
+    func getStorageAt(contractAddress: String, position: String, blockNumber: Int?) -> Single<Data> {
+        let stringSingle: Single<String> = Single.fromIncubed {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: getStorageAt \(contractAddress) \(position) \(blockNumber ?? -1)")
 
             return try self.sendRpc(method: GET_STORAGE_AT, parameters: [contractAddress, position, blockNumber ?? "latest"])
         }.subscribeOn(serialQueueScheduler)
+
+        return stringSingle.flatMap { value -> Single<Data> in
+                    guard let data = Data(hex: value) else {
+                        return Single.error(IncubedError.invalidData)
+                    }
+
+                    return Single.just(data)
+                }
     }
 
-    func call(contractAddress: String, data: String, blockNumber: Int?) -> Single<String> {
-        Single.fromIncubed {
+    func call(contractAddress: String, data: String, blockNumber: Int?) -> Single<Data> {
+        let stringSingle: Single<String> = Single.fromIncubed {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: call \(contractAddress) \(data) \(blockNumber ?? -1)")
 
             let callParams: [String: Any] = [
@@ -175,10 +188,18 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
             ]
             return try self.sendRpc(method: CALL, parameters: [callParams, blockNumber ?? "latest"])
         }.subscribeOn(serialQueueScheduler)
+
+        return stringSingle.flatMap { value -> Single<Data> in
+            guard let data = Data(hex: value) else {
+                return Single.error(IncubedError.invalidData)
+            }
+
+            return Single.just(data)
+        }
     }
 
-    func getEstimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: String?) -> Single<String> {
-        Single.fromIncubed {
+    func getEstimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: String?) -> Single<Int> {
+        let stringSingle: Single<String> = Single.fromIncubed {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: getEstimateGas \(from ?? "Nil") \(contractAddress) \(amount?.description ?? "Nil") \(data ?? "Nil")")
             let callParams: [String: Any] = [
                 "to": contractAddress.lowercased(),
@@ -189,7 +210,15 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
                 "data": data as Any
             ]
             return try self.sendRpc(method: ESTIMATE_GAS, parameters: [callParams, "latest"])
-        }.subscribeOn(serialQueueScheduler)
+        } .subscribeOn(serialQueueScheduler)
+
+        return stringSingle.flatMap { (value: String) -> Single<Int> in
+                    guard let data = Int(value.stripHexPrefix(), radix: 16) else {
+                        return Single.error(IncubedError.invalidData)
+                    }
+
+                    return Single.just(data)
+                }
     }
 
     func getBlock(byNumber number: Int) -> Single<Block> {
