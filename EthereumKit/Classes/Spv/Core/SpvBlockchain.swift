@@ -97,24 +97,10 @@ extension SpvBlockchain: IBlockchain {
 
     func call(contractAddress: Data, data: Data, blockHeight: Int?) -> Single<Data> {
         rpcApiProvider.call(contractAddress: contractAddress.toHexString(), data: data.toHexString(), blockNumber: blockHeight)
-                .flatMap { value -> Single<Data> in
-                    guard let data = Data(hex: value) else {
-                        return Single.error(ApiError.invalidData)
-                    }
-
-                    return Single.just(data)
-                }
     }
 
     func estimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int> {
         rpcApiProvider.getEstimateGas(from: from, contractAddress: contractAddress, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice, data: data?.toHexString())
-                .flatMap { (value: String) -> Single<Int> in
-                    guard let data = Int(value.stripHexPrefix(), radix: 16) else {
-                        return Single.error(ApiError.invalidData)
-                    }
-
-                    return Single.just(data)
-                }
     }
 
 }

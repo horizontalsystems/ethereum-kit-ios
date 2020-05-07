@@ -125,11 +125,11 @@ extension PrimitiveSequence where Trait == SingleTrait {
     static func fromIncubed(callable: @escaping () throws -> Element) -> Single<Element> {
         Single.from(callable: callable)
         .catchError { error -> PrimitiveSequence<SingleTrait, Element> in
-            if error is IncubedError {
+            if error is IncubedRpcApiProvider.IncubedError {
                 return .error(error)
             }
 
-            return .error(IncubedError.notReachable)
+            return .error(IncubedRpcApiProvider.IncubedError.notReachable)
         }
     }
 
