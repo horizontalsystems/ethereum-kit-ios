@@ -43,7 +43,7 @@ class InfuraApiProvider {
             headers.add(.authorization(username: "", password: secret))
         }
 
-        let request = networkManager.session.request(urlString, method: .post, parameters: parameters, encoding: JSONEncoding.default, headers: headers)
+        let request = networkManager.session.request(urlString, method: .post, parameters: parameters, encoding: JSONEncoding.default, headers: headers, interceptor: self)
 
         return networkManager.single(request: request, mapper: self)
     }
