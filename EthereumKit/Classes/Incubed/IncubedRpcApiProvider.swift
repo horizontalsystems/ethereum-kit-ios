@@ -2,7 +2,7 @@ import RxSwift
 import BigInt
 import HsToolKit
 
-class IncubedRpcApiProvider {
+public class IncubedRpcApiProvider {
     private let GET_LOGS_REQUEST_MAX_BLOCKS_RANGE = 10000 // max blocks range for which eth_getLogs can be queried with no-proof, this limit is set by in3-c server
     private let serialQueueScheduler = SerialDispatchQueueScheduler(qos: .utility)
     private var disposeBag = DisposeBag()
@@ -13,8 +13,7 @@ class IncubedRpcApiProvider {
 
     private let in3: In3Private
 
-    public init(address: Data, logger: Logger? = nil) {
-
+    init(address: Data, logger: Logger? = nil) {
         self.network = NetworkType.mainNet.network
         self.address = address
         self.logger = logger
