@@ -36,6 +36,7 @@ protocol ITransactionManager {
 
     func refresh()
     func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[Transaction]>
+    func transaction(hash: Data) -> Transaction?
     func handle(sentTransaction: Transaction)
 }
 
@@ -43,6 +44,7 @@ protocol ITransactionStorage {
     var lastTransactionBlockHeight: Int? { get }
 
     func transactionsSingle(fromHash: Data?, limit: Int?, contractAddress: Data?) -> Single<[Transaction]>
+    func transaction(hash: Data) -> Transaction?
     func save(transactions: [Transaction])
 }
 

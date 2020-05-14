@@ -98,6 +98,14 @@ extension Kit {
                 }
     }
 
+    public func transaction(hash: String, interTransactionIndex: Int) -> TransactionInfo? {
+        guard let hash = Data(hex: hash) else {
+            return nil
+        }
+
+        return transactionManager.transaction(hash: hash, interTransactionIndex: interTransactionIndex).map { TransactionInfo(transaction: $0) }
+    }
+
     public var syncStateObservable: Observable<SyncState> {
         state.syncStateSubject.asObservable()
     }

@@ -79,6 +79,12 @@ extension TransactionStorage: ITransactionStorage {
         }
     }
 
+    func transaction(hash: Data) -> Transaction? {
+        try? dbPool.read { db in
+            try Transaction.filter(Transaction.Columns.hash == hash).fetchOne(db)
+        }
+    }
+
     func save(transactions: [Transaction]) {
         _ = try? dbPool.write { db in
             for transaction in transactions {

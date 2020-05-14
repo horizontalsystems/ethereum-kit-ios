@@ -20,6 +20,7 @@ protocol ITransactionManager {
     var delegate: ITransactionManagerDelegate? { get set }
 
     func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[Transaction]>
+    func transaction(hash: Data, interTransactionIndex: Int) -> Transaction?
 
     func sync()
     func transactionContractData(to: Data, value: BigUInt) -> Data
@@ -49,6 +50,7 @@ protocol ITransactionStorage {
     var lastTransactionBlockHeight: Int? { get }
     var pendingTransactions: [Transaction] { get }
     func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[Transaction]>
+    func transaction(hash: Data, interTransactionIndex: Int) -> Transaction?
     func save(transactions: [Transaction])
     func update(transaction: Transaction)
 }

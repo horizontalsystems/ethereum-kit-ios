@@ -119,6 +119,10 @@ extension EthereumAdapter: IAdapter {
                 }
     }
 
+    func transaction(hash: String, interTransactionIndex: Int) -> TransactionRecord? {
+        ethereumKit.transaction(hash: hash).map { transactionRecord(fromTransaction: $0) }
+    }
+
     func estimatedGasLimit(to address: String, value: Decimal) -> Single<Int> {
         Single.just(ethereumKit.gasLimit)
     }

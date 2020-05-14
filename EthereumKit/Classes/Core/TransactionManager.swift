@@ -57,6 +57,10 @@ extension TransactionManager: ITransactionManager {
         storage.transactionsSingle(fromHash: fromHash, limit: limit, contractAddress: nil)
     }
 
+    func transaction(hash: Data) -> Transaction? {
+        storage.transaction(hash: hash)
+    }
+
     func handle(sentTransaction: Transaction) {
         update(transactions: [sentTransaction])
     }
