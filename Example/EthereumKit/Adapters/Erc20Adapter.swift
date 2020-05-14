@@ -137,6 +137,10 @@ extension Erc20Adapter: IAdapter {
                 }
     }
 
+    func transaction(hash: String, interTransactionIndex: Int) -> TransactionRecord? {
+        erc20Kit.transaction(hash: hash, interTransactionIndex: interTransactionIndex).flatMap { transactionRecord(fromTransaction: $0) }
+    }
+
     func estimatedGasLimit(to address: String, value: Decimal) -> Single<Int> {
         erc20Kit.estimateGas(to: address, contractAddress: contractAddress, value: value.roundedString(decimal: decimal), gasPrice: 5_000_000_000)
     }

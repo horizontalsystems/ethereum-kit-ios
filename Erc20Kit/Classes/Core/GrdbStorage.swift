@@ -112,6 +112,12 @@ extension GrdbStorage: ITransactionStorage {
         }
     }
 
+    func transaction(hash: Data, interTransactionIndex: Int) -> Transaction? {
+        try? dbPool.read { db in
+            try Transaction.filter(Transaction.Columns.transactionHash == hash && Transaction.Columns.interTransactionIndex == interTransactionIndex).fetchOne(db)
+        }
+    }
+
     func save(transactions: [Transaction]) {
         _ = try! dbPool.write { db in
             for transaction in transactions {

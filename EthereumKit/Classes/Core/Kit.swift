@@ -115,6 +115,14 @@ extension Kit {
                 .map { $0.map { TransactionInfo(transaction: $0) } }
     }
 
+    public func transaction(hash: String) -> TransactionInfo? {
+        guard let hash = Data(hex: hash) else {
+            return nil
+        }
+
+        return transactionManager.transaction(hash: hash).map { TransactionInfo(transaction: $0) }
+    }
+
     public func sendSingle(address: Data, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int) -> Single<TransactionInfo> {
         let rawTransaction = transactionBuilder.rawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: address, value: value, data: transactionInput)
 
