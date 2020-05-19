@@ -16,7 +16,7 @@ PODS:
     - BigInt (~> 5.0)
     - BlueSocket (~> 1.0)
     - GRDB.swift (~> 4.0)
-    - HdWalletKit.swift (~> 1.4)
+    - HdWalletKit.swift (~> 1.5)
     - HsToolKit.swift (~> 1.0)
     - OpenSslKit.swift (~> 1.0)
     - RxSwift (~> 5.0)
@@ -24,7 +24,7 @@ PODS:
   - GRDB.swift (4.14.0):
     - GRDB.swift/standard (= 4.14.0)
   - GRDB.swift/standard (4.14.0)
-  - HdWalletKit.swift (1.4):
+  - HdWalletKit.swift (1.5):
     - OpenSslKit.swift (~> 1.0)
     - Secp256k1Kit.swift (~> 1.0)
   - HsToolKit.swift (1.0):
@@ -80,9 +80,9 @@ SPEC CHECKSUMS:
   BlueSocket: 1acd943acb07b55905291d608649fcfbf8cbd57d
   Cuckoo: 57f71c6616b6b08cd9fe27f803da056fb619ff3e
   Erc20Kit.swift: f0b8a17c0990b6d89f4ed2fe7dbee90cb729e9b8
-  EthereumKit.swift: 3a541a94c7b3443849cf9de19e65a1d22dbfa6dd
+  EthereumKit.swift: a50171bcb6b40783cd0e21db9c3039cc4dafb428
   GRDB.swift: 8cc3ab7c8b8b4ac1761deb8dca4b51c1c9d429f8
-  HdWalletKit.swift: 45af883b0aa722a56ed9a0de82121ba6c43cce3f
+  HdWalletKit.swift: 4af4ef744a446904261971e5c31daf2eea8403c5
   HsToolKit.swift: b89273c4018e3b70894e820c88cee8b684be9305
   Nimble: a73af6ecd4c9106f434f3d55fc54570be3739e0b
   ObjectMapper: b53ae947d370bf89423e86be7d4e2d2b2a8d3f40
