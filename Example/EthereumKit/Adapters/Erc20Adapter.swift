@@ -121,7 +121,7 @@ extension Erc20Adapter: IAdapter {
     }
 
     func validate(address: String) throws {
-        try ethereumKit.validate(address: address)
+        try EthereumKit.Kit.validate(address: address)
     }
 
     func sendSingle(to: String, amount: Decimal, gasLimit: Int) -> Single<Void> {
