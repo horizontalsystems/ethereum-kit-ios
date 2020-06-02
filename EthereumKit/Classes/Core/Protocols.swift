@@ -58,7 +58,3 @@ protocol ITransactionManagerDelegate: AnyObject {
     func onUpdate(transactionsSyncState: SyncState)
     func onUpdate(transactions: [Transaction])
 }
-
-protocol IAddressValidator {
-    func validate(address: String) throws
-}

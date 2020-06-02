@@ -9,7 +9,7 @@ class AddressValidator {
         case wrongAddressPrefix
     }
 
-    private func isCheckSumAddress(hex: String) throws {
+    private static func isCheckSumAddress(hex: String) throws {
         let addressHash: String = OpenSslKit.Kit.sha3(hex.lowercased().data(using: .ascii)!).toRawHexString()
         for i in 0..<40 {
             let hashSymbol = character(addressHash, i)
@@ -23,15 +23,15 @@ class AddressValidator {
         }
     }
 
-    private func character(_ str: String, _ i: Int) -> String {
-        return String(str[str.index(str.startIndex, offsetBy: i)])
+    private static func character(_ str: String, _ i: Int) -> String {
+        String(str[str.index(str.startIndex, offsetBy: i)])
     }
 
 }
 
-extension AddressValidator: IAddressValidator {
+extension AddressValidator {
 
-    func validate(address: String) throws {
+    static func validate(address: String) throws {
         guard address.hasPrefix("0x") else {
             throw ValidationError.wrongAddressPrefix
         }

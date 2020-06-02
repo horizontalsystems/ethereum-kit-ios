@@ -16,7 +16,6 @@ public class Kit {
 
     private let blockchain: IBlockchain
     private let transactionManager: ITransactionManager
-    private let addressValidator: IAddressValidator
     private let transactionBuilder: TransactionBuilder
     private let state: EthereumKitState
 
@@ -27,10 +26,9 @@ public class Kit {
 
     public let logger: Logger
 
-    init(blockchain: IBlockchain, transactionManager: ITransactionManager, addressValidator: IAddressValidator, transactionBuilder: TransactionBuilder, state: EthereumKitState = EthereumKitState(), address: Data, uniqueId: String, etherscanApiProvider: EtherscanApiProvider, logger: Logger) {
+    init(blockchain: IBlockchain, transactionManager: ITransactionManager, transactionBuilder: TransactionBuilder, state: EthereumKitState = EthereumKitState(), address: Data, uniqueId: String, etherscanApiProvider: EtherscanApiProvider, logger: Logger) {
         self.blockchain = blockchain
         self.transactionManager = transactionManager
-        self.addressValidator = addressValidator
         self.transactionBuilder = transactionBuilder
         self.state = state
         self.address = address
@@ -102,8 +100,8 @@ extension Kit {
         transactionManager.refresh()
     }
 
-    public func validate(address: String) throws {
-        try addressValidator.validate(address: address)
+    public static func validate(address: String) throws {
+        try AddressValidator.validate(address: address)
     }
 
     public func fee(gasPrice: Int) -> Decimal {
@@ -305,8 +303,7 @@ extension Kit {
         let transactionStorage: ITransactionStorage = TransactionStorage(databaseDirectoryUrl: try dataDirectoryUrl(), databaseFileName: "transactions-\(uniqueId)")
         let transactionManager = TransactionManager(storage: transactionStorage, transactionsProvider: transactionsProvider)
 
-        let addressValidator: IAddressValidator = AddressValidator()
-        let ethereumKit = Kit(blockchain: blockchain, transactionManager: transactionManager, addressValidator: addressValidator, transactionBuilder: transactionBuilder, address: address, uniqueId: uniqueId, etherscanApiProvider: etherscanApiProvider, logger: logger)
+        let ethereumKit = Kit(blockchain: blockchain, transactionManager: transactionManager, transactionBuilder: transactionBuilder, address: address, uniqueId: uniqueId, etherscanApiProvider: etherscanApiProvider, logger: logger)
 
         blockchain.delegate = ethereumKit
         transactionManager.delegate = ethereumKit
