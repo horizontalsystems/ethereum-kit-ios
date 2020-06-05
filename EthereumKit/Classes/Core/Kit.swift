@@ -360,4 +360,11 @@ extension Kit {
         case noNetworkConnection
     }
 
+    public enum AddressValidationError: Error {
+        case invalidChecksum
+        case invalidAddressLength
+        case invalidSymbols
+        case wrongAddressPrefix
+    }
+
 }
