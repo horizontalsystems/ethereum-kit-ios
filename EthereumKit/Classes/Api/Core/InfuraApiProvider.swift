@@ -231,7 +231,7 @@ extension InfuraApiProvider: IRpcApiProvider {
             params["gas"] = "0x" + String(gasLimit, radix: 16).removeLeadingZeros()
         }
         if let gasPrice = gasPrice {
-            params["gas"] = "0x" + String(gasPrice, radix: 16).removeLeadingZeros()
+            params["gasPrice"] = "0x" + String(gasPrice, radix: 16).removeLeadingZeros()
         }
         params["to"] = contractAddress.lowercased()
         params["data"] = data
