@@ -31,7 +31,10 @@ public class EtherscanApiProvider {
         var parameters = params
         parameters["apikey"] = etherscanApiKey
 
-        let request = networkManager.session.request(urlString, method: .get, parameters: parameters, interceptor: self)
+        let request = networkManager.session
+                .request(urlString, method: .get, parameters: parameters, interceptor: self)
+                .cacheResponse(using: ResponseCacher(behavior: .doNotCache))
+
         return networkManager.single(request: request, mapper: self)
     }
 

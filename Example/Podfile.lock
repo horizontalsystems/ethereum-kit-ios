@@ -1,5 +1,5 @@
 PODS:
-  - Alamofire (5.1.0)
+  - Alamofire (5.2.1)
   - BigInt (5.0.0)
   - BlueSocket (1.0.52)
   - Cuckoo (1.3.2):
@@ -31,10 +31,10 @@ PODS:
     - Alamofire (~> 5.0)
     - ObjectMapper (~> 3.0)
     - RxSwift (~> 5.0)
-  - Nimble (8.0.7)
-  - ObjectMapper (3.5.2)
-  - OpenSslKit.swift (1.2)
-  - Quick (2.2.0)
+  - Nimble (8.1.1)
+  - ObjectMapper (3.5.3)
+  - OpenSslKit.swift (1.2.1)
+  - Quick (3.0.0)
   - RxSwift (5.1.1)
   - Secp256k1Kit.swift (1.0)
 
@@ -71,11 +71,11 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   HsToolKit.swift:
-    :commit: 7a06db6a0be6309f38c65952d737402027d946da
+    :commit: 2f4b640e92bf845a454cec3bbe74f68fdb402a8f
     :git: https://github.com/horizontalsystems/hs-tool-kit-ios
 
 SPEC CHECKSUMS:
-  Alamofire: 9d5c5f602928e512395b30950c5984eca840093c
+  Alamofire: e911732990610fe89af59ac0077f923d72dc3dfd
   BigInt: 74b4d88367b0e819d9f77393549226d36faeb0d8
   BlueSocket: 1acd943acb07b55905291d608649fcfbf8cbd57d
   Cuckoo: 57f71c6616b6b08cd9fe27f803da056fb619ff3e
@@ -84,10 +84,10 @@ SPEC CHECKSUMS:
   GRDB.swift: 8cc3ab7c8b8b4ac1761deb8dca4b51c1c9d429f8
   HdWalletKit.swift: 4af4ef744a446904261971e5c31daf2eea8403c5
   HsToolKit.swift: b89273c4018e3b70894e820c88cee8b684be9305
-  Nimble: a73af6ecd4c9106f434f3d55fc54570be3739e0b
-  ObjectMapper: b53ae947d370bf89423e86be7d4e2d2b2a8d3f40
-  OpenSslKit.swift: 168b059e3438c21994a3e9fe6c5648df96660d94
-  Quick: 7fb19e13be07b5dfb3b90d4f9824c855a11af40e
+  Nimble: 5f8a2fb6fa343a7242dfdd9d42f7267419d464b2
+  ObjectMapper: 97111c97e054a6ee25917662106689f0b4127b37
+  OpenSslKit.swift: 0f9c774a09e406c320a0c17341d84fced0e1ba16
+  Quick: 6d9559f40647bc4d510103842ef2fdd882d753e2
   RxSwift: 81470a2074fa8780320ea5fe4102807cb7118178
   Secp256k1Kit.swift: 93b1bfbb8909c12605666cc3b1e59d1d1fde7322
 
