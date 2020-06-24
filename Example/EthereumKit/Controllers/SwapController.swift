@@ -20,8 +20,8 @@ class SwapController: UIViewController {
 
     private let uniswapKit: UniswapKit.Kit = Manager.shared.uniswapKit
 
-    private let fromToken = Erc20Token(name: "GMO coins", coin: "GMOLW", contractAddress: "0xbb74a24d83470f64d5f0c01688fbb49a5a251b32", decimal: 18)
-    private let toToken = Erc20Token(name: "Wrapped ETH", coin: "WETH", contractAddress: "0xc778417e063141139fce010982780140aa0cd5ab", decimal: 18)
+    private let fromToken = Erc20Token(name: "Wrapped ETH", coin: "WETH", contractAddress: "0xc778417e063141139fce010982780140aa0cd5ab", decimal: 18)
+    private let toToken = Erc20Token(name: "GMO coins", coin: "GMOLW", contractAddress: "0xbb74a24d83470f64d5f0c01688fbb49a5a251b32", decimal: 18)
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -174,6 +174,8 @@ class SwapController: UIViewController {
 
         if toToken.coin == "WETH" {
             swapTokensForExactETH(amount: amountTo, amountInMax: amountFrom)
+        } else if fromToken.coin == "WETH" {
+            swapETHForExactTokens(amount: amountFrom, amountOut: amountTo)
         }
     }
 
@@ -264,6 +266,22 @@ class SwapController: UIViewController {
                         amountIn: amountIn,
                         amountOutMin: amountOutMin,
                         fromContractAddress: fromToken.contractAddress
+                )
+                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+                .observeOn(MainScheduler.instance)
+                .subscribe(onSuccess: { txHash in
+                    print("SUCCESS: \(txHash)")
+                }, onError: { error in
+                    print("ERROR: \(error)")
+                })
+                .disposed(by: disposeBag)
+    }
+
+    private func swapETHForExactTokens(amount: String, amountOut: String) {
+        uniswapKit.swapETHForExactTokens(
+                        amount: amount,
+                        amountOut: amountOut,
+                        toContractAddress: toToken.contractAddress
                 )
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
