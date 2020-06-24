@@ -11,6 +11,7 @@ struct Uniswap {
         case swapExactETHForTokens(amountOutMin: BigUInt, path: [Data], to: Data, deadline: BigUInt)
         case swapTokensForExactETH(amountOut: BigUInt, amountInMax: BigUInt, path: [Data], to: Data, deadline: BigUInt)
         case swapExactTokensForETH(amountIn: BigUInt, amountOutMin: BigUInt, path: [Data], to: Data, deadline: BigUInt)
+        case swapETHForExactTokens(amountOut: BigUInt, path: [Data], to: Data, deadline: BigUInt)
 
         var methodSignature: Data {
             switch self {
@@ -28,6 +29,8 @@ struct Uniswap {
                 return generateSignature(method: "swapTokensForExactETH(uint256,uint256,address[],address,uint256)")
             case .swapExactTokensForETH:
                 return generateSignature(method: "swapExactTokensForETH(uint256,uint256,address[],address,uint256)")
+            case .swapETHForExactTokens:
+                return generateSignature(method: "swapETHForExactTokens(uint256,address[],address,uint256)")
             }
         }
 
@@ -78,6 +81,14 @@ struct Uniswap {
                         pad(data: amountIn.serialize()) +
                         pad(data: amountOutMin.serialize()) +
                         pad(data: BigUInt(5 * 32).serialize()) +
+                        pad(data: to) +
+                        pad(data: deadline.serialize()) +
+                        encode(path: path)
+
+            case let .swapETHForExactTokens(amountOut, path, to, deadline):
+                return methodSignature +
+                        pad(data: amountOut.serialize()) +
+                        pad(data: BigUInt(4 * 32).serialize()) +
                         pad(data: to) +
                         pad(data: deadline.serialize()) +
                         encode(path: path)
