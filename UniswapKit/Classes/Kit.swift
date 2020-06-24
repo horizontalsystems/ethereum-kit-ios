@@ -62,6 +62,19 @@ extension Kit {
         }
     }
 
+    public func swapExactTokensForETH(amountIn: String, amountOutMin: String, fromContractAddress: String) -> Single<String> {
+        do {
+            return tradeManager.swapExactTokensForETH(
+                    amountIn: try convert(amount: amountIn),
+                    amountOutMin: try convert(amount: amountOutMin),
+                    fromContractAddress: try convert(address: fromContractAddress),
+                    wethContractAddress: try convert(address: wethContractAddress)
+            )
+        } catch {
+            return Single.error(error)
+        }
+    }
+
     public func amountsOutSingle(amountIn: String, fromContractAddress: String, toContractAddress: String) -> Single<(String, String)> {
         do {
             return tradeManager.amountsOutSingle(
