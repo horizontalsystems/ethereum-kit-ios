@@ -29,14 +29,14 @@ class Configuration {
 
 }
 
-extension Configuration {
+struct Erc20Token {
+    let name: String
+    let coin: String
+    let contractAddress: String
+    let decimal: Int
+}
 
-    struct Erc20Token {
-        let name: String
-        let coin: String
-        let contractAddress: String
-        let decimal: Int
-    }
+extension Configuration {
 
     enum SyncMode {
         case api

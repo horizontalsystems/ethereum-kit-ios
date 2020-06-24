@@ -9,6 +9,7 @@ struct Uniswap {
         case getAmountsOut(amountIn: BigUInt, path: [Data])
         case getAmountsIn(amountOut: BigUInt, path: [Data])
         case swapExactETHForTokens(amountOutMin: BigUInt, path: [Data], to: Data, deadline: BigUInt)
+        case swapTokensForExactETH(amountOut: BigUInt, amountInMax: BigUInt, path: [Data], to: Data, deadline: BigUInt)
 
         var methodSignature: Data {
             switch self {
@@ -22,6 +23,8 @@ struct Uniswap {
                 return generateSignature(method: "getAmountsIn(uint256,address[])")
             case .swapExactETHForTokens:
                 return generateSignature(method: "swapExactETHForTokens(uint256,address[],address,uint256)")
+            case .swapTokensForExactETH:
+                return generateSignature(method: "swapTokensForExactETH(uint256,uint256,address[],address,uint256)")
             }
         }
 
@@ -58,6 +61,15 @@ struct Uniswap {
                         pad(data: deadline.serialize()) +
                         encode(path: path)
 
+            case let .swapTokensForExactETH(amountOut, amountInMax, path, to, deadline):
+                return methodSignature +
+                        pad(data: amountOut.serialize()) +
+                        pad(data: amountInMax.serialize()) +
+                        pad(data: BigUInt(5 * 32).serialize()) +
+                        pad(data: to) +
+                        pad(data: deadline.serialize()) +
+                        encode(path: path)
+
             }
         }
 
@@ -69,6 +81,37 @@ struct Uniswap {
             }
 
             return data
+        }
+
+        private func pad(data: Data) -> Data {
+            Data(repeating: 0, count: (max(0, 32 - data.count))) + data
+        }
+
+    }
+
+}
+
+struct ERC20 {
+
+    enum ContractFunctions {
+        case approve(spender: Data, amount: BigUInt)
+
+        var methodSignature: Data {
+            switch self {
+            case .approve:
+                return generateSignature(method: "approve(address,uint256)")
+            }
+        }
+
+        private func generateSignature(method: String) -> Data {
+            OpenSslKit.Kit.sha3(method.data(using: .ascii)!)[0...3]
+        }
+
+        var data: Data {
+            switch self {
+            case let .approve(spender, amount):
+                return methodSignature + pad(data: spender) + pad(data: amount.serialize())
+            }
         }
 
         private func pad(data: Data) -> Data {

@@ -9,16 +9,19 @@ class SwapController: UIViewController {
 
     private let fromLabel = UILabel()
     private let fromTextField = UITextField()
-    private let fromTokenButton = UIButton(type: .system)
+    private let fromTokenLabel = UILabel()
+    private let fromTokenEstimateButton = UIButton(type: .system)
     private let toLabel = UILabel()
     private let toTextField = UITextField()
-    private let toTokenButton = UIButton(type: .system)
-    private let swapButton = UIButton(type: .system)
+    private let toTokenLabel = UILabel()
+    private let toTokenEstimateButton = UIButton(type: .system)
+    private let swapExactFromButton = UIButton(type: .system)
+    private let swapExactToButton = UIButton(type: .system)
 
     private let uniswapKit: UniswapKit.Kit = Manager.shared.uniswapKit
 
-    private let wethContractAddress = "0xc778417e063141139fce010982780140aa0cd5ab"
-    private let gmoContractAddress = "0xbb74a24d83470f64d5f0c01688fbb49a5a251b32"
+    private let fromToken = Erc20Token(name: "GMO coins", coin: "GMOLW", contractAddress: "0xbb74a24d83470f64d5f0c01688fbb49a5a251b32", decimal: 18)
+    private let toToken = Erc20Token(name: "Wrapped ETH", coin: "WETH", contractAddress: "0xc778417e063141139fce010982780140aa0cd5ab", decimal: 18)
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -43,17 +46,29 @@ class SwapController: UIViewController {
         fromTextField.layer.cornerRadius = 8
         fromTextField.layer.borderWidth = 1
         fromTextField.layer.borderColor = UIColor.lightGray.cgColor
+        fromTextField.delegate = self
 
-        view.addSubview(fromTokenButton)
-        fromTokenButton.snp.makeConstraints { maker in
+        view.addSubview(fromTokenLabel)
+        fromTokenLabel.snp.makeConstraints { maker in
             maker.leading.equalTo(fromTextField.snp.trailing).offset(8)
-            maker.trailing.equalToSuperview().inset(24)
             maker.centerY.equalTo(fromTextField)
             maker.width.equalTo(60)
         }
 
-        fromTokenButton.setTitle("ETH", for: .normal)
-        fromTokenButton.addTarget(self, action: #selector(onTapFromToken), for: .touchUpInside)
+        fromTokenLabel.font = .systemFont(ofSize: 14)
+        fromTokenLabel.text = fromToken.coin
+
+        view.addSubview(fromTokenEstimateButton)
+        fromTokenEstimateButton.snp.makeConstraints { maker in
+            maker.leading.equalTo(fromTokenLabel.snp.trailing).offset(8)
+            maker.trailing.equalToSuperview().inset(24)
+            maker.centerY.equalTo(fromTextField)
+            maker.width.equalTo(30)
+        }
+
+        fromTokenEstimateButton.isEnabled = false
+        fromTokenEstimateButton.setTitle("EST", for: .normal)
+        fromTokenEstimateButton.addTarget(self, action: #selector(onTapFromTokenEstimate), for: .touchUpInside)
 
         view.addSubview(toLabel)
         toLabel.snp.makeConstraints { maker in
@@ -73,27 +88,51 @@ class SwapController: UIViewController {
         toTextField.layer.cornerRadius = 8
         toTextField.layer.borderWidth = 1
         toTextField.layer.borderColor = UIColor.lightGray.cgColor
+        toTextField.delegate = self
 
-        view.addSubview(toTokenButton)
-        toTokenButton.snp.makeConstraints { maker in
+        view.addSubview(toTokenLabel)
+        toTokenLabel.snp.makeConstraints { maker in
             maker.leading.equalTo(toTextField.snp.trailing).offset(8)
-            maker.trailing.equalToSuperview().inset(24)
             maker.centerY.equalTo(toTextField)
             maker.width.equalTo(60)
         }
 
-        toTokenButton.setTitle("GMOLW", for: .normal)
-        toTokenButton.addTarget(self, action: #selector(onTapToToken), for: .touchUpInside)
+        toTokenLabel.font = .systemFont(ofSize: 14)
+        toTokenLabel.text = toToken.coin
 
-        view.addSubview(swapButton)
-        swapButton.snp.makeConstraints { maker in
+        view.addSubview(toTokenEstimateButton)
+        toTokenEstimateButton.snp.makeConstraints { maker in
+            maker.leading.equalTo(toTokenLabel.snp.trailing).offset(8)
+            maker.trailing.equalToSuperview().inset(24)
+            maker.centerY.equalTo(toTextField)
+            maker.width.equalTo(30)
+        }
+
+        toTokenEstimateButton.isEnabled = false
+        toTokenEstimateButton.setTitle("EST", for: .normal)
+        toTokenEstimateButton.addTarget(self, action: #selector(onTapToTokenEstimate), for: .touchUpInside)
+
+        view.addSubview(swapExactFromButton)
+        swapExactFromButton.snp.makeConstraints { maker in
             maker.leading.trailing.equalToSuperview().inset(24)
             maker.top.equalTo(toTextField.snp.bottom).offset(24)
             maker.height.equalTo(40)
         }
 
-        swapButton.setTitle("SWAP", for: .normal)
-        swapButton.addTarget(self, action: #selector(onTapSwap), for: .touchUpInside)
+        swapExactFromButton.isEnabled = false
+        swapExactFromButton.setTitle("SWAP EXACT FROM", for: .normal)
+        swapExactFromButton.addTarget(self, action: #selector(onTapSwapExactFrom), for: .touchUpInside)
+
+        view.addSubview(swapExactToButton)
+        swapExactToButton.snp.makeConstraints { maker in
+            maker.leading.trailing.equalToSuperview().inset(24)
+            maker.top.equalTo(swapExactFromButton.snp.bottom).offset(24)
+            maker.height.equalTo(40)
+        }
+
+        swapExactToButton.isEnabled = false
+        swapExactToButton.setTitle("SWAP EXACT TO", for: .normal)
+        swapExactToButton.addTarget(self, action: #selector(onTapSwapExactTo), for: .touchUpInside)
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -102,7 +141,7 @@ class SwapController: UIViewController {
         view.endEditing(true)
     }
 
-    @objc private func onTapSwap() {
+    @objc private func onTapSwapExactFrom() {
         guard let fromAmountString = fromTextField.text, let fromAmountDecimal = Decimal(string: fromAmountString) else {
             return
         }
@@ -111,30 +150,40 @@ class SwapController: UIViewController {
             return
         }
 
-        uniswapKit.swapExactETHForTokens(
-                        amount: fromAmountDecimal.roundedString(decimal: 18),
-                        amountOutMin: toAmountDecimal.roundedString(decimal: 18),
-                        toContractAddress: gmoContractAddress
-                )
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
-                .observeOn(MainScheduler.instance)
-                .subscribe(onSuccess: { [weak self] txHash in
-                    print("SUCCESS: \(txHash)")
-                }, onError: { error in
-                    print("ERROR: \(error)")
-                })
-                .disposed(by: disposeBag)
+        let amountFrom = fromAmountDecimal.roundedString(decimal: 18)
+        let amountTo = toAmountDecimal.roundedString(decimal: 18)
+
+        if fromToken.coin == "WETH" {
+            swapExactETHForTokens(amount: amountFrom, amountOutMin: amountTo)
+        }
     }
 
-    @objc private func onTapFromToken() {
+    @objc private func onTapSwapExactTo() {
+        guard let fromAmountString = fromTextField.text, let fromAmountDecimal = Decimal(string: fromAmountString) else {
+            return
+        }
+
+        guard let toAmountString = toTextField.text, let toAmountDecimal = Decimal(string: toAmountString) else {
+            return
+        }
+
+        let amountFrom = fromAmountDecimal.roundedString(decimal: 18)
+        let amountTo = toAmountDecimal.roundedString(decimal: 18)
+
+        if toToken.coin == "WETH" {
+            swapTokensForExactETH(amount: amountTo, amountInMax: amountFrom)
+        }
+    }
+
+    @objc private func onTapFromTokenEstimate() {
         guard let fromAmountString = fromTextField.text, let fromAmountDecimal = Decimal(string: fromAmountString) else {
             return
         }
 
         uniswapKit.amountsOutSingle(
-                        amountIn: fromAmountDecimal.roundedString(decimal: 18),
-                        fromContractAddress: wethContractAddress,
-                        toContractAddress: gmoContractAddress
+                        amountIn: fromAmountDecimal.roundedString(decimal: fromToken.decimal),
+                        fromContractAddress: fromToken.contractAddress,
+                        toContractAddress: toToken.contractAddress
                 )
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
@@ -146,15 +195,15 @@ class SwapController: UIViewController {
                 .disposed(by: disposeBag)
     }
 
-    @objc private func onTapToToken() {
+    @objc private func onTapToTokenEstimate() {
         guard let toAmountString = toTextField.text, let toAmountDecimal = Decimal(string: toAmountString) else {
             return
         }
 
         uniswapKit.amountsInSingle(
-                        amountOut: toAmountDecimal.roundedString(decimal: 18),
-                        fromContractAddress: wethContractAddress,
-                        toContractAddress: gmoContractAddress
+                        amountOut: toAmountDecimal.roundedString(decimal: toToken.decimal),
+                        fromContractAddress: fromToken.contractAddress,
+                        toContractAddress: toToken.contractAddress
                 )
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
@@ -168,11 +217,65 @@ class SwapController: UIViewController {
 
     private func handleAmounts(amountIn: String, amountOut: String) {
         if let significand = Decimal(string: amountIn) {
-            fromTextField.text = Decimal(sign: .plus, exponent: -18, significand: significand).description
+            fromTextField.text = Decimal(sign: .plus, exponent: -fromToken.decimal, significand: significand).description
         }
 
         if let significand = Decimal(string: amountOut) {
-            toTextField.text = Decimal(sign: .plus, exponent: -18, significand: significand).description
+            toTextField.text = Decimal(sign: .plus, exponent: -toToken.decimal, significand: significand).description
+        }
+    }
+
+    private func swapExactETHForTokens(amount: String, amountOutMin: String) {
+        uniswapKit.swapExactETHForTokens(
+                        amount: amount,
+                        amountOutMin: amountOutMin,
+                        toContractAddress: toToken.contractAddress
+                )
+                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+                .observeOn(MainScheduler.instance)
+                .subscribe(onSuccess: { txHash in
+                    print("SUCCESS: \(txHash)")
+                }, onError: { error in
+                    print("ERROR: \(error)")
+                })
+                .disposed(by: disposeBag)
+    }
+
+    private func swapTokensForExactETH(amount: String, amountInMax: String) {
+        uniswapKit.swapTokensForExactETH(
+                        amount: amount,
+                        amountInMax: amountInMax,
+                        fromContractAddress: fromToken.contractAddress
+                )
+                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+                .observeOn(MainScheduler.instance)
+                .subscribe(onSuccess: { txHash in
+                    print("SUCCESS: \(txHash)")
+                }, onError: { error in
+                    print("ERROR: \(error)")
+                })
+                .disposed(by: disposeBag)
+    }
+
+}
+
+extension SwapController: UITextFieldDelegate {
+
+    public func textFieldDidBeginEditing(_ textField: UITextField) {
+        if textField == fromTextField {
+            toTextField.text = nil
+            swapExactFromButton.isEnabled = true
+            swapExactToButton.isEnabled = false
+            fromTokenEstimateButton.isEnabled = true
+            toTokenEstimateButton.isEnabled = false
+        }
+
+        if textField == toTextField {
+            fromTextField.text = nil
+            swapExactToButton.isEnabled = true
+            swapExactFromButton.isEnabled = false
+            toTokenEstimateButton.isEnabled = true
+            fromTokenEstimateButton.isEnabled = false
         }
     }
 
