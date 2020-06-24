@@ -36,6 +36,40 @@ class TradeManager {
                 }
     }
 
+    func swapTokensForExactETH(amount: BigUInt, amountInMax: BigUInt, fromContractAddress: Data, wethContractAddress: Data) -> Single<String> {
+        let approveTransactionInput = ERC20.ContractFunctions.approve(spender: routerAddress, amount: amountInMax)
+
+        let transactionInput = Uniswap.ContractFunctions.swapTokensForExactETH(
+                amountOut: amount,
+                amountInMax: amountInMax,
+                path: [fromContractAddress, wethContractAddress],
+                to: address,
+                deadline: BigUInt(Date().timeIntervalSince1970 + 3600)
+        )
+
+        return ethereumKit.sendSingle(
+                        address: fromContractAddress,
+                        value: 0,
+                        transactionInput: approveTransactionInput.data,
+                        gasPrice: 50_000_000_000,
+                        gasLimit: 500_000
+                )
+                .flatMap { [unowned self] txInfo in
+                    print("APPROVE TX: \(txInfo.hash)")
+
+                    return self.ethereumKit.sendSingle(
+                                    address: self.routerAddress,
+                                    value: 0,
+                                    transactionInput: transactionInput.data,
+                                    gasPrice: 50_000_000_000,
+                                    gasLimit: 500_000
+                            )
+                            .map { txInfo in
+                                txInfo.hash
+                            }
+                }
+    }
+
     func amountsOutSingle(amountIn: BigUInt, fromContractAddress: Data, toContractAddress: Data) -> Single<(BigUInt, BigUInt)> {
         let transactionInput = Uniswap.ContractFunctions.getAmountsOut(amountIn: amountIn, path: [fromContractAddress, toContractAddress])
 
