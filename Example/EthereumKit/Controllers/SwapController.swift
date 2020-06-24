@@ -155,6 +155,8 @@ class SwapController: UIViewController {
 
         if fromToken.coin == "WETH" {
             swapExactETHForTokens(amount: amountFrom, amountOutMin: amountTo)
+        } else if toToken.coin == "WETH" {
+            swapExactTokensForETH(amountIn: amountFrom, amountOutMin: amountTo)
         }
     }
 
@@ -245,6 +247,22 @@ class SwapController: UIViewController {
         uniswapKit.swapTokensForExactETH(
                         amount: amount,
                         amountInMax: amountInMax,
+                        fromContractAddress: fromToken.contractAddress
+                )
+                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+                .observeOn(MainScheduler.instance)
+                .subscribe(onSuccess: { txHash in
+                    print("SUCCESS: \(txHash)")
+                }, onError: { error in
+                    print("ERROR: \(error)")
+                })
+                .disposed(by: disposeBag)
+    }
+
+    private func swapExactTokensForETH(amountIn: String, amountOutMin: String) {
+        uniswapKit.swapExactTokensForETH(
+                        amountIn: amountIn,
+                        amountOutMin: amountOutMin,
                         fromContractAddress: fromToken.contractAddress
                 )
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
