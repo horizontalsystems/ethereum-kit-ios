@@ -1,6 +1,7 @@
 import RxSwift
 import EthereumKit
 import Erc20Kit
+import UniswapKit
 import HdWalletKit
 
 class Manager {
@@ -9,6 +10,7 @@ class Manager {
     private let keyWords = "mnemonic_words"
 
     var ethereumKit: EthereumKit.Kit!
+    var uniswapKit: UniswapKit.Kit!
 
     var ethereumAdapter: EthereumAdapter!
     var erc20Adapters = [Erc20Adapter]()
@@ -31,6 +33,7 @@ class Manager {
         clearWords()
 
         ethereumKit = nil
+        uniswapKit = nil
         ethereumAdapter = nil
         erc20Adapters = []
     }
@@ -55,6 +58,8 @@ class Manager {
                 walletId: "walletId",
                 minLogLevel: configuration.minLogLevel
         )
+
+        uniswapKit = try! UniswapKit.Kit.instance(ethereumKit: ethereumKit)
 
         ethereumAdapter = EthereumAdapter(ethereumKit: ethereumKit)
 
