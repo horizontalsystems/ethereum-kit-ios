@@ -16,17 +16,51 @@ class TradeManager {
         self.address = address
     }
 
-    func swapExactETHForTokens(amount: BigUInt, amountOutMin: BigUInt, wethContractAddress: Data, toContractAddress: Data) -> Single<String> {
+    func amountsOutSingle(amountIn: BigUInt, path: [Data]) -> Single<[BigUInt]> {
+        let transactionInput = Uniswap.ContractFunctions.getAmountsOut(amountIn: amountIn, path: path)
+
+        return ethereumKit.call(contractAddress: routerAddress, data: transactionInput.data)
+                .flatMap { data in
+                    guard data.count == 64 + path.count * 32 else {
+                        return Single.error(ContractError.invalidResponse)
+                    }
+
+                    let amounts = (0..<path.count).map { i in
+                        BigUInt(data[64 + i * 32...64 + (i + 1) * 32 - 1])
+                    }
+
+                    return Single.just(amounts)
+                }
+    }
+
+    func amountsInSingle(amountOut: BigUInt, path: [Data]) -> Single<[BigUInt]> {
+        let transactionInput = Uniswap.ContractFunctions.getAmountsIn(amountOut: amountOut, path: path)
+
+        return ethereumKit.call(contractAddress: routerAddress, data: transactionInput.data)
+                .flatMap { data in
+                    guard data.count == 64 + path.count * 32 else {
+                        return Single.error(ContractError.invalidResponse)
+                    }
+
+                    let amounts = (0..<path.count).map { i in
+                        BigUInt(data[64 + i * 32...64 + (i + 1) * 32 - 1])
+                    }
+
+                    return Single.just(amounts)
+                }
+    }
+
+    func swapExactETHForTokens(amountIn: BigUInt, amountOutMin: BigUInt, path: [Data]) -> Single<String> {
         let transactionInput = Uniswap.ContractFunctions.swapExactETHForTokens(
                 amountOutMin: amountOutMin,
-                path: [wethContractAddress, toContractAddress],
+                path: path,
                 to: address,
                 deadline: BigUInt(Date().timeIntervalSince1970 + 3600)
         )
 
         return ethereumKit.sendSingle(
                         address: routerAddress,
-                        value: amount,
+                        value: amountIn,
                         transactionInput: transactionInput.data,
                         gasPrice: 50_000_000_000,
                         gasLimit: 500_000
@@ -36,19 +70,19 @@ class TradeManager {
                 }
     }
 
-    func swapTokensForExactETH(amount: BigUInt, amountInMax: BigUInt, fromContractAddress: Data, wethContractAddress: Data) -> Single<String> {
+    func swapTokensForExactETH(amountOut: BigUInt, amountInMax: BigUInt, path: [Data]) -> Single<String> {
         let approveTransactionInput = ERC20.ContractFunctions.approve(spender: routerAddress, amount: amountInMax)
 
         let transactionInput = Uniswap.ContractFunctions.swapTokensForExactETH(
-                amountOut: amount,
+                amountOut: amountOut,
                 amountInMax: amountInMax,
-                path: [fromContractAddress, wethContractAddress],
+                path: path,
                 to: address,
                 deadline: BigUInt(Date().timeIntervalSince1970 + 3600)
         )
 
         return ethereumKit.sendSingle(
-                        address: fromContractAddress,
+                        address: path[0],
                         value: 0,
                         transactionInput: approveTransactionInput.data,
                         gasPrice: 50_000_000_000,
@@ -70,19 +104,19 @@ class TradeManager {
                 }
     }
 
-    func swapExactTokensForETH(amountIn: BigUInt, amountOutMin: BigUInt, fromContractAddress: Data, wethContractAddress: Data) -> Single<String> {
+    func swapExactTokensForETH(amountIn: BigUInt, amountOutMin: BigUInt, path: [Data]) -> Single<String> {
         let approveTransactionInput = ERC20.ContractFunctions.approve(spender: routerAddress, amount: amountIn)
 
         let transactionInput = Uniswap.ContractFunctions.swapExactTokensForETH(
                 amountIn: amountIn,
                 amountOutMin: amountOutMin,
-                path: [fromContractAddress, wethContractAddress],
+                path: path,
                 to: address,
                 deadline: BigUInt(Date().timeIntervalSince1970 + 3600)
         )
 
         return ethereumKit.sendSingle(
-                        address: fromContractAddress,
+                        address: path[0],
                         value: 0,
                         transactionInput: approveTransactionInput.data,
                         gasPrice: 50_000_000_000,
@@ -104,55 +138,23 @@ class TradeManager {
                 }
     }
 
-    func swapETHForExactTokens(amount: BigUInt, amountOut: BigUInt, wethContractAddress: Data, toContractAddress: Data) -> Single<String> {
+    func swapETHForExactTokens(amountOut: BigUInt, amountInMax: BigUInt, path: [Data]) -> Single<String> {
         let transactionInput = Uniswap.ContractFunctions.swapETHForExactTokens(
                 amountOut: amountOut,
-                path: [wethContractAddress, toContractAddress],
+                path: path,
                 to: address,
                 deadline: BigUInt(Date().timeIntervalSince1970 + 3600)
         )
 
         return ethereumKit.sendSingle(
                         address: routerAddress,
-                        value: amount,
+                        value: amountInMax,
                         transactionInput: transactionInput.data,
                         gasPrice: 50_000_000_000,
                         gasLimit: 500_000
                 )
                 .map { txInfo in
                     txInfo.hash
-                }
-    }
-
-    func amountsOutSingle(amountIn: BigUInt, fromContractAddress: Data, toContractAddress: Data) -> Single<(BigUInt, BigUInt)> {
-        let transactionInput = Uniswap.ContractFunctions.getAmountsOut(amountIn: amountIn, path: [fromContractAddress, toContractAddress])
-
-        return ethereumKit.call(contractAddress: routerAddress, data: transactionInput.data)
-                .flatMap { data in
-                    guard data.count == 128 else {
-                        return Single.error(ContractError.invalidResponse)
-                    }
-
-                    let amountIn = BigUInt(data[64...95])
-                    let amountOut = BigUInt(data[96...127])
-
-                    return Single.just((amountIn, amountOut))
-                }
-    }
-
-    func amountsInSingle(amountOut: BigUInt, fromContractAddress: Data, toContractAddress: Data) -> Single<(BigUInt, BigUInt)> {
-        let transactionInput = Uniswap.ContractFunctions.getAmountsIn(amountOut: amountOut, path: [fromContractAddress, toContractAddress])
-
-        return ethereumKit.call(contractAddress: routerAddress, data: transactionInput.data)
-                .flatMap { data in
-                    guard data.count == 128 else {
-                        return Single.error(ContractError.invalidResponse)
-                    }
-
-                    let amountIn = BigUInt(data[64...95])
-                    let amountOut = BigUInt(data[96...127])
-
-                    return Single.just((amountIn, amountOut))
                 }
     }
 

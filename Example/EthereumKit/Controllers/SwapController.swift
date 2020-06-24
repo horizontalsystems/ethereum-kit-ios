@@ -15,13 +15,21 @@ class SwapController: UIViewController {
     private let toTextField = UITextField()
     private let toTokenLabel = UILabel()
     private let toTokenEstimateButton = UIButton(type: .system)
-    private let swapExactFromButton = UIButton(type: .system)
-    private let swapExactToButton = UIButton(type: .system)
+    private let pathLabel = UILabel()
+    private let swapButton = UIButton(type: .system)
 
     private let uniswapKit: UniswapKit.Kit = Manager.shared.uniswapKit
 
-    private let fromToken = Erc20Token(name: "Wrapped ETH", coin: "WETH", contractAddress: "0xc778417e063141139fce010982780140aa0cd5ab", decimal: 18)
-    private let toToken = Erc20Token(name: "GMO coins", coin: "GMOLW", contractAddress: "0xbb74a24d83470f64d5f0c01688fbb49a5a251b32", decimal: 18)
+    private var mode: Mode = .exactFrom
+    private var pathItems: [PathItem]?
+
+    private static let tokens = [
+        Erc20Token(name: "GMO coins", coin: "GMOLW", contractAddress: "0xbb74a24d83470f64d5f0c01688fbb49a5a251b32", decimal: 18),
+        Erc20Token(name: "UniGay", coin: "UGAY", contractAddress: "0x13338d72b25bb5a4af2122afb70f1264cffa8bce", decimal: 18),
+    ]
+
+    private var fromToken: Erc20Token?
+    private var toToken: Erc20Token? = SwapController.tokens[1]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,8 +41,6 @@ class SwapController: UIViewController {
             maker.leading.trailing.equalToSuperview().inset(24)
             maker.top.equalTo(view.safeAreaLayoutGuide).offset(24)
         }
-
-        fromLabel.text = "From:"
 
         view.addSubview(fromTextField)
         fromTextField.snp.makeConstraints { maker in
@@ -56,7 +62,7 @@ class SwapController: UIViewController {
         }
 
         fromTokenLabel.font = .systemFont(ofSize: 14)
-        fromTokenLabel.text = fromToken.coin
+        fromTokenLabel.text = fromToken?.coin ?? "ETH"
 
         view.addSubview(fromTokenEstimateButton)
         fromTokenEstimateButton.snp.makeConstraints { maker in
@@ -75,8 +81,6 @@ class SwapController: UIViewController {
             maker.leading.trailing.equalToSuperview().inset(24)
             maker.top.equalTo(fromTextField.snp.bottom).offset(16)
         }
-
-        toLabel.text = "To:"
 
         view.addSubview(toTextField)
         toTextField.snp.makeConstraints { maker in
@@ -98,7 +102,7 @@ class SwapController: UIViewController {
         }
 
         toTokenLabel.font = .systemFont(ofSize: 14)
-        toTokenLabel.text = toToken.coin
+        toTokenLabel.text = toToken?.coin ?? "ETH"
 
         view.addSubview(toTokenEstimateButton)
         toTokenEstimateButton.snp.makeConstraints { maker in
@@ -112,27 +116,27 @@ class SwapController: UIViewController {
         toTokenEstimateButton.setTitle("EST", for: .normal)
         toTokenEstimateButton.addTarget(self, action: #selector(onTapToTokenEstimate), for: .touchUpInside)
 
-        view.addSubview(swapExactFromButton)
-        swapExactFromButton.snp.makeConstraints { maker in
+        view.addSubview(pathLabel)
+        pathLabel.snp.makeConstraints { maker in
             maker.leading.trailing.equalToSuperview().inset(24)
             maker.top.equalTo(toTextField.snp.bottom).offset(24)
-            maker.height.equalTo(40)
         }
 
-        swapExactFromButton.isEnabled = false
-        swapExactFromButton.setTitle("SWAP EXACT FROM", for: .normal)
-        swapExactFromButton.addTarget(self, action: #selector(onTapSwapExactFrom), for: .touchUpInside)
+        pathLabel.font = .systemFont(ofSize: 12)
+        pathLabel.textAlignment = .center
 
-        view.addSubview(swapExactToButton)
-        swapExactToButton.snp.makeConstraints { maker in
+        view.addSubview(swapButton)
+        swapButton.snp.makeConstraints { maker in
             maker.leading.trailing.equalToSuperview().inset(24)
-            maker.top.equalTo(swapExactFromButton.snp.bottom).offset(24)
+            maker.top.equalTo(pathLabel.snp.bottom).offset(24)
             maker.height.equalTo(40)
         }
 
-        swapExactToButton.isEnabled = false
-        swapExactToButton.setTitle("SWAP EXACT TO", for: .normal)
-        swapExactToButton.addTarget(self, action: #selector(onTapSwapExactTo), for: .touchUpInside)
+        swapButton.isEnabled = false
+        swapButton.setTitle("SWAP", for: .normal)
+        swapButton.addTarget(self, action: #selector(onTapSwap), for: .touchUpInside)
+
+        syncLabels()
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -141,42 +145,32 @@ class SwapController: UIViewController {
         view.endEditing(true)
     }
 
-    @objc private func onTapSwapExactFrom() {
-        guard let fromAmountString = fromTextField.text, let fromAmountDecimal = Decimal(string: fromAmountString) else {
-            return
-        }
-
-        guard let toAmountString = toTextField.text, let toAmountDecimal = Decimal(string: toAmountString) else {
-            return
-        }
-
-        let amountFrom = fromAmountDecimal.roundedString(decimal: 18)
-        let amountTo = toAmountDecimal.roundedString(decimal: 18)
-
-        if fromToken.coin == "WETH" {
-            swapExactETHForTokens(amount: amountFrom, amountOutMin: amountTo)
-        } else if toToken.coin == "WETH" {
-            swapExactTokensForETH(amountIn: amountFrom, amountOutMin: amountTo)
-        }
+    private func syncLabels() {
+        fromLabel.text = "From:\(mode == .exactTo ? " (estimated)" : "")"
+        toLabel.text = "To:\(mode == .exactFrom ? " (estimated)" : "")"
     }
 
-    @objc private func onTapSwapExactTo() {
-        guard let fromAmountString = fromTextField.text, let fromAmountDecimal = Decimal(string: fromAmountString) else {
+    @objc private func onTapSwap() {
+        guard let pathItems = pathItems else {
             return
         }
 
-        guard let toAmountString = toTextField.text, let toAmountDecimal = Decimal(string: toAmountString) else {
-            return
+        let single: Single<String>
+
+        switch mode {
+        case .exactFrom: single = uniswapKit.swapExactItemForItem(pathItems: pathItems)
+        case .exactTo: single = uniswapKit.swapItemForExactItem(pathItems: pathItems)
         }
 
-        let amountFrom = fromAmountDecimal.roundedString(decimal: 18)
-        let amountTo = toAmountDecimal.roundedString(decimal: 18)
-
-        if toToken.coin == "WETH" {
-            swapTokensForExactETH(amount: amountTo, amountInMax: amountFrom)
-        } else if fromToken.coin == "WETH" {
-            swapETHForExactTokens(amount: amountFrom, amountOut: amountTo)
-        }
+        single
+                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+                .observeOn(MainScheduler.instance)
+                .subscribe(onSuccess: { txHash in
+                    print("SUCCESS: \(txHash)")
+                }, onError: { error in
+                    print("ERROR: \(error)")
+                })
+                .disposed(by: disposeBag)
     }
 
     @objc private func onTapFromTokenEstimate() {
@@ -185,14 +179,14 @@ class SwapController: UIViewController {
         }
 
         uniswapKit.amountsOutSingle(
-                        amountIn: fromAmountDecimal.roundedString(decimal: fromToken.decimal),
-                        fromContractAddress: fromToken.contractAddress,
-                        toContractAddress: toToken.contractAddress
+                        amountIn: fromAmountDecimal.roundedString(decimal: fromToken?.decimal ?? 18),
+                        fromItem: fromToken.map { .erc20(contractAddress: $0.contractAddress) } ?? .ethereum,
+                        toItem: toToken.map { .erc20(contractAddress: $0.contractAddress) } ?? .ethereum
                 )
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
-                .subscribe(onSuccess: { [weak self] amountIn, amountOut in
-                    self?.handleAmounts(amountIn: amountIn, amountOut: amountOut)
+                .subscribe(onSuccess: { [weak self] pathItems in
+                    self?.handle(pathItems: pathItems)
                 }, onError: { error in
                     print("ERROR: \(error)")
                 })
@@ -205,92 +199,41 @@ class SwapController: UIViewController {
         }
 
         uniswapKit.amountsInSingle(
-                        amountOut: toAmountDecimal.roundedString(decimal: toToken.decimal),
-                        fromContractAddress: fromToken.contractAddress,
-                        toContractAddress: toToken.contractAddress
+                        amountOut: toAmountDecimal.roundedString(decimal: toToken?.decimal ?? 18),
+                        fromItem: fromToken.map { .erc20(contractAddress: $0.contractAddress) } ?? .ethereum,
+                        toItem: toToken.map { .erc20(contractAddress: $0.contractAddress) } ?? .ethereum
                 )
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
-                .subscribe(onSuccess: { [weak self] amountIn, amountOut in
-                    self?.handleAmounts(amountIn: amountIn, amountOut: amountOut)
+                .subscribe(onSuccess: { [weak self] pathItems in
+                    self?.handle(pathItems: pathItems)
                 }, onError: { error in
                     print("ERROR: \(error)")
                 })
                 .disposed(by: disposeBag)
     }
 
-    private func handleAmounts(amountIn: String, amountOut: String) {
-        if let significand = Decimal(string: amountIn) {
-            fromTextField.text = Decimal(sign: .plus, exponent: -fromToken.decimal, significand: significand).description
+    private func handle(pathItems: [PathItem]) {
+        self.pathItems = pathItems
+        swapButton.isEnabled = true
+
+        if let firstItem = pathItems.first, let significand = Decimal(string: firstItem.amount) {
+            fromTextField.text = Decimal(sign: .plus, exponent: -(fromToken?.decimal ?? 18), significand: significand).description
         }
 
-        if let significand = Decimal(string: amountOut) {
-            toTextField.text = Decimal(sign: .plus, exponent: -toToken.decimal, significand: significand).description
+        if let lastItem = pathItems.last, let significand = Decimal(string: lastItem.amount) {
+            toTextField.text = Decimal(sign: .plus, exponent: -(toToken?.decimal ?? 18), significand: significand).description
         }
-    }
 
-    private func swapExactETHForTokens(amount: String, amountOutMin: String) {
-        uniswapKit.swapExactETHForTokens(
-                        amount: amount,
-                        amountOutMin: amountOutMin,
-                        toContractAddress: toToken.contractAddress
-                )
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
-                .observeOn(MainScheduler.instance)
-                .subscribe(onSuccess: { txHash in
-                    print("SUCCESS: \(txHash)")
-                }, onError: { error in
-                    print("ERROR: \(error)")
-                })
-                .disposed(by: disposeBag)
-    }
+        let paths = pathItems.map { pathItem -> String in
+            switch pathItem.swapItem {
+            case .ethereum: return "ETH"
+            case .erc20(let contractAddress):
+                return SwapController.tokens.first(where: { $0.contractAddress == contractAddress })?.coin ?? "???"
+            }
+        }
 
-    private func swapTokensForExactETH(amount: String, amountInMax: String) {
-        uniswapKit.swapTokensForExactETH(
-                        amount: amount,
-                        amountInMax: amountInMax,
-                        fromContractAddress: fromToken.contractAddress
-                )
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
-                .observeOn(MainScheduler.instance)
-                .subscribe(onSuccess: { txHash in
-                    print("SUCCESS: \(txHash)")
-                }, onError: { error in
-                    print("ERROR: \(error)")
-                })
-                .disposed(by: disposeBag)
-    }
-
-    private func swapExactTokensForETH(amountIn: String, amountOutMin: String) {
-        uniswapKit.swapExactTokensForETH(
-                        amountIn: amountIn,
-                        amountOutMin: amountOutMin,
-                        fromContractAddress: fromToken.contractAddress
-                )
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
-                .observeOn(MainScheduler.instance)
-                .subscribe(onSuccess: { txHash in
-                    print("SUCCESS: \(txHash)")
-                }, onError: { error in
-                    print("ERROR: \(error)")
-                })
-                .disposed(by: disposeBag)
-    }
-
-    private func swapETHForExactTokens(amount: String, amountOut: String) {
-        uniswapKit.swapETHForExactTokens(
-                        amount: amount,
-                        amountOut: amountOut,
-                        toContractAddress: toToken.contractAddress
-                )
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
-                .observeOn(MainScheduler.instance)
-                .subscribe(onSuccess: { txHash in
-                    print("SUCCESS: \(txHash)")
-                }, onError: { error in
-                    print("ERROR: \(error)")
-                })
-                .disposed(by: disposeBag)
+        pathLabel.text = paths.joined(separator: "  >  ")
     }
 
 }
@@ -300,19 +243,34 @@ extension SwapController: UITextFieldDelegate {
     public func textFieldDidBeginEditing(_ textField: UITextField) {
         if textField == fromTextField {
             toTextField.text = nil
-            swapExactFromButton.isEnabled = true
-            swapExactToButton.isEnabled = false
+            pathLabel.text = nil
+            swapButton.isEnabled = false
             fromTokenEstimateButton.isEnabled = true
             toTokenEstimateButton.isEnabled = false
+
+            mode = .exactFrom
+            syncLabels()
         }
 
         if textField == toTextField {
             fromTextField.text = nil
-            swapExactToButton.isEnabled = true
-            swapExactFromButton.isEnabled = false
+            pathLabel.text = nil
+            swapButton.isEnabled = false
             toTokenEstimateButton.isEnabled = true
             fromTokenEstimateButton.isEnabled = false
+
+            mode = .exactTo
+            syncLabels()
         }
+    }
+
+}
+
+extension SwapController {
+
+    enum Mode {
+        case exactFrom
+        case exactTo
     }
 
 }
