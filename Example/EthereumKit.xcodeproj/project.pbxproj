@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		11B353E98743C82520A37744 /* SwapController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35D85C5CE8FFFE3497F4B /* SwapController.swift */; };
 		607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
 		D36AAAC923A237940065B32B /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36AAAAF23A237940065B32B /* Configuration.swift */; };
 		D36AAACA23A237940065B32B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D36AAAB023A237940065B32B /* Assets.xcassets */; };
@@ -55,6 +56,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		11B35D85C5CE8FFFE3497F4B /* SwapController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwapController.swift; sourceTree = "<group>"; };
 		4063AE224A4268ECAA4E8354 /* Pods-EthereumKit_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EthereumKit_Example.release.xcconfig"; path = "Target Support Files/Pods-EthereumKit_Example/Pods-EthereumKit_Example.release.xcconfig"; sourceTree = "<group>"; };
 		484F9E3A1C8BBB8D90AB0480 /* Pods-EthereumKitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EthereumKitTests.release.xcconfig"; path = "Target Support Files/Pods-EthereumKitTests/Pods-EthereumKitTests.release.xcconfig"; sourceTree = "<group>"; };
 		5DA20E127ED56C93E6490EF1 /* libPods-EthereumKitExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-EthereumKitExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -70,7 +72,8 @@
 		C67257DE7448104BB2CFB003 /* Pods-EthereumKit_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EthereumKit_Tests.release.xcconfig"; path = "Target Support Files/Pods-EthereumKit_Tests/Pods-EthereumKit_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		C863FCC7D4D03DF8CD418271 /* Pods-EthereumKitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EthereumKitTests.debug.xcconfig"; path = "Target Support Files/Pods-EthereumKitTests/Pods-EthereumKitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		C86D39825E88EEAEF0BF0F2E /* Pods-EthereumKit_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EthereumKit_Example.debug.xcconfig"; path = "Target Support Files/Pods-EthereumKit_Example/Pods-EthereumKit_Example.debug.xcconfig"; sourceTree = "<group>"; };
-		D36AAAAD23A232DE0065B32B /* Erc20Kit.swift.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; name = Erc20Kit.swift.podspec; path = ../Erc20Kit.swift.podspec; sourceTree = "<group>"; };
+		D351EAC6249B561400D58B13 /* UniswapKit.swift.podspec */ = {isa = PBXFileReference; lastKnownFileType = file.podspec; name = UniswapKit.swift.podspec; path = ../UniswapKit.swift.podspec; sourceTree = "<group>"; };
+		D36AAAAD23A232DE0065B32B /* Erc20Kit.swift.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; name = Erc20Kit.swift.podspec; path = ../Erc20Kit.swift.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		D36AAAAF23A237940065B32B /* Configuration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		D36AAAB023A237940065B32B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D36AAAB223A237940065B32B /* Manager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Manager.swift; sourceTree = "<group>"; };
@@ -225,6 +228,7 @@
 			children = (
 				C57515A84B5521A1A5C14734 /* EthereumKit.swift.podspec */,
 				D36AAAAD23A232DE0065B32B /* Erc20Kit.swift.podspec */,
+				D351EAC6249B561400D58B13 /* UniswapKit.swift.podspec */,
 				D5D5175C3D5530A6FEC88AAF /* README.md */,
 				DB419D80881CABD1C810C0EB /* LICENSE */,
 			);
@@ -273,6 +277,7 @@
 				D36AAAC523A237940065B32B /* TransactionsController.swift */,
 				D36AAAC623A237940065B32B /* SendController.swift */,
 				D36AAAC723A237940065B32B /* ReceiveController.xib */,
+				11B35D85C5CE8FFFE3497F4B /* SwapController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -577,6 +582,7 @@
 				D36AAADC23A237940065B32B /* SendController.swift in Sources */,
 				607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */,
 				D36AAAD823A237940065B32B /* WordsController.swift in Sources */,
+				11B353E98743C82520A37744 /* SwapController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
