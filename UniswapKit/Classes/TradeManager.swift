@@ -16,6 +16,26 @@ class TradeManager {
         self.address = address
     }
 
+    private func singleWithApprove(contractAddress: Data, amount: BigUInt, single: Single<String>) -> Single<String> {
+        let approveTransactionInput = ERC20.ContractFunctions.approve(spender: routerAddress, amount: amount)
+
+        return ethereumKit.sendSingle(
+                        address: contractAddress,
+                        value: 0,
+                        transactionInput: approveTransactionInput.data,
+                        gasPrice: 50_000_000_000,
+                        gasLimit: 500_000
+                )
+                .flatMap { txInfo in
+                    print("APPROVE TX: \(txInfo.hash)")
+                    return single
+                }
+    }
+
+}
+
+extension TradeManager {
+
     func amountsOutSingle(amountIn: BigUInt, path: [Data]) -> Single<[BigUInt]> {
         let transactionInput = Uniswap.ContractFunctions.getAmountsOut(amountIn: amountIn, path: path)
 
@@ -71,8 +91,6 @@ class TradeManager {
     }
 
     func swapTokensForExactETH(amountOut: BigUInt, amountInMax: BigUInt, path: [Data]) -> Single<String> {
-        let approveTransactionInput = ERC20.ContractFunctions.approve(spender: routerAddress, amount: amountInMax)
-
         let transactionInput = Uniswap.ContractFunctions.swapTokensForExactETH(
                 amountOut: amountOut,
                 amountInMax: amountInMax,
@@ -81,32 +99,21 @@ class TradeManager {
                 deadline: BigUInt(Date().timeIntervalSince1970 + 3600)
         )
 
-        return ethereumKit.sendSingle(
-                        address: path[0],
+        let single = ethereumKit.sendSingle(
+                        address: routerAddress,
                         value: 0,
-                        transactionInput: approveTransactionInput.data,
+                        transactionInput: transactionInput.data,
                         gasPrice: 50_000_000_000,
                         gasLimit: 500_000
                 )
-                .flatMap { [unowned self] txInfo in
-                    print("APPROVE TX: \(txInfo.hash)")
-
-                    return self.ethereumKit.sendSingle(
-                                    address: self.routerAddress,
-                                    value: 0,
-                                    transactionInput: transactionInput.data,
-                                    gasPrice: 50_000_000_000,
-                                    gasLimit: 500_000
-                            )
-                            .map { txInfo in
-                                txInfo.hash
-                            }
+                .map { txInfo in
+                    txInfo.hash
                 }
+
+        return singleWithApprove(contractAddress: path[0], amount: amountInMax, single: single)
     }
 
     func swapExactTokensForETH(amountIn: BigUInt, amountOutMin: BigUInt, path: [Data]) -> Single<String> {
-        let approveTransactionInput = ERC20.ContractFunctions.approve(spender: routerAddress, amount: amountIn)
-
         let transactionInput = Uniswap.ContractFunctions.swapExactTokensForETH(
                 amountIn: amountIn,
                 amountOutMin: amountOutMin,
@@ -115,27 +122,18 @@ class TradeManager {
                 deadline: BigUInt(Date().timeIntervalSince1970 + 3600)
         )
 
-        return ethereumKit.sendSingle(
-                        address: path[0],
+        let single = ethereumKit.sendSingle(
+                        address: routerAddress,
                         value: 0,
-                        transactionInput: approveTransactionInput.data,
+                        transactionInput: transactionInput.data,
                         gasPrice: 50_000_000_000,
                         gasLimit: 500_000
                 )
-                .flatMap { [unowned self] txInfo in
-                    print("APPROVE TX: \(txInfo.hash)")
-
-                    return self.ethereumKit.sendSingle(
-                                    address: self.routerAddress,
-                                    value: 0,
-                                    transactionInput: transactionInput.data,
-                                    gasPrice: 50_000_000_000,
-                                    gasLimit: 500_000
-                            )
-                            .map { txInfo in
-                                txInfo.hash
-                            }
+                .map { txInfo in
+                    txInfo.hash
                 }
+
+        return singleWithApprove(contractAddress: path[0], amount: amountIn, single: single)
     }
 
     func swapETHForExactTokens(amountOut: BigUInt, amountInMax: BigUInt, path: [Data]) -> Single<String> {
@@ -156,6 +154,52 @@ class TradeManager {
                 .map { txInfo in
                     txInfo.hash
                 }
+    }
+
+    func swapExactTokensForTokens(amountIn: BigUInt, amountOutMin: BigUInt, path: [Data]) -> Single<String> {
+        let transactionInput = Uniswap.ContractFunctions.swapExactTokensForTokens(
+                amountIn: amountIn,
+                amountOutMin: amountOutMin,
+                path: path,
+                to: address,
+                deadline: BigUInt(Date().timeIntervalSince1970 + 3600)
+        )
+
+        let single = ethereumKit.sendSingle(
+                        address: routerAddress,
+                        value: 0,
+                        transactionInput: transactionInput.data,
+                        gasPrice: 50_000_000_000,
+                        gasLimit: 500_000
+                )
+                .map { txInfo in
+                    txInfo.hash
+                }
+
+        return singleWithApprove(contractAddress: path[0], amount: amountIn, single: single)
+    }
+
+    func swapTokensForExactTokens(amountOut: BigUInt, amountInMax: BigUInt, path: [Data]) -> Single<String> {
+        let transactionInput = Uniswap.ContractFunctions.swapTokensForExactTokens(
+                amountOut: amountOut,
+                amountInMax: amountInMax,
+                path: path,
+                to: address,
+                deadline: BigUInt(Date().timeIntervalSince1970 + 3600)
+        )
+
+        let single = ethereumKit.sendSingle(
+                        address: routerAddress,
+                        value: 0,
+                        transactionInput: transactionInput.data,
+                        gasPrice: 50_000_000_000,
+                        gasLimit: 500_000
+                )
+                .map { txInfo in
+                    txInfo.hash
+                }
+
+        return singleWithApprove(contractAddress: path[0], amount: amountInMax, single: single)
     }
 
 }

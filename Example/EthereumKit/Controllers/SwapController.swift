@@ -25,10 +25,10 @@ class SwapController: UIViewController {
 
     private static let tokens = [
         Erc20Token(name: "GMO coins", coin: "GMOLW", contractAddress: "0xbb74a24d83470f64d5f0c01688fbb49a5a251b32", decimal: 18),
-        Erc20Token(name: "UniGay", coin: "UGAY", contractAddress: "0x13338d72b25bb5a4af2122afb70f1264cffa8bce", decimal: 18),
+        Erc20Token(name: "DAI", coin: "DAI", contractAddress: "0xad6d458402f60fd3bd25163575031acdce07538d", decimal: 18),
     ]
 
-    private var fromToken: Erc20Token?
+    private var fromToken: Erc20Token? = SwapController.tokens[0]
     private var toToken: Erc20Token? = SwapController.tokens[1]
 
     override func viewDidLoad() {
