@@ -112,7 +112,7 @@ extension Kit {
             switch (fromPathItem.swapItem, toPathItem.swapItem) {
             case (.ethereum, .erc20): return tradeManager.swapExactETHForTokens(amountIn: amountIn, amountOutMin: amountOutMin, path: path)
             case (.erc20, .ethereum): return tradeManager.swapExactTokensForETH(amountIn: amountIn, amountOutMin: amountOutMin, path: path)
-//            case (.erc20, .erc20): return tradeManager.swapExactTokensForETH(amountIn: amountIn, amountOutMin: amountOutMin, path: path)
+            case (.erc20, .erc20): return tradeManager.swapExactTokensForTokens(amountIn: amountIn, amountOutMin: amountOutMin, path: path)
             default: fatalError()
             }
         } catch {
@@ -138,7 +138,7 @@ extension Kit {
             switch (fromPathItem.swapItem, toPathItem.swapItem) {
             case (.ethereum, .erc20): return tradeManager.swapETHForExactTokens(amountOut: amountOut, amountInMax: amountInMax, path: path)
             case (.erc20, .ethereum): return tradeManager.swapTokensForExactETH(amountOut: amountOut, amountInMax: amountInMax, path: path)
-//            case (.erc20, .erc20): return tradeManager.swapExactTokensForETH(amountIn: amountIn, amountOutMin: amountOutMin, path: path)
+            case (.erc20, .erc20): return tradeManager.swapTokensForExactTokens(amountOut: amountOut, amountInMax: amountInMax, path: path)
             default: fatalError()
             }
         } catch {
