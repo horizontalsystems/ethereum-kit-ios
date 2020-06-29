@@ -20,7 +20,7 @@ protocol IBlockchain {
     func transactionExistSingle(transactionHash: Data) -> Single<Bool>
     func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data>
     func call(contractAddress: Data, data: Data, blockHeight: Int?) -> Single<Data>
-    func estimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int>
+    func estimateGas(to: Data, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int>
 }
 
 protocol IBlockchainDelegate: class {

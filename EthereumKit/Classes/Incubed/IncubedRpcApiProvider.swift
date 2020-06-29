@@ -197,12 +197,16 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
         }
     }
 
-    func getEstimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: String?) -> Single<Int> {
+    func getEstimateGas(to: Data, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int> {
+        let from = address.toHexString()
+        let to = to.toHexString()
+        let data = data?.toHexString()
+
         let stringSingle: Single<String> = Single.fromIncubed {
-            self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: getEstimateGas \(from ?? "Nil") \(contractAddress) \(amount?.description ?? "Nil") \(data ?? "Nil")")
+            self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: getEstimateGas \(from) \(to) \(amount?.description ?? "Nil") \(data ?? "Nil")")
             let callParams: [String: Any] = [
-                "to": contractAddress.lowercased(),
-                "from": from?.lowercased() as Any,
+                "to": to,
+                "from": from,
                 "gas": gasLimit as Any,
                 "gasPrice": gasPrice as Any,
                 "value": amount as Any,

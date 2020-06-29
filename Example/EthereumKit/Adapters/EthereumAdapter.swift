@@ -124,7 +124,7 @@ extension EthereumAdapter: IAdapter {
     }
 
     func estimatedGasLimit(to address: String, value: Decimal) -> Single<Int> {
-        Single.just(ethereumKit.gasLimit)
+        ethereumKit.estimateGas(to: address, amount: value.roundedString(decimal: decimal), gasPrice: 5_000_000_000)
     }
 
 }

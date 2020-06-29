@@ -6,7 +6,7 @@ import Secp256k1Kit
 import HsToolKit
 
 public class Kit {
-    public let gasLimit = 21_000
+    private let gasLimit = 1_000_000
 
     private let lastBlockHeightSubject = PublishSubject<Int>()
     private let syncStateSubject = PublishSubject<SyncState>()
@@ -176,8 +176,20 @@ extension Kit {
         blockchain.call(contractAddress: contractAddress, data: data, blockHeight: blockHeight)
     }
 
-    public func estimateGas(contractAddress: String, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int> {
-        blockchain.estimateGas(from: receiveAddress, contractAddress: contractAddress, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice, data: data)
+    public func estimateGas(to: String, amount: String, gasPrice: Int?) -> Single<Int> {
+        guard let to = Data(hex: to) else {
+            return Single.error(ValidationError.invalidAddress)
+        }
+
+        guard let amount = BigUInt(amount) else {
+            return Single.error(ValidationError.invalidValue)
+        }
+
+        return blockchain.estimateGas(to: to, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice, data: nil)
+    }
+
+    public func estimateGas(to: Data, amount: BigUInt?, gasPrice: Int?, data: Data?) -> Single<Int> {
+        blockchain.estimateGas(to: to, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice, data: data)
     }
 
     public func statusInfo() -> [(String, Any)] {

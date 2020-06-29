@@ -221,11 +221,12 @@ extension InfuraApiProvider: IRpcApiProvider {
         dataSingle(method: "eth_call", params: [["to": contractAddress, "data": data], "latest"])
     }
 
-    func getEstimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: String?) -> Single<Int> {
-        var params = [String: Any]()
-        if let from = from {
-            params["from"] = from.lowercased()
-        }
+    func getEstimateGas(to: Data, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int> {
+        var params: [String: Any] = [
+            "from": address.toHexString(),
+            "to": to.toHexString()
+        ]
+
         if let amount = amount {
             params["value"] = "0x" + amount.serialize().toRawHexString().removeLeadingZeros()
         }
@@ -235,8 +236,9 @@ extension InfuraApiProvider: IRpcApiProvider {
         if let gasPrice = gasPrice {
             params["gasPrice"] = "0x" + String(gasPrice, radix: 16).removeLeadingZeros()
         }
-        params["to"] = contractAddress.lowercased()
-        params["data"] = data
+        if let data = data {
+            params["data"] = data.toHexString()
+        }
 
         return intSingle(method: "eth_estimateGas", params: [params])
     }
