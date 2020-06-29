@@ -189,8 +189,8 @@ extension ApiBlockchain: IBlockchain {
         rpcApiProvider.call(contractAddress: contractAddress.toHexString(), data: data.toHexString(), blockNumber: blockHeight)
     }
 
-    func estimateGas(from: String?, contractAddress: String, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int> {
-        rpcApiProvider.getEstimateGas(from: from, contractAddress: contractAddress, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice, data: data?.toHexString())
+    func estimateGas(to: Data, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int> {
+        rpcApiProvider.getEstimateGas(to: to, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice, data: data)
     }
 
 }

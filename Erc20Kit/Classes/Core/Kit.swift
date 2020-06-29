@@ -3,7 +3,6 @@ import EthereumKit
 import BigInt
 
 public class Kit {
-    private let gasLimit: Int
     private let disposeBag = DisposeBag()
 
     private let ethereumKit: EthereumKit.Kit
@@ -12,11 +11,10 @@ public class Kit {
 
     private let state: KitState
 
-    init(ethereumKit: EthereumKit.Kit, transactionManager: ITransactionManager, balanceManager: IBalanceManager, gasLimit: Int, state: KitState = KitState()) {
+    init(ethereumKit: EthereumKit.Kit, transactionManager: ITransactionManager, balanceManager: IBalanceManager, state: KitState = KitState()) {
         self.ethereumKit = ethereumKit
         self.transactionManager = transactionManager
         self.balanceManager = balanceManager
-        self.gasLimit = gasLimit
         self.state = state
 
         onUpdateSyncState(syncState: ethereumKit.syncState)
@@ -123,18 +121,20 @@ extension Kit {
     }
 
     public func estimateGas(to: String, contractAddress: String, value: String, gasPrice: Int?) -> Single<Int> {
-        guard let amountValue = BigUInt(value) else {
+        guard let to = Data(hex: to) else {
+            return Single.error(ValidationError.invalidAddress)
+        }
+
+        guard let contractAddress = Data(hex: contractAddress) else {
+            return Single.error(ValidationError.invalidAddress)
+        }
+
+        guard let value = BigUInt(value) else {
             return Single.error(ValidationError.invalidValue)
         }
 
-        do {
-            let toAddress = try convert(address: to)
-            let data = transactionManager.transactionContractData(to: toAddress, value: amountValue)
-
-            return ethereumKit.estimateGas(contractAddress: contractAddress, amount: nil, gasLimit: gasLimit, gasPrice: gasPrice, data: data)
-        } catch {
-            return Single.error(ValidationError.invalidAddress)
-        }
+        let data = transactionManager.transactionContractData(to: to, value: value)
+        return ethereumKit.estimateGas(to: contractAddress, amount: nil, gasPrice: gasPrice, data: data)
     }
 
 }
@@ -170,7 +170,7 @@ extension Kit: IBalanceManagerDelegate {
 
 extension Kit {
 
-    public static func instance(ethereumKit: EthereumKit.Kit, contractAddress: String, gasLimit: Int = 1_000_000) throws -> Kit {
+    public static func instance(ethereumKit: EthereumKit.Kit, contractAddress: String) throws -> Kit {
         let databaseFileName = "\(ethereumKit.uniqueId)-\(contractAddress)"
 
         guard let contractAddress = Data(hex: contractAddress) else {
@@ -188,7 +188,7 @@ extension Kit {
         var transactionManager: ITransactionManager = TransactionManager(contractAddress: contractAddress, address: address, storage: storage, transactionProvider: transactionProvider, dataProvider: dataProvider, transactionBuilder: transactionBuilder)
         var balanceManager: IBalanceManager = BalanceManager(contractAddress: contractAddress, address: address, storage: storage, dataProvider: dataProvider)
 
-        let erc20Kit = Kit(ethereumKit: ethereumKit, transactionManager: transactionManager, balanceManager: balanceManager, gasLimit: gasLimit)
+        let erc20Kit = Kit(ethereumKit: ethereumKit, transactionManager: transactionManager, balanceManager: balanceManager)
 
         transactionManager.delegate = erc20Kit
         balanceManager.delegate = erc20Kit
