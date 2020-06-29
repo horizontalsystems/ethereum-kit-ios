@@ -35,26 +35,32 @@ protocol ITransactionManager {
     var delegate: ITransactionManagerDelegate? { get set }
 
     func refresh()
-    func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[Transaction]>
-    func transaction(hash: Data) -> Transaction?
+    func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[TransactionWithInternal]>
+    func transaction(hash: Data) -> TransactionWithInternal?
     func handle(sentTransaction: Transaction)
 }
 
 protocol ITransactionStorage {
-    var lastTransactionBlockHeight: Int? { get }
+    var lastTransaction: Transaction? { get }
 
-    func transactionsSingle(fromHash: Data?, limit: Int?, contractAddress: Data?) -> Single<[Transaction]>
-    func transaction(hash: Data) -> Transaction?
+    func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[TransactionWithInternal]>
+    func transaction(hash: Data) -> TransactionWithInternal?
     func save(transactions: [Transaction])
+}
+
+protocol IInternalTransactionStorage {
+    var lastInternalTransactionBlockHeight: Int? { get }
+    func save(internalTransactions: [InternalTransaction])
 }
 
 protocol ITransactionsProvider {
     var source: String { get }
 
     func transactionsSingle(startBlock: Int) -> Single<[Transaction]>
+    func internalTransactionsSingle(startBlock: Int) -> Single<[InternalTransaction]>
 }
 
 protocol ITransactionManagerDelegate: AnyObject {
     func onUpdate(transactionsSyncState: SyncState)
-    func onUpdate(transactions: [Transaction])
+    func onUpdate(transactionsWithInternal: [TransactionWithInternal])
 }

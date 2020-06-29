@@ -19,13 +19,17 @@ public class TransactionInfo {
     public let transactionIndex: Int?
     public let txReceiptStatus: Int?
 
-    public let contractAddress: String?
+    public let internalTransactions: [InternalTransactionInfo]
 
-    init(transaction: Transaction) {
+    init(transactionWithInternal: TransactionWithInternal) {
+        let transaction = transactionWithInternal.transaction
+
         hash = transaction.hash.toHexString()
         nonce = transaction.nonce
         input = transaction.input.toHexString()
         from = transaction.from.toEIP55Address()
+        to = transaction.to.toEIP55Address()
+        value = transaction.value.description
         gasLimit = transaction.gasLimit
         gasPrice = transaction.gasPrice
         timestamp = transaction.timestamp
@@ -38,17 +42,7 @@ public class TransactionInfo {
         transactionIndex = transaction.transactionIndex
         txReceiptStatus = transaction.txReceiptStatus
 
-        let data = transaction.input
-
-        if data.count == 68 && data[0...3].toRawHexString() == "a9059cbb" {
-            to = data[4...35].toEIP55Address()
-            value = BigUInt(data[36...67].toRawHexString(), radix: 16)!.description
-            contractAddress = transaction.to.toEIP55Address()
-        } else {
-            to = transaction.to.toEIP55Address()
-            value = transaction.value.description
-            contractAddress = nil
-        }
+        internalTransactions = transactionWithInternal.internalTransactions.map { InternalTransactionInfo(transaction: $0) }
     }
 
 }

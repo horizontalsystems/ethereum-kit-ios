@@ -55,6 +55,19 @@ extension EtherscanApiProvider {
         return apiSingle(params: params)
     }
 
+    public func internalTransactionsSingle(startBlock: Int) -> Single<[[String: String]]> {
+        let params: [String: Any] = [
+            "module": "account",
+            "action": "txlistinternal",
+            "address": address.toHexString(),
+            "startblock": startBlock,
+            "endblock": 99999999,
+            "sort": "desc"
+        ]
+
+        return apiSingle(params: params)
+    }
+
     public func tokenTransactionsSingle(contractAddress: Data, startBlock: Int) -> Single<[[String: String]]> {
         let params: [String: Any] = [
             "module": "account",
@@ -106,6 +119,28 @@ class EtherscanTransactionProvider: ITransactionsProvider {
                 transaction.txReceiptStatus = data["txreceipt_status"].flatMap { Int($0) }
 
                 return transaction
+            }
+        }
+    }
+
+    func internalTransactionsSingle(startBlock: Int) -> Single<[InternalTransaction]> {
+        provider.internalTransactionsSingle(startBlock: startBlock).map { array -> [InternalTransaction] in
+            array.compactMap { data -> InternalTransaction? in
+                guard let hash = data["hash"].flatMap({ Data(hex: $0) }) else { return nil }
+                guard let blockNumber = data["blockNumber"].flatMap({ Int($0) }) else { return nil }
+                guard let from = data["from"].flatMap({ Data(hex: $0) }) else { return nil }
+                guard let to = data["to"].flatMap({ Data(hex: $0) }) else { return nil }
+                guard let value = data["value"].flatMap({ BigUInt($0) }) else { return nil }
+                guard let traceId = data["traceId"].flatMap({ Int($0) }) else { return nil }
+
+                return InternalTransaction(
+                        hash: hash,
+                        blockNumber: blockNumber,
+                        from: from,
+                        to: to,
+                        value: value,
+                        traceId: traceId
+                )
             }
         }
     }

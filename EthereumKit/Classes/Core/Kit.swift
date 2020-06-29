@@ -109,7 +109,7 @@ extension Kit {
 
     public func transactionsSingle(fromHash: String? = nil, limit: Int? = nil) -> Single<[TransactionInfo]> {
         transactionManager.transactionsSingle(fromHash: fromHash.flatMap { Data(hex: $0) }, limit: limit)
-                .map { $0.map { TransactionInfo(transaction: $0) } }
+                .map { $0.map { TransactionInfo(transactionWithInternal: $0) } }
     }
 
     public func transaction(hash: String) -> TransactionInfo? {
@@ -117,7 +117,7 @@ extension Kit {
             return nil
         }
 
-        return transactionManager.transaction(hash: hash).map { TransactionInfo(transaction: $0) }
+        return transactionManager.transaction(hash: hash).map { TransactionInfo(transactionWithInternal: $0) }
     }
 
     public func sendSingle(address: Data, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int) -> Single<TransactionInfo> {
@@ -127,7 +127,7 @@ extension Kit {
                 .do(onSuccess: { [weak self] transaction in
                     self?.transactionManager.handle(sentTransaction: transaction)
                 })
-                .map { TransactionInfo(transaction: $0) }
+                .map { TransactionInfo(transactionWithInternal: TransactionWithInternal(transaction: $0)) }
     }
 
     public func sendSingle(to: String, value: String, gasPrice: Int, gasLimit: Int) -> Single<TransactionInfo> {
@@ -241,8 +241,8 @@ extension Kit: IBlockchainDelegate {
 
 extension Kit: ITransactionManagerDelegate {
 
-    func onUpdate(transactions: [Transaction]) {
-        transactionsSubject.onNext(transactions.map { TransactionInfo(transaction: $0) })
+    func onUpdate(transactionsWithInternal: [TransactionWithInternal]) {
+        transactionsSubject.onNext(transactionsWithInternal.map { TransactionInfo(transactionWithInternal: $0) })
     }
 
     func onUpdate(transactionsSyncState: SyncState) {
@@ -319,7 +319,7 @@ extension Kit {
 //            blockchain = try GethBlockchain.instance(nodeDirectory: nodeDirectory, network: network, storage: storage, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, address: address, logger: logger)
         }
 
-        let transactionStorage: ITransactionStorage = TransactionStorage(databaseDirectoryUrl: try dataDirectoryUrl(), databaseFileName: "transactions-\(uniqueId)")
+        let transactionStorage: ITransactionStorage & IInternalTransactionStorage = TransactionStorage(databaseDirectoryUrl: try dataDirectoryUrl(), databaseFileName: "transactions-\(uniqueId)")
         let transactionManager = TransactionManager(storage: transactionStorage, transactionsProvider: transactionsProvider)
 
         let ethereumKit = Kit(blockchain: blockchain, transactionManager: transactionManager, transactionBuilder: transactionBuilder, address: address, uniqueId: uniqueId, etherscanApiProvider: etherscanApiProvider, logger: logger)
