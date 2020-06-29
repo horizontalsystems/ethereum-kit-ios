@@ -23,10 +23,20 @@ class EthereumAdapter {
 
         var amount: Decimal = 0
 
-        if let significand = Decimal(string: transaction.value) {
+        if let significand = Decimal(string: transaction.value), significand != 0 {
             let sign: FloatingPointSign = from.mine ? .minus : .plus
             amount = Decimal(sign: sign, exponent: -decimal, significand: significand)
         }
+
+        for internalTransaction in transaction.internalTransactions {
+            if let significand = Decimal(string: internalTransaction.value), significand != 0 {
+                let mine = internalTransaction.from == receiveAddress
+                let sign: FloatingPointSign = mine ? .minus : .plus
+                let internalTransactionAmount = Decimal(sign: sign, exponent: -decimal, significand: significand)
+                amount += internalTransactionAmount
+            }
+        }
+
         let isError = (transaction.isError ?? 0) != 0
 
         return TransactionRecord(

@@ -2,6 +2,8 @@ import GRDB
 import BigInt
 
 class Transaction: Record {
+    static let internalTransactions = hasMany(InternalTransaction.self)
+
     let hash: Data
     let nonce: Int
     let input: Data
@@ -95,6 +97,22 @@ class Transaction: Record {
         container[Columns.isError] = isError
         container[Columns.transactionIndex] = transactionIndex
         container[Columns.txReceiptStatus] = txReceiptStatus
+    }
+
+}
+
+struct TransactionWithInternal: FetchableRecord {
+    let transaction: Transaction
+    let internalTransactions: [InternalTransaction]
+
+    init(row: Row) {
+        transaction = Transaction(row: row)
+        internalTransactions = row[InternalTransaction.databaseTableName]
+    }
+
+    init(transaction: Transaction) {
+        self.transaction = transaction
+        internalTransactions = []
     }
 
 }
