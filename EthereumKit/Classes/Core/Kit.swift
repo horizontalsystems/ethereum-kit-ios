@@ -6,7 +6,7 @@ import Secp256k1Kit
 import HsToolKit
 
 public class Kit {
-    private let gasLimit = 1_000_000
+    private let maxGasLimit = 1_000_000
 
     private let lastBlockHeightSubject = PublishSubject<Int>()
     private let syncStateSubject = PublishSubject<SyncState>()
@@ -104,10 +104,6 @@ extension Kit {
         try AddressValidator.validate(address: address)
     }
 
-    public func fee(gasPrice: Int) -> Decimal {
-        Decimal(gasPrice) * Decimal(gasLimit)
-    }
-
     public func transactionsSingle(fromHash: String? = nil, limit: Int? = nil) -> Single<[TransactionInfo]> {
         transactionManager.transactionsSingle(fromHash: fromHash.flatMap { Data(hex: $0) }, limit: limit)
                 .map { $0.map { TransactionInfo(transaction: $0) } }
@@ -131,7 +127,7 @@ extension Kit {
                 .map { TransactionInfo(transaction: $0) }
     }
 
-    public func sendSingle(to: String, value: String, gasPrice: Int, gasLimit: Int? = nil) -> Single<TransactionInfo> {
+    public func sendSingle(to: String, value: String, gasPrice: Int, gasLimit: Int) -> Single<TransactionInfo> {
         guard let to = Data(hex: to) else {
             return Single.error(ValidationError.invalidAddress)
         }
@@ -140,7 +136,7 @@ extension Kit {
             return Single.error(ValidationError.invalidValue)
         }
 
-        return sendSingle(address: to, value: value, gasPrice: gasPrice, gasLimit: gasLimit ?? self.gasLimit)
+        return sendSingle(address: to, value: value, gasPrice: gasPrice, gasLimit: gasLimit)
     }
 
     public var debugInfo: String {
@@ -185,11 +181,11 @@ extension Kit {
             return Single.error(ValidationError.invalidValue)
         }
 
-        return blockchain.estimateGas(to: to, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice, data: nil)
+        return blockchain.estimateGas(to: to, amount: amount, gasLimit: maxGasLimit, gasPrice: gasPrice, data: nil)
     }
 
     public func estimateGas(to: Data, amount: BigUInt?, gasPrice: Int?, data: Data?) -> Single<Int> {
-        blockchain.estimateGas(to: to, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice, data: data)
+        blockchain.estimateGas(to: to, amount: amount, gasLimit: maxGasLimit, gasPrice: gasPrice, data: data)
     }
 
     public func statusInfo() -> [(String, Any)] {
