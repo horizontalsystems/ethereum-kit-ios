@@ -120,8 +120,13 @@ extension Kit {
         state.transactionsSubject.asObservable()
     }
 
-    public func estimateGas(to: String, contractAddress: String, value: String, gasPrice: Int?) -> Single<Int> {
-        guard let to = Data(hex: to) else {
+    public func estimateGas(to: String?, contractAddress: String, value: String, gasPrice: Int?) -> Single<Int> {
+        // without address - provide default gas limit
+        guard let to = to else {
+            return Single.just(EthereumKit.Kit.defaultGasLimit)
+        }
+
+        guard let toData = Data(hex: to) else {
             return Single.error(ValidationError.invalidAddress)
         }
 
@@ -133,7 +138,7 @@ extension Kit {
             return Single.error(ValidationError.invalidValue)
         }
 
-        let data = transactionManager.transactionContractData(to: to, value: value)
+        let data = transactionManager.transactionContractData(to: toData, value: value)
         return ethereumKit.estimateGas(to: contractAddress, amount: nil, gasPrice: gasPrice, data: data)
     }
 
