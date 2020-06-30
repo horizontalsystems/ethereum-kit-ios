@@ -6,7 +6,10 @@ import Secp256k1Kit
 import HsToolKit
 
 public class Kit {
+    public static let defaultGasLimit = 21_000
+
     private let maxGasLimit = 1_000_000
+    private let defaultMinAmount: BigUInt = 1
 
     private let lastBlockHeightSubject = PublishSubject<Int>()
     private let syncStateSubject = PublishSubject<SyncState>()
@@ -172,8 +175,13 @@ extension Kit {
         blockchain.call(contractAddress: contractAddress, data: data, blockHeight: blockHeight)
     }
 
-    public func estimateGas(to: String, amount: String, gasPrice: Int?) -> Single<Int> {
-        guard let to = Data(hex: to) else {
+    public func estimateGas(to: String?, amount: String, gasPrice: Int?) -> Single<Int> {
+        // without address - provide default gas limit
+        guard let to = to else {
+            return Single.just(Kit.defaultGasLimit)
+        }
+
+        guard let toData = Data(hex: to) else {
             return Single.error(ValidationError.invalidAddress)
         }
 
@@ -181,7 +189,10 @@ extension Kit {
             return Single.error(ValidationError.invalidValue)
         }
 
-        return blockchain.estimateGas(to: to, amount: amount, gasLimit: maxGasLimit, gasPrice: gasPrice, data: nil)
+        // if amount is 0 - set default minimum amount
+        let resolvedAmount: BigUInt = amount == 0 ? defaultMinAmount : amount
+
+        return blockchain.estimateGas(to: toData, amount: resolvedAmount, gasLimit: maxGasLimit, gasPrice: gasPrice, data: nil)
     }
 
     public func estimateGas(to: Data, amount: BigUInt?, gasPrice: Int?, data: Data?) -> Single<Int> {
