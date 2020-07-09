@@ -61,10 +61,10 @@ class TradeManager {
 
 extension TradeManager {
 
-    func pairsSingle(tokenIn: Data, tokenOut: Data) -> Single<[Pair]> {
+    func pairsSingle(tokenIn: Token, tokenOut: Token) -> Single<[Pair]> {
         let transactionInput = Uniswap.ContractFunctions.getReserves
 
-        let (token0, token1) = tokenIn.sortsBefore(address: tokenOut) ? (tokenIn, tokenOut) : (tokenOut, tokenIn)
+        let (token0, token1) = tokenIn.sortsBefore(token: tokenOut) ? (tokenIn, tokenOut) : (tokenOut, tokenIn)
 
         let pairAddress = Pair.address(token0: token0, token1: token1)
 
@@ -186,7 +186,7 @@ extension TradeManager {
 
 extension TradeManager {
 
-    static func bestTradeExactIn(pairs: [Pair], tokenAmountIn: TokenAmount, tokenOut: Data, maxHops: Int = 3, currentPairs: [Pair] = [], originalTokenAmountIn: TokenAmount? = nil, bestTrade: Trade? = nil) -> Trade? {
+    static func bestTradeExactIn(pairs: [Pair], tokenAmountIn: TokenAmount, tokenOut: Token, maxHops: Int = 3, currentPairs: [Pair] = [], originalTokenAmountIn: TokenAmount? = nil, bestTrade: Trade? = nil) -> Trade? {
         // todo: guards
 
         let originalTokenAmountIn = originalTokenAmountIn ?? tokenAmountIn
@@ -218,7 +218,7 @@ extension TradeManager {
         return nil
     }
 
-    static func bestTradeExactOut(pairs: [Pair], tokenIn: Data, tokenAmountOut: TokenAmount, maxHops: Int = 3, currentPairs: [Pair] = [], originalTokenAmountOut: TokenAmount? = nil, bestTrade: Trade? = nil) -> Trade? {
+    static func bestTradeExactOut(pairs: [Pair], tokenIn: Token, tokenAmountOut: TokenAmount, maxHops: Int = 3, currentPairs: [Pair] = [], originalTokenAmountOut: TokenAmount? = nil, bestTrade: Trade? = nil) -> Trade? {
         // todo: guards
 
         let originalTokenAmountOut = originalTokenAmountOut ?? tokenAmountOut

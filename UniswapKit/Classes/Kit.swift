@@ -21,96 +21,85 @@ public class Kit {
         return amount
     }
 
-    private func tradeInfo(trade: Trade) -> TradeInfo {
-        TradeInfo(
-                trade: trade,
-                type: trade.type,
-                amountIn: trade.tokenAmountIn.amount.description,
-                amountOut: trade.tokenAmountOut.amount.description
-        )
-    }
-
 }
 
 extension Kit {
 
-    public func pairsSingle(itemIn: SwapItem, itemOut: SwapItem) -> Single<[Pair]> {
+    public func swapDataSingle(itemIn: SwapItem, itemOut: SwapItem) -> Single<SwapData> {
         do {
-            return tradeManager.pairsSingle(
-                            tokenIn: try swapConverter.address(swapItem: itemIn),
-                            tokenOut: try swapConverter.address(swapItem: itemOut)
-                    )
+            let tokenIn = try swapConverter.token(swapItem: itemIn)
+            let tokenOut = try swapConverter.token(swapItem: itemOut)
+
+            return tradeManager.pairsSingle(tokenIn: tokenIn, tokenOut: tokenOut)
+                    .map { pairs in
+                        SwapData(pairs: pairs, tokenIn: tokenIn, tokenOut: tokenOut)
+                    }
         } catch {
             return Single.error(error)
         }
     }
 
-    public func bestTradeExactIn(pairs: [Pair], itemIn: SwapItem, itemOut: SwapItem, amountIn: String) -> TradeInfo? {
+    public func bestTradeExactIn(swapData: SwapData, amountIn: String) -> Trade? {
         do {
             let tokenAmountIn = TokenAmount(
-                    token: try swapConverter.address(swapItem: itemIn),
+                    token: swapData.tokenIn,
                     amount: try convert(amount: amountIn)
             )
 
-            let trade = TradeManager.bestTradeExactIn(
-                    pairs: pairs,
+            return TradeManager.bestTradeExactIn(
+                    pairs: swapData.pairs,
                     tokenAmountIn: tokenAmountIn,
-                    tokenOut: try swapConverter.address(swapItem: itemOut)
+                    tokenOut: swapData.tokenOut
             )
-
-            return trade.map { tradeInfo(trade: $0) }
         } catch {
             return nil
         }
     }
 
-    public func bestTradeExactOut(pairs: [Pair], itemIn: SwapItem, itemOut: SwapItem, amountOut: String) -> TradeInfo? {
+    public func bestTradeExactOut(swapData: SwapData, amountOut: String) -> Trade? {
         do {
             let tokenAmountOut = TokenAmount(
-                    token: try swapConverter.address(swapItem: itemOut),
+                    token: swapData.tokenOut,
                     amount: try convert(amount: amountOut)
             )
 
-            let trade = TradeManager.bestTradeExactOut(
-                    pairs: pairs,
-                    tokenIn: try swapConverter.address(swapItem: itemIn),
+            return TradeManager.bestTradeExactOut(
+                    pairs: swapData.pairs,
+                    tokenIn: swapData.tokenIn,
                     tokenAmountOut: tokenAmountOut
             )
-
-            return trade.map { tradeInfo(trade: $0) }
         } catch {
             return nil
         }
     }
 
-    public func swapSingle(tradeInfo: TradeInfo) -> Single<String> {
-        let trade = tradeInfo.trade
+    public func swapSingle(trade: Trade) -> Single<String> {
+        let tokenIn = trade.tokenAmountIn.token
+        let tokenOut = trade.tokenAmountOut.token
 
-        let wethIn = swapConverter.isWeth(address: trade.tokenAmountIn.token)
-        let wethOut = swapConverter.isWeth(address: trade.tokenAmountOut.token)
+        let amountIn = trade.tokenAmountIn.amount
+        let amountOut = trade.tokenAmountOut.amount
+
+        let path = [tokenIn, tokenOut].map { $0.address } // todo: compute path in Route
 
         switch trade.type {
         case .exactIn:
-            let amountIn = trade.tokenAmountIn.amount
-            let amountOutMin = trade.tokenAmountOut.amount // todo: apply slippage
-            let path = [trade.tokenAmountIn.token, trade.tokenAmountOut.token] // todo: compute path in Route
+            let amountOutMin = amountOut // todo: apply slippage
 
-            switch (wethIn, wethOut) {
-            case (true, false): return tradeManager.swapExactETHForTokens(amountIn: amountIn, amountOutMin: amountOutMin, path: path)
-            case (false, true): return tradeManager.swapExactTokensForETH(amountIn: amountIn, amountOutMin: amountOutMin, path: path)
-            case (false, false): return tradeManager.swapExactTokensForTokens(amountIn: amountIn, amountOutMin: amountOutMin, path: path)
+            switch (tokenIn, tokenOut) {
+            case (.eth, .erc20): return tradeManager.swapExactETHForTokens(amountIn: amountIn, amountOutMin: amountOutMin, path: path)
+            case (.erc20, .eth): return tradeManager.swapExactTokensForETH(amountIn: amountIn, amountOutMin: amountOutMin, path: path)
+            case (.erc20, .erc20): return tradeManager.swapExactTokensForTokens(amountIn: amountIn, amountOutMin: amountOutMin, path: path)
             default: fatalError()
             }
 
         case .exactOut:
-            let amountOut = trade.tokenAmountOut.amount
-            let amountInMax = trade.tokenAmountIn.amount // todo: apply slippage
-            let path = [trade.tokenAmountIn.token, trade.tokenAmountOut.token] // todo: compute path in Route
+            let amountInMax = amountIn // todo: apply slippage
 
-            switch (wethIn, wethOut) {
-            case (true, false): return tradeManager.swapETHForExactTokens(amountOut: amountOut, amountInMax: amountInMax, path: path)
-            case (false, true): return tradeManager.swapTokensForExactETH(amountOut: amountOut, amountInMax: amountInMax, path: path)
-            case (false, false): return tradeManager.swapTokensForExactTokens(amountOut: amountOut, amountInMax: amountInMax, path: path)
+            switch (tokenIn, tokenOut) {
+            case (.eth, .erc20): return tradeManager.swapETHForExactTokens(amountOut: amountOut, amountInMax: amountInMax, path: path)
+            case (.erc20, .eth): return tradeManager.swapTokensForExactETH(amountOut: amountOut, amountInMax: amountInMax, path: path)
+            case (.erc20, .erc20): return tradeManager.swapTokensForExactTokens(amountOut: amountOut, amountInMax: amountInMax, path: path)
             default: fatalError()
             }
         }

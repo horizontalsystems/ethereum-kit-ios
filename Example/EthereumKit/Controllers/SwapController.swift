@@ -18,8 +18,8 @@ class SwapController: UIViewController {
 
     private let uniswapKit: UniswapKit.Kit = Manager.shared.uniswapKit
 
-    private var pairs: [Pair]?
-    private var tradeInfo: TradeInfo?
+    private var swapData: SwapData?
+    private var trade: Trade?
 
     private static let tokens = [
         Erc20Token(name: "GMO coins", coin: "GMOLW", contractAddress: "0xbb74a24d83470f64d5f0c01688fbb49a5a251b32", decimal: 18),
@@ -117,7 +117,7 @@ class SwapController: UIViewController {
 
         syncControls()
 
-        syncPairs()
+        syncSwapData()
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -127,35 +127,37 @@ class SwapController: UIViewController {
     }
 
     private func syncControls() {
-        let tradeType: TradeType = tradeInfo?.type ?? .exactIn
+        let tradeType: TradeType = trade?.type ?? .exactIn
 
         fromLabel.text = "From:\(tradeType == .exactIn ? " (estimated)" : "")"
         toLabel.text = "To:\(tradeType == .exactOut ? " (estimated)" : "")"
 
-        swapButton.isEnabled = tradeInfo != nil
+        swapButton.isEnabled = trade != nil
     }
 
-    private func syncPairs() {
-        uniswapKit.pairsSingle(
-                        itemIn: fromToken.map { .erc20(contractAddress: $0.contractAddress) } ?? .ethereum,
-                        itemOut: toToken.map { .erc20(contractAddress: $0.contractAddress) } ?? .ethereum
-                )
+    private func syncSwapData() {
+        fromTextField.isEnabled = false
+        toTextField.isEnabled = false
+
+        let swapItemIn: SwapItem = fromToken.map { .erc20(contractAddress: $0.contractAddress) } ?? .ethereum
+        let swapItemOut: SwapItem = toToken.map { .erc20(contractAddress: $0.contractAddress) } ?? .ethereum
+
+        uniswapKit.swapDataSingle(itemIn: swapItemIn, itemOut: swapItemOut)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
-                .subscribe(onSuccess: { [weak self] pairs in
-                    self?.pairs = pairs
+                .subscribe(onSuccess: { [weak self] swapData in
+                    self?.swapData = swapData
 
-                    for pair in pairs {
-                        print(pair)
-                    }
+                    self?.fromTextField.isEnabled = true
+                    self?.toTextField.isEnabled = true
                 }, onError: { error in
-                    print("ERROR: \(error)")
+                    print("SWAP DATA ERROR: \(error)")
                 })
                 .disposed(by: disposeBag)
     }
 
     @objc private func onChangeAmountIn() {
-        tradeInfo = nil
+        trade = nil
 
         guard let fromAmountString = fromTextField.text, let fromAmountDecimal = Decimal(string: fromAmountString) else {
             toTextField.text = nil
@@ -163,27 +165,25 @@ class SwapController: UIViewController {
             return
         }
 
-        guard let pairs = pairs else {
+        guard let swapData = swapData else {
             syncControls()
             return
         }
 
-        tradeInfo = uniswapKit.bestTradeExactIn(
-                pairs: pairs,
-                itemIn: fromToken.map { .erc20(contractAddress: $0.contractAddress) } ?? .ethereum,
-                itemOut: toToken.map { .erc20(contractAddress: $0.contractAddress) } ?? .ethereum,
+        trade = uniswapKit.bestTradeExactIn(
+                swapData: swapData,
                 amountIn: fromAmountDecimal.roundedString(decimal: fromToken?.decimal ?? 18)
         )
 
         syncControls()
 
-        if let tradeInfo = tradeInfo, let significand = Decimal(string: tradeInfo.amountOut) {
+        if let trade = trade, let significand = Decimal(string: trade.amountOut) {
             toTextField.text = Decimal(sign: .plus, exponent: -(toToken?.decimal ?? 18), significand: significand).description
         }
     }
 
     @objc private func onChangeAmountOut() {
-        tradeInfo = nil
+        trade = nil
 
         guard let toAmountString = toTextField.text, let toAmountDecimal = Decimal(string: toAmountString) else {
             fromTextField.text = nil
@@ -191,31 +191,29 @@ class SwapController: UIViewController {
             return
         }
 
-        guard let pairs = pairs else {
+        guard let swapData = swapData else {
             syncControls()
             return
         }
 
-        tradeInfo = uniswapKit.bestTradeExactOut(
-                pairs: pairs,
-                itemIn: fromToken.map { .erc20(contractAddress: $0.contractAddress) } ?? .ethereum,
-                itemOut: toToken.map { .erc20(contractAddress: $0.contractAddress) } ?? .ethereum,
+        trade = uniswapKit.bestTradeExactOut(
+                swapData: swapData,
                 amountOut: toAmountDecimal.roundedString(decimal: toToken?.decimal ?? 18)
         )
 
         syncControls()
 
-        if let tradeInfo = tradeInfo, let significand = Decimal(string: tradeInfo.amountIn) {
+        if let trade = trade, let significand = Decimal(string: trade.amountIn) {
             fromTextField.text = Decimal(sign: .plus, exponent: -(fromToken?.decimal ?? 18), significand: significand).description
         }
     }
 
     @objc private func onTapSwap() {
-        guard let tradeInfo = tradeInfo else {
+        guard let trade = trade else {
             return
         }
 
-        uniswapKit.swapSingle(tradeInfo: tradeInfo)
+        uniswapKit.swapSingle(trade: trade)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { txHash in
