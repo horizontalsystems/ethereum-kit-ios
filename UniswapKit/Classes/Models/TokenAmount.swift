@@ -1,6 +1,6 @@
 import BigInt
 
 struct TokenAmount {
-    let token: Data
+    let token: Token
     let amount: BigUInt
 }

@@ -7,15 +7,11 @@ class SwapConverter {
         self.wethAddress = try SwapConverter.wethAddress(networkType: networkType)
     }
 
-    func address(swapItem: SwapItem) throws -> Data {
+    func token(swapItem: SwapItem) throws -> Token {
         switch swapItem {
-        case .ethereum: return wethAddress
-        case .erc20(let contractAddress): return try SwapConverter.convert(address: contractAddress)
+        case .ethereum: return .eth(wethAddress: wethAddress)
+        case .erc20(let contractAddress): return .erc20(address: try SwapConverter.convert(address: contractAddress))
         }
-    }
-
-    func isWeth(address: Data) -> Bool {
-        address == wethAddress
     }
 
     private static func convert(address: String) throws -> Data {

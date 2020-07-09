@@ -10,11 +10,11 @@ public struct Pair {
         self.tokenAmount1 = tokenAmount1
     }
 
-    var token0: Data {
+    var token0: Token {
         tokenAmount0.token
     }
 
-    var token1: Data {
+    var token1: Token {
         tokenAmount1.token
     }
 
@@ -26,11 +26,11 @@ public struct Pair {
         tokenAmount1.amount
     }
 
-    private func other(token: Data) -> Data {
+    private func other(token: Token) -> Token {
         token0 == token ? token1 : token0
     }
 
-    private func reserve(token: Data) -> BigUInt {
+    private func reserve(token: Token) -> BigUInt {
         token0 == token ? reserve0 : reserve1
     }
 
@@ -67,10 +67,10 @@ public struct Pair {
         return TokenAmount(token: tokenIn, amount: amountIn)
     }
 
-    static func address(token0: Data, token1: Data) -> Data {
+    static func address(token0: Token, token1: Token) -> Data {
         let data = Data(hex: "ff")! +
                 Data(hex: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f")! +
-                OpenSslKit.Kit.sha3(token0 + token1) +
+                OpenSslKit.Kit.sha3(token0.address + token1.address) +
                 Data(hex: "0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f")!
 
         return OpenSslKit.Kit.sha3(data).suffix(20)
@@ -81,7 +81,7 @@ public struct Pair {
 extension Pair: CustomStringConvertible {
 
     public var description: String {
-        "Pair:\n[token0: \(token0.toHexString()), reserve0: \(reserve0.description)]\n[token1: \(token1.toHexString()), reserve1: \(reserve1.description)]"
+        "[token0: \(token0), reserve0: \(reserve0.description)]\n[token1: \(token1), reserve1: \(reserve1.description)]"
     }
 
 }
