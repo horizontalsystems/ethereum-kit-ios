@@ -1,8 +1,11 @@
 import RxSwift
 import BigInt
 import EthereumKit
+import OpenSslKit
 
 class TradeManager {
+    private static let uniswapRouterAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"
+
     private let scheduler = ConcurrentDispatchQueueScheduler(queue: DispatchQueue(label: "transactionManager.handle_logs", qos: .background))
     private let disposeBag = DisposeBag()
 
@@ -10,20 +13,15 @@ class TradeManager {
     private let routerAddress: Data
     private let address: Data
 
-    init(ethereumKit: EthereumKit.Kit, routerAddress: Data, address: Data) {
+    init(ethereumKit: EthereumKit.Kit, address: Data) throws {
         self.ethereumKit = ethereumKit
-        self.routerAddress = routerAddress
         self.address = address
-    }
 
-    private static func decodeAmounts(data: Data, pathCount: Int) throws -> [BigUInt] {
-        guard data.count == 64 + pathCount * 32 else {
-            throw ContractError.invalidResponse
+        guard let routerAddress = Data(hex: TradeManager.uniswapRouterAddress) else {
+            throw Kit.KitError.invalidAddress
         }
 
-        return (0..<pathCount).map { i in
-            BigUInt(data[64 + i * 32...64 + (i + 1) * 32 - 1])
-        }
+        self.routerAddress = routerAddress
     }
 
     private var deadline: BigUInt {
@@ -63,29 +61,30 @@ class TradeManager {
 
 extension TradeManager {
 
-    func amountsOutSingle(amountIn: BigUInt, path: [Data]) -> Single<[BigUInt]> {
-        let transactionInput = Uniswap.ContractFunctions.getAmountsOut(amountIn: amountIn, path: path)
+    func pairsSingle(tokenIn: Data, tokenOut: Data) -> Single<[Pair]> {
+        let transactionInput = Uniswap.ContractFunctions.getReserves
 
-        return ethereumKit.call(contractAddress: routerAddress, data: transactionInput.data)
+        let (token0, token1) = tokenIn.sortsBefore(address: tokenOut) ? (tokenIn, tokenOut) : (tokenOut, tokenIn)
+
+        let pairAddress = Pair.address(token0: token0, token1: token1)
+
+        print("PAIR ADDRESS: \(pairAddress.toHexString())")
+
+        return self.ethereumKit.call(contractAddress: pairAddress, data: transactionInput.data)
                 .flatMap { data in
-                    do {
-                        return Single.just(try TradeManager.decodeAmounts(data: data, pathCount: path.count))
-                    } catch {
-                        return Single.error(error)
-                    }
-                }
-    }
+                    print("DATA: \(data.toHexString())")
 
-    func amountsInSingle(amountOut: BigUInt, path: [Data]) -> Single<[BigUInt]> {
-        let transactionInput = Uniswap.ContractFunctions.getAmountsIn(amountOut: amountOut, path: path)
+                    let reserve0 = BigUInt(data[0...31])
+                    let reserve1 = BigUInt(data[32...63])
 
-        return ethereumKit.call(contractAddress: routerAddress, data: transactionInput.data)
-                .flatMap { data in
-                    do {
-                        return Single.just(try TradeManager.decodeAmounts(data: data, pathCount: path.count))
-                    } catch {
-                        return Single.error(error)
-                    }
+                    print("Reserve0: \(reserve0), Reserve1: \(reserve1)")
+
+                    let tokenAmount0 = TokenAmount(token: token0, amount: reserve0)
+                    let tokenAmount1 = TokenAmount(token: token1, amount: reserve1)
+
+                    let pair = Pair(tokenAmount0: tokenAmount0, tokenAmount1: tokenAmount1)
+
+                    return Single.just([pair])
                 }
     }
 
@@ -181,6 +180,74 @@ extension TradeManager {
 
     enum ContractError: Error {
         case invalidResponse
+    }
+
+}
+
+extension TradeManager {
+
+    static func bestTradeExactIn(pairs: [Pair], tokenAmountIn: TokenAmount, tokenOut: Data, maxHops: Int = 3, currentPairs: [Pair] = [], originalTokenAmountIn: TokenAmount? = nil, bestTrade: Trade? = nil) -> Trade? {
+        // todo: guards
+
+        let originalTokenAmountIn = originalTokenAmountIn ?? tokenAmountIn
+        let tokenIn = tokenAmountIn.token
+
+        for pair in pairs {
+            guard pair.token0 == tokenIn || pair.token1 == tokenIn else {
+                continue
+            }
+
+            guard pair.reserve0 != 0 && pair.reserve1 != 0 else {
+                continue
+            }
+
+            let tokenAmountOut = pair.tokenAmountOut(tokenAmountIn: tokenAmountIn)
+
+            if tokenAmountOut.token == tokenOut {
+                return Trade(
+                        type: .exactIn,
+                        route: Route(pairs: currentPairs + [pair]),
+                        tokenAmountIn: originalTokenAmountIn,
+                        tokenAmountOut: tokenAmountOut
+                )
+            } else if maxHops > 1 && pairs.count > 1 {
+                // todo
+            }
+        }
+
+        return nil
+    }
+
+    static func bestTradeExactOut(pairs: [Pair], tokenIn: Data, tokenAmountOut: TokenAmount, maxHops: Int = 3, currentPairs: [Pair] = [], originalTokenAmountOut: TokenAmount? = nil, bestTrade: Trade? = nil) -> Trade? {
+        // todo: guards
+
+        let originalTokenAmountOut = originalTokenAmountOut ?? tokenAmountOut
+        let tokenOut = tokenAmountOut.token
+
+        for pair in pairs {
+            guard pair.token0 == tokenOut || pair.token1 == tokenOut else {
+                continue
+            }
+
+            guard pair.reserve0 != 0 && pair.reserve1 != 0 else {
+                continue
+            }
+
+            let tokenAmountIn = pair.tokenAmountIn(tokenAmountOut: tokenAmountOut)
+
+            if tokenAmountIn.token == tokenIn {
+                return Trade(
+                        type: .exactOut,
+                        route: Route(pairs: [pair] + currentPairs),
+                        tokenAmountIn: tokenAmountIn,
+                        tokenAmountOut: originalTokenAmountOut
+                )
+            } else if maxHops > 1 && pairs.count > 1 {
+                // todo
+            }
+        }
+
+        return nil
     }
 
 }
