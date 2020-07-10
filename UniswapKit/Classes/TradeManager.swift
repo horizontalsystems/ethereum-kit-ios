@@ -233,7 +233,9 @@ extension TradeManager {
                 continue
             }
 
-            let tokenAmountIn = pair.tokenAmountIn(tokenAmountOut: tokenAmountOut)
+            guard let tokenAmountIn = try? pair.tokenAmountIn(tokenAmountOut: tokenAmountOut) else {
+                continue
+            }
 
             if tokenAmountIn.token == tokenIn {
                 return Trade(

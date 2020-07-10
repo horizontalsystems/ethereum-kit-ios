@@ -127,6 +127,8 @@ extension Kit {
         case invalidAmount
         case invalidAddress
         case invalidPathItems
+
+        case insufficientReserve
     }
 
 }

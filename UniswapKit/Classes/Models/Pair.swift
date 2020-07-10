@@ -51,8 +51,10 @@ public struct Pair {
         return TokenAmount(token: tokenOut, amount: amountOut)
     }
 
-    func tokenAmountIn(tokenAmountOut: TokenAmount) -> TokenAmount {
+    func tokenAmountIn(tokenAmountOut: TokenAmount) throws -> TokenAmount {
         // todo: guards
+
+        let amountOut = tokenAmountOut.amount
 
         let tokenOut = tokenAmountOut.token
         let tokenIn = other(token: tokenOut)
@@ -60,8 +62,12 @@ public struct Pair {
         let reserveOut = reserve(token: tokenOut)
         let reserveIn = reserve(token: tokenIn)
 
-        let numerator = reserveIn * tokenAmountOut.amount * 1000
-        let denominator = (reserveOut - tokenAmountOut.amount) * 997
+        guard amountOut < reserveOut else {
+            throw Kit.KitError.insufficientReserve
+        }
+
+        let numerator = reserveIn * amountOut * 1000
+        let denominator = (reserveOut - amountOut) * 997
         let amountIn = numerator / denominator + 1
 
         return TokenAmount(token: tokenIn, amount: amountIn)

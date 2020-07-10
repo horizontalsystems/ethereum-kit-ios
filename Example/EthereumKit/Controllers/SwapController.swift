@@ -13,6 +13,7 @@ class SwapController: UIViewController {
     private let toLabel = UILabel()
     private let toTextField = UITextField()
     private let toTokenLabel = UILabel()
+    private let minMaxLabel = UILabel()
     private let pathLabel = UILabel()
     private let swapButton = UIButton(type: .system)
 
@@ -20,6 +21,8 @@ class SwapController: UIViewController {
 
     private var swapData: SwapData?
     private var trade: Trade?
+
+    private let slippage: Double = 0.5
 
     private static let tokens = [
         Erc20Token(name: "GMO coins", coin: "GMOLW", contractAddress: "0xbb74a24d83470f64d5f0c01688fbb49a5a251b32", decimal: 18),
@@ -95,14 +98,23 @@ class SwapController: UIViewController {
         toTokenLabel.font = .systemFont(ofSize: 14)
         toTokenLabel.text = toToken?.coin ?? "ETH"
 
-        view.addSubview(pathLabel)
-        pathLabel.snp.makeConstraints { maker in
+        view.addSubview(minMaxLabel)
+        minMaxLabel.snp.makeConstraints { maker in
             maker.leading.trailing.equalToSuperview().inset(24)
             maker.top.equalTo(toTextField.snp.bottom).offset(24)
         }
 
+        minMaxLabel.font = .systemFont(ofSize: 12)
+        minMaxLabel.textAlignment = .left
+
+        view.addSubview(pathLabel)
+        pathLabel.snp.makeConstraints { maker in
+            maker.leading.trailing.equalToSuperview().inset(24)
+            maker.top.equalTo(minMaxLabel.snp.bottom).offset(24)
+        }
+
         pathLabel.font = .systemFont(ofSize: 12)
-        pathLabel.textAlignment = .center
+        pathLabel.textAlignment = .left
 
         view.addSubview(swapButton)
         swapButton.snp.makeConstraints { maker in
@@ -133,6 +145,23 @@ class SwapController: UIViewController {
         toLabel.text = "To:\(tradeType == .exactOut ? " (estimated)" : "")"
 
         swapButton.isEnabled = trade != nil
+
+        if let trade = trade {
+            switch trade.type {
+            case .exactIn:
+                if let significand = Decimal(string: trade.amountOutMin(slippage: slippage)) {
+                    let value = Decimal(sign: .plus, exponent: -(toToken?.decimal ?? 18), significand: significand).description
+                    minMaxLabel.text = "Minimum Received: \(value)"
+                }
+            case .exactOut:
+                if let significand = Decimal(string: trade.amountInMax(slippage: slippage)) {
+                    let value = Decimal(sign: .plus, exponent: -(fromToken?.decimal ?? 18), significand: significand).description
+                    minMaxLabel.text = "Maximum Sold: \(value)"
+                }
+            }
+        } else {
+            minMaxLabel.text = nil
+        }
     }
 
     private func syncSwapData() {
