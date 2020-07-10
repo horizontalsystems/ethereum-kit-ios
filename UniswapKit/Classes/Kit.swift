@@ -39,41 +39,51 @@ extension Kit {
         }
     }
 
-    public func bestTradeExactIn(swapData: SwapData, amountIn: String) -> Trade? {
+    public func bestTradeExactIn(swapData: SwapData, amountIn: String, options: TradeOptions) -> TradeData? {
         do {
             let tokenAmountIn = TokenAmount(
                     token: swapData.tokenIn,
                     amount: try convert(amount: amountIn)
             )
 
-            return TradeManager.bestTradeExactIn(
+            guard let trade = TradeManager.bestTradeExactIn(
                     pairs: swapData.pairs,
                     tokenAmountIn: tokenAmountIn,
                     tokenOut: swapData.tokenOut
-            )
+            ) else {
+                return nil
+            }
+
+            return TradeData(trade: trade, options: options)
         } catch {
             return nil
         }
     }
 
-    public func bestTradeExactOut(swapData: SwapData, amountOut: String) -> Trade? {
+    public func bestTradeExactOut(swapData: SwapData, amountOut: String, options: TradeOptions) -> TradeData? {
         do {
             let tokenAmountOut = TokenAmount(
                     token: swapData.tokenOut,
                     amount: try convert(amount: amountOut)
             )
 
-            return TradeManager.bestTradeExactOut(
+            guard let trade = TradeManager.bestTradeExactOut(
                     pairs: swapData.pairs,
                     tokenIn: swapData.tokenIn,
                     tokenAmountOut: tokenAmountOut
-            )
+            ) else {
+                return nil
+            }
+
+            return TradeData(trade: trade, options: options)
         } catch {
             return nil
         }
     }
 
-    public func swapSingle(trade: Trade) -> Single<String> {
+    public func swapSingle(tradeData: TradeData) -> Single<String> {
+        let trade = tradeData.trade
+
         let tokenIn = trade.tokenAmountIn.token
         let tokenOut = trade.tokenAmountOut.token
 

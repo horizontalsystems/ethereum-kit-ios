@@ -20,9 +20,14 @@ class SwapController: UIViewController {
     private let uniswapKit: UniswapKit.Kit = Manager.shared.uniswapKit
 
     private var swapData: SwapData?
-    private var trade: Trade?
+    private var tradeData: TradeData?
 
-    private let slippage: Double = 0.5
+    private let tradeOptions = TradeOptions(
+            allowedSlippage: 0.5,
+            ttl: 20 * 60,
+            recipient: Manager.shared.ethereumKit.receiveAddress,
+            feeOnTransfer: false
+    )
 
     private static let tokens = [
         Erc20Token(name: "GMO coins", coin: "GMOLW", contractAddress: "0xbb74a24d83470f64d5f0c01688fbb49a5a251b32", decimal: 18),
@@ -139,22 +144,22 @@ class SwapController: UIViewController {
     }
 
     private func syncControls() {
-        let tradeType: TradeType = trade?.type ?? .exactIn
+        let tradeType: TradeType = tradeData?.type ?? .exactIn
 
         fromLabel.text = "From:\(tradeType == .exactIn ? " (estimated)" : "")"
         toLabel.text = "To:\(tradeType == .exactOut ? " (estimated)" : "")"
 
-        swapButton.isEnabled = trade != nil
+        swapButton.isEnabled = tradeData != nil
 
-        if let trade = trade {
-            switch trade.type {
+        if let tradeData = tradeData {
+            switch tradeData.type {
             case .exactIn:
-                if let significand = Decimal(string: trade.amountOutMin(slippage: slippage)) {
+                if let significand = Decimal(string: tradeData.amountOutMin) {
                     let value = Decimal(sign: .plus, exponent: -(toToken?.decimal ?? 18), significand: significand).description
                     minMaxLabel.text = "Minimum Received: \(value)"
                 }
             case .exactOut:
-                if let significand = Decimal(string: trade.amountInMax(slippage: slippage)) {
+                if let significand = Decimal(string: tradeData.amountInMax) {
                     let value = Decimal(sign: .plus, exponent: -(fromToken?.decimal ?? 18), significand: significand).description
                     minMaxLabel.text = "Maximum Sold: \(value)"
                 }
@@ -186,7 +191,7 @@ class SwapController: UIViewController {
     }
 
     @objc private func onChangeAmountIn() {
-        trade = nil
+        tradeData = nil
 
         guard let fromAmountString = fromTextField.text, let fromAmountDecimal = Decimal(string: fromAmountString) else {
             toTextField.text = nil
@@ -199,20 +204,21 @@ class SwapController: UIViewController {
             return
         }
 
-        trade = uniswapKit.bestTradeExactIn(
+        tradeData = uniswapKit.bestTradeExactIn(
                 swapData: swapData,
-                amountIn: fromAmountDecimal.roundedString(decimal: fromToken?.decimal ?? 18)
+                amountIn: fromAmountDecimal.roundedString(decimal: fromToken?.decimal ?? 18),
+                options: tradeOptions
         )
 
         syncControls()
 
-        if let trade = trade, let significand = Decimal(string: trade.amountOut) {
+        if let tradeData = tradeData, let significand = Decimal(string: tradeData.amountOut) {
             toTextField.text = Decimal(sign: .plus, exponent: -(toToken?.decimal ?? 18), significand: significand).description
         }
     }
 
     @objc private func onChangeAmountOut() {
-        trade = nil
+        tradeData = nil
 
         guard let toAmountString = toTextField.text, let toAmountDecimal = Decimal(string: toAmountString) else {
             fromTextField.text = nil
@@ -225,24 +231,25 @@ class SwapController: UIViewController {
             return
         }
 
-        trade = uniswapKit.bestTradeExactOut(
+        tradeData = uniswapKit.bestTradeExactOut(
                 swapData: swapData,
-                amountOut: toAmountDecimal.roundedString(decimal: toToken?.decimal ?? 18)
+                amountOut: toAmountDecimal.roundedString(decimal: toToken?.decimal ?? 18),
+                options: tradeOptions
         )
 
         syncControls()
 
-        if let trade = trade, let significand = Decimal(string: trade.amountIn) {
+        if let tradeData = tradeData, let significand = Decimal(string: tradeData.amountIn) {
             fromTextField.text = Decimal(sign: .plus, exponent: -(fromToken?.decimal ?? 18), significand: significand).description
         }
     }
 
     @objc private func onTapSwap() {
-        guard let trade = trade else {
+        guard let tradeData = tradeData else {
             return
         }
 
-        uniswapKit.swapSingle(trade: trade)
+        uniswapKit.swapSingle(tradeData: tradeData)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { txHash in
