@@ -42,12 +42,15 @@ class TradeManager {
     }
 
     private func singleWithApprove(contractAddress: Data, amount: BigUInt, single: Single<String>) -> Single<String> {
-        let approveTransactionInput = ERC20.ContractFunctions.approve(spender: routerAddress, amount: amount)
+        let method = ContractMethod(name: "approve", arguments: [
+            .address(routerAddress),
+            .uint256(amount)
+        ])
 
         return ethereumKit.sendSingle(
                         address: contractAddress,
                         value: 0,
-                        transactionInput: approveTransactionInput.data,
+                        transactionInput: method.encodedData,
                         gasPrice: 50_000_000_000,
                         gasLimit: 500_000
                 )
@@ -62,7 +65,7 @@ class TradeManager {
 extension TradeManager {
 
     func pairsSingle(tokenIn: Token, tokenOut: Token) -> Single<[Pair]> {
-        let transactionInput = Uniswap.ContractFunctions.getReserves
+        let method = ContractMethod(name: "getReserves")
 
         let (token0, token1) = tokenIn.sortsBefore(token: tokenOut) ? (tokenIn, tokenOut) : (tokenOut, tokenIn)
 
@@ -70,7 +73,7 @@ extension TradeManager {
 
         print("PAIR ADDRESS: \(pairAddress.toHexString())")
 
-        return self.ethereumKit.call(contractAddress: pairAddress, data: transactionInput.data)
+        return self.ethereumKit.call(contractAddress: pairAddress, data: method.encodedData)
                 .flatMap { data in
                     print("DATA: \(data.toHexString())")
 
@@ -89,88 +92,88 @@ extension TradeManager {
     }
 
     func swapExactETHForTokens(amountIn: BigUInt, amountOutMin: BigUInt, path: [Data]) -> Single<String> {
-        let transactionInput = Uniswap.ContractFunctions.swapExactETHForTokens(
-                amountOutMin: amountOutMin,
-                path: path,
-                to: address,
-                deadline: deadline
-        )
+        let method = ContractMethod(name: "swapExactETHForTokens", arguments: [
+            .uint256(amountOutMin),
+            .addresses(path),
+            .address(address),
+            .uint256(deadline)
+        ])
 
-        return swapSingle(value: amountIn, input: transactionInput.data)
+        return swapSingle(value: amountIn, input: method.encodedData)
     }
 
     func swapTokensForExactETH(amountOut: BigUInt, amountInMax: BigUInt, path: [Data]) -> Single<String> {
-        let transactionInput = Uniswap.ContractFunctions.swapTokensForExactETH(
-                amountOut: amountOut,
-                amountInMax: amountInMax,
-                path: path,
-                to: address,
-                deadline: deadline
-        )
+        let method = ContractMethod(name: "swapTokensForExactETH", arguments: [
+            .uint256(amountOut),
+            .uint256(amountInMax),
+            .addresses(path),
+            .address(address),
+            .uint256(deadline)
+        ])
 
         return singleWithApprove(
                 contractAddress: path[0],
                 amount: amountInMax,
-                single: swapSingle(value: 0, input: transactionInput.data)
+                single: swapSingle(value: 0, input: method.encodedData)
         )
     }
 
     func swapExactTokensForETH(amountIn: BigUInt, amountOutMin: BigUInt, path: [Data]) -> Single<String> {
-        let transactionInput = Uniswap.ContractFunctions.swapExactTokensForETH(
-                amountIn: amountIn,
-                amountOutMin: amountOutMin,
-                path: path,
-                to: address,
-                deadline: deadline
-        )
+        let method = ContractMethod(name: "swapExactTokensForETH", arguments: [
+            .uint256(amountIn),
+            .uint256(amountOutMin),
+            .addresses(path),
+            .address(address),
+            .uint256(deadline)
+        ])
 
         return singleWithApprove(
                 contractAddress: path[0],
                 amount: amountIn,
-                single: swapSingle(value: 0, input: transactionInput.data)
+                single: swapSingle(value: 0, input: method.encodedData)
         )
     }
 
     func swapETHForExactTokens(amountOut: BigUInt, amountInMax: BigUInt, path: [Data]) -> Single<String> {
-        let transactionInput = Uniswap.ContractFunctions.swapETHForExactTokens(
-                amountOut: amountOut,
-                path: path,
-                to: address,
-                deadline: deadline
-        )
+        let method = ContractMethod(name: "swapETHForExactTokens", arguments: [
+            .uint256(amountOut),
+            .addresses(path),
+            .address(address),
+            .uint256(deadline)
+        ])
 
-        return swapSingle(value: amountInMax, input: transactionInput.data)
+        return swapSingle(value: amountInMax, input: method.encodedData)
     }
 
     func swapExactTokensForTokens(amountIn: BigUInt, amountOutMin: BigUInt, path: [Data]) -> Single<String> {
-        let transactionInput = Uniswap.ContractFunctions.swapExactTokensForTokens(
-                amountIn: amountIn,
-                amountOutMin: amountOutMin,
-                path: path,
-                to: address,
-                deadline: deadline
-        )
+        let method = ContractMethod(name: "swapExactTokensForTokens", arguments: [
+            .uint256(amountIn),
+            .uint256(amountOutMin),
+            .addresses(path),
+            .address(address),
+            .uint256(deadline)
+        ])
 
         return singleWithApprove(
                 contractAddress: path[0],
                 amount: amountIn,
-                single: swapSingle(value: 0, input: transactionInput.data)
+                single: swapSingle(value: 0, input: method.encodedData)
         )
     }
 
     func swapTokensForExactTokens(amountOut: BigUInt, amountInMax: BigUInt, path: [Data]) -> Single<String> {
-        let transactionInput = Uniswap.ContractFunctions.swapTokensForExactTokens(
-                amountOut: amountOut,
-                amountInMax: amountInMax,
-                path: path,
-                to: address,
-                deadline: deadline
-        )
+        let method = ContractMethod(name: "swapTokensForExactTokens", arguments: [
+            .uint256(amountOut),
+            .uint256(amountInMax),
+            .addresses(path),
+            .address(address),
+            .uint256(deadline)
+        ])
 
         return singleWithApprove(
                 contractAddress: path[0],
                 amount: amountInMax,
-                single: swapSingle(value: 0, input: transactionInput.data)
+                single: swapSingle(value: 0, input: method.encodedData)
         )
     }
 
