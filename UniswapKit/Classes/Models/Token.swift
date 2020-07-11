@@ -1,4 +1,4 @@
-enum Token {
+public enum Token {
     case eth(wethAddress: Data)
     case erc20(address: Data)
 

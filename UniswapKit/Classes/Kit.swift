@@ -5,80 +5,59 @@ import BigInt
 public class Kit {
     private let disposeBag = DisposeBag()
 
-    private let swapConverter: SwapConverter
+    private let wethAddress: Data
     private let tradeManager: TradeManager
 
-    init(swapConverter: SwapConverter, tradeManager: TradeManager) {
-        self.swapConverter = swapConverter
+    init(wethAddress: Data, tradeManager: TradeManager) {
+        self.wethAddress = wethAddress
         self.tradeManager = tradeManager
-    }
-
-    private func convert(amount: String) throws -> BigUInt {
-        guard let amount = BigUInt(amount) else {
-            throw KitError.invalidAmount
-        }
-
-        return amount
     }
 
 }
 
 extension Kit {
 
-    public func swapDataSingle(itemIn: SwapItem, itemOut: SwapItem) -> Single<SwapData> {
-        do {
-            let tokenIn = try swapConverter.token(swapItem: itemIn)
-            let tokenOut = try swapConverter.token(swapItem: itemOut)
-
-            return tradeManager.pairsSingle(tokenIn: tokenIn, tokenOut: tokenOut)
-                    .map { pairs in
-                        SwapData(pairs: pairs, tokenIn: tokenIn, tokenOut: tokenOut)
-                    }
-        } catch {
-            return Single.error(error)
-        }
+    public var etherToken: Token {
+        .eth(wethAddress: wethAddress)
     }
 
-    public func bestTradeExactIn(swapData: SwapData, amountIn: String, options: TradeOptions) -> TradeData? {
-        do {
-            let tokenAmountIn = TokenAmount(
-                    token: swapData.tokenIn,
-                    amount: try convert(amount: amountIn)
-            )
-
-            guard let trade = TradeManager.bestTradeExactIn(
-                    pairs: swapData.pairs,
-                    tokenAmountIn: tokenAmountIn,
-                    tokenOut: swapData.tokenOut
-            ) else {
-                return nil
-            }
-
-            return TradeData(trade: trade, options: options)
-        } catch {
-            return nil
-        }
+    public func token(contractAddress: Data) -> Token {
+        .erc20(address: contractAddress)
     }
 
-    public func bestTradeExactOut(swapData: SwapData, amountOut: String, options: TradeOptions) -> TradeData? {
-        do {
-            let tokenAmountOut = TokenAmount(
-                    token: swapData.tokenOut,
-                    amount: try convert(amount: amountOut)
-            )
+    public func swapDataSingle(tokenIn: Token, tokenOut: Token) -> Single<SwapData> {
+        tradeManager.pairsSingle(tokenIn: tokenIn, tokenOut: tokenOut)
+                .map { pairs in
+                    SwapData(pairs: pairs, tokenIn: tokenIn, tokenOut: tokenOut)
+                }
+    }
 
-            guard let trade = TradeManager.bestTradeExactOut(
-                    pairs: swapData.pairs,
-                    tokenIn: swapData.tokenIn,
-                    tokenAmountOut: tokenAmountOut
-            ) else {
-                return nil
-            }
+    public func bestTradeExactIn(swapData: SwapData, amountIn: BigUInt, options: TradeOptions = TradeOptions()) -> TradeData? {
+        let tokenAmountIn = TokenAmount(token: swapData.tokenIn, amount: amountIn)
 
-            return TradeData(trade: trade, options: options)
-        } catch {
+        guard let trade = TradeManager.bestTradeExactIn(
+                pairs: swapData.pairs,
+                tokenAmountIn: tokenAmountIn,
+                tokenOut: swapData.tokenOut
+        ) else {
             return nil
         }
+
+        return TradeData(trade: trade, options: options)
+    }
+
+    public func bestTradeExactOut(swapData: SwapData, amountOut: BigUInt, options: TradeOptions = TradeOptions()) -> TradeData? {
+        let tokenAmountOut = TokenAmount(token: swapData.tokenOut, amount: amountOut)
+
+        guard let trade = TradeManager.bestTradeExactOut(
+                pairs: swapData.pairs,
+                tokenIn: swapData.tokenIn,
+                tokenAmountOut: tokenAmountOut
+        ) else {
+            return nil
+        }
+
+        return TradeData(trade: trade, options: options)
     }
 
     public func swapSingle(tradeData: TradeData) -> Single<String> {
@@ -92,11 +71,26 @@ extension Kit {
     public static func instance(ethereumKit: EthereumKit.Kit, networkType: NetworkType) throws -> Kit {
         let address = ethereumKit.address
 
-        let swapConverter = try SwapConverter(networkType: networkType)
         let tradeManager = try TradeManager(ethereumKit: ethereumKit, address: address)
-        let uniswapKit = Kit(swapConverter: swapConverter, tradeManager: tradeManager)
+
+        let uniswapKit = Kit(
+                wethAddress: wethAddress(networkType: networkType),
+                tradeManager: tradeManager
+        )
 
         return uniswapKit
+    }
+
+    private static func wethAddress(networkType: NetworkType) -> Data {
+        let wethAddressHex: String
+
+        switch networkType {
+        case .mainNet: wethAddressHex = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+        case .ropsten: wethAddressHex = "0xc778417E063141139Fce010982780140Aa0cD5Ab"
+        case .kovan: wethAddressHex = "0xd0A1E359811322d97991E03f863a0C30C2cF029C"
+        }
+
+        return Data(hex: wethAddressHex)!
     }
 
 }
@@ -104,10 +98,6 @@ extension Kit {
 extension Kit {
 
     public enum KitError: Error {
-        case invalidAmount
-        case invalidAddress
-        case invalidPathItems
-
         case insufficientReserve
     }
 

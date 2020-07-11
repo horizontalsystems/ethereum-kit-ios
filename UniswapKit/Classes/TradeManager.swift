@@ -4,29 +4,22 @@ import EthereumKit
 import OpenSslKit
 
 class TradeManager {
-    private static let uniswapRouterAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"
+    private static let routerAddress = Data(hex: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D")!
 
     private let scheduler = ConcurrentDispatchQueueScheduler(queue: DispatchQueue(label: "transactionManager.handle_logs", qos: .background))
     private let disposeBag = DisposeBag()
 
     private let ethereumKit: EthereumKit.Kit
-    private let routerAddress: Data
     private let address: Data
 
     init(ethereumKit: EthereumKit.Kit, address: Data) throws {
         self.ethereumKit = ethereumKit
         self.address = address
-
-        guard let routerAddress = Data(hex: TradeManager.uniswapRouterAddress) else {
-            throw Kit.KitError.invalidAddress
-        }
-
-        self.routerAddress = routerAddress
     }
 
     private func swapSingle(value: BigUInt, input: Data) -> Single<String> {
         ethereumKit.sendSingle(
-                        address: routerAddress,
+                        address: TradeManager.routerAddress,
                         value: value,
                         transactionInput: input,
                         gasPrice: 50_000_000_000,
@@ -39,7 +32,7 @@ class TradeManager {
 
     private func singleWithApprove(contractAddress: Data, amount: BigUInt, single: Single<String>) -> Single<String> {
         let method = ContractMethod(name: "approve", arguments: [
-            .address(routerAddress),
+            .address(TradeManager.routerAddress),
             .uint256(amount)
         ])
 
@@ -98,7 +91,7 @@ extension TradeManager {
         let tokenOut = trade.tokenAmountOut.token
 
         let path: ContractMethod.Argument = .addresses([tokenIn, tokenOut].map { $0.address }) // todo: compute path in Route
-        let to: ContractMethod.Argument = .address(address)
+        let to: ContractMethod.Argument = .address(tradeData.options.recipient ?? address)
         let deadline: ContractMethod.Argument = .uint256(BigUInt(Date().timeIntervalSince1970 + tradeData.options.ttl))
 
         switch trade.type {
@@ -152,14 +145,6 @@ extension TradeManager {
                     single: swapSingle(value: 0, input: method.encodedData)
             )
         }
-    }
-
-}
-
-extension TradeManager {
-
-    enum ContractError: Error {
-        case invalidResponse
     }
 
 }
