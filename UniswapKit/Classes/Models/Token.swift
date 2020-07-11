@@ -13,6 +13,13 @@ public enum Token {
         address.toHexString().lowercased() < token.address.toHexString().lowercased()
     }
 
+    var isEther: Bool {
+        switch self {
+        case .eth: return true
+        default: return false
+        }
+    }
+
 }
 
 extension Token: Equatable {

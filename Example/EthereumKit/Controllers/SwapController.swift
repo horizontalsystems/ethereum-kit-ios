@@ -32,7 +32,7 @@ class SwapController: UIViewController {
     ]
 
     private var fromToken: Erc20Token? = SwapController.tokens[1]
-    private var toToken: Erc20Token?
+    private var toToken: Erc20Token? = SwapController.tokens[0]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -194,6 +194,8 @@ class SwapController: UIViewController {
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { [weak self] swapData in
+                    print("SwapData:\n\(swapData)")
+
                     self?.swapData = swapData
 
                     self?.fromTextField.isEnabled = true

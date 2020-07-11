@@ -5,12 +5,14 @@ import BigInt
 public class Kit {
     private let disposeBag = DisposeBag()
 
-    private let wethAddress: Data
     private let tradeManager: TradeManager
+    private let pairSelector: PairSelector
+    private let tokenFactory: TokenFactory
 
-    init(wethAddress: Data, tradeManager: TradeManager) {
-        self.wethAddress = wethAddress
+    init(tradeManager: TradeManager, pairSelector: PairSelector, tokenFactory: TokenFactory) {
         self.tradeManager = tradeManager
+        self.pairSelector = pairSelector
+        self.tokenFactory = tokenFactory
     }
 
 }
@@ -18,18 +20,23 @@ public class Kit {
 extension Kit {
 
     public var etherToken: Token {
-        .eth(wethAddress: wethAddress)
+        tokenFactory.etherToken
     }
 
     public func token(contractAddress: Data) -> Token {
-        .erc20(address: contractAddress)
+        tokenFactory.token(contractAddress: contractAddress)
     }
 
     public func swapDataSingle(tokenIn: Token, tokenOut: Token) -> Single<SwapData> {
-        tradeManager.pairsSingle(tokenIn: tokenIn, tokenOut: tokenOut)
-                .map { pairs in
-                    SwapData(pairs: pairs, tokenIn: tokenIn, tokenOut: tokenOut)
-                }
+        let tokenPairs = pairSelector.tokenPairs(tokenA: tokenIn, tokenB: tokenOut)
+
+        let singles = tokenPairs.map { tokenA, tokenB in
+            tradeManager.pairSingle(tokenA: tokenA, tokenB: tokenB)
+        }
+
+        return Single.zip(singles) { pairs in
+            SwapData(pairs: pairs, tokenIn: tokenIn, tokenOut: tokenOut)
+        }
     }
 
     public func bestTradeExactIn(swapData: SwapData, amountIn: BigUInt, options: TradeOptions = TradeOptions()) -> TradeData? {
@@ -72,25 +79,12 @@ extension Kit {
         let address = ethereumKit.address
 
         let tradeManager = try TradeManager(ethereumKit: ethereumKit, address: address)
+        let tokenFactory = TokenFactory(networkType: networkType)
+        let pairSelector = PairSelector(tokenFactory: tokenFactory)
 
-        let uniswapKit = Kit(
-                wethAddress: wethAddress(networkType: networkType),
-                tradeManager: tradeManager
-        )
+        let uniswapKit = Kit(tradeManager: tradeManager, pairSelector: pairSelector, tokenFactory: tokenFactory)
 
         return uniswapKit
-    }
-
-    private static func wethAddress(networkType: NetworkType) -> Data {
-        let wethAddressHex: String
-
-        switch networkType {
-        case .mainNet: wethAddressHex = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
-        case .ropsten: wethAddressHex = "0xc778417E063141139Fce010982780140Aa0cD5Ab"
-        case .kovan: wethAddressHex = "0xd0A1E359811322d97991E03f863a0C30C2cF029C"
-        }
-
-        return Data(hex: wethAddressHex)!
     }
 
 }

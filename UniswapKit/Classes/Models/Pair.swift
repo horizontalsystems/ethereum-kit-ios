@@ -87,7 +87,7 @@ public struct Pair {
 extension Pair: CustomStringConvertible {
 
     public var description: String {
-        "[token0: \(token0), reserve0: \(reserve0.description)]\n[token1: \(token1), reserve1: \(reserve1.description)]"
+        "[token0: \(token0); reserve0: \(reserve0.description); token1: \(token1); reserve1: \(reserve1.description)]"
     }
 
 }
