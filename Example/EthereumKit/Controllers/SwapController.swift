@@ -146,8 +146,8 @@ class SwapController: UIViewController {
     private func syncControls() {
         let tradeType: TradeType = tradeData?.type ?? .exactIn
 
-        fromLabel.text = "From:\(tradeType == .exactIn ? " (estimated)" : "")"
-        toLabel.text = "To:\(tradeType == .exactOut ? " (estimated)" : "")"
+        fromLabel.text = "From:\(tradeType == .exactOut ? " (estimated)" : "")"
+        toLabel.text = "To:\(tradeType == .exactIn ? " (estimated)" : "")"
 
         swapButton.isEnabled = tradeData != nil
 
