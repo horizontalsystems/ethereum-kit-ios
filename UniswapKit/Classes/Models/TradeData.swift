@@ -23,6 +23,10 @@ public class TradeData {
         )
     }
 
+}
+
+extension TradeData {
+
     public var type: TradeType {
         trade.type
     }
