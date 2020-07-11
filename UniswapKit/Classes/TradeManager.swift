@@ -53,30 +53,33 @@ class TradeManager {
 
 extension TradeManager {
 
-    func pairsSingle(tokenIn: Token, tokenOut: Token) -> Single<[Pair]> {
+    func pairSingle(tokenA: Token, tokenB: Token) -> Single<Pair> {
         let method = ContractMethod(name: "getReserves")
 
-        let (token0, token1) = tokenIn.sortsBefore(token: tokenOut) ? (tokenIn, tokenOut) : (tokenOut, tokenIn)
+        let (token0, token1) = tokenA.sortsBefore(token: tokenB) ? (tokenA, tokenB) : (tokenB, tokenA)
 
         let pairAddress = Pair.address(token0: token0, token1: token1)
 
-        print("PAIR ADDRESS: \(pairAddress.toHexString())")
+//        print("PAIR ADDRESS: \(pairAddress.toHexString())")
 
         return self.ethereumKit.call(contractAddress: pairAddress, data: method.encodedData)
-                .flatMap { data in
-                    print("DATA: \(data.toHexString())")
+                .map { data in
+//                    print("DATA: \(data.toHexString())")
 
-                    let reserve0 = BigUInt(data[0...31])
-                    let reserve1 = BigUInt(data[32...63])
+                    var reserve0: BigUInt = 0
+                    var reserve1: BigUInt = 0
 
-                    print("Reserve0: \(reserve0), Reserve1: \(reserve1)")
+                    if data.count == 3 * 32 {
+                        reserve0 = BigUInt(data[0...31])
+                        reserve1 = BigUInt(data[32...63])
+                    }
+
+//                    print("Reserve0: \(reserve0), Reserve1: \(reserve1)")
 
                     let tokenAmount0 = TokenAmount(token: token0, amount: reserve0)
                     let tokenAmount1 = TokenAmount(token: token1, amount: reserve1)
 
-                    let pair = Pair(tokenAmount0: tokenAmount0, tokenAmount1: tokenAmount1)
-
-                    return Single.just([pair])
+                    return Pair(tokenAmount0: tokenAmount0, tokenAmount1: tokenAmount1)
                 }
     }
 
@@ -136,7 +139,7 @@ extension TradeManager {
 
         let method = ContractMethod(name: methodName, arguments: arguments)
 
-        if case .eth = tokenIn {
+        if tokenIn.isEther {
             return swapSingle(value: amount, input: method.encodedData)
         } else {
             return singleWithApprove(
