@@ -3,6 +3,7 @@ import EthereumKit
 import RxSwift
 import SnapKit
 import UniswapKit
+import BigInt
 
 class SwapController: UIViewController {
     private let disposeBag = DisposeBag()
@@ -21,13 +22,6 @@ class SwapController: UIViewController {
 
     private var swapData: SwapData?
     private var tradeData: TradeData?
-
-    private let tradeOptions = TradeOptions(
-            allowedSlippage: 0.5,
-            ttl: 20 * 60,
-            recipient: Manager.shared.ethereumKit.receiveAddress,
-            feeOnTransfer: false
-    )
 
     private static let tokens = [
         Erc20Token(name: "GMO coins", coin: "GMOLW", contractAddress: "0xbb74a24d83470f64d5f0c01688fbb49a5a251b32", decimal: 18),
@@ -169,14 +163,34 @@ class SwapController: UIViewController {
         }
     }
 
+    private func uniswapToken(token: Erc20Token?) -> Token {
+        guard let token = token else {
+            return uniswapKit.etherToken
+        }
+
+        return uniswapKit.token(contractAddress: Data(hex: token.contractAddress)!)
+    }
+
+    private func amount(textField: UITextField, token: Erc20Token?) -> BigUInt? {
+        guard let string = textField.text else {
+            return nil
+        }
+
+        guard let decimal = Decimal(string: string) else {
+            return nil
+        }
+
+        return BigUInt(decimal.roundedString(decimal: token?.decimal ?? 18))
+    }
+
     private func syncSwapData() {
         fromTextField.isEnabled = false
         toTextField.isEnabled = false
 
-        let swapItemIn: SwapItem = fromToken.map { .erc20(contractAddress: $0.contractAddress) } ?? .ethereum
-        let swapItemOut: SwapItem = toToken.map { .erc20(contractAddress: $0.contractAddress) } ?? .ethereum
+        let tokenIn = uniswapToken(token: fromToken)
+        let tokenOut = uniswapToken(token: toToken)
 
-        uniswapKit.swapDataSingle(itemIn: swapItemIn, itemOut: swapItemOut)
+        uniswapKit.swapDataSingle(tokenIn: tokenIn, tokenOut: tokenOut)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { [weak self] swapData in
@@ -193,7 +207,7 @@ class SwapController: UIViewController {
     @objc private func onChangeAmountIn() {
         tradeData = nil
 
-        guard let fromAmountString = fromTextField.text, let fromAmountDecimal = Decimal(string: fromAmountString) else {
+        guard let amountIn = amount(textField: fromTextField, token: fromToken) else {
             toTextField.text = nil
             syncControls()
             return
@@ -206,8 +220,7 @@ class SwapController: UIViewController {
 
         tradeData = uniswapKit.bestTradeExactIn(
                 swapData: swapData,
-                amountIn: fromAmountDecimal.roundedString(decimal: fromToken?.decimal ?? 18),
-                options: tradeOptions
+                amountIn: amountIn
         )
 
         syncControls()
@@ -220,7 +233,7 @@ class SwapController: UIViewController {
     @objc private func onChangeAmountOut() {
         tradeData = nil
 
-        guard let toAmountString = toTextField.text, let toAmountDecimal = Decimal(string: toAmountString) else {
+        guard let amountOut = amount(textField: toTextField, token: toToken) else {
             fromTextField.text = nil
             syncControls()
             return
@@ -233,8 +246,7 @@ class SwapController: UIViewController {
 
         tradeData = uniswapKit.bestTradeExactOut(
                 swapData: swapData,
-                amountOut: toAmountDecimal.roundedString(decimal: toToken?.decimal ?? 18),
-                options: tradeOptions
+                amountOut: amountOut
         )
 
         syncControls()
