@@ -42,11 +42,13 @@ extension Kit {
     public func bestTradeExactIn(swapData: SwapData, amountIn: BigUInt, options: TradeOptions = TradeOptions()) -> TradeData? {
         let tokenAmountIn = TokenAmount(token: swapData.tokenIn, amount: amountIn)
 
-        guard let trade = TradeManager.bestTradeExactIn(
+        let trades = TradeManager.bestTradeExactIn(
                 pairs: swapData.pairs,
                 tokenAmountIn: tokenAmountIn,
                 tokenOut: swapData.tokenOut
-        ) else {
+        )
+
+        guard let trade = trades.first else {
             return nil
         }
 
@@ -56,11 +58,13 @@ extension Kit {
     public func bestTradeExactOut(swapData: SwapData, amountOut: BigUInt, options: TradeOptions = TradeOptions()) -> TradeData? {
         let tokenAmountOut = TokenAmount(token: swapData.tokenOut, amount: amountOut)
 
-        guard let trade = TradeManager.bestTradeExactOut(
+        let trades = TradeManager.bestTradeExactOut(
                 pairs: swapData.pairs,
                 tokenIn: swapData.tokenIn,
                 tokenAmountOut: tokenAmountOut
-        ) else {
+        )
+
+        guard let trade = trades.first else {
             return nil
         }
 
