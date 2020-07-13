@@ -42,33 +42,47 @@ extension Kit {
     public func bestTradeExactIn(swapData: SwapData, amountIn: BigUInt, options: TradeOptions = TradeOptions()) -> TradeData? {
         let tokenAmountIn = TokenAmount(token: swapData.tokenIn, amount: amountIn)
 
-        let trades = TradeManager.bestTradeExactIn(
-                pairs: swapData.pairs,
-                tokenAmountIn: tokenAmountIn,
-                tokenOut: swapData.tokenOut
-        )
+        do {
+            let trades = try TradeManager.bestTradeExactIn(
+                    pairs: swapData.pairs,
+                    tokenAmountIn: tokenAmountIn,
+                    tokenOut: swapData.tokenOut
+            )
 
-        guard let trade = trades.first else {
+            guard let trade = trades.first else {
+                return nil
+            }
+
+            print("PATH: \(trade.route.path)")
+
+            return TradeData(trade: trade, options: options)
+        } catch {
+            print("BestTradeError: \(error)")
             return nil
         }
-
-        return TradeData(trade: trade, options: options)
     }
 
     public func bestTradeExactOut(swapData: SwapData, amountOut: BigUInt, options: TradeOptions = TradeOptions()) -> TradeData? {
         let tokenAmountOut = TokenAmount(token: swapData.tokenOut, amount: amountOut)
 
-        let trades = TradeManager.bestTradeExactOut(
-                pairs: swapData.pairs,
-                tokenIn: swapData.tokenIn,
-                tokenAmountOut: tokenAmountOut
-        )
+        do {
+            let trades = try TradeManager.bestTradeExactOut(
+                    pairs: swapData.pairs,
+                    tokenIn: swapData.tokenIn,
+                    tokenAmountOut: tokenAmountOut
+            )
 
-        guard let trade = trades.first else {
+            guard let trade = trades.first else {
+                return nil
+            }
+
+            print("PATH: \(trade.route.path)")
+
+            return TradeData(trade: trade, options: options)
+        } catch {
+            print("BestTradeError: \(error)")
             return nil
         }
-
-        return TradeData(trade: trade, options: options)
     }
 
     public func swapSingle(tradeData: TradeData) -> Single<String> {
