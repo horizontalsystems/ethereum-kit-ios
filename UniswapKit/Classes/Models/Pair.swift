@@ -26,7 +26,11 @@ public struct Pair {
         tokenAmount1.amount
     }
 
-    private func other(token: Token) -> Token {
+    func involves(token: Token) -> Bool {
+        token0 == token || token1 == token
+    }
+
+    func other(token: Token) -> Token {
         token0 == token ? token1 : token0
     }
 

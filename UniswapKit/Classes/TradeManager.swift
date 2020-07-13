@@ -93,7 +93,7 @@ extension TradeManager {
         let tokenIn = trade.tokenAmountIn.token
         let tokenOut = trade.tokenAmountOut.token
 
-        let path: ContractMethod.Argument = .addresses([tokenIn, tokenOut].map { $0.address }) // todo: compute path in Route
+        let path: ContractMethod.Argument = .addresses(trade.route.path.map { $0.address })
         let to: ContractMethod.Argument = .address(tradeData.options.recipient ?? address)
         let deadline: ContractMethod.Argument = .uint256(BigUInt(Date().timeIntervalSince1970 + tradeData.options.ttl))
 
@@ -154,7 +154,7 @@ extension TradeManager {
 
 extension TradeManager {
 
-    static func bestTradeExactIn(pairs: [Pair], tokenAmountIn: TokenAmount, tokenOut: Token, maxHops: Int = 3, currentPairs: [Pair] = [], originalTokenAmountIn: TokenAmount? = nil) -> [Trade] {
+    static func bestTradeExactIn(pairs: [Pair], tokenAmountIn: TokenAmount, tokenOut: Token, maxHops: Int = 3, currentPairs: [Pair] = [], originalTokenAmountIn: TokenAmount? = nil) throws -> [Trade] {
         // todo: guards
 
         var bestTrades = [Trade]()
@@ -175,7 +175,7 @@ extension TradeManager {
             if tokenAmountOut.token == tokenOut {
                 let trade = Trade(
                         type: .exactIn,
-                        route: Route(pairs: currentPairs + [pair]),
+                        route: try Route(pairs: currentPairs + [pair], tokenIn: originalTokenAmountIn.token, tokenOut: tokenOut),
                         tokenAmountIn: originalTokenAmountIn,
                         tokenAmountOut: tokenAmountOut
                 )
@@ -184,7 +184,7 @@ extension TradeManager {
             } else if maxHops > 1 && pairs.count > 1 {
                 let pairsExcludingThisPair = Array(pairs[0..<index] + pairs[(index + 1)..<pairs.count])
 
-                let trades = TradeManager.bestTradeExactIn(
+                let trades = try TradeManager.bestTradeExactIn(
                         pairs: pairsExcludingThisPair,
                         tokenAmountIn: tokenAmountOut,
                         tokenOut: tokenOut,
@@ -200,7 +200,7 @@ extension TradeManager {
         return bestTrades
     }
 
-    static func bestTradeExactOut(pairs: [Pair], tokenIn: Token, tokenAmountOut: TokenAmount, maxHops: Int = 3, currentPairs: [Pair] = [], originalTokenAmountOut: TokenAmount? = nil) -> [Trade] {
+    static func bestTradeExactOut(pairs: [Pair], tokenIn: Token, tokenAmountOut: TokenAmount, maxHops: Int = 3, currentPairs: [Pair] = [], originalTokenAmountOut: TokenAmount? = nil) throws -> [Trade] {
         // todo: guards
 
         var bestTrades = [Trade]()
@@ -223,7 +223,7 @@ extension TradeManager {
             if tokenAmountIn.token == tokenIn {
                 let trade = Trade(
                         type: .exactOut,
-                        route: Route(pairs: [pair] + currentPairs),
+                        route: try Route(pairs: [pair] + currentPairs, tokenIn: tokenIn, tokenOut: originalTokenAmountOut.token),
                         tokenAmountIn: tokenAmountIn,
                         tokenAmountOut: originalTokenAmountOut
                 )
@@ -232,7 +232,7 @@ extension TradeManager {
             } else if maxHops > 1 && pairs.count > 1 {
                 let pairsExcludingThisPair = Array(pairs[0..<index] + pairs[(index + 1)..<pairs.count])
 
-                let trades = TradeManager.bestTradeExactOut(
+                let trades = try TradeManager.bestTradeExactOut(
                         pairs: pairsExcludingThisPair,
                         tokenIn: tokenIn,
                         tokenAmountOut: tokenAmountIn,
