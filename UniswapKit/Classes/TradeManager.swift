@@ -60,26 +60,26 @@ extension TradeManager {
 
         let pairAddress = Pair.address(token0: token0, token1: token1)
 
-//        print("PAIR ADDRESS: \(pairAddress.toHexString())")
+        print("PAIR ADDRESS: \(pairAddress.toHexString())")
 
         return self.ethereumKit.call(contractAddress: pairAddress, data: method.encodedData)
                 .map { data in
 //                    print("DATA: \(data.toHexString())")
 
-                    var reserve0: BigUInt = 0
-                    var reserve1: BigUInt = 0
+                    var rawReserve0: BigUInt = 0
+                    var rawReserve1: BigUInt = 0
 
                     if data.count == 3 * 32 {
-                        reserve0 = BigUInt(data[0...31])
-                        reserve1 = BigUInt(data[32...63])
+                        rawReserve0 = BigUInt(data[0...31])
+                        rawReserve1 = BigUInt(data[32...63])
                     }
 
 //                    print("Reserve0: \(reserve0), Reserve1: \(reserve1)")
 
-                    let tokenAmount0 = TokenAmount(token: token0, amount: reserve0)
-                    let tokenAmount1 = TokenAmount(token: token1, amount: reserve1)
+                    let reserve0 = TokenAmount(token: token0, rawAmount: rawReserve0)
+                    let reserve1 = TokenAmount(token: token1, rawAmount: rawReserve1)
 
-                    return Pair(tokenAmount0: tokenAmount0, tokenAmount1: tokenAmount1)
+                    return Pair(reserve0: reserve0, reserve1: reserve1)
                 }
     }
 
@@ -99,8 +99,8 @@ extension TradeManager {
 
         switch trade.type {
         case .exactIn:
-            let amountIn = trade.tokenAmountIn.amount
-            let amountOutMin = tradeData.tokenAmountOutMin.amount
+            let amountIn = trade.tokenAmountIn.rawAmount
+            let amountOutMin = tradeData.tokenAmountOutMin.rawAmount
 
             amount = amountIn
 
@@ -118,8 +118,8 @@ extension TradeManager {
             }
 
         case .exactOut:
-            let amountOut = trade.tokenAmountOut.amount
-            let amountInMax = tradeData.tokenAmountInMax.amount
+            let amountOut = trade.tokenAmountOut.rawAmount
+            let amountInMax = tradeData.tokenAmountInMax.rawAmount
 
             amount = amountInMax
 
@@ -166,7 +166,7 @@ extension TradeManager {
                 continue
             }
 
-            guard pair.reserve0 != 0 && pair.reserve1 != 0 else {
+            guard pair.reserve0.rawAmount != 0 && pair.reserve1.rawAmount != 0 else {
                 continue
             }
 
@@ -212,7 +212,7 @@ extension TradeManager {
                 continue
             }
 
-            guard pair.reserve0 != 0 && pair.reserve1 != 0 else {
+            guard pair.reserve0.rawAmount != 0 && pair.reserve1.rawAmount != 0 else {
                 continue
             }
 

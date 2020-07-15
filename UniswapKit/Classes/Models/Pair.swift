@@ -2,28 +2,20 @@ import OpenSslKit
 import BigInt
 
 public struct Pair {
-    private let tokenAmount0: TokenAmount
-    private let tokenAmount1: TokenAmount
+    let reserve0: TokenAmount
+    let reserve1: TokenAmount
 
-    init(tokenAmount0: TokenAmount, tokenAmount1: TokenAmount) {
-        self.tokenAmount0 = tokenAmount0
-        self.tokenAmount1 = tokenAmount1
+    init(reserve0: TokenAmount, reserve1: TokenAmount) {
+        self.reserve0 = reserve0
+        self.reserve1 = reserve1
     }
 
     var token0: Token {
-        tokenAmount0.token
+        reserve0.token
     }
 
     var token1: Token {
-        tokenAmount1.token
-    }
-
-    var reserve0: BigUInt {
-        tokenAmount0.amount
-    }
-
-    var reserve1: BigUInt {
-        tokenAmount1.amount
+        reserve1.token
     }
 
     func involves(token: Token) -> Bool {
@@ -34,7 +26,7 @@ public struct Pair {
         token0 == token ? token1 : token0
     }
 
-    private func reserve(token: Token) -> BigUInt {
+    private func reserve(token: Token) -> TokenAmount {
         token0 == token ? reserve0 : reserve1
     }
 
@@ -47,18 +39,18 @@ public struct Pair {
         let reserveIn = reserve(token: tokenIn)
         let reserveOut = reserve(token: tokenOut)
 
-        let amountInWithFee = tokenAmountIn.amount * 997
-        let numerator = amountInWithFee * reserveOut
-        let denominator = reserveIn * 1000 + amountInWithFee
+        let amountInWithFee = tokenAmountIn.rawAmount * 997
+        let numerator = amountInWithFee * reserveOut.rawAmount
+        let denominator = reserveIn.rawAmount * 1000 + amountInWithFee
         let amountOut = numerator / denominator
 
-        return TokenAmount(token: tokenOut, amount: amountOut)
+        return TokenAmount(token: tokenOut, rawAmount: amountOut)
     }
 
     func tokenAmountIn(tokenAmountOut: TokenAmount) throws -> TokenAmount {
         // todo: guards
 
-        let amountOut = tokenAmountOut.amount
+        let amountOut = tokenAmountOut.rawAmount
 
         let tokenOut = tokenAmountOut.token
         let tokenIn = other(token: tokenOut)
@@ -66,15 +58,15 @@ public struct Pair {
         let reserveOut = reserve(token: tokenOut)
         let reserveIn = reserve(token: tokenIn)
 
-        guard amountOut < reserveOut else {
+        guard amountOut < reserveOut.rawAmount else {
             throw Kit.KitError.insufficientReserve
         }
 
-        let numerator = reserveIn * amountOut * 1000
-        let denominator = (reserveOut - amountOut) * 997
+        let numerator = reserveIn.rawAmount * amountOut * 1000
+        let denominator = (reserveOut.rawAmount - amountOut) * 997
         let amountIn = numerator / denominator + 1
 
-        return TokenAmount(token: tokenIn, amount: amountIn)
+        return TokenAmount(token: tokenIn, rawAmount: amountIn)
     }
 
     static func address(token0: Token, token1: Token) -> Data {
@@ -91,7 +83,7 @@ public struct Pair {
 extension Pair: CustomStringConvertible {
 
     public var description: String {
-        "[token0: \(token0); reserve0: \(reserve0.description); token1: \(token1); reserve1: \(reserve1.description)]"
+        "[reserve0: \(reserve0); reserve1: \(reserve1)]"
     }
 
 }

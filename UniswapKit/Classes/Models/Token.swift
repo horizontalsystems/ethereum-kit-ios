@@ -1,11 +1,18 @@
 public enum Token {
     case eth(wethAddress: Data)
-    case erc20(address: Data)
+    case erc20(address: Data, decimals: Int)
 
     var address: Data {
         switch self {
         case .eth(let wethAddress): return wethAddress
-        case .erc20(let address): return address
+        case .erc20(let address, _): return address
+        }
+    }
+
+    var decimals: Int {
+        switch self {
+        case .eth: return 18
+        case .erc20(_, let decimals): return decimals
         }
     }
 
@@ -27,7 +34,7 @@ extension Token: Equatable {
     public static func ==(lhs: Token, rhs: Token) -> Bool {
         switch (lhs, rhs) {
         case (.eth(let lhsWethAddress), .eth(let rhsWethAddress)): return lhsWethAddress == rhsWethAddress
-        case (.erc20(let lhsAddress), .erc20(let rhsAddress)): return lhsAddress == rhsAddress
+        case (.erc20(let lhsAddress, let lhsDecimals), .erc20(let rhsAddress, let rhsDecimals)): return lhsAddress == rhsAddress && lhsDecimals == rhsDecimals
         default: return false
         }
     }
@@ -39,7 +46,7 @@ extension Token: CustomStringConvertible {
     public var description: String {
         switch self {
         case .eth: return "[ETH]"
-        case .erc20(let address): return "[ERC20: \(address.toHexString())]"
+        case .erc20(let address, _): return "[ERC20: \(address.toHexString())]"
         }
     }
 

@@ -15,6 +15,7 @@ class SwapController: UIViewController {
     private let toTextField = UITextField()
     private let toTokenLabel = UILabel()
     private let minMaxLabel = UILabel()
+    private let priceImpactLabel = UILabel()
     private let pathLabel = UILabel()
     private let swapButton = UIButton(type: .system)
 
@@ -24,15 +25,15 @@ class SwapController: UIViewController {
     private var tradeData: TradeData?
 
     private static let tokens = [
-        Erc20Token(name: "GMO coins", coin: "GMOLW", contractAddress: "0xbb74a24d83470f64d5f0c01688fbb49a5a251b32", decimal: 18),
-        Erc20Token(name: "DAI", coin: "DAI", contractAddress: "0xad6d458402f60fd3bd25163575031acdce07538d", decimal: 18),
+//        Erc20Token(name: "GMO coins", coin: "GMOLW", contractAddress: "0xbb74a24d83470f64d5f0c01688fbb49a5a251b32", decimal: 18),
+//        Erc20Token(name: "DAI", coin: "DAI", contractAddress: "0xad6d458402f60fd3bd25163575031acdce07538d", decimal: 18),
 
-//        Erc20Token(name: "DAI", coin: "DAI", contractAddress: "0x6b175474e89094c44da98b954eedeac495271d0f", decimal: 18),
-//        Erc20Token(name: "USD Coin", coin: "USDC", contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", decimal: 6),
+        Erc20Token(name: "DAI", coin: "DAI", contractAddress: "0x6b175474e89094c44da98b954eedeac495271d0f", decimal: 18),
+        Erc20Token(name: "USD Coin", coin: "USDC", contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", decimal: 6),
     ]
 
-    private var fromToken: Erc20Token? = SwapController.tokens[1]
-    private var toToken: Erc20Token? = SwapController.tokens[0]
+    private var fromToken: Erc20Token?
+    private var toToken: Erc20Token? = SwapController.tokens[1]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -106,10 +107,19 @@ class SwapController: UIViewController {
         minMaxLabel.font = .systemFont(ofSize: 12)
         minMaxLabel.textAlignment = .left
 
+        view.addSubview(priceImpactLabel)
+        priceImpactLabel.snp.makeConstraints { maker in
+            maker.leading.trailing.equalToSuperview().inset(24)
+            maker.top.equalTo(minMaxLabel.snp.bottom).offset(24)
+        }
+
+        priceImpactLabel.font = .systemFont(ofSize: 12)
+        priceImpactLabel.textAlignment = .left
+
         view.addSubview(pathLabel)
         pathLabel.snp.makeConstraints { maker in
             maker.leading.trailing.equalToSuperview().inset(24)
-            maker.top.equalTo(minMaxLabel.snp.bottom).offset(24)
+            maker.top.equalTo(priceImpactLabel.snp.bottom).offset(24)
         }
 
         pathLabel.font = .systemFont(ofSize: 12)
@@ -148,18 +158,15 @@ class SwapController: UIViewController {
         if let tradeData = tradeData {
             switch tradeData.type {
             case .exactIn:
-                if let significand = Decimal(string: tradeData.amountOutMin) {
-                    let value = Decimal(sign: .plus, exponent: -(toToken?.decimal ?? 18), significand: significand).description
-                    minMaxLabel.text = "Minimum Received: \(value)"
-                }
+                minMaxLabel.text = tradeData.amountOutMin.map { "Minimum Received: \($0.description)" }
             case .exactOut:
-                if let significand = Decimal(string: tradeData.amountInMax) {
-                    let value = Decimal(sign: .plus, exponent: -(fromToken?.decimal ?? 18), significand: significand).description
-                    minMaxLabel.text = "Maximum Sold: \(value)"
-                }
+                minMaxLabel.text = tradeData.amountInMax.map { "Maximum Sold: \($0.description)" }
             }
+
+            priceImpactLabel.text = tradeData.priceImpact.map { "Price Impact: \($0.description)" }
         } else {
             minMaxLabel.text = nil
+            priceImpactLabel.text = nil
         }
     }
 
@@ -168,19 +175,15 @@ class SwapController: UIViewController {
             return uniswapKit.etherToken
         }
 
-        return uniswapKit.token(contractAddress: Data(hex: token.contractAddress)!)
+        return uniswapKit.token(contractAddress: Data(hex: token.contractAddress)!, decimals: token.decimal)
     }
 
-    private func amount(textField: UITextField, token: Erc20Token?) -> BigUInt? {
+    private func amount(textField: UITextField) -> Decimal? {
         guard let string = textField.text else {
             return nil
         }
 
-        guard let decimal = Decimal(string: string) else {
-            return nil
-        }
-
-        return BigUInt(decimal.roundedString(decimal: token?.decimal ?? 18))
+        return Decimal(string: string)
     }
 
     private func syncSwapData() {
@@ -209,7 +212,7 @@ class SwapController: UIViewController {
     @objc private func onChangeAmountIn() {
         tradeData = nil
 
-        guard let amountIn = amount(textField: fromTextField, token: fromToken) else {
+        guard let amountIn = amount(textField: fromTextField) else {
             toTextField.text = nil
             syncControls()
             return
@@ -227,15 +230,13 @@ class SwapController: UIViewController {
 
         syncControls()
 
-        if let tradeData = tradeData, let significand = Decimal(string: tradeData.amountOut) {
-            toTextField.text = Decimal(sign: .plus, exponent: -(toToken?.decimal ?? 18), significand: significand).description
-        }
+        toTextField.text = tradeData?.amountOut?.description
     }
 
     @objc private func onChangeAmountOut() {
         tradeData = nil
 
-        guard let amountOut = amount(textField: toTextField, token: toToken) else {
+        guard let amountOut = amount(textField: toTextField) else {
             fromTextField.text = nil
             syncControls()
             return
@@ -253,9 +254,7 @@ class SwapController: UIViewController {
 
         syncControls()
 
-        if let tradeData = tradeData, let significand = Decimal(string: tradeData.amountIn) {
-            fromTextField.text = Decimal(sign: .plus, exponent: -(fromToken?.decimal ?? 18), significand: significand).description
-        }
+        fromTextField.text = tradeData?.amountIn?.description
     }
 
     @objc private func onTapSwap() {
