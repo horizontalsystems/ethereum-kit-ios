@@ -23,8 +23,8 @@ extension Kit {
         tokenFactory.etherToken
     }
 
-    public func token(contractAddress: Data) -> Token {
-        tokenFactory.token(contractAddress: contractAddress)
+    public func token(contractAddress: Data, decimals: Int) -> Token {
+        tokenFactory.token(contractAddress: contractAddress, decimals: decimals)
     }
 
     public func swapDataSingle(tokenIn: Token, tokenOut: Token) -> Single<SwapData> {
@@ -39,8 +39,10 @@ extension Kit {
         }
     }
 
-    public func bestTradeExactIn(swapData: SwapData, amountIn: BigUInt, options: TradeOptions = TradeOptions()) -> TradeData? {
-        let tokenAmountIn = TokenAmount(token: swapData.tokenIn, amount: amountIn)
+    public func bestTradeExactIn(swapData: SwapData, amountIn: Decimal, options: TradeOptions = TradeOptions()) -> TradeData? {
+        guard let tokenAmountIn = TokenAmount(token: swapData.tokenIn, decimal: amountIn) else {
+            return nil
+        }
 
         do {
             let trades = try TradeManager.bestTradeExactIn(
@@ -62,8 +64,10 @@ extension Kit {
         }
     }
 
-    public func bestTradeExactOut(swapData: SwapData, amountOut: BigUInt, options: TradeOptions = TradeOptions()) -> TradeData? {
-        let tokenAmountOut = TokenAmount(token: swapData.tokenOut, amount: amountOut)
+    public func bestTradeExactOut(swapData: SwapData, amountOut: Decimal, options: TradeOptions = TradeOptions()) -> TradeData? {
+        guard let tokenAmountOut = TokenAmount(token: swapData.tokenOut, decimal: amountOut) else {
+            return nil
+        }
 
         do {
             let trades = try TradeManager.bestTradeExactOut(

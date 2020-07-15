@@ -10,17 +10,13 @@ public class TradeData {
     }
 
     var tokenAmountInMax: TokenAmount {
-        TokenAmount(
-                token: trade.tokenAmountIn.token,
-                amount: trade.tokenAmountIn.amount * (100_00 + BigUInt(options.allowedSlippage * 100)) / 100_00
-        )
+        let amountInMax = ((Fraction(numerator: 1) + options.slippageFraction) * Fraction(numerator: trade.tokenAmountIn.rawAmount)).quotient
+        return TokenAmount(token: trade.tokenAmountIn.token, rawAmount: amountInMax)
     }
 
     var tokenAmountOutMin: TokenAmount {
-        TokenAmount(
-                token: trade.tokenAmountOut.token,
-                amount: trade.tokenAmountOut.amount * (100_00 - BigUInt(options.allowedSlippage * 100)) / 100_00
-        )
+        let amountOutMin = ((Fraction(numerator: 1) + options.slippageFraction).inverted * Fraction(numerator: trade.tokenAmountOut.rawAmount)).quotient
+        return TokenAmount(token: trade.tokenAmountOut.token, rawAmount: amountOutMin)
     }
 
 }
@@ -31,20 +27,24 @@ extension TradeData {
         trade.type
     }
 
-    public var amountIn: String {
-        trade.tokenAmountIn.amount.description
+    public var amountIn: Decimal? {
+        trade.tokenAmountIn.decimalAmount
     }
 
-    public var amountOut: String {
-        trade.tokenAmountOut.amount.description
+    public var amountOut: Decimal? {
+        trade.tokenAmountOut.decimalAmount
     }
 
-    public var amountInMax: String {
-        tokenAmountInMax.amount.description
+    public var amountInMax: Decimal? {
+        tokenAmountInMax.decimalAmount
     }
 
-    public var amountOutMin: String {
-        tokenAmountOutMin.amount.description
+    public var amountOutMin: Decimal? {
+        tokenAmountOutMin.decimalAmount
+    }
+
+    public var priceImpact: Decimal? {
+        trade.priceImpact.toDecimal(decimals: 2)
     }
 
 }

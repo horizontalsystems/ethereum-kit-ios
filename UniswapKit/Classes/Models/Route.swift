@@ -1,9 +1,11 @@
+import BigInt
+
 struct Route {
     let pairs: [Pair]
     let path: [Token]
 //    let tokenIn: Token
 //    let tokenOut: Token
-//    let midPrice: Double
+    let midPrice: Price
 
     init(pairs: [Pair], tokenIn: Token, tokenOut: Token) throws {
         guard !pairs.isEmpty else {
@@ -31,6 +33,18 @@ struct Route {
 
         self.pairs = pairs
         self.path = path
+
+        var prices = [Price]()
+
+        for (index, pair) in pairs.enumerated() {
+            let price = path[index] == pair.token0 ?
+                    Price(baseTokenAmount: pair.reserve0, quoteTokenAmount: pair.reserve1) :
+                    Price(baseTokenAmount: pair.reserve1, quoteTokenAmount: pair.reserve0)
+
+            prices.append(price)
+        }
+
+        midPrice = prices.dropFirst().reduce(prices[0]) { $0 * $1 }
     }
 
 }

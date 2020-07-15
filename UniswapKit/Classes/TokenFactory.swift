@@ -11,8 +11,8 @@ class TokenFactory {
         .eth(wethAddress: wethAddress)
     }
 
-    func token(contractAddress: Data) -> Token {
-        .erc20(address: contractAddress)
+    func token(contractAddress: Data, decimals: Int) -> Token {
+        .erc20(address: contractAddress, decimals: decimals)
     }
 
 }
