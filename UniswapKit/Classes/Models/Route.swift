@@ -3,13 +3,11 @@ import BigInt
 struct Route {
     let pairs: [Pair]
     let path: [Token]
-//    let tokenIn: Token
-//    let tokenOut: Token
     let midPrice: Price
 
     init(pairs: [Pair], tokenIn: Token, tokenOut: Token) throws {
         guard !pairs.isEmpty else {
-            throw InitError.emptyPairs
+            throw Kit.RouteError.emptyPairs
         }
 
         var path = [tokenIn]
@@ -17,7 +15,7 @@ struct Route {
 
         for (index, pair) in pairs.enumerated() {
             guard pair.involves(token: currentTokenIn) else {
-                throw InitError.invalidPair(index: index)
+                throw Kit.RouteError.invalidPair(index: index)
             }
 
             let currentTokenOut = pair.other(token: currentTokenIn)
@@ -26,7 +24,7 @@ struct Route {
 
             if index == pairs.count - 1 {
                 guard currentTokenOut == tokenOut else {
-                    throw InitError.invalidPair(index: index)
+                    throw Kit.RouteError.invalidPair(index: index)
                 }
             }
         }
@@ -45,15 +43,6 @@ struct Route {
         }
 
         midPrice = prices.dropFirst().reduce(prices[0]) { $0 * $1 }
-    }
-
-}
-
-extension Route {
-
-    enum InitError: Error {
-        case emptyPairs
-        case invalidPair(index: Int)
     }
 
 }

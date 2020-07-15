@@ -39,54 +39,42 @@ extension Kit {
         }
     }
 
-    public func bestTradeExactIn(swapData: SwapData, amountIn: Decimal, options: TradeOptions = TradeOptions()) -> TradeData? {
-        guard let tokenAmountIn = TokenAmount(token: swapData.tokenIn, decimal: amountIn) else {
-            return nil
+    public func bestTradeExactIn(swapData: SwapData, amountIn: Decimal, options: TradeOptions = TradeOptions()) throws -> TradeData {
+        let tokenAmountIn = try TokenAmount(token: swapData.tokenIn, decimal: amountIn)
+
+        let trades = try TradeManager.bestTradeExactIn(
+                pairs: swapData.pairs,
+                tokenAmountIn: tokenAmountIn,
+                tokenOut: swapData.tokenOut
+        )
+
+        guard let trade = trades.first else {
+            throw BestTradeError.tradeNotFound
         }
 
-        do {
-            let trades = try TradeManager.bestTradeExactIn(
-                    pairs: swapData.pairs,
-                    tokenAmountIn: tokenAmountIn,
-                    tokenOut: swapData.tokenOut
-            )
+        print("Trades Found: \(trades.count)")
+        print("PATH: \(trade.route.path)")
 
-            guard let trade = trades.first else {
-                return nil
-            }
-
-            print("PATH: \(trade.route.path)")
-
-            return TradeData(trade: trade, options: options)
-        } catch {
-            print("BestTradeError: \(error)")
-            return nil
-        }
+        return TradeData(trade: trade, options: options)
     }
 
-    public func bestTradeExactOut(swapData: SwapData, amountOut: Decimal, options: TradeOptions = TradeOptions()) -> TradeData? {
-        guard let tokenAmountOut = TokenAmount(token: swapData.tokenOut, decimal: amountOut) else {
-            return nil
+    public func bestTradeExactOut(swapData: SwapData, amountOut: Decimal, options: TradeOptions = TradeOptions()) throws -> TradeData {
+        let tokenAmountOut = try TokenAmount(token: swapData.tokenOut, decimal: amountOut)
+
+        let trades = try TradeManager.bestTradeExactOut(
+                pairs: swapData.pairs,
+                tokenIn: swapData.tokenIn,
+                tokenAmountOut: tokenAmountOut
+        )
+
+        guard let trade = trades.first else {
+            throw BestTradeError.tradeNotFound
         }
 
-        do {
-            let trades = try TradeManager.bestTradeExactOut(
-                    pairs: swapData.pairs,
-                    tokenIn: swapData.tokenIn,
-                    tokenAmountOut: tokenAmountOut
-            )
+        print("Trades Found: \(trades.count)")
+        print("PATH: \(trade.route.path)")
 
-            guard let trade = trades.first else {
-                return nil
-            }
-
-            print("PATH: \(trade.route.path)")
-
-            return TradeData(trade: trade, options: options)
-        } catch {
-            print("BestTradeError: \(error)")
-            return nil
-        }
+        return TradeData(trade: trade, options: options)
     }
 
     public func swapSingle(tradeData: TradeData) -> Single<String> {
@@ -113,8 +101,24 @@ extension Kit {
 
 extension Kit {
 
-    public enum KitError: Error {
-        case insufficientReserve
+    public enum FractionError: Error {
+        case negativeDecimal
+        case invalidSignificand(value: String)
+    }
+
+    public enum BestTradeError: Error {
+        case tradeNotFound
+    }
+
+    public enum PairError: Error {
+        case notInvolvedToken
+        case insufficientReserves
+        case insufficientReserveOut
+    }
+
+    public enum RouteError: Error {
+        case emptyPairs
+        case invalidPair(index: Int)
     }
 
 }

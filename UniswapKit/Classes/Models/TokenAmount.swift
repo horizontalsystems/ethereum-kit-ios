@@ -9,13 +9,13 @@ struct TokenAmount {
         self.fraction = Fraction(numerator: rawAmount, denominator: BigUInt(10).power(token.decimals))
     }
 
-    init?(token: Token, decimal: Decimal) {
+    init(token: Token, decimal: Decimal) throws {
         guard decimal.sign == .plus else {
-            return nil
+            throw Kit.FractionError.negativeDecimal
         }
 
         guard let significand = BigUInt(decimal.significand.description) else {
-            return nil
+            throw Kit.FractionError.invalidSignificand(value: decimal.significand.description)
         }
 
         let rawAmount: BigUInt
