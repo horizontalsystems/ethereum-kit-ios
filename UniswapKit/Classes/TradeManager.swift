@@ -60,7 +60,7 @@ extension TradeManager {
 
         let pairAddress = Pair.address(token0: token0, token1: token1)
 
-        print("PAIR ADDRESS: \(pairAddress.toHexString())")
+//        print("PAIR ADDRESS: \(pairAddress.toHexString())")
 
         return self.ethereumKit.call(contractAddress: pairAddress, data: method.encodedData)
                 .map { data in
@@ -159,18 +159,15 @@ extension TradeManager {
 
         var bestTrades = [Trade]()
         let originalTokenAmountIn = originalTokenAmountIn ?? tokenAmountIn
-        let tokenIn = tokenAmountIn.token
 
         for (index, pair) in pairs.enumerated() {
-            guard pair.token0 == tokenIn || pair.token1 == tokenIn else {
+            let tokenAmountOut: TokenAmount
+
+            do {
+                tokenAmountOut = try pair.tokenAmountOut(tokenAmountIn: tokenAmountIn)
+            } catch {
                 continue
             }
-
-            guard pair.reserve0.rawAmount != 0 && pair.reserve1.rawAmount != 0 else {
-                continue
-            }
-
-            let tokenAmountOut = pair.tokenAmountOut(tokenAmountIn: tokenAmountIn)
 
             if tokenAmountOut.token == tokenOut {
                 let trade = Trade(
@@ -205,18 +202,13 @@ extension TradeManager {
 
         var bestTrades = [Trade]()
         let originalTokenAmountOut = originalTokenAmountOut ?? tokenAmountOut
-        let tokenOut = tokenAmountOut.token
 
         for (index, pair) in pairs.enumerated() {
-            guard pair.token0 == tokenOut || pair.token1 == tokenOut else {
-                continue
-            }
+            let tokenAmountIn: TokenAmount
 
-            guard pair.reserve0.rawAmount != 0 && pair.reserve1.rawAmount != 0 else {
-                continue
-            }
-
-            guard let tokenAmountIn = try? pair.tokenAmountIn(tokenAmountOut: tokenAmountOut) else {
+            do {
+                tokenAmountIn = try pair.tokenAmountIn(tokenAmountOut: tokenAmountOut)
+            } catch {
                 continue
             }
 

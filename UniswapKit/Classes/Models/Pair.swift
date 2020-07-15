@@ -30,8 +30,14 @@ public struct Pair {
         token0 == token ? reserve0 : reserve1
     }
 
-    func tokenAmountOut(tokenAmountIn: TokenAmount) -> TokenAmount {
-        // todo: guards
+    func tokenAmountOut(tokenAmountIn: TokenAmount) throws -> TokenAmount {
+        guard involves(token: tokenAmountIn.token) else {
+            throw Kit.PairError.notInvolvedToken
+        }
+
+        guard reserve0.rawAmount != 0 && reserve1.rawAmount != 0 else {
+            throw Kit.PairError.insufficientReserves
+        }
 
         let tokenIn = tokenAmountIn.token
         let tokenOut = other(token: tokenIn)
@@ -48,7 +54,13 @@ public struct Pair {
     }
 
     func tokenAmountIn(tokenAmountOut: TokenAmount) throws -> TokenAmount {
-        // todo: guards
+        guard involves(token: tokenAmountOut.token) else {
+            throw Kit.PairError.notInvolvedToken
+        }
+
+        guard reserve0.rawAmount != 0 && reserve1.rawAmount != 0 else {
+            throw Kit.PairError.insufficientReserves
+        }
 
         let amountOut = tokenAmountOut.rawAmount
 
@@ -59,7 +71,7 @@ public struct Pair {
         let reserveIn = reserve(token: tokenIn)
 
         guard amountOut < reserveOut.rawAmount else {
-            throw Kit.KitError.insufficientReserve
+            throw Kit.PairError.insufficientReserveOut
         }
 
         let numerator = reserveIn.rawAmount * amountOut * 1000

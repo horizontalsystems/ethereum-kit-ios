@@ -12,7 +12,11 @@ public struct TradeOptions {
     }
 
     var slippageFraction: Fraction {
-        Fraction(decimal: allowedSlippage / 100) ?? Fraction(numerator: 5, denominator: 1000)
+        do {
+            return try Fraction(decimal: allowedSlippage / 100)
+        } catch {
+            return Fraction(numerator: 5, denominator: 1000)
+        }
     }
 
 }

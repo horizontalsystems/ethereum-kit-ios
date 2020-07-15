@@ -9,13 +9,13 @@ struct Fraction {
         self.denominator = numerator == 0 ? 1 : denominator
     }
 
-    init?(decimal: Decimal) {
-        guard let numerator = BigUInt(decimal.significand.description) else {
-            return nil
+    init(decimal: Decimal) throws {
+        guard decimal.sign == .plus else {
+            throw Kit.FractionError.negativeDecimal
         }
 
-        guard decimal.sign == .plus else {
-            return nil
+        guard let numerator = BigUInt(decimal.significand.description) else {
+            throw Kit.FractionError.invalidSignificand(value: decimal.significand.description)
         }
 
         if decimal.exponent > 0 {
