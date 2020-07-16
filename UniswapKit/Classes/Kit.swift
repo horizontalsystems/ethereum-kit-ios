@@ -77,8 +77,12 @@ extension Kit {
         return TradeData(trade: trade, options: options)
     }
 
-    public func swapSingle(tradeData: TradeData, gasPrice: Int) -> Single<String> {
-        tradeManager.swapSingle(tradeData: tradeData, gasPrice: gasPrice)
+    public func estimateGasSingle(tradeData: TradeData, gasPrice: Int) -> Single<GasData> {
+        tradeManager.estimateGasSingle(tradeData: tradeData, gasPrice: gasPrice)
+    }
+
+    public func swapSingle(tradeData: TradeData, gasData: GasData, gasPrice: Int) -> Single<String> {
+        tradeManager.swapSingle(tradeData: tradeData, gasData: gasData, gasPrice: gasPrice)
     }
 
 }
