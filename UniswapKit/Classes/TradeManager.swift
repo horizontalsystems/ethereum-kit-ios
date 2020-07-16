@@ -17,73 +17,69 @@ class TradeManager {
         self.address = address
     }
 
-    private func swapSingle(value: BigUInt, input: Data, gasPrice: Int) -> Single<String> {
-        ethereumKit.sendSingle(
+    private func approveMethod(amount: BigUInt) -> ContractMethod {
+        ContractMethod(name: "approve", arguments: [
+            .address(TradeManager.routerAddress),
+            .uint256(amount)
+        ])
+    }
+
+    private func swapSingle(swapData: SwapData, gasData: GasData, gasPrice: Int) -> Single<String> {
+        let swapSingle = ethereumKit.sendSingle(
                         address: TradeManager.routerAddress,
-                        value: value,
-                        transactionInput: input,
+                        value: swapData.amount,
+                        transactionInput: swapData.input,
                         gasPrice: gasPrice,
-                        gasLimit: 500_000
+                        gasLimit: gasData.swapGas
                 )
                 .map { txInfo in
                     txInfo.hash
                 }
-    }
 
-    private func singleWithApprove(contractAddress: Data, amount: BigUInt, gasPrice: Int, single: Single<String>) -> Single<String> {
-        let method = ContractMethod(name: "approve", arguments: [
-            .address(TradeManager.routerAddress),
-            .uint256(amount)
-        ])
-
-        return ethereumKit.sendSingle(
-                        address: contractAddress,
-                        value: 0,
-                        transactionInput: method.encodedData,
-                        gasPrice: gasPrice,
-                        gasLimit: 500_000
-                )
-                .flatMap { txInfo in
-                    print("APPROVE TX: \(txInfo.hash)")
-                    return single
-                }
-    }
-
-}
-
-extension TradeManager {
-
-    func pairSingle(tokenA: Token, tokenB: Token) -> Single<Pair> {
-        let method = ContractMethod(name: "getReserves")
-
-        let (token0, token1) = tokenA.sortsBefore(token: tokenB) ? (tokenA, tokenB) : (tokenB, tokenA)
-
-        let pairAddress = Pair.address(token0: token0, token1: token1)
-
-//        print("PAIR ADDRESS: \(pairAddress.toHexString())")
-
-        return self.ethereumKit.call(contractAddress: pairAddress, data: method.encodedData)
-                .map { data in
-//                    print("DATA: \(data.toHexString())")
-
-                    var rawReserve0: BigUInt = 0
-                    var rawReserve1: BigUInt = 0
-
-                    if data.count == 3 * 32 {
-                        rawReserve0 = BigUInt(data[0...31])
-                        rawReserve1 = BigUInt(data[32...63])
+        if let approveData = swapData.approveData {
+            return ethereumKit.sendSingle(
+                            address: approveData.contractAddress,
+                            value: 0,
+                            transactionInput: approveMethod(amount: approveData.amount).encodedData,
+                            gasPrice: gasPrice,
+                            gasLimit: gasData.approveGas
+                    )
+                    .flatMap { txInfo in
+                        print("APPROVE TX: \(txInfo.hash)")
+                        return swapSingle
                     }
-
-//                    print("Reserve0: \(reserve0), Reserve1: \(reserve1)")
-
-                    let reserve0 = TokenAmount(token: token0, rawAmount: rawReserve0)
-                    let reserve1 = TokenAmount(token: token1, rawAmount: rawReserve1)
-
-                    return Pair(reserve0: reserve0, reserve1: reserve1)
-                }
+        } else {
+            return swapSingle
+        }
     }
 
-    func swapSingle(tradeData: TradeData, gasPrice: Int) -> Single<String> {
+    private func estimateSwapSingle(swapData: SwapData, gasPrice: Int) -> Single<GasData> {
+        let estimateSwapSingle = ethereumKit.estimateGas(
+                to: TradeManager.routerAddress,
+                amount: swapData.amount == 0 ? nil : swapData.amount,
+                gasPrice: gasPrice,
+                data: swapData.input
+        )
+
+        if let approveData = swapData.approveData {
+            let estimateApproveSingle = ethereumKit.estimateGas(
+                    to: approveData.contractAddress,
+                    amount: nil,
+                    gasPrice: gasPrice,
+                    data: approveMethod(amount: approveData.amount).encodedData
+            )
+
+            return Single.zip(estimateSwapSingle, estimateApproveSingle) { swapGas, approveGas -> GasData in
+                GasData(swapGas: swapGas, approveGas: approveGas)
+            }
+        } else {
+            return estimateSwapSingle.map { swapGas in
+                GasData(swapGas: swapGas)
+            }
+        }
+    }
+
+    private func swapData(tradeData: TradeData) -> SwapData {
         let methodName: String
         let arguments: [ContractMethod.Argument]
         let amount: BigUInt
@@ -140,15 +136,71 @@ extension TradeManager {
         let method = ContractMethod(name: methodName, arguments: arguments)
 
         if tokenIn.isEther {
-            return swapSingle(value: amount, input: method.encodedData, gasPrice: gasPrice)
+            return SwapData(amount: amount, input: method.encodedData, approveData: nil)
         } else {
-            return singleWithApprove(
-                    contractAddress: tokenIn.address,
-                    amount: amount,
-                    gasPrice: gasPrice,
-                    single: swapSingle(value: 0, input: method.encodedData, gasPrice: gasPrice)
+            return SwapData(
+                    amount: 0,
+                    input: method.encodedData,
+                    approveData: ApproveData(contractAddress: tokenIn.address, amount: amount)
             )
         }
+    }
+
+}
+
+extension TradeManager {
+
+    func pairSingle(tokenA: Token, tokenB: Token) -> Single<Pair> {
+        let method = ContractMethod(name: "getReserves")
+
+        let (token0, token1) = tokenA.sortsBefore(token: tokenB) ? (tokenA, tokenB) : (tokenB, tokenA)
+
+        let pairAddress = Pair.address(token0: token0, token1: token1)
+
+//        print("PAIR ADDRESS: \(pairAddress.toHexString())")
+
+        return self.ethereumKit.call(contractAddress: pairAddress, data: method.encodedData)
+                .map { data in
+//                    print("DATA: \(data.toHexString())")
+
+                    var rawReserve0: BigUInt = 0
+                    var rawReserve1: BigUInt = 0
+
+                    if data.count == 3 * 32 {
+                        rawReserve0 = BigUInt(data[0...31])
+                        rawReserve1 = BigUInt(data[32...63])
+                    }
+
+//                    print("Reserve0: \(reserve0), Reserve1: \(reserve1)")
+
+                    let reserve0 = TokenAmount(token: token0, rawAmount: rawReserve0)
+                    let reserve1 = TokenAmount(token: token1, rawAmount: rawReserve1)
+
+                    return Pair(reserve0: reserve0, reserve1: reserve1)
+                }
+    }
+
+    func estimateGasSingle(tradeData: TradeData, gasPrice: Int) -> Single<GasData> {
+        estimateSwapSingle(swapData: swapData(tradeData: tradeData), gasPrice: gasPrice)
+    }
+
+    func swapSingle(tradeData: TradeData, gasData: GasData, gasPrice: Int) -> Single<String> {
+        swapSingle(swapData: swapData(tradeData: tradeData), gasData: gasData, gasPrice: gasPrice)
+    }
+
+}
+
+extension TradeManager {
+
+    private struct SwapData {
+        let amount: BigUInt
+        let input: Data
+        var approveData: ApproveData?
+    }
+
+    private struct ApproveData {
+        let contractAddress: Data
+        let amount: BigUInt
     }
 
 }

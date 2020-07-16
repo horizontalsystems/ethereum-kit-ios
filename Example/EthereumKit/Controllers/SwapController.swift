@@ -300,7 +300,10 @@ class SwapController: UIViewController {
             return
         }
 
-        uniswapKit.swapSingle(tradeData: tradeData, gasPrice: 50_000_000_000)
+        let gasData = GasData(swapGas: 500_000, approveGas: 500_000)
+        let gasPrice = 50_000_000_000
+
+        uniswapKit.swapSingle(tradeData: tradeData, gasData: gasData, gasPrice: gasPrice)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { txHash in
