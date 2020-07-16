@@ -27,16 +27,16 @@ class SwapController: UIViewController {
     private var tradeData: TradeData?
 
     private static let tokens = [
-        Erc20Token(name: "GMO coins", coin: "GMOLW", contractAddress: "0xbb74a24d83470f64d5f0c01688fbb49a5a251b32", decimal: 18),
-        Erc20Token(name: "DAI", coin: "DAI", contractAddress: "0xad6d458402f60fd3bd25163575031acdce07538d", decimal: 18),
-        Erc20Token(name: "MMM", coin: "MMM", contractAddress: "0x3e500c5f4de2738f65c90c6cc93b173792127481", decimal: 8),
+//        Erc20Token(name: "GMO coins", coin: "GMOLW", contractAddress: "0xbb74a24d83470f64d5f0c01688fbb49a5a251b32", decimal: 18),
+//        Erc20Token(name: "DAI", coin: "DAI", contractAddress: "0xad6d458402f60fd3bd25163575031acdce07538d", decimal: 18),
+//        Erc20Token(name: "MMM", coin: "MMM", contractAddress: "0x3e500c5f4de2738f65c90c6cc93b173792127481", decimal: 8),
 
-//        Erc20Token(name: "DAI", coin: "DAI", contractAddress: "0x6b175474e89094c44da98b954eedeac495271d0f", decimal: 18),
-//        Erc20Token(name: "USD Coin", coin: "USDC", contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", decimal: 6),
+        Erc20Token(name: "DAI", coin: "DAI", contractAddress: "0x6b175474e89094c44da98b954eedeac495271d0f", decimal: 18),
+        Erc20Token(name: "USD Coin", coin: "USDC", contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", decimal: 6),
     ]
 
-    private var fromToken: Erc20Token? = SwapController.tokens[1]
-    private var toToken: Erc20Token? = SwapController.tokens[2]
+    private var fromToken: Erc20Token?
+    private var toToken: Erc20Token? = SwapController.tokens[1]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -300,7 +300,7 @@ class SwapController: UIViewController {
             return
         }
 
-        uniswapKit.swapSingle(tradeData: tradeData)
+        uniswapKit.swapSingle(tradeData: tradeData, gasPrice: 50_000_000_000)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { txHash in
