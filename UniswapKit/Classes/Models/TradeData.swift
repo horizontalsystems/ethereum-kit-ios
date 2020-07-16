@@ -43,6 +43,14 @@ extension TradeData {
         tokenAmountOutMin.decimalAmount
     }
 
+    public var executionPrice: Decimal? {
+        trade.executionPrice.decimalValue
+    }
+
+    public var midPrice: Decimal? {
+        trade.route.midPrice.decimalValue
+    }
+
     public var priceImpact: Decimal? {
         trade.priceImpact.toDecimal(decimals: 2)
     }

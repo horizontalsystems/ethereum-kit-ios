@@ -5,6 +5,7 @@ struct Trade {
     let route: Route
     let tokenAmountIn: TokenAmount
     let tokenAmountOut: TokenAmount
+    let executionPrice: Price
     let priceImpact: Fraction
 
     init(type: TradeType, route: Route, tokenAmountIn: TokenAmount, tokenAmountOut: TokenAmount) {
@@ -12,6 +13,8 @@ struct Trade {
         self.route = route
         self.tokenAmountIn = tokenAmountIn
         self.tokenAmountOut = tokenAmountOut
+
+        executionPrice = Price(baseTokenAmount: tokenAmountIn, quoteTokenAmount: tokenAmountOut)
 
         priceImpact = Trade.computePriceImpact(midPrice: route.midPrice, tokenAmountIn: tokenAmountIn, tokenAmountOut: tokenAmountOut)
     }

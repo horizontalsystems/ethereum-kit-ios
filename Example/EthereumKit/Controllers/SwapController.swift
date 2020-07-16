@@ -15,6 +15,8 @@ class SwapController: UIViewController {
     private let toTextField = UITextField()
     private let toTokenLabel = UILabel()
     private let minMaxLabel = UILabel()
+    private let executionPriceLabel = UILabel()
+    private let midPriceLabel = UILabel()
     private let priceImpactLabel = UILabel()
     private let pathLabel = UILabel()
     private let swapButton = UIButton(type: .system)
@@ -68,7 +70,7 @@ class SwapController: UIViewController {
         }
 
         fromTokenLabel.font = .systemFont(ofSize: 14)
-        fromTokenLabel.text = fromToken?.coin ?? "ETH"
+        fromTokenLabel.text = tokenCoin(token: fromToken)
 
         view.addSubview(toLabel)
         toLabel.snp.makeConstraints { maker in
@@ -97,7 +99,7 @@ class SwapController: UIViewController {
         }
 
         toTokenLabel.font = .systemFont(ofSize: 14)
-        toTokenLabel.text = toToken?.coin ?? "ETH"
+        toTokenLabel.text = tokenCoin(token: toToken)
 
         view.addSubview(minMaxLabel)
         minMaxLabel.snp.makeConstraints { maker in
@@ -108,10 +110,28 @@ class SwapController: UIViewController {
         minMaxLabel.font = .systemFont(ofSize: 12)
         minMaxLabel.textAlignment = .left
 
+        view.addSubview(executionPriceLabel)
+        executionPriceLabel.snp.makeConstraints { maker in
+            maker.leading.trailing.equalToSuperview().inset(24)
+            maker.top.equalTo(minMaxLabel.snp.bottom).offset(12)
+        }
+
+        executionPriceLabel.font = .systemFont(ofSize: 12)
+        executionPriceLabel.textAlignment = .left
+
+        view.addSubview(midPriceLabel)
+        midPriceLabel.snp.makeConstraints { maker in
+            maker.leading.trailing.equalToSuperview().inset(24)
+            maker.top.equalTo(executionPriceLabel.snp.bottom).offset(12)
+        }
+
+        midPriceLabel.font = .systemFont(ofSize: 12)
+        midPriceLabel.textAlignment = .left
+
         view.addSubview(priceImpactLabel)
         priceImpactLabel.snp.makeConstraints { maker in
             maker.leading.trailing.equalToSuperview().inset(24)
-            maker.top.equalTo(minMaxLabel.snp.bottom).offset(24)
+            maker.top.equalTo(midPriceLabel.snp.bottom).offset(12)
         }
 
         priceImpactLabel.font = .systemFont(ofSize: 12)
@@ -120,7 +140,7 @@ class SwapController: UIViewController {
         view.addSubview(pathLabel)
         pathLabel.snp.makeConstraints { maker in
             maker.leading.trailing.equalToSuperview().inset(24)
-            maker.top.equalTo(priceImpactLabel.snp.bottom).offset(24)
+            maker.top.equalTo(priceImpactLabel.snp.bottom).offset(12)
         }
 
         pathLabel.font = .systemFont(ofSize: 12)
@@ -159,16 +179,25 @@ class SwapController: UIViewController {
         if let tradeData = tradeData {
             switch tradeData.type {
             case .exactIn:
-                minMaxLabel.text = tradeData.amountOutMin.map { "Minimum Received: \($0.description)" }
+                minMaxLabel.text = tradeData.amountOutMin.map { "Minimum Received: \($0.description) \(tokenCoin(token: toToken))" }
             case .exactOut:
-                minMaxLabel.text = tradeData.amountInMax.map { "Maximum Sold: \($0.description)" }
+                minMaxLabel.text = tradeData.amountInMax.map { "Maximum Sold: \($0.description) \(tokenCoin(token: fromToken))" }
             }
 
-            priceImpactLabel.text = tradeData.priceImpact.map { "Price Impact: \($0.description)" }
+            executionPriceLabel.text = tradeData.executionPrice.map { "Execution Price: \($0.description) \(tokenCoin(token: toToken)) per \(tokenCoin(token: fromToken))" }
+            midPriceLabel.text = tradeData.midPrice.map { "Mid Price: \($0.description) \(tokenCoin(token: toToken)) per \(tokenCoin(token: fromToken))" }
+
+            priceImpactLabel.text = tradeData.priceImpact.map { "Price Impact: \($0.description)%" }
         } else {
             minMaxLabel.text = nil
+            executionPriceLabel.text = nil
+            midPriceLabel.text = nil
             priceImpactLabel.text = nil
         }
+    }
+
+    private func tokenCoin(token: Erc20Token?) -> String {
+        token?.coin ?? "ETH"
     }
 
     private func uniswapToken(token: Erc20Token?) -> Token {
