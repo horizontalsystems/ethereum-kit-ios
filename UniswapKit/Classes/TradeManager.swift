@@ -17,12 +17,12 @@ class TradeManager {
         self.address = address
     }
 
-    private func swapSingle(value: BigUInt, input: Data) -> Single<String> {
+    private func swapSingle(value: BigUInt, input: Data, gasPrice: Int) -> Single<String> {
         ethereumKit.sendSingle(
                         address: TradeManager.routerAddress,
                         value: value,
                         transactionInput: input,
-                        gasPrice: 50_000_000_000,
+                        gasPrice: gasPrice,
                         gasLimit: 500_000
                 )
                 .map { txInfo in
@@ -30,7 +30,7 @@ class TradeManager {
                 }
     }
 
-    private func singleWithApprove(contractAddress: Data, amount: BigUInt, single: Single<String>) -> Single<String> {
+    private func singleWithApprove(contractAddress: Data, amount: BigUInt, gasPrice: Int, single: Single<String>) -> Single<String> {
         let method = ContractMethod(name: "approve", arguments: [
             .address(TradeManager.routerAddress),
             .uint256(amount)
@@ -40,7 +40,7 @@ class TradeManager {
                         address: contractAddress,
                         value: 0,
                         transactionInput: method.encodedData,
-                        gasPrice: 50_000_000_000,
+                        gasPrice: gasPrice,
                         gasLimit: 500_000
                 )
                 .flatMap { txInfo in
@@ -83,7 +83,7 @@ extension TradeManager {
                 }
     }
 
-    func swapSingle(tradeData: TradeData) -> Single<String> {
+    func swapSingle(tradeData: TradeData, gasPrice: Int) -> Single<String> {
         let methodName: String
         let arguments: [ContractMethod.Argument]
         let amount: BigUInt
@@ -140,12 +140,13 @@ extension TradeManager {
         let method = ContractMethod(name: methodName, arguments: arguments)
 
         if tokenIn.isEther {
-            return swapSingle(value: amount, input: method.encodedData)
+            return swapSingle(value: amount, input: method.encodedData, gasPrice: gasPrice)
         } else {
             return singleWithApprove(
                     contractAddress: tokenIn.address,
                     amount: amount,
-                    single: swapSingle(value: 0, input: method.encodedData)
+                    gasPrice: gasPrice,
+                    single: swapSingle(value: 0, input: method.encodedData, gasPrice: gasPrice)
             )
         }
     }
