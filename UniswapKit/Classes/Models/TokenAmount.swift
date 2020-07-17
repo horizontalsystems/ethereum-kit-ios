@@ -2,7 +2,7 @@ import BigInt
 
 struct TokenAmount {
     let token: Token
-    private let fraction: Fraction
+    let fraction: Fraction
 
     init(token: Token, rawAmount: BigUInt) {
         self.token = token
@@ -35,6 +35,18 @@ struct TokenAmount {
 
     var decimalAmount: Decimal? {
         fraction.toDecimal(decimals: token.decimals)
+    }
+
+}
+
+extension TokenAmount: Comparable {
+
+    public static func <(lhs: TokenAmount, rhs: TokenAmount) -> Bool {
+        lhs.fraction < rhs.fraction
+    }
+
+    public static func ==(lhs: TokenAmount, rhs: TokenAmount) -> Bool {
+        lhs.fraction == rhs.fraction
     }
 
 }

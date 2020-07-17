@@ -42,39 +42,37 @@ extension Kit {
     public func bestTradeExactIn(swapData: SwapData, amountIn: Decimal, options: TradeOptions = TradeOptions()) throws -> TradeData {
         let tokenAmountIn = try TokenAmount(token: swapData.tokenIn, decimal: amountIn)
 
-        let trades = try TradeManager.bestTradeExactIn(
+        let sortedTrades = try TradeManager.tradesExactIn(
                 pairs: swapData.pairs,
                 tokenAmountIn: tokenAmountIn,
                 tokenOut: swapData.tokenOut
-        )
+        ).sorted()
 
-        guard let trade = trades.first else {
-            throw BestTradeError.tradeNotFound
+        print("Trades: \(sortedTrades)")
+
+        guard let bestTrade = sortedTrades.first else {
+            throw TradeError.tradeNotFound
         }
 
-        print("Trades Found: \(trades.count)")
-        print("PATH: \(trade.route.path)")
-
-        return TradeData(trade: trade, options: options)
+        return TradeData(trade: bestTrade, options: options)
     }
 
     public func bestTradeExactOut(swapData: SwapData, amountOut: Decimal, options: TradeOptions = TradeOptions()) throws -> TradeData {
         let tokenAmountOut = try TokenAmount(token: swapData.tokenOut, decimal: amountOut)
 
-        let trades = try TradeManager.bestTradeExactOut(
+        let sortedTrades = try TradeManager.tradesExactOut(
                 pairs: swapData.pairs,
                 tokenIn: swapData.tokenIn,
                 tokenAmountOut: tokenAmountOut
-        )
+        ).sorted()
 
-        guard let trade = trades.first else {
-            throw BestTradeError.tradeNotFound
+        print("Trades: \(sortedTrades)")
+
+        guard let bestTrade = sortedTrades.first else {
+            throw TradeError.tradeNotFound
         }
 
-        print("Trades Found: \(trades.count)")
-        print("PATH: \(trade.route.path)")
-
-        return TradeData(trade: trade, options: options)
+        return TradeData(trade: bestTrade, options: options)
     }
 
     public func estimateGasSingle(tradeData: TradeData, gasPrice: Int) -> Single<GasData> {
@@ -110,7 +108,7 @@ extension Kit {
         case invalidSignificand(value: String)
     }
 
-    public enum BestTradeError: Error {
+    public enum TradeError: Error {
         case tradeNotFound
     }
 

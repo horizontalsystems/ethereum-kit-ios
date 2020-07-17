@@ -207,10 +207,10 @@ extension TradeManager {
 
 extension TradeManager {
 
-    static func bestTradeExactIn(pairs: [Pair], tokenAmountIn: TokenAmount, tokenOut: Token, maxHops: Int = 3, currentPairs: [Pair] = [], originalTokenAmountIn: TokenAmount? = nil) throws -> [Trade] {
+    static func tradesExactIn(pairs: [Pair], tokenAmountIn: TokenAmount, tokenOut: Token, maxHops: Int = 3, currentPairs: [Pair] = [], originalTokenAmountIn: TokenAmount? = nil) throws -> [Trade] {
         // todo: guards
 
-        var bestTrades = [Trade]()
+        var trades = [Trade]()
         let originalTokenAmountIn = originalTokenAmountIn ?? tokenAmountIn
 
         for (index, pair) in pairs.enumerated() {
@@ -230,11 +230,11 @@ extension TradeManager {
                         tokenAmountOut: tokenAmountOut
                 )
 
-                bestTrades.append(trade)
+                trades.append(trade)
             } else if maxHops > 1 && pairs.count > 1 {
                 let pairsExcludingThisPair = Array(pairs[0..<index] + pairs[(index + 1)..<pairs.count])
 
-                let trades = try TradeManager.bestTradeExactIn(
+                let recursiveTrades = try TradeManager.tradesExactIn(
                         pairs: pairsExcludingThisPair,
                         tokenAmountIn: tokenAmountOut,
                         tokenOut: tokenOut,
@@ -243,17 +243,17 @@ extension TradeManager {
                         originalTokenAmountIn: originalTokenAmountIn
                 )
 
-                bestTrades.append(contentsOf: trades)
+                trades.append(contentsOf: recursiveTrades)
             }
         }
 
-        return bestTrades
+        return trades
     }
 
-    static func bestTradeExactOut(pairs: [Pair], tokenIn: Token, tokenAmountOut: TokenAmount, maxHops: Int = 3, currentPairs: [Pair] = [], originalTokenAmountOut: TokenAmount? = nil) throws -> [Trade] {
+    static func tradesExactOut(pairs: [Pair], tokenIn: Token, tokenAmountOut: TokenAmount, maxHops: Int = 3, currentPairs: [Pair] = [], originalTokenAmountOut: TokenAmount? = nil) throws -> [Trade] {
         // todo: guards
 
-        var bestTrades = [Trade]()
+        var trades = [Trade]()
         let originalTokenAmountOut = originalTokenAmountOut ?? tokenAmountOut
 
         for (index, pair) in pairs.enumerated() {
@@ -273,11 +273,11 @@ extension TradeManager {
                         tokenAmountOut: originalTokenAmountOut
                 )
 
-                bestTrades.append(trade)
+                trades.append(trade)
             } else if maxHops > 1 && pairs.count > 1 {
                 let pairsExcludingThisPair = Array(pairs[0..<index] + pairs[(index + 1)..<pairs.count])
 
-                let trades = try TradeManager.bestTradeExactOut(
+                let recursiveTrades = try TradeManager.tradesExactOut(
                         pairs: pairsExcludingThisPair,
                         tokenIn: tokenIn,
                         tokenAmountOut: tokenAmountIn,
@@ -286,11 +286,11 @@ extension TradeManager {
                         originalTokenAmountOut: originalTokenAmountOut
                 )
 
-                bestTrades.append(contentsOf: trades)
+                trades.append(contentsOf: recursiveTrades)
             }
         }
 
-        return bestTrades
+        return trades
     }
 
 }

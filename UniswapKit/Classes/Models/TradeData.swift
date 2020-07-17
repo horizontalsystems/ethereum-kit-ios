@@ -55,4 +55,8 @@ extension TradeData {
         trade.priceImpact.toDecimal(decimals: 2)
     }
 
+    public var path: [Token] {
+        trade.route.path
+    }
+
 }

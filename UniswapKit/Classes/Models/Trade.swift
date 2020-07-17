@@ -25,3 +25,38 @@ struct Trade {
     }
 
 }
+
+extension Trade: Comparable {
+
+    public static func <(lhs: Trade, rhs: Trade) -> Bool {
+        if lhs.tokenAmountOut != rhs.tokenAmountOut {
+            return lhs.tokenAmountOut > rhs.tokenAmountOut
+        }
+
+        if lhs.tokenAmountIn != rhs.tokenAmountIn {
+            return lhs.tokenAmountIn < rhs.tokenAmountIn
+        }
+
+        if lhs.priceImpact != rhs.priceImpact {
+            return lhs.priceImpact < rhs.priceImpact
+        }
+
+        return lhs.route.path.count < rhs.route.path.count
+    }
+
+    public static func ==(lhs: Trade, rhs: Trade) -> Bool {
+        lhs.tokenAmountOut == rhs.tokenAmountOut &&
+                lhs.tokenAmountIn == rhs.tokenAmountIn &&
+                lhs.priceImpact == rhs.priceImpact &&
+                lhs.route.path.count == rhs.route.path.count
+    }
+
+}
+
+extension Trade: CustomStringConvertible {
+
+    public var description: String {
+        "\n[type: \(type);\npath: \(route.path);\ntokenAmountIn: \(tokenAmountIn);\ntokenAmountOut: \(tokenAmountOut);\nexecutionPrice: \(executionPrice);\npriceImpact: \(priceImpact.toDecimal(decimals: 2)?.description ?? "nil")]"
+    }
+
+}
