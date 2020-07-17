@@ -35,7 +35,7 @@ class SwapController: UIViewController {
         Erc20Token(name: "USD Coin", coin: "USDC", contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", decimal: 6),
     ]
 
-    private var fromToken: Erc20Token?
+    private var fromToken: Erc20Token? = SwapController.tokens[0]
     private var toToken: Erc20Token? = SwapController.tokens[1]
 
     override func viewDidLoad() {
@@ -168,6 +168,20 @@ class SwapController: UIViewController {
         view.endEditing(true)
     }
 
+    private func pathString(path: [Token]) -> String {
+        let parts = path.map { token -> String in
+            if token.isEther {
+                return "ETH"
+            } else if let erc20Token = SwapController.tokens.first(where: { $0.contractAddress.lowercased() == token.contractAddress.lowercased() }) {
+                return erc20Token.coin
+            } else {
+                return token.contractAddress
+            }
+        }
+
+        return parts.joined(separator: " > ")
+    }
+
     private func syncControls() {
         let tradeType: TradeType = tradeData?.type ?? .exactIn
 
@@ -188,11 +202,14 @@ class SwapController: UIViewController {
             midPriceLabel.text = tradeData.midPrice.map { "Mid Price: \($0.description) \(tokenCoin(token: toToken)) per \(tokenCoin(token: fromToken))" }
 
             priceImpactLabel.text = tradeData.priceImpact.map { "Price Impact: \($0.description)%" }
+
+            pathLabel.text = "Route: \(pathString(path: tradeData.path))"
         } else {
             minMaxLabel.text = nil
             executionPriceLabel.text = nil
             midPriceLabel.text = nil
             priceImpactLabel.text = nil
+            pathLabel.text = nil
         }
     }
 

@@ -20,11 +20,15 @@ public enum Token {
         address.toHexString().lowercased() < token.address.toHexString().lowercased()
     }
 
-    var isEther: Bool {
+    public var isEther: Bool {
         switch self {
         case .eth: return true
         default: return false
         }
+    }
+
+    public var contractAddress: String {
+        address.toHexString()
     }
 
 }
