@@ -24,17 +24,19 @@ public class Kit {
 
     public let address: Data
 
+    public let networkType: NetworkType
     public let uniqueId: String
     public let etherscanApiProvider: EtherscanApiProvider
 
     public let logger: Logger
 
-    init(blockchain: IBlockchain, transactionManager: ITransactionManager, transactionBuilder: TransactionBuilder, state: EthereumKitState = EthereumKitState(), address: Data, uniqueId: String, etherscanApiProvider: EtherscanApiProvider, logger: Logger) {
+    init(blockchain: IBlockchain, transactionManager: ITransactionManager, transactionBuilder: TransactionBuilder, state: EthereumKitState = EthereumKitState(), address: Data, networkType: NetworkType, uniqueId: String, etherscanApiProvider: EtherscanApiProvider, logger: Logger) {
         self.blockchain = blockchain
         self.transactionManager = transactionManager
         self.transactionBuilder = transactionBuilder
         self.state = state
         self.address = address
+        self.networkType = networkType
         self.uniqueId = uniqueId
         self.etherscanApiProvider = etherscanApiProvider
         self.logger = logger
@@ -322,7 +324,7 @@ extension Kit {
         let transactionStorage: ITransactionStorage & IInternalTransactionStorage = TransactionStorage(databaseDirectoryUrl: try dataDirectoryUrl(), databaseFileName: "transactions-\(uniqueId)")
         let transactionManager = TransactionManager(storage: transactionStorage, transactionsProvider: transactionsProvider)
 
-        let ethereumKit = Kit(blockchain: blockchain, transactionManager: transactionManager, transactionBuilder: transactionBuilder, address: address, uniqueId: uniqueId, etherscanApiProvider: etherscanApiProvider, logger: logger)
+        let ethereumKit = Kit(blockchain: blockchain, transactionManager: transactionManager, transactionBuilder: transactionBuilder, address: address, networkType: networkType, uniqueId: uniqueId, etherscanApiProvider: etherscanApiProvider, logger: logger)
 
         blockchain.delegate = ethereumKit
         transactionManager.delegate = ethereumKit
