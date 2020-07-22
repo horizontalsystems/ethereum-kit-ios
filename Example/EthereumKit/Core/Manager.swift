@@ -59,7 +59,7 @@ class Manager {
                 minLogLevel: configuration.minLogLevel
         )
 
-        uniswapKit = try! UniswapKit.Kit.instance(ethereumKit: ethereumKit, networkType: configuration.networkType)
+        uniswapKit = try! UniswapKit.Kit.instance(ethereumKit: ethereumKit)
 
         ethereumAdapter = EthereumAdapter(ethereumKit: ethereumKit)
 
