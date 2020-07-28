@@ -13,14 +13,14 @@ class EtherscanTransactionProvider {
 
 extension EtherscanTransactionProvider: ITransactionProvider {
 
-    func transactions(contractAddress: Data, address: Data, from: Int, to: Int) -> Single<[Transaction]> {
+    func transactions(contractAddress: Address, address: Address, from: Int, to: Int) -> Single<[Transaction]> {
         provider.tokenTransactionsSingle(contractAddress: contractAddress, startBlock: from).map { array -> [Transaction] in
             var transactionIndexMap = [Data: Int]()
 
             return array.compactMap { data -> Transaction? in
                 guard let hash = data["hash"].flatMap({ Data(hex: $0) }) else { return nil }
-                guard let from = data["from"].flatMap({ Data(hex: $0) }) else { return nil }
-                guard let to = data["to"].flatMap({ Data(hex: $0) }) else { return nil }
+                guard let from = data["from"].flatMap({ Data(hex: $0) }).map({ Address(raw: $0) }) else { return nil }
+                guard let to = data["to"].flatMap({ Data(hex: $0) }).map({ Address(raw: $0) }) else { return nil }
                 guard let value = data["value"].flatMap({ BigUInt($0) }) else { return nil }
                 guard let timestamp = data["timeStamp"].flatMap({ Double($0) }) else { return nil }
 

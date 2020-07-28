@@ -7,8 +7,8 @@ class Transaction: Record {
     let hash: Data
     let nonce: Int
     let input: Data
-    let from: Data
-    let to: Data
+    let from: Address
+    let to: Address
     let value: BigUInt
     let gasLimit: Int
     let gasPrice: Int
@@ -22,7 +22,7 @@ class Transaction: Record {
     var transactionIndex: Int?
     var txReceiptStatus: Int?
 
-    init(hash: Data, nonce: Int, input: Data = Data(), from: Data, to: Data, value: BigUInt, gasLimit: Int, gasPrice: Int, timestamp: TimeInterval = Date().timeIntervalSince1970) {
+    init(hash: Data, nonce: Int, input: Data = Data(), from: Address, to: Address, value: BigUInt, gasLimit: Int, gasPrice: Int, timestamp: TimeInterval = Date().timeIntervalSince1970) {
         self.hash = hash
         self.nonce = nonce
         self.input = input
@@ -63,8 +63,8 @@ class Transaction: Record {
         hash = row[Columns.hash]
         nonce = row[Columns.nonce]
         input = row[Columns.input]
-        from = row[Columns.from]
-        to = row[Columns.to]
+        from = Address(raw: row[Columns.from])
+        to = Address(raw: row[Columns.to])
         value = row[Columns.value]
         gasLimit = row[Columns.gasLimit]
         gasPrice = row[Columns.gasPrice]
@@ -84,8 +84,8 @@ class Transaction: Record {
         container[Columns.hash] = hash
         container[Columns.nonce] = nonce
         container[Columns.input] = input
-        container[Columns.from] = from
-        container[Columns.to] = to
+        container[Columns.from] = from.raw
+        container[Columns.to] = to.raw
         container[Columns.value] = value
         container[Columns.gasLimit] = gasLimit
         container[Columns.gasPrice] = gasPrice

@@ -1,8 +1,8 @@
 class AccountStateTask: ITask {
-    let address: Data
+    let address: Address
     let blockHeader: BlockHeader
 
-    init(address: Data, blockHeader: BlockHeader) {
+    init(address: Address, blockHeader: BlockHeader) {
         self.address = address
         self.blockHeader = blockHeader
     }

@@ -2,13 +2,13 @@ import OpenSslKit
 import BigInt
 
 class TransactionBuilder {
-    private let address: Data
+    private let address: Address
 
-    init(address: Data) {
+    init(address: Address) {
         self.address = address
     }
 
-    func rawTransaction(gasPrice: Int, gasLimit: Int, to: Data, value: BigUInt, data: Data = Data()) -> RawTransaction {
+    func rawTransaction(gasPrice: Int, gasLimit: Int, to: Address, value: BigUInt, data: Data = Data()) -> RawTransaction {
         RawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: to, value: value, data: data)
     }
 
@@ -32,7 +32,7 @@ class TransactionBuilder {
             nonce,
             rawTransaction.gasPrice,
             rawTransaction.gasLimit,
-            rawTransaction.to,
+            rawTransaction.to.raw,
             rawTransaction.value,
             rawTransaction.data,
             signature.v,

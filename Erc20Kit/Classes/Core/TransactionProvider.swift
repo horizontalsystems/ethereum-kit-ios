@@ -11,8 +11,8 @@ class TransactionProvider {
 
     private func transaction(log: EthereumLog) -> Transaction {
         let value = BigUInt(log.data.toRawHexString(), radix: 16)!
-        let from = log.topics[1].suffix(from: 12)
-        let to = log.topics[2].suffix(from: 12)
+        let from = Address(raw: log.topics[1].suffix(from: 12))
+        let to = Address(raw: log.topics[2].suffix(from: 12))
 
         let transaction = Transaction(
                 transactionHash: log.transactionHash,
@@ -35,7 +35,7 @@ class TransactionProvider {
 
 extension TransactionProvider: ITransactionProvider {
 
-    func transactions(contractAddress: Data, address: Data, from: Int, to: Int) -> Single<[Transaction]> {
+    func transactions(contractAddress: Address, address: Address, from: Int, to: Int) -> Single<[Transaction]> {
         dataProvider.getTransactionLogs(contractAddress: contractAddress, address: address, from: from, to: to)
                 .map { [weak self] logs in
                     logs.compactMap { log in self?.transaction(log: log) }

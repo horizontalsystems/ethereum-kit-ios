@@ -4,82 +4,19 @@ import EthereumKit
 import OpenSslKit
 
 class TradeManager {
-    private static let routerAddress = Data(hex: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D")!
+    static let routerAddress = try! Address(hex: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D")
 
-    private let scheduler = ConcurrentDispatchQueueScheduler(queue: DispatchQueue(label: "transactionManager.handle_logs", qos: .background))
     private let disposeBag = DisposeBag()
 
     private let ethereumKit: EthereumKit.Kit
-    private let address: Data
+    private let address: Address
 
-    init(ethereumKit: EthereumKit.Kit, address: Data) throws {
+    init(ethereumKit: EthereumKit.Kit, address: Address) {
         self.ethereumKit = ethereumKit
         self.address = address
     }
 
-    private func approveMethod(amount: BigUInt) -> ContractMethod {
-        ContractMethod(name: "approve", arguments: [
-            .address(TradeManager.routerAddress),
-            .uint256(amount)
-        ])
-    }
-
-    private func swapSingle(swapData: SwapData, gasData: GasData, gasPrice: Int) -> Single<String> {
-        let swapSingle = ethereumKit.sendSingle(
-                        address: TradeManager.routerAddress,
-                        value: swapData.amount,
-                        transactionInput: swapData.input,
-                        gasPrice: gasPrice,
-                        gasLimit: gasData.swapGas
-                )
-                .map { txInfo in
-                    txInfo.hash
-                }
-
-        if let approveData = swapData.approveData {
-            return ethereumKit.sendSingle(
-                            address: approveData.contractAddress,
-                            value: 0,
-                            transactionInput: approveMethod(amount: approveData.amount).encodedData,
-                            gasPrice: gasPrice,
-                            gasLimit: gasData.approveGas
-                    )
-                    .flatMap { txInfo in
-                        print("APPROVE TX: \(txInfo.hash)")
-                        return swapSingle
-                    }
-        } else {
-            return swapSingle
-        }
-    }
-
-    private func estimateSwapSingle(swapData: SwapData, gasPrice: Int) -> Single<GasData> {
-        let estimateSwapSingle = ethereumKit.estimateGas(
-                to: TradeManager.routerAddress,
-                amount: swapData.amount == 0 ? nil : swapData.amount,
-                gasPrice: gasPrice,
-                data: swapData.input
-        )
-
-        if let approveData = swapData.approveData {
-            let estimateApproveSingle = ethereumKit.estimateGas(
-                    to: approveData.contractAddress,
-                    amount: nil,
-                    gasPrice: gasPrice,
-                    data: approveMethod(amount: approveData.amount).encodedData
-            )
-
-            return Single.zip(estimateSwapSingle, estimateApproveSingle) { swapGas, approveGas -> GasData in
-                GasData(swapGas: swapGas, approveGas: approveGas)
-            }
-        } else {
-            return estimateSwapSingle.map { swapGas in
-                GasData(swapGas: swapGas)
-            }
-        }
-    }
-
-    private func swapData(tradeData: TradeData) -> SwapData {
+    private func buildSwapData(tradeData: TradeData) -> SwapData {
         let methodName: String
         let arguments: [ContractMethod.Argument]
         let amount: BigUInt
@@ -136,13 +73,9 @@ class TradeManager {
         let method = ContractMethod(name: methodName, arguments: arguments)
 
         if tokenIn.isEther {
-            return SwapData(amount: amount, input: method.encodedData, approveData: nil)
+            return SwapData(amount: amount, input: method.encodedData)
         } else {
-            return SwapData(
-                    amount: 0,
-                    input: method.encodedData,
-                    approveData: ApproveData(contractAddress: tokenIn.address, amount: amount)
-            )
+            return SwapData(amount: 0, input: method.encodedData)
         }
     }
 
@@ -180,12 +113,30 @@ extension TradeManager {
                 }
     }
 
-    func estimateGasSingle(tradeData: TradeData, gasPrice: Int) -> Single<GasData> {
-        estimateSwapSingle(swapData: swapData(tradeData: tradeData), gasPrice: gasPrice)
+    func estimateSwapSingle(tradeData: TradeData, gasPrice: Int) -> Single<Int> {
+        let swapData = buildSwapData(tradeData: tradeData)
+
+        return ethereumKit.estimateGas(
+                to: TradeManager.routerAddress,
+                amount: swapData.amount == 0 ? nil : swapData.amount,
+                gasPrice: gasPrice,
+                data: swapData.input
+        )
     }
 
-    func swapSingle(tradeData: TradeData, gasData: GasData, gasPrice: Int) -> Single<String> {
-        swapSingle(swapData: swapData(tradeData: tradeData), gasData: gasData, gasPrice: gasPrice)
+    func swapSingle(tradeData: TradeData, gasLimit: Int, gasPrice: Int) -> Single<String> {
+        let swapData = buildSwapData(tradeData: tradeData)
+
+        return ethereumKit.sendSingle(
+                        address: TradeManager.routerAddress,
+                        value: swapData.amount,
+                        transactionInput: swapData.input,
+                        gasPrice: gasPrice,
+                        gasLimit: gasLimit
+                )
+                .map { txInfo in
+                    txInfo.hash
+                }
     }
 
 }
@@ -195,12 +146,6 @@ extension TradeManager {
     private struct SwapData {
         let amount: BigUInt
         let input: Data
-        var approveData: ApproveData?
-    }
-
-    private struct ApproveData {
-        let contractAddress: Data
-        let amount: BigUInt
     }
 
 }

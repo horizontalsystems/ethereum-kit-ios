@@ -88,7 +88,7 @@ extension EthereumAdapter: IAdapter {
         return 0
     }
 
-    var receiveAddress: String {
+    var receiveAddress: Address {
         ethereumKit.receiveAddress
     }
 
@@ -112,11 +112,7 @@ extension EthereumAdapter: IAdapter {
         ethereumKit.transactionsObservable.map { _ in () }
     }
 
-    func validate(address: String) throws {
-        try EthereumKit.Kit.validate(address: address)
-    }
-
-    func sendSingle(to: String, amount: Decimal, gasLimit: Int) -> Single<Void> {
+    func sendSingle(to: Address, amount: Decimal, gasLimit: Int) -> Single<Void> {
         ethereumKit.sendSingle(to: to, value: amount.roundedString(decimal: decimal), gasPrice: 5_000_000_000, gasLimit: gasLimit).map { _ in ()}
     }
 
@@ -133,7 +129,7 @@ extension EthereumAdapter: IAdapter {
         ethereumKit.transaction(hash: hash).map { transactionRecord(fromTransaction: $0) }
     }
 
-    func estimatedGasLimit(to address: String, value: Decimal) -> Single<Int> {
+    func estimatedGasLimit(to address: Address, value: Decimal) -> Single<Int> {
         ethereumKit.estimateGas(to: address, amount: value.roundedString(decimal: decimal), gasPrice: 5_000_000_000)
     }
 

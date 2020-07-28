@@ -4,8 +4,8 @@ public class TransactionInfo {
     public let hash: String
     public let nonce: Int
     public let input: String
-    public let from: String
-    public let to: String
+    public let from: Address
+    public let to: Address
     public let value: String
     public let gasLimit: Int
     public let gasPrice: Int
@@ -27,8 +27,8 @@ public class TransactionInfo {
         hash = transaction.hash.toHexString()
         nonce = transaction.nonce
         input = transaction.input.toHexString()
-        from = transaction.from.toEIP55Address()
-        to = transaction.to.toEIP55Address()
+        from = transaction.from
+        to = transaction.to
         value = transaction.value.description
         gasLimit = transaction.gasLimit
         gasPrice = transaction.gasPrice

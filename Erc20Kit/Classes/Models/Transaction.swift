@@ -6,8 +6,8 @@ class Transaction: Record {
     let transactionHash: Data
     var transactionIndex: Int?
 
-    let from: Data
-    let to: Data
+    let from: Address
+    let to: Address
     let value: BigUInt
     let timestamp: TimeInterval
     var interTransactionIndex: Int
@@ -17,7 +17,7 @@ class Transaction: Record {
     var blockNumber: Int?
     var isError: Bool
 
-    init(transactionHash: Data, transactionIndex: Int? = nil, from: Data, to: Data, value: BigUInt, timestamp: TimeInterval = Date().timeIntervalSince1970, interTransactionIndex: Int = 0, isError: Bool = false) {
+    init(transactionHash: Data, transactionIndex: Int? = nil, from: Address, to: Address, value: BigUInt, timestamp: TimeInterval = Date().timeIntervalSince1970, interTransactionIndex: Int = 0, isError: Bool = false) {
         self.transactionHash = transactionHash
         self.transactionIndex = transactionIndex
         self.from = from
@@ -51,8 +51,8 @@ class Transaction: Record {
     required init(row: Row) {
         transactionHash = row[Columns.transactionHash]
         transactionIndex = row[Columns.transactionIndex]
-        from = row[Columns.from]
-        to = row[Columns.to]
+        from = Address(raw: row[Columns.from])
+        to = Address(raw: row[Columns.to])
         value = row[Columns.value]
         timestamp = row[Columns.timestamp]
         interTransactionIndex = row[Columns.interTransactionIndex]
@@ -67,8 +67,8 @@ class Transaction: Record {
     override func encode(to container: inout PersistenceContainer) {
         container[Columns.transactionHash] = transactionHash
         container[Columns.transactionIndex] = transactionIndex
-        container[Columns.from] = from
-        container[Columns.to] = to
+        container[Columns.from] = from.raw
+        container[Columns.to] = to.raw
         container[Columns.value] = value
         container[Columns.timestamp] = timestamp
         container[Columns.interTransactionIndex] = interTransactionIndex

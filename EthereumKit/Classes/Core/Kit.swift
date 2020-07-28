@@ -22,7 +22,7 @@ public class Kit {
     private let transactionBuilder: TransactionBuilder
     private let state: EthereumKitState
 
-    public let address: Data
+    public let address: Address
 
     public let networkType: NetworkType
     public let uniqueId: String
@@ -30,7 +30,7 @@ public class Kit {
 
     public let logger: Logger
 
-    init(blockchain: IBlockchain, transactionManager: ITransactionManager, transactionBuilder: TransactionBuilder, state: EthereumKitState = EthereumKitState(), address: Data, networkType: NetworkType, uniqueId: String, etherscanApiProvider: EtherscanApiProvider, logger: Logger) {
+    init(blockchain: IBlockchain, transactionManager: ITransactionManager, transactionBuilder: TransactionBuilder, state: EthereumKitState = EthereumKitState(), address: Address, networkType: NetworkType, uniqueId: String, etherscanApiProvider: EtherscanApiProvider, logger: Logger) {
         self.blockchain = blockchain
         self.transactionManager = transactionManager
         self.transactionBuilder = transactionBuilder
@@ -67,8 +67,8 @@ extension Kit {
         transactionManager.syncState
     }
 
-    public var receiveAddress: String {
-        address.toEIP55Address()
+    public var receiveAddress: Address {
+        address
     }
 
     public var lastBlockHeightObservable: Observable<Int> {
@@ -105,10 +105,6 @@ extension Kit {
         transactionManager.refresh()
     }
 
-    public static func validate(address: String) throws {
-        try AddressValidator.validate(address: address)
-    }
-
     public func transactionsSingle(fromHash: String? = nil, limit: Int? = nil) -> Single<[TransactionInfo]> {
         transactionManager.transactionsSingle(fromHash: fromHash.flatMap { Data(hex: $0) }, limit: limit)
                 .map { $0.map { TransactionInfo(transactionWithInternal: $0) } }
@@ -122,7 +118,7 @@ extension Kit {
         return transactionManager.transaction(hash: hash).map { TransactionInfo(transactionWithInternal: $0) }
     }
 
-    public func sendSingle(address: Data, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int) -> Single<TransactionInfo> {
+    public func sendSingle(address: Address, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int) -> Single<TransactionInfo> {
         let rawTransaction = transactionBuilder.rawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: address, value: value, data: transactionInput)
 
         return blockchain.sendSingle(rawTransaction: rawTransaction)
@@ -132,11 +128,7 @@ extension Kit {
                 .map { TransactionInfo(transactionWithInternal: TransactionWithInternal(transaction: $0)) }
     }
 
-    public func sendSingle(to: String, value: String, gasPrice: Int, gasLimit: Int) -> Single<TransactionInfo> {
-        guard let to = Data(hex: to) else {
-            return Single.error(ValidationError.invalidAddress)
-        }
-
+    public func sendSingle(to: Address, value: String, gasPrice: Int, gasLimit: Int) -> Single<TransactionInfo> {
         guard let value = BigUInt(value) else {
             return Single.error(ValidationError.invalidValue)
         }
@@ -147,12 +139,12 @@ extension Kit {
     public var debugInfo: String {
         var lines = [String]()
 
-        lines.append("ADDRESS: \(address.toEIP55Address())")
+        lines.append("ADDRESS: \(address.eip55)")
 
         return lines.joined(separator: "\n")
     }
 
-    public func getLogsSingle(address: Data?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
+    public func getLogsSingle(address: Address?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
         blockchain.getLogsSingle(address: address, topics: topics, fromBlock: fromBlock, toBlock: toBlock, pullTimestamps: pullTimestamps)
     }
 
@@ -169,22 +161,18 @@ extension Kit {
         }
     }
 
-    public func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data> {
+    public func getStorageAt(contractAddress: Address, positionData: Data, blockHeight: Int) -> Single<Data> {
         blockchain.getStorageAt(contractAddress: contractAddress, positionData: positionData, blockHeight: blockHeight)
     }
 
-    public func call(contractAddress: Data, data: Data, blockHeight: Int? = nil) -> Single<Data> {
+    public func call(contractAddress: Address, data: Data, blockHeight: Int? = nil) -> Single<Data> {
         blockchain.call(contractAddress: contractAddress, data: data, blockHeight: blockHeight)
     }
 
-    public func estimateGas(to: String?, amount: String, gasPrice: Int?) -> Single<Int> {
+    public func estimateGas(to: Address?, amount: String, gasPrice: Int?) -> Single<Int> {
         // without address - provide default gas limit
         guard let to = to else {
             return Single.just(Kit.defaultGasLimit)
-        }
-
-        guard let toData = Data(hex: to) else {
-            return Single.error(ValidationError.invalidAddress)
         }
 
         guard let amount = BigUInt(amount) else {
@@ -194,10 +182,10 @@ extension Kit {
         // if amount is 0 - set default minimum amount
         let resolvedAmount: BigUInt = amount == 0 ? defaultMinAmount : amount
 
-        return blockchain.estimateGas(to: toData, amount: resolvedAmount, gasLimit: maxGasLimit, gasPrice: gasPrice, data: nil)
+        return blockchain.estimateGas(to: to, amount: resolvedAmount, gasLimit: maxGasLimit, gasPrice: gasPrice, data: nil)
     }
 
-    public func estimateGas(to: Data, amount: BigUInt?, gasPrice: Int?, data: Data?) -> Single<Int> {
+    public func estimateGas(to: Address, amount: BigUInt?, gasPrice: Int?, data: Data?) -> Single<Int> {
         blockchain.estimateGas(to: to, amount: amount, gasLimit: maxGasLimit, gasPrice: gasPrice, data: data)
     }
 
@@ -261,7 +249,7 @@ extension Kit {
         let uniqueId = "\(walletId)-\(networkType)"
 
         let publicKey = Data(Secp256k1Kit.Kit.createPublicKey(fromPrivateKeyData: privateKey, compressed: false).dropFirst())
-        let address = Data(CryptoUtils.shared.sha3(publicKey).suffix(20))
+        let address = Address(raw: Data(CryptoUtils.shared.sha3(publicKey).suffix(20)))
 
         let network: INetwork = networkType.network
         let transactionSigner = TransactionSigner(network: network, privateKey: privateKey)
@@ -386,6 +374,53 @@ extension Kit {
         case invalidAddressLength
         case invalidSymbols
         case wrongAddressPrefix
+    }
+
+}
+
+public struct Address {
+    public let raw: Data
+
+    public init(raw: Data) {
+        self.raw = raw
+    }
+
+    public init(hex: String) throws {
+        try AddressValidator.validate(address: hex)
+
+        guard let data = Data(hex: hex) else {
+            throw ValidationError.invalidHex
+        }
+
+        raw = data
+    }
+
+    public var eip55: String {
+        EIP55.format(address: raw.toRawHexString())
+    }
+
+}
+
+extension Address: CustomStringConvertible {
+
+    public var description: String {
+        eip55
+    }
+
+}
+
+extension Address: Equatable {
+
+    public static func ==(lhs: Address, rhs: Address) -> Bool {
+        lhs.raw == rhs.raw
+    }
+
+}
+
+extension Address {
+
+    public enum ValidationError: Error {
+        case invalidHex
     }
 
 }

@@ -8,14 +8,14 @@ class TransactionManager {
 
     weak var delegate: ITransactionManagerDelegate?
 
-    private let contractAddress: Data
-    private let address: Data
+    private let contractAddress: Address
+    private let address: Address
     private let storage: ITransactionStorage
     private let transactionProvider: ITransactionProvider
     private let dataProvider: IDataProvider
     private let transactionBuilder: ITransactionBuilder
 
-    init(contractAddress: Data, address: Data, storage: ITransactionStorage, transactionProvider: ITransactionProvider, dataProvider: IDataProvider, transactionBuilder: ITransactionBuilder) {
+    init(contractAddress: Address, address: Address, storage: ITransactionStorage, transactionProvider: ITransactionProvider, dataProvider: IDataProvider, transactionBuilder: ITransactionBuilder) {
         self.contractAddress = contractAddress
         self.address = address
         self.storage = storage
@@ -82,11 +82,11 @@ extension TransactionManager: ITransactionManager {
         storage.transaction(hash: hash, interTransactionIndex: interTransactionIndex)
     }
 
-    func transactionContractData(to: Data, value: BigUInt) -> Data {
+    func transactionContractData(to: Address, value: BigUInt) -> Data {
         transactionBuilder.transferTransactionInput(to: to, value: value)
     }
 
-    func sendSingle(to: Data, value: BigUInt, gasPrice: Int, gasLimit: Int) -> Single<Transaction> {
+    func sendSingle(to: Address, value: BigUInt, gasPrice: Int, gasLimit: Int) -> Single<Transaction> {
         let transactionInput = transactionBuilder.transferTransactionInput(to: to, value: value)
 
         return dataProvider.sendSingle(contractAddress: contractAddress, transactionInput: transactionInput, gasPrice: gasPrice, gasLimit: gasLimit)

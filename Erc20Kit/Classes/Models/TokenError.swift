@@ -1,5 +1,5 @@
 public enum TokenError: Error {
-    case invalidAddress
+    case invalidHex
     case notRegistered
     case alreadyRegistered
 }

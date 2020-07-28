@@ -1,8 +1,10 @@
-public enum Token {
-    case eth(wethAddress: Data)
-    case erc20(address: Data, decimals: Int)
+import EthereumKit
 
-    var address: Data {
+public enum Token {
+    case eth(wethAddress: Address)
+    case erc20(address: Address, decimals: Int)
+
+    public var address: Address {
         switch self {
         case .eth(let wethAddress): return wethAddress
         case .erc20(let address, _): return address
@@ -17,7 +19,7 @@ public enum Token {
     }
 
     func sortsBefore(token: Token) -> Bool {
-        address.toHexString().lowercased() < token.address.toHexString().lowercased()
+        address.raw.toHexString().lowercased() < token.address.raw.toHexString().lowercased()
     }
 
     public var isEther: Bool {
@@ -25,10 +27,6 @@ public enum Token {
         case .eth: return true
         default: return false
         }
-    }
-
-    public var contractAddress: String {
-        address.toHexString()
     }
 
 }
@@ -50,7 +48,7 @@ extension Token: CustomStringConvertible {
     public var description: String {
         switch self {
         case .eth: return "[ETH]"
-        case .erc20(let address, _): return "[ERC20: \(address.toHexString())]"
+        case .erc20(let address, _): return "[ERC20: \(address)]"
         }
     }
 

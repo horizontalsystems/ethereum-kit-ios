@@ -1,5 +1,5 @@
 protocol IAccountStateTaskHandlerDelegate: AnyObject {
-    func didReceive(accountState: AccountState, address: Data, blockHeader: BlockHeader)
+    func didReceive(accountState: AccountState, address: Address, blockHeader: BlockHeader)
 }
 
 class AccountStateTaskHandler {
@@ -43,7 +43,7 @@ class AccountStateTaskHandler {
             lastNodeKey = lastNode.hash
         }
 
-        let addressHash = CryptoUtils.shared.sha3(task.address)
+        let addressHash = CryptoUtils.shared.sha3(task.address.raw)
 
         guard addressHash.toRawHexString() == path else {
             throw ProofError.pathDoesNotMatchAddressHash
@@ -69,7 +69,7 @@ extension AccountStateTaskHandler: ITaskHandler {
 
         tasks[requestId] = task
 
-        let message = GetProofsMessage(requestId: requestId, blockHash: task.blockHeader.hashHex, key: task.address)
+        let message = GetProofsMessage(requestId: requestId, blockHash: task.blockHeader.hashHex, key: task.address.raw)
 
         requester.send(message: message)
 

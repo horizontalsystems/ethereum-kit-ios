@@ -37,7 +37,7 @@ class TransactionCell: UITableViewCell {
                     \(transaction.interTransactionIndex)
                     \(TransactionCell.dateFormatter.string(from: Date(timeIntervalSince1970: transaction.timestamp)))
                     \(transaction.amount) \(coin)
-                    \(format(hash: transaction.from.mine ? transaction.to.address : transaction.from.address))
+                    \(format(hash: transaction.from.mine ? transaction.to.address.eip55 : transaction.from.address.eip55))
                     \(transaction.blockHeight.map { "# \($0)" } ?? "n/a")
                     \(confirmations)
                     \(transaction.isError)

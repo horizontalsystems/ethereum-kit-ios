@@ -9,9 +9,9 @@ class InfuraApiProvider {
 
     private let id: String
     private var secret: String?
-    private let address: Data
+    private let address: Address
 
-    init(networkManager: NetworkManager, network: INetwork, id: String, secret: String?, address: Data) {
+    init(networkManager: NetworkManager, network: INetwork, id: String, secret: String?, address: Address) {
         self.networkManager = networkManager
         self.network = network
         self.id = id
@@ -150,12 +150,12 @@ extension InfuraApiProvider: IRpcApiProvider {
     }
 
     func transactionCountSingle() -> Single<Int> {
-        intSingle(method: "eth_getTransactionCount", params: [address.toHexString(), "pending"])
+        intSingle(method: "eth_getTransactionCount", params: [address.eip55, "pending"])
     }
 
     func balanceSingle() -> Single<BigUInt> {
         Single.zip([
-                bigIntSingle(method: "eth_getBalance", params: [address.toHexString(), "latest"])
+                bigIntSingle(method: "eth_getBalance", params: [address.eip55, "latest"])
         ]).map { array -> BigUInt in array[0] }
     }
 
@@ -163,7 +163,7 @@ extension InfuraApiProvider: IRpcApiProvider {
         voidSingle(method: "eth_sendRawTransaction", params: [signedTransaction.toHexString()])
     }
 
-    func getLogs(address: Data?, fromBlock: Int, toBlock: Int, topics: [Any?]) -> Single<[EthereumLog]> {
+    func getLogs(address: Address?, fromBlock: Int, toBlock: Int, topics: [Any?]) -> Single<[EthereumLog]> {
         let toBlockStr = "0x" + String(toBlock, radix: 16)
         let fromBlockStr = "0x" + String(fromBlock, radix: 16)
 
@@ -182,7 +182,7 @@ extension InfuraApiProvider: IRpcApiProvider {
         let params: [String: Any] = [
             "fromBlock": fromBlockStr,
             "toBlock": toBlockStr,
-            "address": address?.toHexString() as Any,
+            "address": address?.eip55 as Any,
             "topics": jsonTopics
         ]
 
@@ -213,18 +213,18 @@ extension InfuraApiProvider: IRpcApiProvider {
         }
     }
 
-    func getStorageAt(contractAddress: String, position: String, blockNumber: Int?) -> Single<Data> {
-        dataSingle(method: "eth_getStorageAt", params: [contractAddress, position, "latest"])
+    func getStorageAt(contractAddress: Address, position: String, blockNumber: Int?) -> Single<Data> {
+        dataSingle(method: "eth_getStorageAt", params: [contractAddress.eip55, position, "latest"])
     }
 
-    func call(contractAddress: String, data: String, blockNumber: Int?) -> Single<Data> {
-        dataSingle(method: "eth_call", params: [["to": contractAddress, "data": data], "latest"])
+    func call(contractAddress: Address, data: String, blockNumber: Int?) -> Single<Data> {
+        dataSingle(method: "eth_call", params: [["to": contractAddress.eip55, "data": data], "latest"])
     }
 
-    func getEstimateGas(to: Data, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int> {
+    func getEstimateGas(to: Address, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int> {
         var params: [String: Any] = [
-            "from": address.toHexString(),
-            "to": to.toHexString()
+            "from": address.eip55,
+            "to": to.eip55
         ]
 
         if let amount = amount {

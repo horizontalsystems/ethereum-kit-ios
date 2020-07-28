@@ -14,12 +14,12 @@ class DataProvider {
 extension DataProvider: IDataProvider {
 
     var lastBlockHeight: Int {
-        return ethereumKit.lastBlockHeight ?? 0
+        ethereumKit.lastBlockHeight ?? 0
     }
 
-    func getTransactionLogs(contractAddress: Data, address: Data, from: Int, to: Int) -> Single<[EthereumLog]> {
-        let addressTopic = Data(repeating: 0, count: 12) + address
-        let transferTopic = ERC20.ContractLogs.transfer.topic
+    func getTransactionLogs(contractAddress: Address, address: Address, from: Int, to: Int) -> Single<[EthereumLog]> {
+        let addressTopic = Data(repeating: 0, count: 12) + address.raw
+        let transferTopic = ContractEvent(name: "Transfer", arguments: [.address, .address, .uint256]).signature
 
         let topics: [[Any?]] = [
             [transferTopic, addressTopic],
@@ -31,15 +31,15 @@ extension DataProvider: IDataProvider {
         }
 
         return Single.zip(singles) { logsArray -> [EthereumLog] in
-                    return Array(Set<EthereumLog>(logsArray.joined()))
+                    Array(Set<EthereumLog>(logsArray.joined()))
                 }
                 .map { logs -> [EthereumLog] in
-                    return logs.filter { log in
-                        return log.topics.count == 3 &&
-                              log.topics[0] == ERC20.ContractLogs.transfer.topic &&
-                              log.topics[1].count == 32 && log.topics[2].count == 32
-                        }
+                    logs.filter { log in
+                        log.topics.count == 3 &&
+                                log.topics[0] == transferTopic &&
+                                log.topics[1].count == 32 && log.topics[2].count == 32
                     }
+                }
     }
     
     func getTransactionStatuses(transactionHashes: [Data]) -> Single<[(Data, TransactionStatus)]> {
@@ -49,20 +49,20 @@ extension DataProvider: IDataProvider {
         return Single.zip(singles)
     }
 
-    func getBalance(contractAddress: Data, address: Data) -> Single<BigUInt> {
-        let balanceOfData = ERC20.ContractFunctions.balanceOf(address: address).data
+    func getBalance(contractAddress: Address, address: Address) -> Single<BigUInt> {
+        let method = ContractMethod(name: "balanceOf", arguments: [.address(address)])
 
-        return ethereumKit.call(contractAddress: contractAddress, data: balanceOfData)
+        return ethereumKit.call(contractAddress: contractAddress, data: method.encodedData)
                 .flatMap { data -> Single<BigUInt> in
                     guard let value = BigUInt(data.toRawHexString(), radix: 16) else {
-                        return Single.error(Erc20Kit.TokenError.invalidAddress)
+                        return Single.error(Erc20Kit.TokenError.invalidHex)
                     }
 
                     return Single.just(value)
                 }
     }
 
-    func sendSingle(contractAddress: Data, transactionInput: Data, gasPrice: Int, gasLimit: Int) -> Single<Data> {
+    func sendSingle(contractAddress: Address, transactionInput: Data, gasPrice: Int, gasLimit: Int) -> Single<Data> {
         ethereumKit.sendSingle(address: contractAddress, value: 0, transactionInput: transactionInput, gasPrice: gasPrice, gasLimit: gasLimit)
                 .map { transactionInfo in
                     Data(hex: transactionInfo.hash)!

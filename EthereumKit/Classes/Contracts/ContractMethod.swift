@@ -1,16 +1,16 @@
 import OpenSslKit
 import BigInt
 
-struct ContractMethod {
+public struct ContractMethod {
     private let name: String
     private let arguments: [Argument]
 
-    init(name: String, arguments: [Argument] = []) {
+    public init(name: String, arguments: [Argument] = []) {
         self.name = name
         self.arguments = arguments
     }
 
-    var encodedData: Data {
+    public var encodedData: Data {
         var data = signature
         var arraysData = Data()
 
@@ -19,10 +19,10 @@ struct ContractMethod {
             case .uint256(let value):
                 data += pad(data: value.serialize())
             case .address(let value):
-                data += pad(data: value)
+                data += pad(data: value.raw)
             case .addresses(let array):
                 data += pad(data: BigUInt(arguments.count * 32 + arraysData.count).serialize())
-                arraysData += encode(array: array)
+                arraysData += encode(array: array.map { $0.raw })
             }
         }
 
@@ -53,10 +53,10 @@ struct ContractMethod {
 
 extension ContractMethod {
 
-    enum Argument {
+    public enum Argument {
         case uint256(BigUInt)
-        case address(Data)
-        case addresses([Data])
+        case address(Address)
+        case addresses([Address])
 
         var type: String {
             switch self {

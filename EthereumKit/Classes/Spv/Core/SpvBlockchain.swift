@@ -79,7 +79,7 @@ extension SpvBlockchain: IBlockchain {
         }
     }
 
-    func getLogsSingle(address: Data?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
+    func getLogsSingle(address: Address?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
         Single.just([])
     }
 
@@ -91,15 +91,15 @@ extension SpvBlockchain: IBlockchain {
         rpcApiProvider.transactionExistSingle(transactionHash: transactionHash)
     }
 
-    func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data> {
+    func getStorageAt(contractAddress: Address, positionData: Data, blockHeight: Int) -> Single<Data> {
         Single.just(Data())
     }
 
-    func call(contractAddress: Data, data: Data, blockHeight: Int?) -> Single<Data> {
-        rpcApiProvider.call(contractAddress: contractAddress.toHexString(), data: data.toHexString(), blockNumber: blockHeight)
+    func call(contractAddress: Address, data: Data, blockHeight: Int?) -> Single<Data> {
+        rpcApiProvider.call(contractAddress: contractAddress, data: data.toHexString(), blockNumber: blockHeight)
     }
 
-    func estimateGas(to: Data, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int> {
+    func estimateGas(to: Address, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int> {
         rpcApiProvider.getEstimateGas(to: to, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice, data: data)
     }
 
@@ -166,7 +166,7 @@ extension SpvBlockchain: ITransactionSenderDelegate {
 
 extension SpvBlockchain {
 
-    static func instance(storage: ISpvStorage, nodeManager: NodeManager, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, rpcApiProvider: IRpcApiProvider, network: INetwork, address: Data, nodeKey: ECKey, logger: Logger? = nil) -> SpvBlockchain {
+    static func instance(storage: ISpvStorage, nodeManager: NodeManager, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, rpcApiProvider: IRpcApiProvider, network: INetwork, address: Address, nodeKey: ECKey, logger: Logger? = nil) -> SpvBlockchain {
         let validator = BlockValidator()
         let blockHelper = BlockHelper(storage: storage, network: network)
 

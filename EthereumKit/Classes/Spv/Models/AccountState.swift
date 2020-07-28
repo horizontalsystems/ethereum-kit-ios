@@ -2,13 +2,13 @@ import GRDB
 import BigInt
 
 class AccountState: Record {
-    let address: Data
+    let address: Address
     let nonce: Int
     let balance: BigUInt
     let storageHash: Data // Storage Trie root hash
     let codeHash: Data
 
-    init(address: Data, nonce: Int, balance: BigUInt, storageHash: Data, codeHash: Data) {
+    init(address: Address, nonce: Int, balance: BigUInt, storageHash: Data, codeHash: Data) {
         self.address = address
         self.nonce = nonce
         self.balance = balance
@@ -31,7 +31,7 @@ class AccountState: Record {
     }
 
     required init(row: Row) {
-        address = row[Columns.address]
+        address = Address(raw: row[Columns.address])
         nonce = row[Columns.nonce]
         balance = row[Columns.balance]
         storageHash = row[Columns.storageHash]
@@ -41,7 +41,7 @@ class AccountState: Record {
     }
 
     override func encode(to container: inout PersistenceContainer) {
-        container[Columns.address] = address
+        container[Columns.address] = address.raw
         container[Columns.nonce] = nonce
         container[Columns.balance] = balance
         container[Columns.storageHash] = storageHash
