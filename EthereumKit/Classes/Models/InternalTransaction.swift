@@ -6,12 +6,12 @@ class InternalTransaction: Record {
 
     let hash: Data
     let blockNumber: Int
-    let from: Data
-    let to: Data
+    let from: Address
+    let to: Address
     let value: BigUInt
     let traceId: Int
 
-    init(hash: Data, blockNumber: Int, from: Data, to: Data, value: BigUInt, traceId: Int) {
+    init(hash: Data, blockNumber: Int, from: Address, to: Address, value: BigUInt, traceId: Int) {
         self.hash = hash
         self.blockNumber = blockNumber
         self.from = from
@@ -38,8 +38,8 @@ class InternalTransaction: Record {
     required init(row: Row) {
         hash = row[Columns.hash]
         blockNumber = row[Columns.blockNumber]
-        from = row[Columns.from]
-        to = row[Columns.to]
+        from = Address(raw: row[Columns.from])
+        to = Address(raw: row[Columns.to])
         value = row[Columns.value]
         traceId = row[Columns.traceId]
 
@@ -49,8 +49,8 @@ class InternalTransaction: Record {
     override func encode(to container: inout PersistenceContainer) {
         container[Columns.hash] = hash
         container[Columns.blockNumber] = blockNumber
-        container[Columns.from] = from
-        container[Columns.to] = to
+        container[Columns.from] = from.raw
+        container[Columns.to] = to.raw
         container[Columns.value] = value
         container[Columns.traceId] = traceId
     }

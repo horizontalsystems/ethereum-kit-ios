@@ -6,9 +6,9 @@ class AccountStateSyncer {
     weak var delegate: IAccountStateSyncerDelegate?
 
     private let storage: ISpvStorage
-    private let address: Data
+    private let address: Address
 
-    init(storage: ISpvStorage, address: Data) {
+    init(storage: ISpvStorage, address: Address) {
         self.storage = storage
         self.address = address
     }
@@ -21,7 +21,7 @@ class AccountStateSyncer {
 
 extension AccountStateSyncer: IAccountStateTaskHandlerDelegate {
 
-    func didReceive(accountState: AccountState, address: Data, blockHeader: BlockHeader) {
+    func didReceive(accountState: AccountState, address: Address, blockHeader: BlockHeader) {
         storage.save(accountState: accountState)
         delegate?.onUpdate(accountState: accountState)
     }

@@ -59,12 +59,12 @@ class Manager {
                 minLogLevel: configuration.minLogLevel
         )
 
-        uniswapKit = try! UniswapKit.Kit.instance(ethereumKit: ethereumKit)
+        uniswapKit = UniswapKit.Kit.instance(ethereumKit: ethereumKit)
 
         ethereumAdapter = EthereumAdapter(ethereumKit: ethereumKit)
 
         for token in configuration.erc20Tokens {
-            let adapter = Erc20Adapter(ethereumKit: ethereumKit, name: token.name, coin: token.coin, contractAddress: token.contractAddress, decimal: token.decimal)
+            let adapter = Erc20Adapter(ethereumKit: ethereumKit, token: token)
             erc20Adapters.append(adapter)
         }
 

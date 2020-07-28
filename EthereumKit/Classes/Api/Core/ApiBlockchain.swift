@@ -162,7 +162,7 @@ extension ApiBlockchain: IBlockchain {
                 })
     }
 
-    func getLogsSingle(address: Data?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
+    func getLogsSingle(address: Address?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
         rpcApiProvider.getLogs(address: address, fromBlock: fromBlock, toBlock: toBlock, topics: topics)
                 .flatMap { [unowned self] logs in
                     if pullTimestamps {
@@ -181,15 +181,15 @@ extension ApiBlockchain: IBlockchain {
         rpcApiProvider.transactionExistSingle(transactionHash: transactionHash)
     }
 
-    func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data> {
-        rpcApiProvider.getStorageAt(contractAddress: contractAddress.toHexString(), position: positionData.toHexString(), blockNumber: blockHeight)
+    func getStorageAt(contractAddress: Address, positionData: Data, blockHeight: Int) -> Single<Data> {
+        rpcApiProvider.getStorageAt(contractAddress: contractAddress, position: positionData.toHexString(), blockNumber: blockHeight)
     }
 
-    func call(contractAddress: Data, data: Data, blockHeight: Int?) -> Single<Data> {
-        rpcApiProvider.call(contractAddress: contractAddress.toHexString(), data: data.toHexString(), blockNumber: blockHeight)
+    func call(contractAddress: Address, data: Data, blockHeight: Int?) -> Single<Data> {
+        rpcApiProvider.call(contractAddress: contractAddress, data: data.toHexString(), blockNumber: blockHeight)
     }
 
-    func estimateGas(to: Data, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int> {
+    func estimateGas(to: Address, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int> {
         rpcApiProvider.getEstimateGas(to: to, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice, data: data)
     }
 

@@ -8,13 +8,15 @@ public class Kit {
     private let ethereumKit: EthereumKit.Kit
     private let transactionManager: ITransactionManager
     private let balanceManager: IBalanceManager
+    private let allowanceManager: AllowanceManager
 
     private let state: KitState
 
-    init(ethereumKit: EthereumKit.Kit, transactionManager: ITransactionManager, balanceManager: IBalanceManager, state: KitState = KitState()) {
+    init(ethereumKit: EthereumKit.Kit, transactionManager: ITransactionManager, balanceManager: IBalanceManager, allowanceManager: AllowanceManager, state: KitState = KitState()) {
         self.ethereumKit = ethereumKit
         self.transactionManager = transactionManager
         self.balanceManager = balanceManager
+        self.allowanceManager = allowanceManager
         self.state = state
 
         onUpdateSyncState(syncState: ethereumKit.syncState)
@@ -28,9 +30,9 @@ public class Kit {
                 .disposed(by: disposeBag)
     }
 
-    private func convert(address: String) throws -> Data {
-        guard let address = Data(hex: address) else {
-            throw TokenError.invalidAddress
+    private func convert(hex: String) throws -> Data {
+        guard let address = Data(hex: hex) else {
+            throw TokenError.invalidHex
         }
 
         return address
@@ -69,9 +71,7 @@ extension Kit {
         state.balance?.description
     }
 
-    public func sendSingle(to: String, value: String, gasPrice: Int, gasLimit: Int) throws -> Single<TransactionInfo> {
-        let to = try convert(address: to)
-
+    public func sendSingle(to: Address, value: String, gasPrice: Int, gasLimit: Int) throws -> Single<TransactionInfo> {
         guard let value = BigUInt(value) else {
             throw ValidationError.invalidValue
         }
@@ -85,7 +85,7 @@ extension Kit {
 
     public func transactionsSingle(from: (hash: String, interTransactionIndex: Int)?, limit: Int?) throws -> Single<[TransactionInfo]> {
         let from = try from.map {
-            (hash: try convert(address: $0.hash), interTransactionIndex: $0.interTransactionIndex)
+            (hash: try convert(hex: $0.hash), interTransactionIndex: $0.interTransactionIndex)
         }
 
         return transactionManager.transactionsSingle(from: from, limit: limit)
@@ -120,26 +120,41 @@ extension Kit {
         state.transactionsSubject.asObservable()
     }
 
-    public func estimateGas(to: String?, contractAddress: String, value: String, gasPrice: Int?) -> Single<Int> {
+    public func estimateGas(to: Address?, contractAddress: Address, value: String, gasPrice: Int?) -> Single<Int> {
         // without address - provide default gas limit
         guard let to = to else {
             return Single.just(EthereumKit.Kit.defaultGasLimit)
-        }
-
-        guard let toData = Data(hex: to) else {
-            return Single.error(ValidationError.invalidAddress)
-        }
-
-        guard let contractAddress = Data(hex: contractAddress) else {
-            return Single.error(ValidationError.invalidAddress)
         }
 
         guard let value = BigUInt(value) else {
             return Single.error(ValidationError.invalidValue)
         }
 
-        let data = transactionManager.transactionContractData(to: toData, value: value)
+        let data = transactionManager.transactionContractData(to: to, value: value)
         return ethereumKit.estimateGas(to: contractAddress, amount: nil, gasPrice: gasPrice, data: data)
+    }
+
+    public func allowanceSingle(spenderAddress: Address) -> Single<String> {
+        allowanceManager.allowanceSingle(spenderAddress: spenderAddress)
+                .map { amount in
+                    amount.description
+                }
+    }
+
+    public func estimateApproveSingle(spenderAddress: Address, amount: String, gasPrice: Int) -> Single<Int> {
+        guard let amount = BigUInt(amount) else {
+            return Single.error(ValidationError.invalidValue)
+        }
+
+        return allowanceManager.estimateApproveSingle(spenderAddress: spenderAddress, amount: amount, gasPrice: gasPrice)
+    }
+
+    public func approveSingle(spenderAddress: Address, amount: String, gasLimit: Int, gasPrice: Int) -> Single<String> {
+        guard let amount = BigUInt(amount) else {
+            return Single.error(ValidationError.invalidValue)
+        }
+
+        return allowanceManager.approveSingle(spenderAddress: spenderAddress, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice)
     }
 
 }
@@ -175,12 +190,8 @@ extension Kit: IBalanceManagerDelegate {
 
 extension Kit {
 
-    public static func instance(ethereumKit: EthereumKit.Kit, contractAddress: String) throws -> Kit {
+    public static func instance(ethereumKit: EthereumKit.Kit, contractAddress: Address) throws -> Kit {
         let databaseFileName = "\(ethereumKit.uniqueId)-\(contractAddress)"
-
-        guard let contractAddress = Data(hex: contractAddress) else {
-            throw TokenError.invalidAddress
-        }
 
         let address = ethereumKit.address
 
@@ -192,8 +203,9 @@ extension Kit {
         let transactionProvider: ITransactionProvider = EtherscanTransactionProvider(provider: ethereumKit.etherscanApiProvider)
         var transactionManager: ITransactionManager = TransactionManager(contractAddress: contractAddress, address: address, storage: storage, transactionProvider: transactionProvider, dataProvider: dataProvider, transactionBuilder: transactionBuilder)
         var balanceManager: IBalanceManager = BalanceManager(contractAddress: contractAddress, address: address, storage: storage, dataProvider: dataProvider)
+        let allowanceManager = AllowanceManager(ethereumKit: ethereumKit, contractAddress: contractAddress, address: address)
 
-        let erc20Kit = Kit(ethereumKit: ethereumKit, transactionManager: transactionManager, balanceManager: balanceManager)
+        let erc20Kit = Kit(ethereumKit: ethereumKit, transactionManager: transactionManager, balanceManager: balanceManager, allowanceManager: allowanceManager)
 
         transactionManager.delegate = erc20Kit
         balanceManager.delegate = erc20Kit

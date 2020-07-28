@@ -34,10 +34,6 @@ public extension Data {
         reduce("") { $0 + String(format: "%02x", $1) }
     }
 
-    func toEIP55Address() -> String {
-        EIP55.format(address: self.toRawHexString())
-    }
-
     var bytes: Array<UInt8> {
         Array(self)
     }

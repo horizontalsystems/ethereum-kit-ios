@@ -1,4 +1,5 @@
 import Foundation
+import EthereumKit
 
 struct TransactionRecord {
     let transactionHash: String
@@ -15,6 +16,6 @@ struct TransactionRecord {
 }
 
 struct TransactionAddress {
-    let address: String
+    let address: Address
     let mine: Bool
 }

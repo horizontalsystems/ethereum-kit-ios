@@ -19,6 +19,7 @@ class SwapController: UIViewController {
     private let midPriceLabel = UILabel()
     private let priceImpactLabel = UILabel()
     private let pathLabel = UILabel()
+    private let approveButton = UIButton(type: .system)
     private let swapButton = UIButton(type: .system)
 
     private let uniswapKit: UniswapKit.Kit = Manager.shared.uniswapKit
@@ -26,17 +27,13 @@ class SwapController: UIViewController {
     private var swapData: SwapData?
     private var tradeData: TradeData?
 
-    private static let tokens = [
-//        Erc20Token(name: "GMO coins", coin: "GMOLW", contractAddress: "0xbb74a24d83470f64d5f0c01688fbb49a5a251b32", decimal: 18),
-//        Erc20Token(name: "DAI", coin: "DAI", contractAddress: "0xad6d458402f60fd3bd25163575031acdce07538d", decimal: 18),
-//        Erc20Token(name: "MMM", coin: "MMM", contractAddress: "0x3e500c5f4de2738f65c90c6cc93b173792127481", decimal: 8),
+    private let gasPrice = 200_000_000_000
 
-        Erc20Token(name: "DAI", coin: "DAI", contractAddress: "0x6b175474e89094c44da98b954eedeac495271d0f", decimal: 18),
-        Erc20Token(name: "USD Coin", coin: "USDC", contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", decimal: 6),
-    ]
+    private var fromAdapter: Erc20Adapter? = Manager.shared.erc20Adapters[1]
+    private var toAdapter: Erc20Adapter? = Manager.shared.erc20Adapters[0]
 
-    private var fromToken: Erc20Token? = SwapController.tokens[0]
-    private var toToken: Erc20Token? = SwapController.tokens[1]
+    private var fromToken: Erc20Token? { fromAdapter?.token }
+    private var toToken: Erc20Token? { toAdapter?.token }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -146,11 +143,24 @@ class SwapController: UIViewController {
         pathLabel.font = .systemFont(ofSize: 12)
         pathLabel.textAlignment = .left
 
-        view.addSubview(swapButton)
-        swapButton.snp.makeConstraints { maker in
-            maker.leading.trailing.equalToSuperview().inset(24)
+        view.addSubview(approveButton)
+        approveButton.snp.makeConstraints { maker in
+            maker.leading.equalToSuperview().inset(24)
             maker.top.equalTo(pathLabel.snp.bottom).offset(24)
             maker.height.equalTo(40)
+        }
+
+        approveButton.isEnabled = false
+        approveButton.setTitle("APPROVE", for: .normal)
+        approveButton.addTarget(self, action: #selector(onTapApprove), for: .touchUpInside)
+
+        view.addSubview(swapButton)
+        swapButton.snp.makeConstraints { maker in
+            maker.leading.equalTo(approveButton.snp.trailing).offset(24)
+            maker.top.equalTo(approveButton.snp.top)
+            maker.trailing.equalToSuperview().inset(24)
+            maker.height.equalTo(40)
+            maker.width.equalTo(approveButton)
         }
 
         swapButton.isEnabled = false
@@ -159,6 +169,7 @@ class SwapController: UIViewController {
 
         syncControls()
 
+        syncAllowance()
         syncSwapData()
     }
 
@@ -172,10 +183,10 @@ class SwapController: UIViewController {
         let parts = path.map { token -> String in
             if token.isEther {
                 return "ETH"
-            } else if let erc20Token = SwapController.tokens.first(where: { $0.contractAddress.lowercased() == token.contractAddress.lowercased() }) {
+            } else if let erc20Token = Configuration.shared.erc20Tokens.first(where: { $0.contractAddress.eip55.lowercased() == token.address.eip55.lowercased() }) {
                 return erc20Token.coin
             } else {
-                return token.contractAddress
+                return token.address.eip55
             }
         }
 
@@ -188,6 +199,7 @@ class SwapController: UIViewController {
         fromLabel.text = "From:\(tradeType == .exactOut ? " (estimated)" : "")"
         toLabel.text = "To:\(tradeType == .exactIn ? " (estimated)" : "")"
 
+        approveButton.isEnabled = tradeData != nil
         swapButton.isEnabled = tradeData != nil
 
         if let tradeData = tradeData {
@@ -222,7 +234,7 @@ class SwapController: UIViewController {
             return uniswapKit.etherToken
         }
 
-        return uniswapKit.token(contractAddress: Data(hex: token.contractAddress)!, decimals: token.decimal)
+        return uniswapKit.token(contractAddress: token.contractAddress, decimals: token.decimal)
     }
 
     private func amount(textField: UITextField) -> Decimal? {
@@ -231,6 +243,18 @@ class SwapController: UIViewController {
         }
 
         return Decimal(string: string)
+    }
+
+    private func syncAllowance() {
+        fromAdapter?.allowanceSingle(spenderAddress: uniswapKit.routerAddress)
+                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+                .observeOn(MainScheduler.instance)
+                .subscribe(onSuccess: { allowance in
+                    print("Allowance: \(allowance)")
+                }, onError: { error in
+                    print("ALLOWANCE ERROR: \(error)")
+                })
+                .disposed(by: disposeBag)
     }
 
     private func syncSwapData() {
@@ -312,15 +336,43 @@ class SwapController: UIViewController {
         fromTextField.text = tradeData?.amountIn?.description
     }
 
+    @objc private func onTapApprove() {
+        guard let adapter = fromAdapter else {
+            return
+        }
+
+        guard let amount = amount(textField: fromTextField) else {
+            return
+        }
+
+        let gasPrice = self.gasPrice
+        let spenderAddress = uniswapKit.routerAddress
+
+        adapter.estimateApproveSingle(spenderAddress: spenderAddress, amount: amount, gasPrice: gasPrice)
+                .flatMap { gasLimit -> Single<String> in
+                    print("GAS LIMIT SUCCESS: \(gasLimit)")
+                    return adapter.approveSingle(spenderAddress: spenderAddress, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice)
+                }
+                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+                .observeOn(MainScheduler.instance)
+                .subscribe(onSuccess: { txHash in
+                    print("SUCCESS: \(txHash)")
+                }, onError: { error in
+                    print("ERROR: \(error)")
+                })
+                .disposed(by: disposeBag)
+    }
+
     @objc private func onTapSwap() {
         guard let tradeData = tradeData else {
             return
         }
 
-        let gasData = GasData(swapGas: 500_000, approveGas: 500_000)
-        let gasPrice = 50_000_000_000
-
-        uniswapKit.swapSingle(tradeData: tradeData, gasData: gasData, gasPrice: gasPrice)
+        uniswapKit.estimateSwapSingle(tradeData: tradeData, gasPrice: gasPrice)
+                .flatMap { [unowned self] gasLimit -> Single<String> in
+                    print("GAS LIMIT SUCCESS: \(gasLimit)")
+                    return self.uniswapKit.swapSingle(tradeData: tradeData, gasLimit: gasLimit, gasPrice: self.gasPrice)
+                }
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { txHash in

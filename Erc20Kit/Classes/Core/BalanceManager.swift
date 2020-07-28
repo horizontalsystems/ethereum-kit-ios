@@ -1,3 +1,4 @@
+import EthereumKit
 import RxSwift
 import BigInt
 
@@ -6,12 +7,12 @@ class BalanceManager {
 
     private let disposeBag = DisposeBag()
 
-    private let contractAddress: Data
-    private let address: Data
+    private let contractAddress: Address
+    private let address: Address
     private var storage: ITokenBalanceStorage
     private let dataProvider: IDataProvider
 
-    init(contractAddress: Data, address: Data, storage: ITokenBalanceStorage, dataProvider: IDataProvider) {
+    init(contractAddress: Address, address: Address, storage: ITokenBalanceStorage, dataProvider: IDataProvider) {
         self.contractAddress = contractAddress
         self.address = address
         self.storage = storage
@@ -23,7 +24,7 @@ class BalanceManager {
 extension BalanceManager: IBalanceManager {
 
     var balance: BigUInt? {
-        return storage.balance
+        storage.balance
     }
 
     func sync() {

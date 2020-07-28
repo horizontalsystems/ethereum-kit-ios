@@ -1,8 +1,8 @@
 class AccountStateRequest {
-    let address: Data
+    let address: Address
     let blockHeader: BlockHeader
 
-    init(address: Data, blockHeader: BlockHeader) {
+    init(address: Address, blockHeader: BlockHeader) {
         self.address = address
         self.blockHeader = blockHeader
     }
@@ -40,7 +40,7 @@ class AccountStateRequest {
             lastNodeKey = lastNode.hash
         }
 
-        let addressHash = CryptoUtils.shared.sha3(address)
+        let addressHash = CryptoUtils.shared.sha3(address.raw)
 
         guard addressHash.toRawHexString() == path else {
             throw ProofError.pathDoesNotMatchAddressHash

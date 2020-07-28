@@ -15,12 +15,12 @@ protocol IBlockchain {
 
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction>
 
-    func getLogsSingle(address: Data?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]>
+    func getLogsSingle(address: Address?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]>
     func transactionReceiptStatusSingle(transactionHash: Data) -> Single<TransactionStatus>
     func transactionExistSingle(transactionHash: Data) -> Single<Bool>
-    func getStorageAt(contractAddress: Data, positionData: Data, blockHeight: Int) -> Single<Data>
-    func call(contractAddress: Data, data: Data, blockHeight: Int?) -> Single<Data>
-    func estimateGas(to: Data, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int>
+    func getStorageAt(contractAddress: Address, positionData: Data, blockHeight: Int) -> Single<Data>
+    func call(contractAddress: Address, data: Data, blockHeight: Int?) -> Single<Data>
+    func estimateGas(to: Address, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int>
 }
 
 protocol IBlockchainDelegate: class {

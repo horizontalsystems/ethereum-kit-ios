@@ -1,3 +1,4 @@
+import EthereumKit
 import OpenSslKit
 import BigInt
 
@@ -81,13 +82,13 @@ public struct Pair {
         return TokenAmount(token: tokenIn, rawAmount: amountIn)
     }
 
-    static func address(token0: Token, token1: Token) -> Data {
+    static func address(token0: Token, token1: Token) -> Address {
         let data = Data(hex: "ff")! +
                 Data(hex: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f")! +
-                OpenSslKit.Kit.sha3(token0.address + token1.address) +
+                OpenSslKit.Kit.sha3(token0.address.raw + token1.address.raw) +
                 Data(hex: "0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f")!
 
-        return OpenSslKit.Kit.sha3(data).suffix(20)
+        return Address(raw: OpenSslKit.Kit.sha3(data).suffix(20))
     }
 
 }

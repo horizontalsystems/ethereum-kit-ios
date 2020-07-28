@@ -13,7 +13,7 @@ protocol ITransactionManagerDelegate: class {
 }
 
 protocol ITransactionBuilder {
-    func transferTransactionInput(to toAddress: Data, value: BigUInt) -> Data
+    func transferTransactionInput(to toAddress: Address, value: BigUInt) -> Data
 }
 
 protocol ITransactionManager {
@@ -23,12 +23,12 @@ protocol ITransactionManager {
     func transaction(hash: Data, interTransactionIndex: Int) -> Transaction?
 
     func sync()
-    func transactionContractData(to: Data, value: BigUInt) -> Data
-    func sendSingle(to: Data, value: BigUInt, gasPrice: Int, gasLimit: Int) -> Single<Transaction>
+    func transactionContractData(to: Address, value: BigUInt) -> Data
+    func sendSingle(to: Address, value: BigUInt, gasPrice: Int, gasLimit: Int) -> Single<Transaction>
 }
 
 protocol ITransactionProvider {
-    func transactions(contractAddress: Data, address: Data, from: Int, to: Int) -> Single<[Transaction]>
+    func transactions(contractAddress: Address, address: Address, from: Int, to: Int) -> Single<[Transaction]>
 }
 
 protocol IBalanceManager {
@@ -40,10 +40,10 @@ protocol IBalanceManager {
 
 protocol IDataProvider {
     var lastBlockHeight: Int { get }
-    func getTransactionLogs(contractAddress: Data, address: Data, from: Int, to: Int) -> Single<[EthereumLog]>
+    func getTransactionLogs(contractAddress: Address, address: Address, from: Int, to: Int) -> Single<[EthereumLog]>
     func getTransactionStatuses(transactionHashes: [Data]) -> Single<[(Data, TransactionStatus)]>
-    func getBalance(contractAddress: Data, address: Data) -> Single<BigUInt>
-    func sendSingle(contractAddress: Data, transactionInput: Data, gasPrice: Int, gasLimit: Int) -> Single<Data>
+    func getBalance(contractAddress: Address, address: Address) -> Single<BigUInt>
+    func sendSingle(contractAddress: Address, transactionInput: Data, gasPrice: Int, gasLimit: Int) -> Single<Data>
 }
 
 protocol ITransactionStorage {

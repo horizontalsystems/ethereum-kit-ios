@@ -1,7 +1,7 @@
 import EthereumKit
 
 class TokenFactory {
-    private let wethAddress: Data
+    private let wethAddress: Address
 
     init(networkType: NetworkType) {
         self.wethAddress = TokenFactory.wethAddress(networkType: networkType)
@@ -11,7 +11,7 @@ class TokenFactory {
         .eth(wethAddress: wethAddress)
     }
 
-    func token(contractAddress: Data, decimals: Int) -> Token {
+    func token(contractAddress: Address, decimals: Int) -> Token {
         .erc20(address: contractAddress, decimals: decimals)
     }
 
@@ -19,7 +19,7 @@ class TokenFactory {
 
 extension TokenFactory {
 
-    private static func wethAddress(networkType: NetworkType) -> Data {
+    private static func wethAddress(networkType: NetworkType) -> Address {
         let wethAddressHex: String
 
         switch networkType {
@@ -28,7 +28,7 @@ extension TokenFactory {
         case .kovan: wethAddressHex = "0xd0A1E359811322d97991E03f863a0C30C2cF029C"
         }
 
-        return Data(hex: wethAddressHex)!
+        return try! Address(hex: wethAddressHex)
     }
 
 }

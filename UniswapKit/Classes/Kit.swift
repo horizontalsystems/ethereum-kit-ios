@@ -19,11 +19,15 @@ public class Kit {
 
 extension Kit {
 
+    public var routerAddress: Address {
+        TradeManager.routerAddress
+    }
+
     public var etherToken: Token {
         tokenFactory.etherToken
     }
 
-    public func token(contractAddress: Data, decimals: Int) -> Token {
+    public func token(contractAddress: Address, decimals: Int) -> Token {
         tokenFactory.token(contractAddress: contractAddress, decimals: decimals)
     }
 
@@ -75,22 +79,22 @@ extension Kit {
         return TradeData(trade: bestTrade, options: options)
     }
 
-    public func estimateGasSingle(tradeData: TradeData, gasPrice: Int) -> Single<GasData> {
-        tradeManager.estimateGasSingle(tradeData: tradeData, gasPrice: gasPrice)
+    public func estimateSwapSingle(tradeData: TradeData, gasPrice: Int) -> Single<Int> {
+        tradeManager.estimateSwapSingle(tradeData: tradeData, gasPrice: gasPrice)
     }
 
-    public func swapSingle(tradeData: TradeData, gasData: GasData, gasPrice: Int) -> Single<String> {
-        tradeManager.swapSingle(tradeData: tradeData, gasData: gasData, gasPrice: gasPrice)
+    public func swapSingle(tradeData: TradeData, gasLimit: Int, gasPrice: Int) -> Single<String> {
+        tradeManager.swapSingle(tradeData: tradeData, gasLimit: gasLimit, gasPrice: gasPrice)
     }
 
 }
 
 extension Kit {
 
-    public static func instance(ethereumKit: EthereumKit.Kit) throws -> Kit {
+    public static func instance(ethereumKit: EthereumKit.Kit) -> Kit {
         let address = ethereumKit.address
 
-        let tradeManager = try TradeManager(ethereumKit: ethereumKit, address: address)
+        let tradeManager = TradeManager(ethereumKit: ethereumKit, address: address)
         let tokenFactory = TokenFactory(networkType: ethereumKit.networkType)
         let pairSelector = PairSelector(tokenFactory: tokenFactory)
 

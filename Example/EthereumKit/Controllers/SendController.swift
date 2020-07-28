@@ -51,13 +51,12 @@ class SendController: UIViewController {
     }
 
     @IBAction func send() {
-        guard let address = addressTextField?.text?.trimmingCharacters(in: .whitespaces),
+        guard let addressHex = addressTextField?.text?.trimmingCharacters(in: .whitespaces),
               let estimateGasLimit = estimateGasLimit else {
             return
         }
-        do {
-            try currentAdapter.validate(address: address)
-        } catch {
+
+        guard let address = try? Address(hex: addressHex) else {
             show(error: "Invalid address")
             return
         }
@@ -87,7 +86,7 @@ class SendController: UIViewController {
         present(alert, animated: true)
     }
 
-    private func showSuccess(address: String, amount: Decimal) {
+    private func showSuccess(address: Address, amount: Decimal) {
         let alert = UIAlertController(title: "Success", message: "\(amount.description) sent to \(address)", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .cancel))
         present(alert, animated: true)
@@ -107,10 +106,14 @@ class SendController: UIViewController {
     private func updateEstimatedGasPrice() {
         updateGasLimit(value: nil)
 
-        guard let address = addressTextField?.text?.trimmingCharacters(in: .whitespaces),
+        guard let addressHex = addressTextField?.text?.trimmingCharacters(in: .whitespaces),
               let valueText = amountTextField?.text,
               let value = Decimal(string: valueText),
               !value.isZero else {
+            return
+        }
+
+        guard let address = try? Address(hex: addressHex) else {
             return
         }
 

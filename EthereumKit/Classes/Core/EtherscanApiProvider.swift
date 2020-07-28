@@ -8,9 +8,9 @@ public class EtherscanApiProvider {
     private let network: INetwork
 
     private let etherscanApiKey: String
-    private let address: Data
+    private let address: Address
 
-    init(networkManager: NetworkManager, network: INetwork, etherscanApiKey: String, address: Data) {
+    init(networkManager: NetworkManager, network: INetwork, etherscanApiKey: String, address: Address) {
         self.networkManager = networkManager
         self.network = network
         self.etherscanApiKey = etherscanApiKey
@@ -46,7 +46,7 @@ extension EtherscanApiProvider {
         let params: [String: Any] = [
             "module": "account",
             "action": "txlist",
-            "address": address.toHexString(),
+            "address": address.eip55,
             "startblock": startBlock,
             "endblock": 99999999,
             "sort": "desc"
@@ -59,7 +59,7 @@ extension EtherscanApiProvider {
         let params: [String: Any] = [
             "module": "account",
             "action": "txlistinternal",
-            "address": address.toHexString(),
+            "address": address.eip55,
             "startblock": startBlock,
             "endblock": 99999999,
             "sort": "desc"
@@ -68,12 +68,12 @@ extension EtherscanApiProvider {
         return apiSingle(params: params)
     }
 
-    public func tokenTransactionsSingle(contractAddress: Data, startBlock: Int) -> Single<[[String: String]]> {
+    public func tokenTransactionsSingle(contractAddress: Address, startBlock: Int) -> Single<[[String: String]]> {
         let params: [String: Any] = [
             "module": "account",
             "action": "tokentx",
-            "contractaddress": contractAddress.toHexString(),
-            "address": address.toHexString(),
+            "contractaddress": contractAddress.eip55,
+            "address": address.eip55,
             "startblock": startBlock,
             "endblock": 99999999,
             "sort": "desc"
@@ -100,8 +100,8 @@ class EtherscanTransactionProvider: ITransactionsProvider {
             array.compactMap { data -> Transaction? in
                 guard let hash = data["hash"].flatMap({ Data(hex: $0) }) else { return nil }
                 guard let nonce = data["nonce"].flatMap({ Int($0) }) else { return nil }
-                guard let from = data["from"].flatMap({ Data(hex: $0) }) else { return nil }
-                guard let to = data["to"].flatMap({ Data(hex: $0) }) else { return nil }
+                guard let from = data["from"].flatMap({ Data(hex: $0) }).map({ Address(raw: $0) }) else { return nil }
+                guard let to = data["to"].flatMap({ Data(hex: $0) }).map({ Address(raw: $0) }) else { return nil }
                 guard let value = data["value"].flatMap({ BigUInt($0) }) else { return nil }
                 guard let gasLimit = data["gas"].flatMap({ Int($0) }) else { return nil }
                 guard let gasPrice = data["gasPrice"].flatMap({ Int($0) }) else { return nil }
@@ -128,8 +128,8 @@ class EtherscanTransactionProvider: ITransactionsProvider {
             array.compactMap { data -> InternalTransaction? in
                 guard let hash = data["hash"].flatMap({ Data(hex: $0) }) else { return nil }
                 guard let blockNumber = data["blockNumber"].flatMap({ Int($0) }) else { return nil }
-                guard let from = data["from"].flatMap({ Data(hex: $0) }) else { return nil }
-                guard let to = data["to"].flatMap({ Data(hex: $0) }) else { return nil }
+                guard let from = data["from"].flatMap({ Data(hex: $0) }).map({ Address(raw: $0) }) else { return nil }
+                guard let to = data["to"].flatMap({ Data(hex: $0) }).map({ Address(raw: $0) }) else { return nil }
                 guard let value = data["value"].flatMap({ BigUInt($0) }) else { return nil }
                 guard let traceId = data["traceId"].flatMap({ Int($0) }) else { return nil }
 
