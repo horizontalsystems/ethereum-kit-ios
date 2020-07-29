@@ -22,13 +22,13 @@ class KitState {
     var balance: BigUInt? {
         didSet {
             if let balance = balance, balance != oldValue {
-                balanceSubject.onNext(balance.description)
+                balanceSubject.onNext(balance)
             }
         }
     }
 
     let syncStateSubject = PublishSubject<Erc20Kit.SyncState>()
     let transactionsSyncStateSubject = PublishSubject<Erc20Kit.SyncState>()
-    let balanceSubject = PublishSubject<String>()
-    let transactionsSubject = PublishSubject<[TransactionInfo]>()
+    let balanceSubject = PublishSubject<BigUInt>()
+    let transactionsSubject = PublishSubject<[Transaction]>()
 }

@@ -30,14 +30,6 @@ public class Kit {
                 .disposed(by: disposeBag)
     }
 
-    private func convert(hex: String) throws -> Data {
-        guard let address = Data(hex: hex) else {
-            throw TokenError.invalidHex
-        }
-
-        return address
-    }
-
     private func onUpdateSyncState(syncState: EthereumKit.SyncState) {
         switch syncState {
         case .synced:
@@ -67,41 +59,23 @@ extension Kit {
         state.transactionsSyncState
     }
 
-    public var balance: String? {
-        state.balance?.description
+    public var balance: BigUInt? {
+        state.balance
     }
 
-    public func sendSingle(to: Address, value: String, gasPrice: Int, gasLimit: Int) throws -> Single<TransactionInfo> {
-        guard let value = BigUInt(value) else {
-            throw ValidationError.invalidValue
-        }
-
-        return transactionManager.sendSingle(to: to, value: value, gasPrice: gasPrice, gasLimit: gasLimit)
-                .map({ TransactionInfo(transaction: $0) })
+    public func sendSingle(to: Address, value: BigUInt, gasPrice: Int, gasLimit: Int) throws -> Single<Transaction> {
+        transactionManager.sendSingle(to: to, value: value, gasPrice: gasPrice, gasLimit: gasLimit)
                 .do(onSuccess: { [weak self] transaction in
                     self?.state.transactionsSubject.onNext([transaction])
                 })
     }
 
-    public func transactionsSingle(from: (hash: String, interTransactionIndex: Int)?, limit: Int?) throws -> Single<[TransactionInfo]> {
-        let from = try from.map {
-            (hash: try convert(hex: $0.hash), interTransactionIndex: $0.interTransactionIndex)
-        }
-
-        return transactionManager.transactionsSingle(from: from, limit: limit)
-                .map { transactions in
-                    transactions.map {
-                        TransactionInfo(transaction: $0)
-                    }
-                }
+    public func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) throws -> Single<[Transaction]> {
+        transactionManager.transactionsSingle(from: from, limit: limit)
     }
 
-    public func transaction(hash: String, interTransactionIndex: Int) -> TransactionInfo? {
-        guard let hash = Data(hex: hash) else {
-            return nil
-        }
-
-        return transactionManager.transaction(hash: hash, interTransactionIndex: interTransactionIndex).map { TransactionInfo(transaction: $0) }
+    public func transaction(hash: Data, interTransactionIndex: Int) -> Transaction? {
+        transactionManager.transaction(hash: hash, interTransactionIndex: interTransactionIndex)
     }
 
     public var syncStateObservable: Observable<SyncState> {
@@ -112,22 +86,18 @@ extension Kit {
         state.transactionsSyncStateSubject.asObservable()
     }
 
-    public var balanceObservable: Observable<String> {
+    public var balanceObservable: Observable<BigUInt> {
         state.balanceSubject.asObservable()
     }
 
-    public var transactionsObservable: Observable<[TransactionInfo]> {
+    public var transactionsObservable: Observable<[Transaction]> {
         state.transactionsSubject.asObservable()
     }
 
-    public func estimateGas(to: Address?, contractAddress: Address, value: String, gasPrice: Int?) -> Single<Int> {
+    public func estimateGas(to: Address?, contractAddress: Address, value: BigUInt, gasPrice: Int?) -> Single<Int> {
         // without address - provide default gas limit
         guard let to = to else {
             return Single.just(EthereumKit.Kit.defaultGasLimit)
-        }
-
-        guard let value = BigUInt(value) else {
-            return Single.error(ValidationError.invalidValue)
         }
 
         let data = transactionManager.transactionContractData(to: to, value: value)
@@ -141,20 +111,12 @@ extension Kit {
                 }
     }
 
-    public func estimateApproveSingle(spenderAddress: Address, amount: String, gasPrice: Int) -> Single<Int> {
-        guard let amount = BigUInt(amount) else {
-            return Single.error(ValidationError.invalidValue)
-        }
-
-        return allowanceManager.estimateApproveSingle(spenderAddress: spenderAddress, amount: amount, gasPrice: gasPrice)
+    public func estimateApproveSingle(spenderAddress: Address, amount: BigUInt, gasPrice: Int) -> Single<Int> {
+        allowanceManager.estimateApproveSingle(spenderAddress: spenderAddress, amount: amount, gasPrice: gasPrice)
     }
 
-    public func approveSingle(spenderAddress: Address, amount: String, gasLimit: Int, gasPrice: Int) -> Single<String> {
-        guard let amount = BigUInt(amount) else {
-            return Single.error(ValidationError.invalidValue)
-        }
-
-        return allowanceManager.approveSingle(spenderAddress: spenderAddress, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice)
+    public func approveSingle(spenderAddress: Address, amount: BigUInt, gasLimit: Int, gasPrice: Int) -> Single<TransactionWithInternal> {
+        allowanceManager.approveSingle(spenderAddress: spenderAddress, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice)
     }
 
 }
@@ -163,7 +125,7 @@ extension Kit: ITransactionManagerDelegate {
 
     func onSyncSuccess(transactions: [Transaction]) {
         if !transactions.isEmpty {
-            state.transactionsSubject.onNext(transactions.map { TransactionInfo(transaction: $0) })
+            state.transactionsSubject.onNext(transactions)
         }
 
         state.transactionsSyncState = .synced

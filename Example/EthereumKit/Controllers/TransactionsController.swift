@@ -83,7 +83,7 @@ class TransactionsController: UITableViewController {
 
         UIPasteboard.general.setValue(transaction.transactionHash, forPasteboardType: "public.plain-text")
 
-        print(currentAdapter.transaction(hash: transaction.transactionHash, interTransactionIndex: transaction.interTransactionIndex))
+        print(currentAdapter.transaction(hash: transaction.transactionHashData, interTransactionIndex: transaction.interTransactionIndex))
 
         let alert = UIAlertController(title: "Success", message: "Transaction Hash copied", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .cancel))
@@ -103,7 +103,7 @@ class TransactionsController: UITableViewController {
 
         loading = true
 
-        let from = transactions.last.map { (hash: $0.transactionHash, interTransactionIndex: $0.interTransactionIndex) }
+        let from = transactions.last.map { (hash: $0.transactionHashData, interTransactionIndex: $0.interTransactionIndex) }
 
         currentAdapter.transactionsSingle(from: from, limit: limit)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
