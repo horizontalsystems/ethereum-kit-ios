@@ -150,12 +150,12 @@ extension InfuraApiProvider: IRpcApiProvider {
     }
 
     func transactionCountSingle() -> Single<Int> {
-        intSingle(method: "eth_getTransactionCount", params: [address.eip55, "pending"])
+        intSingle(method: "eth_getTransactionCount", params: [address.hex, "pending"])
     }
 
     func balanceSingle() -> Single<BigUInt> {
         Single.zip([
-                bigIntSingle(method: "eth_getBalance", params: [address.eip55, "latest"])
+                bigIntSingle(method: "eth_getBalance", params: [address.hex, "latest"])
         ]).map { array -> BigUInt in array[0] }
     }
 
@@ -182,7 +182,7 @@ extension InfuraApiProvider: IRpcApiProvider {
         let params: [String: Any] = [
             "fromBlock": fromBlockStr,
             "toBlock": toBlockStr,
-            "address": address?.eip55 as Any,
+            "address": address?.hex as Any,
             "topics": jsonTopics
         ]
 
@@ -214,17 +214,17 @@ extension InfuraApiProvider: IRpcApiProvider {
     }
 
     func getStorageAt(contractAddress: Address, position: String, blockNumber: Int?) -> Single<Data> {
-        dataSingle(method: "eth_getStorageAt", params: [contractAddress.eip55, position, "latest"])
+        dataSingle(method: "eth_getStorageAt", params: [contractAddress.hex, position, "latest"])
     }
 
     func call(contractAddress: Address, data: String, blockNumber: Int?) -> Single<Data> {
-        dataSingle(method: "eth_call", params: [["to": contractAddress.eip55, "data": data], "latest"])
+        dataSingle(method: "eth_call", params: [["to": contractAddress.hex, "data": data], "latest"])
     }
 
     func getEstimateGas(to: Address, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int> {
         var params: [String: Any] = [
-            "from": address.eip55,
-            "to": to.eip55
+            "from": address.hex,
+            "to": to.hex
         ]
 
         if let amount = amount {

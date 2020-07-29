@@ -46,7 +46,7 @@ extension EtherscanApiProvider {
         let params: [String: Any] = [
             "module": "account",
             "action": "txlist",
-            "address": address.eip55,
+            "address": address.hex,
             "startblock": startBlock,
             "endblock": 99999999,
             "sort": "desc"
@@ -59,7 +59,7 @@ extension EtherscanApiProvider {
         let params: [String: Any] = [
             "module": "account",
             "action": "txlistinternal",
-            "address": address.eip55,
+            "address": address.hex,
             "startblock": startBlock,
             "endblock": 99999999,
             "sort": "desc"
@@ -72,8 +72,8 @@ extension EtherscanApiProvider {
         let params: [String: Any] = [
             "module": "account",
             "action": "tokentx",
-            "contractaddress": contractAddress.eip55,
-            "address": address.eip55,
+            "contractaddress": contractAddress.hex,
+            "address": address.hex,
             "startblock": startBlock,
             "endblock": 99999999,
             "sort": "desc"
