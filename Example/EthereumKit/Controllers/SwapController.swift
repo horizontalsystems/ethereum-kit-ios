@@ -183,7 +183,7 @@ class SwapController: UIViewController {
         let parts = path.map { token -> String in
             if token.isEther {
                 return "ETH"
-            } else if let erc20Token = Configuration.shared.erc20Tokens.first(where: { $0.contractAddress.eip55.lowercased() == token.address.eip55.lowercased() }) {
+            } else if let erc20Token = Configuration.shared.erc20Tokens.first(where: { $0.contractAddress.hex.lowercased() == token.address.hex.lowercased() }) {
                 return erc20Token.coin
             } else {
                 return token.address.eip55

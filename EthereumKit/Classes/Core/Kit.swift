@@ -139,7 +139,7 @@ extension Kit {
     public var debugInfo: String {
         var lines = [String]()
 
-        lines.append("ADDRESS: \(address.eip55)")
+        lines.append("ADDRESS: \(address.hex)")
 
         return lines.joined(separator: "\n")
     }
@@ -367,60 +367,6 @@ extension Kit {
     public enum SyncError: Error {
         case notStarted
         case noNetworkConnection
-    }
-
-    public enum AddressValidationError: Error {
-        case invalidChecksum
-        case invalidAddressLength
-        case invalidSymbols
-        case wrongAddressPrefix
-    }
-
-}
-
-public struct Address {
-    public let raw: Data
-
-    public init(raw: Data) {
-        self.raw = raw
-    }
-
-    public init(hex: String) throws {
-        try AddressValidator.validate(address: hex)
-
-        guard let data = Data(hex: hex) else {
-            throw ValidationError.invalidHex
-        }
-
-        raw = data
-    }
-
-    public var eip55: String {
-        EIP55.format(address: raw.toRawHexString())
-    }
-
-}
-
-extension Address: CustomStringConvertible {
-
-    public var description: String {
-        eip55
-    }
-
-}
-
-extension Address: Equatable {
-
-    public static func ==(lhs: Address, rhs: Address) -> Bool {
-        lhs.raw == rhs.raw
-    }
-
-}
-
-extension Address {
-
-    public enum ValidationError: Error {
-        case invalidHex
     }
 
 }

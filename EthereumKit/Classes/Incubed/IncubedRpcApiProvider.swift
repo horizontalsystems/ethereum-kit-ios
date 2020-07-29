@@ -97,7 +97,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
 
     func getLogs(address: Address?, fromBlock: Int, toBlock: Int, topics: [Any?]) -> Single<[EthereumLog]> {
         Single.fromIncubed {
-            self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: getLogs \(address?.eip55 ?? "Nil") \(fromBlock) - \(toBlock)")
+            self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: getLogs \(address?.hex ?? "Nil") \(fromBlock) - \(toBlock)")
 
             var requestFrom = fromBlock
             var logs = [EthereumLog]()
@@ -138,7 +138,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
         let params: [String: Any] = [
             "fromBlock": toBlock,
             "toBlock": fromBlock,
-            "address": address?.eip55 as Any,
+            "address": address?.hex as Any,
             "topics": jsonTopics
         ]
         return try sendRpc(method: GET_LOGS, parameters: [params])
@@ -165,7 +165,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
         let stringSingle: Single<String> = Single.fromIncubed {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: getStorageAt \(contractAddress) \(position) \(blockNumber ?? -1)")
 
-            return try self.sendRpc(method: GET_STORAGE_AT, parameters: [contractAddress.eip55, position, blockNumber ?? "latest"])
+            return try self.sendRpc(method: GET_STORAGE_AT, parameters: [contractAddress.hex, position, blockNumber ?? "latest"])
         }.subscribeOn(serialQueueScheduler)
 
         return stringSingle.flatMap { value -> Single<Data> in
@@ -182,7 +182,7 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: call \(contractAddress) \(data) \(blockNumber ?? -1)")
 
             let callParams: [String: Any] = [
-                "to": contractAddress.eip55,
+                "to": contractAddress.hex,
                 "data": data,
             ]
             return try self.sendRpc(method: CALL, parameters: [callParams, blockNumber ?? "latest"])
@@ -198,8 +198,8 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
     }
 
     func getEstimateGas(to: Address, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int> {
-        let from = address.eip55
-        let to = to.eip55
+        let from = address.hex
+        let to = to.hex
         let data = data?.toHexString()
 
         let stringSingle: Single<String> = Single.fromIncubed {
