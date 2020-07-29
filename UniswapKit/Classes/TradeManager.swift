@@ -124,7 +124,7 @@ extension TradeManager {
         )
     }
 
-    func swapSingle(tradeData: TradeData, gasLimit: Int, gasPrice: Int) -> Single<String> {
+    func swapSingle(tradeData: TradeData, gasLimit: Int, gasPrice: Int) -> Single<TransactionWithInternal> {
         let swapData = buildSwapData(tradeData: tradeData)
 
         return ethereumKit.sendSingle(
@@ -134,9 +134,6 @@ extension TradeManager {
                         gasPrice: gasPrice,
                         gasLimit: gasLimit
                 )
-                .map { txInfo in
-                    txInfo.hash
-                }
     }
 
 }

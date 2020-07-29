@@ -14,8 +14,8 @@ public class Kit {
     private let lastBlockHeightSubject = PublishSubject<Int>()
     private let syncStateSubject = PublishSubject<SyncState>()
     private let transactionsSyncStateSubject = PublishSubject<SyncState>()
-    private let balanceSubject = PublishSubject<String>()
-    private let transactionsSubject = PublishSubject<[TransactionInfo]>()
+    private let balanceSubject = PublishSubject<BigUInt>()
+    private let transactionsSubject = PublishSubject<[TransactionWithInternal]>()
 
     private let blockchain: IBlockchain
     private let transactionManager: ITransactionManager
@@ -55,8 +55,8 @@ extension Kit {
         state.lastBlockHeight
     }
 
-    public var balance: String? {
-        state.balance?.description
+    public var balance: BigUInt? {
+        state.balance
     }
 
     public var syncState: SyncState {
@@ -83,11 +83,11 @@ extension Kit {
         transactionsSyncStateSubject.asObservable()
     }
 
-    public var balanceObservable: Observable<String> {
+    public var balanceObservable: Observable<BigUInt> {
         balanceSubject.asObservable()
     }
 
-    public var transactionsObservable: Observable<[TransactionInfo]> {
+    public var transactionsObservable: Observable<[TransactionWithInternal]> {
         transactionsSubject.asObservable()
     }
 
@@ -105,35 +105,24 @@ extension Kit {
         transactionManager.refresh()
     }
 
-    public func transactionsSingle(fromHash: String? = nil, limit: Int? = nil) -> Single<[TransactionInfo]> {
-        transactionManager.transactionsSingle(fromHash: fromHash.flatMap { Data(hex: $0) }, limit: limit)
-                .map { $0.map { TransactionInfo(transactionWithInternal: $0) } }
+    public func transactionsSingle(fromHash: Data? = nil, limit: Int? = nil) -> Single<[TransactionWithInternal]> {
+        transactionManager.transactionsSingle(fromHash: fromHash, limit: limit)
     }
 
-    public func transaction(hash: String) -> TransactionInfo? {
-        guard let hash = Data(hex: hash) else {
-            return nil
-        }
-
-        return transactionManager.transaction(hash: hash).map { TransactionInfo(transactionWithInternal: $0) }
+    public func transaction(hash: Data) -> TransactionWithInternal? {
+        transactionManager.transaction(hash: hash)
     }
 
-    public func sendSingle(address: Address, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int) -> Single<TransactionInfo> {
+    public func sendSingle(address: Address, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int) -> Single<TransactionWithInternal> {
         let rawTransaction = transactionBuilder.rawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: address, value: value, data: transactionInput)
 
         return blockchain.sendSingle(rawTransaction: rawTransaction)
                 .do(onSuccess: { [weak self] transaction in
                     self?.transactionManager.handle(sentTransaction: transaction)
                 })
-                .map { TransactionInfo(transactionWithInternal: TransactionWithInternal(transaction: $0)) }
-    }
-
-    public func sendSingle(to: Address, value: String, gasPrice: Int, gasLimit: Int) -> Single<TransactionInfo> {
-        guard let value = BigUInt(value) else {
-            return Single.error(ValidationError.invalidValue)
-        }
-
-        return sendSingle(address: to, value: value, gasPrice: gasPrice, gasLimit: gasLimit)
+                .map {
+                    TransactionWithInternal(transaction: $0)
+                }
     }
 
     public var debugInfo: String {
@@ -169,14 +158,10 @@ extension Kit {
         blockchain.call(contractAddress: contractAddress, data: data, blockHeight: blockHeight)
     }
 
-    public func estimateGas(to: Address?, amount: String, gasPrice: Int?) -> Single<Int> {
+    public func estimateGas(to: Address?, amount: BigUInt, gasPrice: Int?) -> Single<Int> {
         // without address - provide default gas limit
         guard let to = to else {
             return Single.just(Kit.defaultGasLimit)
-        }
-
-        guard let amount = BigUInt(amount) else {
-            return Single.error(ValidationError.invalidValue)
         }
 
         // if amount is 0 - set default minimum amount
@@ -220,7 +205,7 @@ extension Kit: IBlockchainDelegate {
 
         state.balance = balance
 
-        balanceSubject.onNext(balance.description)
+        balanceSubject.onNext(balance)
     }
 
     func onUpdate(syncState: SyncState) {
@@ -232,7 +217,7 @@ extension Kit: IBlockchainDelegate {
 extension Kit: ITransactionManagerDelegate {
 
     func onUpdate(transactionsWithInternal: [TransactionWithInternal]) {
-        transactionsSubject.onNext(transactionsWithInternal.map { TransactionInfo(transactionWithInternal: $0) })
+        transactionsSubject.onNext(transactionsWithInternal)
     }
 
     func onUpdate(transactionsSyncState: SyncState) {

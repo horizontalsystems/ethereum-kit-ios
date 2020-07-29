@@ -1,7 +1,7 @@
 import EthereumKit
 import Erc20Kit
-import class Erc20Kit.TransactionInfo
 import RxSwift
+import BigInt
 
 class Erc20Adapter {
     private let ethereumKit: EthereumKit.Kit
@@ -18,7 +18,7 @@ class Erc20Adapter {
         self.token = token
     }
 
-    private func transactionRecord(fromTransaction transaction: TransactionInfo) -> TransactionRecord? {
+    private func transactionRecord(fromTransaction transaction: Erc20Kit.Transaction) -> TransactionRecord? {
         let mineAddress = ethereumKit.receiveAddress
 
         let from = TransactionAddress(
@@ -33,13 +33,14 @@ class Erc20Adapter {
 
         var amount: Decimal = 0
 
-        if let significand = Decimal(string: transaction.value) {
+        if let significand = Decimal(string: transaction.value.description) {
             let sign: FloatingPointSign = from.mine ? .minus : .plus
             amount = Decimal(sign: sign, exponent: -token.decimal, significand: significand)
         }
 
         return TransactionRecord(
-                transactionHash: transaction.transactionHash,
+                transactionHash: transaction.transactionHash.toHexString(),
+                transactionHashData: transaction.transactionHash,
                 transactionIndex: transaction.transactionIndex ?? 0,
                 interTransactionIndex: transaction.interTransactionIndex,
                 amount: amount,
@@ -63,11 +64,18 @@ class Erc20Adapter {
     }
 
     func estimateApproveSingle(spenderAddress: Address, amount: Decimal, gasPrice: Int) -> Single<Int> {
-        erc20Kit.estimateApproveSingle(spenderAddress: spenderAddress, amount: amount.roundedString(decimal: token.decimal), gasPrice: gasPrice)
+        let amount = BigUInt(amount.roundedString(decimal: token.decimal))!
+
+        return erc20Kit.estimateApproveSingle(spenderAddress: spenderAddress, amount: amount, gasPrice: gasPrice)
     }
 
     func approveSingle(spenderAddress: Address, amount: Decimal, gasLimit: Int, gasPrice: Int) -> Single<String> {
-        erc20Kit.approveSingle(spenderAddress: spenderAddress, amount: amount.roundedString(decimal: token.decimal), gasLimit: gasLimit, gasPrice: gasPrice)
+        let amount = BigUInt(amount.roundedString(decimal: token.decimal))!
+
+        return erc20Kit.approveSingle(spenderAddress: spenderAddress, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice)
+                .map { transactionWithInternal in
+                    transactionWithInternal.transaction.hash.toHexString()
+                }
     }
 
 }
@@ -107,7 +115,7 @@ extension Erc20Adapter: IAdapter {
     }
 
     var balance: Decimal {
-        if let balanceString = erc20Kit.balance, let significand = Decimal(string: balanceString) {
+        if let balance = erc20Kit.balance, let significand = Decimal(string: balance.description) {
             return Decimal(sign: .plus, exponent: -token.decimal, significand: significand)
         }
 
@@ -139,10 +147,12 @@ extension Erc20Adapter: IAdapter {
     }
 
     func sendSingle(to: Address, amount: Decimal, gasLimit: Int) -> Single<Void> {
-        try! erc20Kit.sendSingle(to: to, value: amount.roundedString(decimal: token.decimal), gasPrice: 5_000_000_000, gasLimit: gasLimit).map { _ in ()}
+        let amount = BigUInt(amount.roundedString(decimal: token.decimal))!
+
+        return try! erc20Kit.sendSingle(to: to, value: amount, gasPrice: 5_000_000_000, gasLimit: gasLimit).map { _ in ()}
     }
 
-    func transactionsSingle(from: (hash: String, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionRecord]> {
+    func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionRecord]> {
         try! erc20Kit.transactionsSingle(from: from, limit: limit)
                 .map { [weak self] in
                     $0.compactMap {
@@ -151,12 +161,14 @@ extension Erc20Adapter: IAdapter {
                 }
     }
 
-    func transaction(hash: String, interTransactionIndex: Int) -> TransactionRecord? {
+    func transaction(hash: Data, interTransactionIndex: Int) -> TransactionRecord? {
         erc20Kit.transaction(hash: hash, interTransactionIndex: interTransactionIndex).flatMap { transactionRecord(fromTransaction: $0) }
     }
 
     func estimatedGasLimit(to address: Address, value: Decimal) -> Single<Int> {
-        erc20Kit.estimateGas(to: address, contractAddress: token.contractAddress, value: value.roundedString(decimal: token.decimal), gasPrice: 5_000_000_000)
+        let value = BigUInt(value.roundedString(decimal: token.decimal))!
+
+        return erc20Kit.estimateGas(to: address, contractAddress: token.contractAddress, value: value, gasPrice: 5_000_000_000)
     }
 
 }

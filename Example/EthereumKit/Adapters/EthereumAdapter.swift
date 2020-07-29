@@ -1,6 +1,7 @@
 import Foundation
 import EthereumKit
 import RxSwift
+import BigInt
 
 class EthereumAdapter {
     private let ethereumKit: Kit
@@ -10,7 +11,9 @@ class EthereumAdapter {
         self.ethereumKit = ethereumKit
     }
 
-    private func transactionRecord(fromTransaction transaction: TransactionInfo) -> TransactionRecord {
+    private func transactionRecord(transactionWithInternal: TransactionWithInternal) -> TransactionRecord {
+        let transaction = transactionWithInternal.transaction
+
         let from = TransactionAddress(
                 address: transaction.from,
                 mine: transaction.from == receiveAddress
@@ -23,13 +26,13 @@ class EthereumAdapter {
 
         var amount: Decimal = 0
 
-        if let significand = Decimal(string: transaction.value), significand != 0 {
+        if let significand = Decimal(string: transaction.value.description), significand != 0 {
             let sign: FloatingPointSign = from.mine ? .minus : .plus
             amount = Decimal(sign: sign, exponent: -decimal, significand: significand)
         }
 
-        for internalTransaction in transaction.internalTransactions {
-            if let significand = Decimal(string: internalTransaction.value), significand != 0 {
+        for internalTransaction in transactionWithInternal.internalTransactions {
+            if let significand = Decimal(string: internalTransaction.value.description), significand != 0 {
                 let mine = internalTransaction.from == receiveAddress
                 let sign: FloatingPointSign = mine ? .minus : .plus
                 let internalTransactionAmount = Decimal(sign: sign, exponent: -decimal, significand: significand)
@@ -40,7 +43,8 @@ class EthereumAdapter {
         let isError = (transaction.isError ?? 0) != 0
 
         return TransactionRecord(
-                transactionHash: transaction.hash,
+                transactionHash: transaction.hash.toHexString(),
+                transactionHashData: transaction.hash,
                 transactionIndex: transaction.transactionIndex ?? 0,
                 interTransactionIndex: 0,
                 amount: amount,
@@ -81,7 +85,7 @@ extension EthereumAdapter: IAdapter {
     }
 
     var balance: Decimal {
-        if let balanceString = ethereumKit.balance, let significand = Decimal(string: balanceString) {
+        if let balance = ethereumKit.balance, let significand = Decimal(string: balance.description) {
             return Decimal(sign: .plus, exponent: -decimal, significand: significand)
         }
 
@@ -113,24 +117,28 @@ extension EthereumAdapter: IAdapter {
     }
 
     func sendSingle(to: Address, amount: Decimal, gasLimit: Int) -> Single<Void> {
-        ethereumKit.sendSingle(to: to, value: amount.roundedString(decimal: decimal), gasPrice: 5_000_000_000, gasLimit: gasLimit).map { _ in ()}
+        let amount = BigUInt(amount.roundedString(decimal: decimal))!
+
+        return ethereumKit.sendSingle(address: to, value: amount, gasPrice: 5_000_000_000, gasLimit: gasLimit).map { _ in ()}
     }
 
-    func transactionsSingle(from: (hash: String, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionRecord]> {
+    func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionRecord]> {
         ethereumKit.transactionsSingle(fromHash: from?.hash, limit: limit)
                 .map { [weak self] in
                     $0.compactMap {
-                        self?.transactionRecord(fromTransaction: $0)
+                        self?.transactionRecord(transactionWithInternal: $0)
                     }
                 }
     }
 
-    func transaction(hash: String, interTransactionIndex: Int) -> TransactionRecord? {
-        ethereumKit.transaction(hash: hash).map { transactionRecord(fromTransaction: $0) }
+    func transaction(hash: Data, interTransactionIndex: Int) -> TransactionRecord? {
+        ethereumKit.transaction(hash: hash).map { transactionRecord(transactionWithInternal: $0) }
     }
 
     func estimatedGasLimit(to address: Address, value: Decimal) -> Single<Int> {
-        ethereumKit.estimateGas(to: address, amount: value.roundedString(decimal: decimal), gasPrice: 5_000_000_000)
+        let value = BigUInt(value.roundedString(decimal: decimal))!
+
+        return ethereumKit.estimateGas(to: address, amount: value, gasPrice: 5_000_000_000)
     }
 
 }

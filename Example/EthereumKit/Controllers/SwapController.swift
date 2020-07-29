@@ -369,14 +369,14 @@ class SwapController: UIViewController {
         }
 
         uniswapKit.estimateSwapSingle(tradeData: tradeData, gasPrice: gasPrice)
-                .flatMap { [unowned self] gasLimit -> Single<String> in
+                .flatMap { [unowned self] gasLimit -> Single<TransactionWithInternal> in
                     print("GAS LIMIT SUCCESS: \(gasLimit)")
                     return self.uniswapKit.swapSingle(tradeData: tradeData, gasLimit: gasLimit, gasPrice: self.gasPrice)
                 }
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
-                .subscribe(onSuccess: { txHash in
-                    print("SUCCESS: \(txHash)")
+                .subscribe(onSuccess: { transactionWithInternal in
+                    print("SUCCESS: \(transactionWithInternal.transaction.hash.toHexString())")
                 }, onError: { error in
                     print("ERROR: \(error)")
                 })

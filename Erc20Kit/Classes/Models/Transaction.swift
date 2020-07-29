@@ -2,20 +2,20 @@ import GRDB
 import BigInt
 import EthereumKit
 
-class Transaction: Record {
-    let transactionHash: Data
-    var transactionIndex: Int?
+public class Transaction: Record {
+    public let transactionHash: Data
+    public var transactionIndex: Int?
 
-    let from: Address
-    let to: Address
-    let value: BigUInt
-    let timestamp: TimeInterval
-    var interTransactionIndex: Int
+    public let from: Address
+    public let to: Address
+    public let value: BigUInt
+    public let timestamp: TimeInterval
+    public var interTransactionIndex: Int
 
-    var logIndex: Int?
-    var blockHash: Data?
-    var blockNumber: Int?
-    var isError: Bool
+    public var logIndex: Int?
+    public var blockHash: Data?
+    public var blockNumber: Int?
+    public var isError: Bool
 
     init(transactionHash: Data, transactionIndex: Int? = nil, from: Address, to: Address, value: BigUInt, timestamp: TimeInterval = Date().timeIntervalSince1970, interTransactionIndex: Int = 0, isError: Bool = false) {
         self.transactionHash = transactionHash
@@ -30,7 +30,7 @@ class Transaction: Record {
         super.init()
     }
 
-    override class var databaseTableName: String {
+    public override class var databaseTableName: String {
         "transactions"
     }
 
@@ -64,7 +64,7 @@ class Transaction: Record {
         super.init(row: row)
     }
 
-    override func encode(to container: inout PersistenceContainer) {
+    public override func encode(to container: inout PersistenceContainer) {
         container[Columns.transactionHash] = transactionHash
         container[Columns.transactionIndex] = transactionIndex
         container[Columns.from] = from.raw

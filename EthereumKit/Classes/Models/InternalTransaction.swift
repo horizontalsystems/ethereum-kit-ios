@@ -1,15 +1,15 @@
 import GRDB
 import BigInt
 
-class InternalTransaction: Record {
+public class InternalTransaction: Record {
     static let transaction = belongsTo(Transaction.self)
 
-    let hash: Data
+    public let hash: Data
     let blockNumber: Int
-    let from: Address
-    let to: Address
-    let value: BigUInt
-    let traceId: Int
+    public let from: Address
+    public let to: Address
+    public let value: BigUInt
+    public let traceId: Int
 
     init(hash: Data, blockNumber: Int, from: Address, to: Address, value: BigUInt, traceId: Int) {
         self.hash = hash
@@ -22,7 +22,7 @@ class InternalTransaction: Record {
         super.init()
     }
 
-    override class var databaseTableName: String {
+    override public class var databaseTableName: String {
         "internal_transactions"
     }
 
@@ -46,7 +46,7 @@ class InternalTransaction: Record {
         super.init(row: row)
     }
 
-    override func encode(to container: inout PersistenceContainer) {
+    override public func encode(to container: inout PersistenceContainer) {
         container[Columns.hash] = hash
         container[Columns.blockNumber] = blockNumber
         container[Columns.from] = from.raw

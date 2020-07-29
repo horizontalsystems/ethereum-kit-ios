@@ -3,6 +3,7 @@ import EthereumKit
 
 struct TransactionRecord {
     let transactionHash: String
+    let transactionHashData: Data
     let transactionIndex: Int
     let interTransactionIndex: Int
     let amount: Decimal

@@ -83,7 +83,7 @@ extension Kit {
         tradeManager.estimateSwapSingle(tradeData: tradeData, gasPrice: gasPrice)
     }
 
-    public func swapSingle(tradeData: TradeData, gasLimit: Int, gasPrice: Int) -> Single<String> {
+    public func swapSingle(tradeData: TradeData, gasLimit: Int, gasPrice: Int) -> Single<TransactionWithInternal> {
         tradeManager.swapSingle(tradeData: tradeData, gasLimit: gasLimit, gasPrice: gasPrice)
     }
 

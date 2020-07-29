@@ -1,26 +1,26 @@
 import GRDB
 import BigInt
 
-class Transaction: Record {
+public class Transaction: Record {
     static let internalTransactions = hasMany(InternalTransaction.self)
 
-    let hash: Data
-    let nonce: Int
-    let input: Data
-    let from: Address
-    let to: Address
-    let value: BigUInt
-    let gasLimit: Int
-    let gasPrice: Int
-    let timestamp: TimeInterval
+    public let hash: Data
+    public let nonce: Int
+    public let input: Data
+    public let from: Address
+    public let to: Address
+    public let value: BigUInt
+    public let gasLimit: Int
+    public let gasPrice: Int
+    public let timestamp: TimeInterval
 
-    var blockHash: Data?
-    var blockNumber: Int?
-    var gasUsed: Int?
-    var cumulativeGasUsed: Int?
-    var isError: Int?
-    var transactionIndex: Int?
-    var txReceiptStatus: Int?
+    public var blockHash: Data?
+    public var blockNumber: Int?
+    public var gasUsed: Int?
+    public var cumulativeGasUsed: Int?
+    public var isError: Int?
+    public var transactionIndex: Int?
+    public var txReceiptStatus: Int?
 
     init(hash: Data, nonce: Int, input: Data = Data(), from: Address, to: Address, value: BigUInt, gasLimit: Int, gasPrice: Int, timestamp: TimeInterval = Date().timeIntervalSince1970) {
         self.hash = hash
@@ -36,7 +36,7 @@ class Transaction: Record {
         super.init()
     }
 
-    override class var databaseTableName: String {
+    public override class var databaseTableName: String {
         "transactions"
     }
 
@@ -80,7 +80,7 @@ class Transaction: Record {
         super.init(row: row)
     }
 
-    override func encode(to container: inout PersistenceContainer) {
+    public override func encode(to container: inout PersistenceContainer) {
         container[Columns.hash] = hash
         container[Columns.nonce] = nonce
         container[Columns.input] = input
@@ -101,11 +101,11 @@ class Transaction: Record {
 
 }
 
-struct TransactionWithInternal: FetchableRecord {
-    let transaction: Transaction
-    let internalTransactions: [InternalTransaction]
+public struct TransactionWithInternal: FetchableRecord {
+    public let transaction: Transaction
+    public let internalTransactions: [InternalTransaction]
 
-    init(row: Row) {
+    public init(row: Row) {
         transaction = Transaction(row: row)
         internalTransactions = row[InternalTransaction.databaseTableName]
     }

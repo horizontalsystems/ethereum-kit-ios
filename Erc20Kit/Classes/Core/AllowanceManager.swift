@@ -44,7 +44,7 @@ class AllowanceManager {
         )
     }
 
-    func approveSingle(spenderAddress: Address, amount: BigUInt, gasLimit: Int, gasPrice: Int) -> Single<String> {
+    func approveSingle(spenderAddress: Address, amount: BigUInt, gasLimit: Int, gasPrice: Int) -> Single<TransactionWithInternal> {
         ethereumKit.sendSingle(
                         address: contractAddress,
                         value: 0,
@@ -52,9 +52,6 @@ class AllowanceManager {
                         gasPrice: gasPrice,
                         gasLimit: gasLimit
                 )
-                .map { txInfo in
-                    txInfo.hash
-                }
     }
 
 }
