@@ -16,7 +16,7 @@ class TransactionSigner {
             nonce,
             rawTransaction.gasPrice,
             rawTransaction.gasLimit,
-            rawTransaction.to,
+            rawTransaction.to.raw,
             rawTransaction.value,
             rawTransaction.data
         ]
