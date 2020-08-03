@@ -11,9 +11,12 @@ class SwapController: UIViewController {
     private let fromLabel = UILabel()
     private let fromTextField = UITextField()
     private let fromTokenLabel = UILabel()
+    private let fromBalanceLabel = UILabel()
+    private let allowanceLabel = UILabel()
     private let toLabel = UILabel()
     private let toTextField = UITextField()
     private let toTokenLabel = UILabel()
+    private let toBalanceLabel = UILabel()
     private let minMaxLabel = UILabel()
     private let executionPriceLabel = UILabel()
     private let midPriceLabel = UILabel()
@@ -26,14 +29,23 @@ class SwapController: UIViewController {
 
     private var swapData: SwapData?
     private var tradeData: TradeData?
+    private var allowance: Decimal?
 
     private let gasPrice = 200_000_000_000
 
-    private var fromAdapter: Erc20Adapter? = Manager.shared.erc20Adapters[1]
-    private var toAdapter: Erc20Adapter? = Manager.shared.erc20Adapters[0]
+    private let fromAdapter: IAdapter = Manager.shared.erc20Adapters[1]
+    private let toAdapter: IAdapter = Manager.shared.ethereumAdapter
 
-    private var fromToken: Erc20Token? { fromAdapter?.token }
-    private var toToken: Erc20Token? { toAdapter?.token }
+    private var fromToken: Erc20Token? { erc20Token(adapter: fromAdapter) }
+    private var toToken: Erc20Token? { erc20Token(adapter: toAdapter) }
+
+    private func erc20Token(adapter: IAdapter) -> Erc20Token? {
+        guard let erc20Adapter = adapter as? Erc20Adapter else {
+            return nil
+        }
+
+        return erc20Adapter.token
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -69,10 +81,30 @@ class SwapController: UIViewController {
         fromTokenLabel.font = .systemFont(ofSize: 14)
         fromTokenLabel.text = tokenCoin(token: fromToken)
 
+        view.addSubview(fromBalanceLabel)
+        fromBalanceLabel.snp.makeConstraints { maker in
+            maker.leading.trailing.equalToSuperview().inset(24)
+            maker.top.equalTo(fromTextField.snp.bottom).offset(12)
+        }
+
+        fromBalanceLabel.font = .systemFont(ofSize: 12)
+        fromBalanceLabel.textAlignment = .left
+        fromBalanceLabel.text = "Balance: \(fromAdapter.balance) \(tokenCoin(token: fromToken))"
+
+        view.addSubview(allowanceLabel)
+        allowanceLabel.snp.makeConstraints { maker in
+            maker.leading.trailing.equalToSuperview().inset(24)
+            maker.top.equalTo(fromBalanceLabel.snp.bottom).offset(12)
+        }
+
+        allowanceLabel.font = .systemFont(ofSize: 12)
+        allowanceLabel.textAlignment = .left
+        allowanceLabel.text = " "
+
         view.addSubview(toLabel)
         toLabel.snp.makeConstraints { maker in
             maker.leading.trailing.equalToSuperview().inset(24)
-            maker.top.equalTo(fromTextField.snp.bottom).offset(16)
+            maker.top.equalTo(allowanceLabel.snp.bottom).offset(16)
         }
 
         view.addSubview(toTextField)
@@ -98,10 +130,20 @@ class SwapController: UIViewController {
         toTokenLabel.font = .systemFont(ofSize: 14)
         toTokenLabel.text = tokenCoin(token: toToken)
 
+        view.addSubview(toBalanceLabel)
+        toBalanceLabel.snp.makeConstraints { maker in
+            maker.leading.trailing.equalToSuperview().inset(24)
+            maker.top.equalTo(toTextField.snp.bottom).offset(12)
+        }
+
+        toBalanceLabel.font = .systemFont(ofSize: 12)
+        toBalanceLabel.textAlignment = .left
+        toBalanceLabel.text = "Balance: \(toAdapter.balance) \(tokenCoin(token: toToken))"
+
         view.addSubview(minMaxLabel)
         minMaxLabel.snp.makeConstraints { maker in
             maker.leading.trailing.equalToSuperview().inset(24)
-            maker.top.equalTo(toTextField.snp.bottom).offset(24)
+            maker.top.equalTo(toBalanceLabel.snp.bottom).offset(24)
         }
 
         minMaxLabel.font = .systemFont(ofSize: 12)
@@ -199,9 +241,6 @@ class SwapController: UIViewController {
         fromLabel.text = "From:\(tradeType == .exactOut ? " (estimated)" : "")"
         toLabel.text = "To:\(tradeType == .exactIn ? " (estimated)" : "")"
 
-        approveButton.isEnabled = tradeData != nil
-        swapButton.isEnabled = tradeData != nil
-
         if let tradeData = tradeData {
             switch tradeData.type {
             case .exactIn:
@@ -216,12 +255,34 @@ class SwapController: UIViewController {
             priceImpactLabel.text = tradeData.priceImpact.map { "Price Impact: \($0.description)%" }
 
             pathLabel.text = "Route: \(pathString(path: tradeData.path))"
+
+            let amountIn = tradeData.amountIn ?? 0
+
+            let allowanceRequired: Bool
+            if fromAdapter is EthereumAdapter {
+                allowanceRequired = false
+            } else {
+                if let allowance = allowance {
+                    allowanceRequired = amountIn > allowance
+                } else {
+                    allowanceRequired = true
+                }
+            }
+
+            approveButton.isEnabled = allowanceRequired
+
+            let balanceSufficient = amountIn <= fromAdapter.balance
+
+            swapButton.isEnabled = !allowanceRequired && balanceSufficient
         } else {
             minMaxLabel.text = nil
             executionPriceLabel.text = nil
             midPriceLabel.text = nil
             priceImpactLabel.text = nil
             pathLabel.text = nil
+
+            approveButton.isEnabled = false
+            swapButton.isEnabled = false
         }
     }
 
@@ -246,15 +307,25 @@ class SwapController: UIViewController {
     }
 
     private func syncAllowance() {
-        fromAdapter?.allowanceSingle(spenderAddress: uniswapKit.routerAddress)
+        guard let fromAdapter = fromAdapter as? Erc20Adapter else {
+            return
+        }
+
+        fromAdapter.allowanceSingle(spenderAddress: uniswapKit.routerAddress)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
-                .subscribe(onSuccess: { allowance in
-                    print("Allowance: \(allowance)")
+                .subscribe(onSuccess: { [weak self] allowance in
+                    self?.onSync(allowance: allowance)
                 }, onError: { error in
                     print("ALLOWANCE ERROR: \(error)")
                 })
                 .disposed(by: disposeBag)
+    }
+
+    private func onSync(allowance: Decimal) {
+        self.allowance = allowance
+        allowanceLabel.text = "Allowance: \(allowance) \(tokenCoin(token: fromToken))"
+        syncControls()
     }
 
     private func syncSwapData() {
@@ -337,7 +408,7 @@ class SwapController: UIViewController {
     }
 
     @objc private func onTapApprove() {
-        guard let adapter = fromAdapter else {
+        guard let adapter = fromAdapter as? Erc20Adapter else {
             return
         }
 

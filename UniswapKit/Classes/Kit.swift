@@ -44,6 +44,10 @@ extension Kit {
     }
 
     public func bestTradeExactIn(swapData: SwapData, amountIn: Decimal, options: TradeOptions = TradeOptions()) throws -> TradeData {
+        guard amountIn > 0 else {
+            throw TradeError.zeroAmount
+        }
+
         let tokenAmountIn = try TokenAmount(token: swapData.tokenIn, decimal: amountIn)
 
         let sortedTrades = try TradeManager.tradesExactIn(
@@ -62,6 +66,10 @@ extension Kit {
     }
 
     public func bestTradeExactOut(swapData: SwapData, amountOut: Decimal, options: TradeOptions = TradeOptions()) throws -> TradeData {
+        guard amountOut > 0 else {
+            throw TradeError.zeroAmount
+        }
+
         let tokenAmountOut = try TokenAmount(token: swapData.tokenOut, decimal: amountOut)
 
         let sortedTrades = try TradeManager.tradesExactOut(
@@ -113,6 +121,7 @@ extension Kit {
     }
 
     public enum TradeError: Error {
+        case zeroAmount
         case tradeNotFound
     }
 
