@@ -150,12 +150,12 @@ extension Kit {
         }
     }
 
-    public func getStorageAt(contractAddress: Address, positionData: Data, blockHeight: Int) -> Single<Data> {
-        blockchain.getStorageAt(contractAddress: contractAddress, positionData: positionData, blockHeight: blockHeight)
+    public func getStorageAt(contractAddress: Address, positionData: Data, defaultBlockParameter: DefaultBlockParameter = .latest) -> Single<Data> {
+        blockchain.getStorageAt(contractAddress: contractAddress, positionData: positionData, defaultBlockParameter: defaultBlockParameter)
     }
 
-    public func call(contractAddress: Address, data: Data, blockHeight: Int? = nil) -> Single<Data> {
-        blockchain.call(contractAddress: contractAddress, data: data, blockHeight: blockHeight)
+    public func call(contractAddress: Address, data: Data, defaultBlockParameter: DefaultBlockParameter = .latest) -> Single<Data> {
+        blockchain.call(contractAddress: contractAddress, data: data, defaultBlockParameter: defaultBlockParameter)
     }
 
     public func estimateGas(to: Address?, amount: BigUInt, gasPrice: Int?) -> Single<Int> {
