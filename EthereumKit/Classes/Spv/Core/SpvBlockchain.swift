@@ -91,12 +91,12 @@ extension SpvBlockchain: IBlockchain {
         rpcApiProvider.transactionExistSingle(transactionHash: transactionHash)
     }
 
-    func getStorageAt(contractAddress: Address, positionData: Data, blockHeight: Int) -> Single<Data> {
+    func getStorageAt(contractAddress: Address, positionData: Data, defaultBlockParameter: DefaultBlockParameter) -> Single<Data> {
         Single.just(Data())
     }
 
-    func call(contractAddress: Address, data: Data, blockHeight: Int?) -> Single<Data> {
-        rpcApiProvider.call(contractAddress: contractAddress, data: data.toHexString(), blockNumber: blockHeight)
+    func call(contractAddress: Address, data: Data, defaultBlockParameter: DefaultBlockParameter) -> Single<Data> {
+        rpcApiProvider.call(contractAddress: contractAddress, data: data.toHexString(), defaultBlockParameter: defaultBlockParameter)
     }
 
     func estimateGas(to: Address, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int> {

@@ -161,11 +161,11 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
         }.subscribeOn(serialQueueScheduler)
     }
 
-    func getStorageAt(contractAddress: Address, position: String, blockNumber: Int?) -> Single<Data> {
+    func getStorageAt(contractAddress: Address, position: String, defaultBlockParameter: DefaultBlockParameter) -> Single<Data> {
         let stringSingle: Single<String> = Single.fromIncubed {
-            self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: getStorageAt \(contractAddress) \(position) \(blockNumber ?? -1)")
+            self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: getStorageAt \(contractAddress) \(position) \(defaultBlockParameter)")
 
-            return try self.sendRpc(method: GET_STORAGE_AT, parameters: [contractAddress.hex, position, blockNumber ?? "latest"])
+            return try self.sendRpc(method: GET_STORAGE_AT, parameters: [contractAddress.hex, position, defaultBlockParameter.raw])
         }.subscribeOn(serialQueueScheduler)
 
         return stringSingle.flatMap { value -> Single<Data> in
@@ -177,15 +177,15 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
                 }
     }
 
-    func call(contractAddress: Address, data: String, blockNumber: Int?) -> Single<Data> {
+    func call(contractAddress: Address, data: String, defaultBlockParameter: DefaultBlockParameter) -> Single<Data> {
         let stringSingle: Single<String> = Single.fromIncubed {
-            self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: call \(contractAddress) \(data) \(blockNumber ?? -1)")
+            self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: call \(contractAddress) \(data) \(defaultBlockParameter)")
 
             let callParams: [String: Any] = [
                 "to": contractAddress.hex,
                 "data": data,
             ]
-            return try self.sendRpc(method: CALL, parameters: [callParams, blockNumber ?? "latest"])
+            return try self.sendRpc(method: CALL, parameters: [callParams, defaultBlockParameter.raw])
         }.subscribeOn(serialQueueScheduler)
 
         return stringSingle.flatMap { value -> Single<Data> in

@@ -213,12 +213,12 @@ extension InfuraApiProvider: IRpcApiProvider {
         }
     }
 
-    func getStorageAt(contractAddress: Address, position: String, blockNumber: Int?) -> Single<Data> {
-        dataSingle(method: "eth_getStorageAt", params: [contractAddress.hex, position, "latest"])
+    func getStorageAt(contractAddress: Address, position: String, defaultBlockParameter: DefaultBlockParameter) -> Single<Data> {
+        dataSingle(method: "eth_getStorageAt", params: [contractAddress.hex, position, defaultBlockParameter.raw])
     }
 
-    func call(contractAddress: Address, data: String, blockNumber: Int?) -> Single<Data> {
-        dataSingle(method: "eth_call", params: [["to": contractAddress.hex, "data": data], "latest"])
+    func call(contractAddress: Address, data: String, defaultBlockParameter: DefaultBlockParameter) -> Single<Data> {
+        dataSingle(method: "eth_call", params: [["to": contractAddress.hex, "data": data], defaultBlockParameter.raw])
     }
 
     func getEstimateGas(to: Address, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int> {
