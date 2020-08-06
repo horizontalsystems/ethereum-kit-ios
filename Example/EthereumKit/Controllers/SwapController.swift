@@ -99,7 +99,6 @@ class SwapController: UIViewController {
 
         allowanceLabel.font = .systemFont(ofSize: 12)
         allowanceLabel.textAlignment = .left
-        allowanceLabel.text = " "
 
         view.addSubview(toLabel)
         toLabel.snp.makeConstraints { maker in
@@ -187,25 +186,21 @@ class SwapController: UIViewController {
 
         view.addSubview(approveButton)
         approveButton.snp.makeConstraints { maker in
-            maker.leading.equalToSuperview().inset(24)
+            maker.leading.trailing.equalToSuperview().inset(24)
             maker.top.equalTo(pathLabel.snp.bottom).offset(24)
             maker.height.equalTo(40)
         }
 
-        approveButton.isEnabled = false
         approveButton.setTitle("APPROVE", for: .normal)
         approveButton.addTarget(self, action: #selector(onTapApprove), for: .touchUpInside)
 
         view.addSubview(swapButton)
         swapButton.snp.makeConstraints { maker in
-            maker.leading.equalTo(approveButton.snp.trailing).offset(24)
-            maker.top.equalTo(approveButton.snp.top)
-            maker.trailing.equalToSuperview().inset(24)
+            maker.leading.trailing.equalToSuperview().inset(24)
+            maker.top.equalTo(pathLabel.snp.bottom).offset(24)
             maker.height.equalTo(40)
-            maker.width.equalTo(approveButton)
         }
 
-        swapButton.isEnabled = false
         swapButton.setTitle("SWAP", for: .normal)
         swapButton.addTarget(self, action: #selector(onTapSwap), for: .touchUpInside)
 
@@ -255,35 +250,35 @@ class SwapController: UIViewController {
             priceImpactLabel.text = tradeData.priceImpact.map { "Price Impact: \($0.description)%" }
 
             pathLabel.text = "Route: \(pathString(path: tradeData.path))"
-
-            let amountIn = tradeData.amountIn ?? 0
-
-            let allowanceRequired: Bool
-            if fromAdapter is EthereumAdapter {
-                allowanceRequired = false
-            } else {
-                if let allowance = allowance {
-                    allowanceRequired = amountIn > allowance
-                } else {
-                    allowanceRequired = true
-                }
-            }
-
-            approveButton.isEnabled = allowanceRequired
-
-            let balanceSufficient = amountIn <= fromAdapter.balance
-
-            swapButton.isEnabled = !allowanceRequired && balanceSufficient
         } else {
             minMaxLabel.text = nil
             executionPriceLabel.text = nil
             midPriceLabel.text = nil
             priceImpactLabel.text = nil
             pathLabel.text = nil
-
-            approveButton.isEnabled = false
-            swapButton.isEnabled = false
         }
+
+        let amountIn = tradeData?.amountIn ?? 0
+
+        let allowanceRequired: Bool
+        if fromAdapter is EthereumAdapter {
+            allowanceRequired = false
+            allowanceLabel.text = " "
+        } else {
+            if let allowance = allowance {
+                allowanceRequired = amountIn > allowance
+                allowanceLabel.text = "Allowance: \(allowance) \(tokenCoin(token: fromToken))"
+            } else {
+                allowanceRequired = true
+                allowanceLabel.text = "Allowance: loading..."
+            }
+        }
+
+        approveButton.isHidden = tradeData == nil || !allowanceRequired
+
+        let balanceSufficient = amountIn <= fromAdapter.balance
+
+        swapButton.isHidden = tradeData == nil || allowanceRequired || !balanceSufficient
     }
 
     private func tokenCoin(token: Erc20Token?) -> String {
@@ -324,14 +319,10 @@ class SwapController: UIViewController {
 
     private func onSync(allowance: Decimal) {
         self.allowance = allowance
-        allowanceLabel.text = "Allowance: \(allowance) \(tokenCoin(token: fromToken))"
         syncControls()
     }
 
     private func syncSwapData() {
-        fromTextField.isEnabled = false
-        toTextField.isEnabled = false
-
         let tokenIn = uniswapToken(token: fromToken)
         let tokenOut = uniswapToken(token: toToken)
 
@@ -342,9 +333,6 @@ class SwapController: UIViewController {
                     print("SwapData:\n\(swapData)")
 
                     self?.swapData = swapData
-
-                    self?.fromTextField.isEnabled = true
-                    self?.toTextField.isEnabled = true
                 }, onError: { error in
                     print("SWAP DATA ERROR: \(error)")
                 })
