@@ -54,7 +54,7 @@ class DevP2PPeer {
     }
 
     private func log(_ message: String, level: Logger.Level = .debug) {
-        logger?.log(level: level, message: message, context: logName)
+        logger?.log(level: level, message: message, context: [logName])
     }
 
 }
