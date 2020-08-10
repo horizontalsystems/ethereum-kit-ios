@@ -45,7 +45,7 @@ class AccountStateTaskHandler {
 
         let addressHash = CryptoUtils.shared.sha3(task.address.raw)
 
-        guard addressHash.toRawHexString() == path else {
+        guard addressHash.hex == path else {
             throw ProofError.pathDoesNotMatchAddressHash
         }
 

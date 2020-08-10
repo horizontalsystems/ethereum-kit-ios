@@ -8,6 +8,7 @@ target 'EthereumKitExample' do
   pod 'HsToolKit.swift', git: 'https://github.com/horizontalsystems/hs-tool-kit-ios'
 
   pod 'SnapKit'
+  pod 'UIExtensions.swift', git: 'https://github.com/horizontalsystems/gui-kit/'
 end
 
 def testPods

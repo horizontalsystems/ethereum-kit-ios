@@ -40,8 +40,8 @@ class TransactionSigner {
     func signature(from data: Data) -> Signature {
         return Signature(
                 v: Int(data[64]) + (chainId == 0 ? 27 : (35 + 2 * chainId)),
-                r: BigUInt(data[..<32].toRawHexString(), radix: 16)!,
-                s: BigUInt(data[32..<64].toRawHexString(), radix: 16)!
+                r: BigUInt(data[..<32].hex, radix: 16)!,
+                s: BigUInt(data[32..<64].hex, radix: 16)!
         )
     }
 

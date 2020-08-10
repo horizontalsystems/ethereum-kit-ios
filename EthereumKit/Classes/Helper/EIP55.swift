@@ -15,7 +15,7 @@ struct EIP55 {
             return "0x" + address
         }
 
-        let hash = OpenSslKit.Kit.sha3(address.lowercased().data(using: .ascii)!).toRawHexString()
+        let hash = OpenSslKit.Kit.sha3(address.lowercased().data(using: .ascii)!).hex
 
         return "0x" + zip(address, hash)
                 .map { a, h -> String in

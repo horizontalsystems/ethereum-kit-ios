@@ -10,7 +10,7 @@ class TransactionProvider {
     }
 
     private func transaction(log: EthereumLog) -> Transaction {
-        let value = BigUInt(log.data.toRawHexString(), radix: 16)!
+        let value = BigUInt(log.data.hex, radix: 16)!
         let from = Address(raw: log.topics[1].suffix(from: 12))
         let to = Address(raw: log.topics[2].suffix(from: 12))
 

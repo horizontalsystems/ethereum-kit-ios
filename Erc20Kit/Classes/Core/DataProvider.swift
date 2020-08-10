@@ -41,7 +41,7 @@ extension DataProvider: IDataProvider {
                     }
                 }
     }
-    
+
     func getTransactionStatuses(transactionHashes: [Data]) -> Single<[(Data, TransactionStatus)]> {
         let singles = transactionHashes.map { hash in
             ethereumKit.transactionStatus(transactionHash: hash).map { status -> (Data, TransactionStatus) in (hash, status) }
@@ -54,7 +54,7 @@ extension DataProvider: IDataProvider {
 
         return ethereumKit.call(contractAddress: contractAddress, data: method.encodedData)
                 .flatMap { data -> Single<BigUInt> in
-                    guard let value = BigUInt(data.toRawHexString(), radix: 16) else {
+                    guard let value = BigUInt(data.hex, radix: 16) else {
                         return Single.error(Erc20Kit.TokenError.invalidHex)
                     }
 

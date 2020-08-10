@@ -228,7 +228,7 @@ extension InfuraApiProvider: IRpcApiProvider {
         ]
 
         if let amount = amount {
-            params["value"] = "0x" + amount.serialize().toRawHexString().removeLeadingZeros()
+            params["value"] = "0x" + amount.serialize().hex.removeLeadingZeros()
         }
         if let gasLimit = gasLimit {
             params["gas"] = "0x" + String(gasLimit, radix: 16).removeLeadingZeros()

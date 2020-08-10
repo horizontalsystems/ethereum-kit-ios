@@ -22,7 +22,7 @@ public struct Address {
     }
 
     public var eip55: String {
-        EIP55.format(address: raw.toRawHexString())
+        EIP55.format(address: raw.hex)
     }
 
 }
@@ -34,7 +34,7 @@ extension Address {
     }
 
     private static func isCheckSumAddress(hex: String) throws {
-        let addressHash: String = OpenSslKit.Kit.sha3(hex.lowercased().data(using: .ascii)!).toRawHexString()
+        let addressHash: String = OpenSslKit.Kit.sha3(hex.lowercased().data(using: .ascii)!).hex
         for i in 0..<40 {
             let hashSymbol = character(addressHash, i)
 
