@@ -17,7 +17,7 @@ class LESPeer {
     }
 
     private func log(_ message: String, level: Logger.Level = .debug) {
-        logger?.log(level: level, message: message, context: devP2PPeer.logName)
+        logger?.log(level: level, message: message, context: [devP2PPeer.logName])
     }
 
 }
