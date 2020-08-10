@@ -42,7 +42,7 @@ class AccountStateRequest {
 
         let addressHash = CryptoUtils.shared.sha3(address.raw)
 
-        guard addressHash.toRawHexString() == path else {
+        guard addressHash.hex == path else {
             throw ProofError.pathDoesNotMatchAddressHash
         }
 

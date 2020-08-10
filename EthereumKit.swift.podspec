@@ -33,6 +33,7 @@ EthereumKit.swift implements Ethereum protocol in Swift.
   s.dependency 'Secp256k1Kit.swift', '~> 1.0'
   s.dependency 'HdWalletKit.swift', '~> 1.5'
   s.dependency 'HsToolKit.swift', '~> 1.0'
+  s.dependency 'UIExtensions.swift', '~> 1.0'
 
   s.dependency 'RxSwift', '~> 5.0'
   s.dependency 'BigInt', '~> 5.0'
