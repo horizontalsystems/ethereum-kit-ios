@@ -92,7 +92,7 @@ CHECKOUT OPTIONS:
     :commit: 9b4e0429e76073c753371020b8185abb41691911
     :git: https://github.com/horizontalsystems/hs-tool-kit-ios
   UIExtensions.swift:
-    :commit: 20a122ce11f03862b642c0d7d00523057177d6f4
+    :commit: 7f95e9a3125c34712cb73884f2479bb5d15c75f8
     :git: https://github.com/horizontalsystems/gui-kit/
 
 SPEC CHECKSUMS:
