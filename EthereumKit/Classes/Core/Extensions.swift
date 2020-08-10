@@ -36,16 +36,6 @@ extension String {
         self.replacingOccurrences(of: "^0+", with: "", options: .regularExpression)
     }
 
-    func stripHexPrefix() -> String {
-        let prefix = "0x"
-
-        if self.hasPrefix(prefix) {
-            return String(self.dropFirst(prefix.count))
-        }
-
-        return self
-    }
-
     func addHexPrefix() -> String {
         let prefix = "0x"
 
