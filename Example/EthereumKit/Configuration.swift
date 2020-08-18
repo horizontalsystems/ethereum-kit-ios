@@ -10,7 +10,7 @@ class Configuration {
     let defaultsWords = ""
 
     let useInfuraAsDefault = true
-    let infuraCredentials: (id: String, secret: String?) = (id: "2a1306f1d12f4c109a4d4fb9be46b02e", secret: "fc479a9290b64a84a15fa6544a130218") 
+    let infuraCredentials: (id: String, secret: String?) = (id: "2a1306f1d12f4c109a4d4fb9be46b02e", secret: "fc479a9290b64a84a15fa6544a130218")
     let etherscanApiKey = "GKNHXT22ED7PRVCKZATFZQD1YI7FK9AAYE"
 
     var erc20Tokens: [Erc20Token] {
@@ -23,6 +23,7 @@ class Configuration {
             Erc20Token(name: "GMO coins", coin: "GMOLW", contractAddress: try! Address(hex: "0xbb74a24d83470f64d5f0c01688fbb49a5a251b32"), decimal: 18),
             Erc20Token(name: "DAI",       coin: "DAI",   contractAddress: try! Address(hex: "0xad6d458402f60fd3bd25163575031acdce07538d"), decimal: 18),
             Erc20Token(name: "MMM",       coin: "MMM",   contractAddress: try! Address(hex: "0x3e500c5f4de2738f65c90c6cc93b173792127481"), decimal: 8),
+            Erc20Token(name: "WEENUS",    coin: "WEENUS", contractAddress: try! Address(hex: "0x101848D5C5bBca18E6b4431eEdF6B95E9ADF82FA"), decimal: 18),
         ]
         case .kovan: return []
         }

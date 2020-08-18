@@ -11,7 +11,7 @@ class EthereumAdapter {
         self.ethereumKit = ethereumKit
     }
 
-    private func transactionRecord(transactionWithInternal: TransactionWithInternal) -> TransactionRecord {
+    private func transactionRecord(transactionWithInternal: TransactionWithInternal) -> TransactionRecord? {
         let transaction = transactionWithInternal.transaction
 
         let from = TransactionAddress(
@@ -38,6 +38,10 @@ class EthereumAdapter {
                 let internalTransactionAmount = Decimal(sign: sign, exponent: -decimal, significand: significand)
                 amount += internalTransactionAmount
             }
+        }
+
+        if amount.isZero {
+            return nil
         }
 
         let isError = (transaction.isError ?? 0) != 0
@@ -132,7 +136,7 @@ extension EthereumAdapter: IAdapter {
     }
 
     func transaction(hash: Data, interTransactionIndex: Int) -> TransactionRecord? {
-        ethereumKit.transaction(hash: hash).map { transactionRecord(transactionWithInternal: $0) }
+        ethereumKit.transaction(hash: hash).flatMap { transactionRecord(transactionWithInternal: $0) }
     }
 
     func estimatedGasLimit(to address: Address, value: Decimal) -> Single<Int> {
