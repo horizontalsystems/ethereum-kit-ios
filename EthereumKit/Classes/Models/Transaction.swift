@@ -116,4 +116,9 @@ public struct TransactionWithInternal: FetchableRecord {
         internalTransactions = []
     }
 
+    init(transaction: Transaction, internalTransactions: [InternalTransaction]) {
+        self.transaction = transaction
+        self.internalTransactions = internalTransactions
+    }
+
 }

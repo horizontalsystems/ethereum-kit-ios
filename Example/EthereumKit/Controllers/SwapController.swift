@@ -33,7 +33,7 @@ class SwapController: UIViewController {
 
     private let gasPrice = 200_000_000_000
 
-    private let fromAdapter: IAdapter = Manager.shared.erc20Adapters[3]
+    private let fromAdapter: IAdapter = Manager.shared.erc20Adapters[1]
     private let toAdapter: IAdapter = Manager.shared.ethereumAdapter
 
     private var fromToken: Erc20Token? { erc20Token(adapter: fromAdapter) }
