@@ -42,7 +42,7 @@ class TransactionManager {
     }
 
     private func isEmpty(transactionWithInternal: TransactionWithInternal) -> Bool {
-        transactionWithInternal.transaction.value != 0 || !transactionWithInternal.internalTransactions.isEmpty
+        transactionWithInternal.transaction.value == 0 && transactionWithInternal.internalTransactions.isEmpty
     }
 
 }
