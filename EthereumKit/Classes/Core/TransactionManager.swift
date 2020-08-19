@@ -25,12 +25,24 @@ class TransactionManager {
         storage.save(transactions: transactions)
         storage.save(internalTransactions: internalTransactions)
 
-        storage.transactionsSingle(fromHash: lastTransactionHash, limit: nil)
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                .subscribe(onSuccess: { [weak self] transactionsWithInternal in
-                    self?.delegate?.onUpdate(transactionsWithInternal: transactionsWithInternal)
-                })
-                .disposed(by: disposeBag)
+        let transactionsWithInternals: [TransactionWithInternal] = transactions.compactMap { transaction in
+            let internalTransactions = internalTransactions.filter {
+                $0.hash.hex == transaction.hash.hex
+            }
+
+            let transactionWithInternal = TransactionWithInternal(transaction: transaction, internalTransactions: internalTransactions)
+
+            if !isEmpty(transactionWithInternal: transactionWithInternal) {
+                return transactionWithInternal
+            } else {
+                return nil
+            }
+        }
+        delegate?.onUpdate(transactionsWithInternal: transactionsWithInternals)
+    }
+
+    private func isEmpty(transactionWithInternal: TransactionWithInternal) -> Bool {
+        transactionWithInternal.transaction.value != 0 || !transactionWithInternal.internalTransactions.isEmpty
     }
 
 }
@@ -74,7 +86,10 @@ extension TransactionManager: ITransactionManager {
         storage.save(transactions: [sentTransaction])
 
         let transactionWithInternal = TransactionWithInternal(transaction: sentTransaction)
-        delegate?.onUpdate(transactionsWithInternal: [transactionWithInternal])
+
+        if !isEmpty(transactionWithInternal: transactionWithInternal) {
+            delegate?.onUpdate(transactionsWithInternal: [transactionWithInternal])
+        }
     }
 
 }
