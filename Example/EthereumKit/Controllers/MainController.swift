@@ -26,7 +26,7 @@ class MainController: UITabBarController {
         swapNavigation.tabBarItem.title = "Swap"
         swapNavigation.tabBarItem.image = UIImage(named: "Transactions Tab Bar Icon")
 
-        viewControllers = [swapNavigation, balanceNavigation, transactionsNavigation, sendNavigation, receiveNavigation]
+        viewControllers = [balanceNavigation, transactionsNavigation, sendNavigation, receiveNavigation, swapNavigation]
     }
 
 }

@@ -3,18 +3,7 @@ import BigInt
 
 protocol IRpcApiProvider {
     var source: String { get }
-
-    func lastBlockHeightSingle() -> Single<Int>
-    func transactionCountSingle() -> Single<Int>
-    func balanceSingle() -> Single<BigUInt>
-    func sendSingle(signedTransaction: Data) -> Single<Void>
-    func getLogs(address: Address?, fromBlock: Int, toBlock: Int, topics: [Any?]) -> Single<[EthereumLog]>
-    func transactionReceiptStatusSingle(transactionHash: Data) -> Single<TransactionStatus>
-    func transactionExistSingle(transactionHash: Data) -> Single<Bool>
-    func getStorageAt(contractAddress: Address, position: String, defaultBlockParameter: DefaultBlockParameter) -> Single<Data>
-    func call(contractAddress: Address, data: String, defaultBlockParameter: DefaultBlockParameter) -> Single<Data>
-    func getEstimateGas(to: Address, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int>
-    func getBlock(byNumber: Int) -> Single<Block>
+    func single<T>(rpc: JsonRpc<T>) -> Single<T>
 }
 
 protocol IApiStorage {
@@ -23,4 +12,37 @@ protocol IApiStorage {
 
     var balance: BigUInt? { get }
     func save(balance: BigUInt)
+}
+
+protocol IRpcSyncer: AnyObject {
+    var delegate: IRpcSyncerDelegate? { get set }
+
+    var source: String { get }
+    var syncState: SyncState { get }
+
+    func start()
+    func stop(error: Error)
+    func refresh()
+
+    func single<T>(rpc: JsonRpc<T>) -> Single<T>
+}
+
+protocol IRpcSyncerDelegate: AnyObject {
+    func didUpdate(syncState: SyncState)
+    func didUpdate(lastBlockHeight: Int)
+    func didUpdate(balance: BigUInt)
+}
+
+protocol IWebSocket: AnyObject {
+    var delegate: IWebSocketDelegate? { get set }
+
+    func connect()
+    func disconnect(error: Error)
+    func send<T>(rpc: JsonRpc<T>, onSuccess: @escaping (T) -> (), onError: @escaping (Error) -> ())
+    func subscribe<T>(subscription: RpcSubscription<T>, onSuccess: @escaping () -> (), onError: @escaping (Error) -> (), successHandler: @escaping (T) -> (), errorHandler: @escaping (Error) -> ())
+}
+
+protocol IWebSocketDelegate: AnyObject {
+    func didConnect()
+    func didDisconnect(error: Error)
 }

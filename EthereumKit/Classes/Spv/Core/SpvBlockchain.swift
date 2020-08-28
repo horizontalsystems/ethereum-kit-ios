@@ -12,12 +12,12 @@ class SpvBlockchain {
     private let transactionSender: TransactionSender
     private let storage: ISpvStorage
     private let network: INetwork
-    private let rpcApiProvider: IRpcApiProvider
+//    private let rpcApiProvider: IRpcApiProvider
     private let logger: Logger?
 
     private var sendingTransactions = [Int: PublishSubject<Transaction>]()
 
-    private init(peer: IPeer, blockSyncer: BlockSyncer, nodeManager: NodeManager, accountStateSyncer: AccountStateSyncer, transactionSender: TransactionSender, storage: ISpvStorage, network: INetwork, rpcApiProvider: IRpcApiProvider, logger: Logger? = nil) {
+    private init(peer: IPeer, blockSyncer: BlockSyncer, nodeManager: NodeManager, accountStateSyncer: AccountStateSyncer, transactionSender: TransactionSender, storage: ISpvStorage, network: INetwork, logger: Logger? = nil) {
         self.peer = peer
         self.blockSyncer = blockSyncer
         self.nodeManager = nodeManager
@@ -25,7 +25,7 @@ class SpvBlockchain {
         self.transactionSender = transactionSender
         self.storage = storage
         self.network = network
-        self.rpcApiProvider = rpcApiProvider
+//        self.rpcApiProvider = rpcApiProvider
         self.logger = logger
     }
 
@@ -84,11 +84,13 @@ extension SpvBlockchain: IBlockchain {
     }
 
     func transactionReceiptStatusSingle(transactionHash: Data) -> Single<TransactionStatus> {
-        rpcApiProvider.transactionReceiptStatusSingle(transactionHash: transactionHash)
+        fatalError("Not implemented yet")
+//        rpcApiProvider.transactionReceiptStatusSingle(transactionHash: transactionHash)
     }
 
     func transactionExistSingle(transactionHash: Data) -> Single<Bool> {
-        rpcApiProvider.transactionExistSingle(transactionHash: transactionHash)
+        fatalError("Not implemented yet")
+//        rpcApiProvider.transactionExistSingle(transactionHash: transactionHash)
     }
 
     func getStorageAt(contractAddress: Address, positionData: Data, defaultBlockParameter: DefaultBlockParameter) -> Single<Data> {
@@ -96,11 +98,13 @@ extension SpvBlockchain: IBlockchain {
     }
 
     func call(contractAddress: Address, data: Data, defaultBlockParameter: DefaultBlockParameter) -> Single<Data> {
-        rpcApiProvider.call(contractAddress: contractAddress, data: data.toHexString(), defaultBlockParameter: defaultBlockParameter)
+        fatalError("Not implemented yet")
+//        rpcApiProvider.call(contractAddress: contractAddress, data: data, defaultBlockParameter: defaultBlockParameter)
     }
 
     func estimateGas(to: Address, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int> {
-        rpcApiProvider.getEstimateGas(to: to, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice, data: data)
+        fatalError("Not implemented yet")
+//        rpcApiProvider.getEstimateGas(to: to, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice, data: data)
     }
 
 }
@@ -166,7 +170,7 @@ extension SpvBlockchain: ITransactionSenderDelegate {
 
 extension SpvBlockchain {
 
-    static func instance(storage: ISpvStorage, nodeManager: NodeManager, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, rpcApiProvider: IRpcApiProvider, network: INetwork, address: Address, nodeKey: ECKey, logger: Logger? = nil) -> SpvBlockchain {
+    static func instance(storage: ISpvStorage, nodeManager: NodeManager, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, network: INetwork, address: Address, nodeKey: ECKey, logger: Logger? = nil) -> SpvBlockchain {
         let validator = BlockValidator()
         let blockHelper = BlockHelper(storage: storage, network: network)
 
@@ -179,7 +183,7 @@ extension SpvBlockchain {
         let accountStateSyncer = AccountStateSyncer(storage: storage, address: address)
         let transactionSender = TransactionSender(storage: storage, transactionBuilder: transactionBuilder, transactionSigner: transactionSigner)
 
-        let spvBlockchain = SpvBlockchain(peer: peer, blockSyncer: blockSyncer, nodeManager: nodeManager, accountStateSyncer: accountStateSyncer, transactionSender: transactionSender, storage: storage, network: network, rpcApiProvider: rpcApiProvider, logger: logger)
+        let spvBlockchain = SpvBlockchain(peer: peer, blockSyncer: blockSyncer, nodeManager: nodeManager, accountStateSyncer: accountStateSyncer, transactionSender: transactionSender, storage: storage, network: network, logger: logger)
 
         peer.delegate = spvBlockchain
         blockSyncer.delegate = spvBlockchain

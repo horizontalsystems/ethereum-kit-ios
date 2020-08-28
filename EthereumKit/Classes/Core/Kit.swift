@@ -228,7 +228,7 @@ extension Kit: ITransactionManagerDelegate {
 
 extension Kit {
 
-    public static func instance(privateKey: Data, syncMode: SyncMode, networkType: NetworkType = .mainNet, rpcApi: RpcApi, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
+    public static func instance(privateKey: Data, syncMode: SyncMode, networkType: NetworkType = .mainNet, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
         let logger = Logger(minLogLevel: minLogLevel)
 
         let uniqueId = "\(walletId)-\(networkType)"
@@ -244,12 +244,23 @@ extension Kit {
         let etherscanApiProvider = EtherscanApiProvider(networkManager: networkManager, network: network, etherscanApiKey: etherscanApiKey, address: address)
         let transactionsProvider: ITransactionsProvider = EtherscanTransactionProvider(provider: etherscanApiProvider)
 
-        let rpcApiProvider: IRpcApiProvider
-        switch rpcApi {
+        let infuraDomain: String
+        switch networkType {
+        case .ropsten: infuraDomain = "ropsten.infura.io"
+        case .kovan: infuraDomain = "kovan.infura.io"
+        case .mainNet: infuraDomain = "mainnet.infura.io"
+        }
+
+        let syncer: IRpcSyncer
+
+        switch syncSource {
+        case let .infuraWebSocket(id, secret):
+            let socket = InfuraWebSocket(domain: infuraDomain, projectId: id, projectSecret: secret, logger: logger)
+            syncer = WebSocketSyncer.instance(address: address, socket: socket, logger: logger)
         case let .infura(id, secret):
-            rpcApiProvider = InfuraApiProvider(networkManager: networkManager, network: network, id: id, secret: secret, address: address)
+            syncer = ApiSyncer(address: address, rpcApiProvider: InfuraApiProvider(networkManager: networkManager, domain: infuraDomain, id: id, secret: secret))
         case .incubed:
-            rpcApiProvider = IncubedRpcApiProvider(address: address, logger: logger)
+            syncer = ApiSyncer(address: address, rpcApiProvider: IncubedRpcApiProvider(logger: logger))
         }
 
         var blockchain: IBlockchain
@@ -257,7 +268,8 @@ extension Kit {
         switch syncMode {
         case .api:
             let storage: IApiStorage = try ApiStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "api-\(uniqueId)")
-            blockchain = ApiBlockchain.instance(storage: storage, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, rpcApiProvider: rpcApiProvider, logger: logger)
+            blockchain = RpcBlockchain.instance(address: address, storage: storage, syncer: syncer, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, logger: logger)
+
         case .spv(let nodePrivateKey):
             let storage: ISpvStorage = try SpvStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "spv-\(uniqueId)")
 
@@ -285,7 +297,7 @@ extension Kit {
             let nodeManager = NodeManager(storage: discoveryStorage, nodeDiscovery: nodeDiscovery, nodeFactory: nodeFactory, logger: logger)
             nodeDiscovery.nodeManager = nodeManager
 
-            blockchain = SpvBlockchain.instance(storage: storage, nodeManager: nodeManager, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, rpcApiProvider: rpcApiProvider, network: network, address: address, nodeKey: nodeKey, logger: logger)
+            blockchain = SpvBlockchain.instance(storage: storage, nodeManager: nodeManager, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, network: network, address: address, nodeKey: nodeKey, logger: logger)
         case .geth:
             fatalError("Geth is not supported")
 //            let directoryUrl = try dataDirectoryUrl()
@@ -305,7 +317,7 @@ extension Kit {
         return ethereumKit
     }
 
-    public static func instance(words: [String], syncMode wordsSyncMode: WordsSyncMode, networkType: NetworkType = .mainNet, rpcApi: RpcApi, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
+    public static func instance(words: [String], syncMode wordsSyncMode: WordsSyncMode, networkType: NetworkType = .mainNet, rpcApi: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
         let coinType: UInt32 = networkType == .mainNet ? 60 : 1
 
         let hdWallet = HDWallet(seed: Mnemonic.seed(mnemonic: words), coinType: coinType, xPrivKey: 0, xPubKey: 0)
@@ -319,7 +331,7 @@ extension Kit {
         case .geth: syncMode = .geth
         }
 
-        return try instance(privateKey: privateKey, syncMode: syncMode, networkType: networkType, rpcApi: rpcApi, etherscanApiKey: etherscanApiKey, walletId: walletId, minLogLevel: minLogLevel)
+        return try instance(privateKey: privateKey, syncMode: syncMode, networkType: networkType, syncSource: rpcApi, etherscanApiKey: etherscanApiKey, walletId: walletId, minLogLevel: minLogLevel)
     }
 
     public static func clear(exceptFor excludedFiles: [String]) throws {

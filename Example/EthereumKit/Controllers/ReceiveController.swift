@@ -17,6 +17,7 @@ class ReceiveController: UIViewController {
 
     @IBAction func copyToClipboard() {
         UIPasteboard.general.setValue(Manager.shared.ethereumAdapter.receiveAddress.eip55, forPasteboardType: "public.plain-text")
+        print(Manager.shared.ethereumAdapter.receiveAddress.eip55)
 
         let alert = UIAlertController(title: "Success", message: "Address copied", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .cancel))

@@ -330,7 +330,7 @@ class SwapController: UIViewController {
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { [weak self] swapData in
-                    print("SwapData:\n\(swapData)")
+//                    print("SwapData:\n\(swapData)")
 
                     self?.swapData = swapData
                 }, onError: { error in
