@@ -13,7 +13,11 @@ class NewHeadsRpcSubscription: RpcSubscription<RpcBlockHeader> {
             throw ParseError.noBlockNumber(resultMap: resultMap)
         }
 
-        return RpcBlockHeader(number: number)
+        guard let logsBloom = resultMap["logsBloom"] as? String else {
+            throw ParseError.noLogsBloom(resultMap: resultMap)
+        }
+
+        return RpcBlockHeader(number: number, logsBloom: logsBloom)
     }
 
 }
@@ -23,10 +27,12 @@ extension NewHeadsRpcSubscription {
     enum ParseError: Error {
         case invalidResult(result: Any)
         case noBlockNumber(resultMap: [String: Any])
+        case noLogsBloom(resultMap: [String: Any])
     }
 
 }
 
 struct RpcBlockHeader {
     let number: Int
+    let logsBloom: String
 }

@@ -29,6 +29,7 @@ protocol IRpcSyncer: AnyObject {
 
 protocol IRpcSyncerDelegate: AnyObject {
     func didUpdate(syncState: SyncState)
+    func didUpdate(lastBlockLogsBloom: String)
     func didUpdate(lastBlockHeight: Int)
     func didUpdate(balance: BigUInt)
 }

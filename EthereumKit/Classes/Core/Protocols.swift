@@ -24,6 +24,7 @@ protocol IBlockchain {
 }
 
 protocol IBlockchainDelegate: class {
+    func onUpdate(lastBlockLogsBloom: String)
     func onUpdate(lastBlockHeight: Int)
     func onUpdate(balance: BigUInt)
     func onUpdate(syncState: SyncState)

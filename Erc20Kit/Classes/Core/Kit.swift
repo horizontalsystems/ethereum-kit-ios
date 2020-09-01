@@ -5,6 +5,7 @@ import BigInt
 public class Kit {
     private let disposeBag = DisposeBag()
 
+    private let contractAddress: Address
     private let ethereumKit: EthereumKit.Kit
     private let transactionManager: ITransactionManager
     private let balanceManager: IBalanceManager
@@ -12,7 +13,8 @@ public class Kit {
 
     private let state: KitState
 
-    init(ethereumKit: EthereumKit.Kit, transactionManager: ITransactionManager, balanceManager: IBalanceManager, allowanceManager: AllowanceManager, state: KitState = KitState()) {
+    init(contractAddress: Address, ethereumKit: EthereumKit.Kit, transactionManager: ITransactionManager, balanceManager: IBalanceManager, allowanceManager: AllowanceManager, state: KitState = KitState()) {
+        self.contractAddress = contractAddress
         self.ethereumKit = ethereumKit
         self.transactionManager = transactionManager
         self.balanceManager = balanceManager
@@ -28,6 +30,21 @@ public class Kit {
                     self?.onUpdateSyncState(syncState: $0)
                 })
                 .disposed(by: disposeBag)
+
+        ethereumKit.lastBlockLogsBloomObservable
+                .observeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+                .subscribe(onNext: { [weak self] in
+                    self?.onLastBlockLogsBloom(logsBloom: $0)
+                })
+                .disposed(by: disposeBag)
+    }
+
+    private func onLastBlockLogsBloom(logsBloom: String) {
+        let bloomFilter = BloomFiler(filter: logsBloom)
+
+        if bloomFilter.mayContain(contractAddress: contractAddress) && bloomFilter.mayContain(userAddress: ethereumKit.address) {
+            balanceManager.sync()
+        }
     }
 
     private func onUpdateSyncState(syncState: EthereumKit.SyncState) {
@@ -167,7 +184,7 @@ extension Kit {
         var balanceManager: IBalanceManager = BalanceManager(contractAddress: contractAddress, address: address, storage: storage, dataProvider: dataProvider)
         let allowanceManager = AllowanceManager(ethereumKit: ethereumKit, contractAddress: contractAddress, address: address)
 
-        let erc20Kit = Kit(ethereumKit: ethereumKit, transactionManager: transactionManager, balanceManager: balanceManager, allowanceManager: allowanceManager)
+        let erc20Kit = Kit(contractAddress: contractAddress, ethereumKit: ethereumKit, transactionManager: transactionManager, balanceManager: balanceManager, allowanceManager: allowanceManager)
 
         transactionManager.delegate = erc20Kit
         balanceManager.delegate = erc20Kit

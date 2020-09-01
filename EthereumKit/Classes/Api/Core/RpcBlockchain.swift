@@ -92,6 +92,10 @@ extension RpcBlockchain: IRpcSyncerDelegate {
         delegate?.onUpdate(syncState: syncState)
     }
 
+    func didUpdate(lastBlockLogsBloom: String) {
+        delegate?.onUpdate(lastBlockLogsBloom: lastBlockLogsBloom)
+    }
+
     func didUpdate(lastBlockHeight: Int) {
         storage.save(lastBlockHeight: lastBlockHeight)
         delegate?.onUpdate(lastBlockHeight: lastBlockHeight)

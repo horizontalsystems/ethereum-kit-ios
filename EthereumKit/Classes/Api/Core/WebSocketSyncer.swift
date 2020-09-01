@@ -62,6 +62,7 @@ class WebSocketSyncer {
                     self?.onFailSync(error: error)
                 },
                 successHandler: { [weak self] header in
+                    self?.delegate?.didUpdate(lastBlockLogsBloom: header.logsBloom)
                     self?.delegate?.didUpdate(lastBlockHeight: header.number)
                     self?.fetchBalance()
                 },
