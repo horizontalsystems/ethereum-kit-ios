@@ -1,8 +1,7 @@
 import OpenSslKit
 import UIExtensions
-import EthereumKit
 
-class BloomFiler {
+public class BloomFilter {
     private let filter: String
 
     init(filter: String) {
@@ -57,7 +56,7 @@ class BloomFiler {
         return true
     }
 
-    func mayContain(contractAddress: Address) -> Bool {
+    public func mayContain(contractAddress: Address) -> Bool {
         mayContain(element: contractAddress.raw)
     }
 

@@ -11,7 +11,7 @@ public class Kit {
     private let maxGasLimit = 1_000_000
     private let defaultMinAmount: BigUInt = 1
 
-    private let lastBlockLogsBloomSubject = PublishSubject<String>()
+    private let lastBlockBloomFilterSubject = PublishSubject<BloomFilter>()
     private let lastBlockHeightSubject = PublishSubject<Int>()
     private let syncStateSubject = PublishSubject<SyncState>()
     private let transactionsSyncStateSubject = PublishSubject<SyncState>()
@@ -76,8 +76,8 @@ extension Kit {
         lastBlockHeightSubject.asObservable()
     }
 
-    public var lastBlockLogsBloomObservable: Observable<String> {
-        lastBlockLogsBloomSubject.asObservable()
+    public var lastBlockBloomFilterObservable: Observable<BloomFilter> {
+        lastBlockBloomFilterSubject.asObservable()
     }
 
     public var syncStateObservable: Observable<SyncState> {
@@ -193,8 +193,8 @@ extension Kit {
 
 extension Kit: IBlockchainDelegate {
 
-    func onUpdate(lastBlockLogsBloom: String) {
-        lastBlockLogsBloomSubject.onNext(lastBlockLogsBloom)
+    func onUpdate(lastBlockBloomFilter: BloomFilter) {
+        lastBlockBloomFilterSubject.onNext(lastBlockBloomFilter)
     }
 
     func onUpdate(lastBlockHeight: Int) {

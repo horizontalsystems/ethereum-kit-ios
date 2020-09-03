@@ -31,18 +31,16 @@ public class Kit {
                 })
                 .disposed(by: disposeBag)
 
-        ethereumKit.lastBlockLogsBloomObservable
+        ethereumKit.lastBlockBloomFilterObservable
                 .observeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .subscribe(onNext: { [weak self] in
-                    self?.onLastBlockLogsBloom(logsBloom: $0)
+                    self?.onUpdateLastBlock(bloomFilter: $0)
                 })
                 .disposed(by: disposeBag)
     }
 
-    private func onLastBlockLogsBloom(logsBloom: String) {
-        let bloomFilter = BloomFiler(filter: logsBloom)
-
-        if bloomFilter.mayContain(contractAddress: contractAddress) && bloomFilter.mayContain(userAddress: ethereumKit.address) {
+    private func onUpdateLastBlock(bloomFilter: BloomFilter) {
+        if bloomFilter.mayContain(contractAddress: contractAddress) {
             balanceManager.sync()
         }
     }

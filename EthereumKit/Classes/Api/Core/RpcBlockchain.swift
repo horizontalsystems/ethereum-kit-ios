@@ -93,7 +93,13 @@ extension RpcBlockchain: IRpcSyncerDelegate {
     }
 
     func didUpdate(lastBlockLogsBloom: String) {
-        delegate?.onUpdate(lastBlockLogsBloom: lastBlockLogsBloom)
+        let bloomFilter = BloomFilter(filter: lastBlockLogsBloom)
+
+        guard bloomFilter.mayContain(userAddress: address) else {
+            return
+        }
+
+        delegate?.onUpdate(lastBlockBloomFilter: bloomFilter)
     }
 
     func didUpdate(lastBlockHeight: Int) {
