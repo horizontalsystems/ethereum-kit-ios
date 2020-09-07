@@ -349,6 +349,10 @@ extension Kit {
 
 extension Kit {
 
+    public static func toHexString(_ data: Data) -> String {
+        data.toHexString()
+    }
+
     public enum SyncError: Error {
         case notStarted
         case noNetworkConnection
