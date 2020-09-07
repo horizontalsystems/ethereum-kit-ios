@@ -53,12 +53,12 @@ NSString *const ENS                                         = @"in3_ens";
     return eth_getTransactionCount(client, (uint8_t *)address.bytes, BLKNUM_LATEST());
 }
 
-- (bool)transactionReceipt:(NSData *)transactionHash {
+- (NSNumber *)transactionReceipt:(NSData *)transactionHash {
     eth_tx_receipt_t *receipt = eth_getTransactionReceipt(client, (uint8_t *)transactionHash.bytes);
     if (receipt != nil) {
-        return receipt->status;
+        return receipt->status ? @1 : @0;
     }
-    return false;
+    return @-1;
 }
 
 - (bool)transactionExist:(NSData *)transactionHash {
