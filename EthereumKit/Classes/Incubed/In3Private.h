@@ -41,7 +41,7 @@ FOUNDATION_EXPORT NSString *const ENS;
 
 - (UInt64)blockNumber;
 - (UInt64)transactionCount:(NSData *)address;
-- (bool)transactionReceipt:(NSData *)transactionHash;
+- (NSNumber *)transactionReceipt:(NSData *)transactionHash;
 - (bool)transactionExist:(NSData *)transactionHash;
 
 - (NSString *)rpcCall:(NSString *)method params:(NSString *)parameters didFailWithError:(NSError **)error;

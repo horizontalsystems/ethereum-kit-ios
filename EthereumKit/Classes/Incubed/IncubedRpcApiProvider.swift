@@ -148,8 +148,11 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
         Single.fromIncubed {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: transactionReceiptStatusSingle \(transactionHash.toHexString())")
 
-            let success = self.in3.transactionReceipt(transactionHash)
-            return success ? TransactionStatus.success : TransactionStatus.failed
+            switch self.in3.transactionReceipt(transactionHash) {
+            case 1: return TransactionStatus.success
+            case 0: return TransactionStatus.failed
+            default: return TransactionStatus.notFound
+            }
         }.subscribeOn(serialQueueScheduler)
     }
 
@@ -157,7 +160,10 @@ extension IncubedRpcApiProvider: IRpcApiProvider {
         Single.fromIncubed {
             self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: transactionExistSingle  \(transactionHash.toHexString())")
 
-            return self.in3.transactionReceipt(transactionHash)
+            switch self.in3.transactionReceipt(transactionHash) {
+            case 1: return true
+            default: return false
+            }
         }.subscribeOn(serialQueueScheduler)
     }
 
