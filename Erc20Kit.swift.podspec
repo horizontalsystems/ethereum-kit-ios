@@ -20,7 +20,7 @@ Pod::Spec.new do |s|
   s.dependency 'EthereumKit.swift', '~> 0.9'
   s.dependency 'OpenSslKit.swift', '~> 1.0'
   s.dependency 'Secp256k1Kit.swift', '~> 1.0'
-  s.dependency 'UIExtensions.swift', '~> 1.0'
+  s.dependency 'UIExtensions.swift', '~> 1.1.0'
 
   s.dependency 'RxSwift', '~> 5.0'
   s.dependency 'BigInt', '~> 5.0'
