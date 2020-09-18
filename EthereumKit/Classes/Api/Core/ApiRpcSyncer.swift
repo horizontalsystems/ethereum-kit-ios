@@ -2,11 +2,14 @@ import RxSwift
 import BigInt
 import HsToolKit
 
-class ApiSyncer {
+class ApiRpcSyncer {
     weak var delegate: IRpcSyncerDelegate?
 
     private let address: Address
     private let rpcApiProvider: IRpcApiProvider
+    private let reachabilityManager: IReachabilityManager
+
+    private var isStarted = false
 
     private var disposeBag = DisposeBag()
 
@@ -18,12 +21,29 @@ class ApiSyncer {
         }
     }
 
-    init(address: Address, rpcApiProvider: IRpcApiProvider) {
+    init(address: Address, rpcApiProvider: IRpcApiProvider, reachabilityManager: IReachabilityManager) {
         self.address = address
         self.rpcApiProvider = rpcApiProvider
+        self.reachabilityManager = reachabilityManager
+
+        reachabilityManager.reachabilityObservable
+                .observeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+                .subscribe(onNext: { [weak self] _ in
+                    self?.sync()
+                })
+                .disposed(by: disposeBag)
     }
 
     private func sync() {
+        guard isStarted else {
+            return
+        }
+
+        guard reachabilityManager.isReachable else {
+            syncState = .notSynced(error: Kit.SyncError.noNetworkConnection)
+            return
+        }
+
         if case .syncing = syncState {
             return
         }
@@ -49,17 +69,21 @@ class ApiSyncer {
 
 }
 
-extension ApiSyncer: IRpcSyncer {
+extension ApiRpcSyncer: IRpcSyncer {
 
     var source: String {
         "API \(rpcApiProvider.source)"
     }
 
     func start() {
+        isStarted = true
+
         sync()
     }
 
     func stop(error: Error) {
+        isStarted = false
+
         disposeBag = DisposeBag()
         syncState = .notSynced(error: error)
     }

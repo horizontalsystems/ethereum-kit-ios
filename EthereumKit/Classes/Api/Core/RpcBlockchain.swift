@@ -12,26 +12,15 @@ class RpcBlockchain {
     private let syncer: IRpcSyncer
     private let transactionSigner: TransactionSigner
     private let transactionBuilder: TransactionBuilder
-    private let reachabilityManager: IReachabilityManager
     private var logger: Logger?
 
-    private var isStarted = false
-
-    init(address: Address, storage: IApiStorage, syncer: IRpcSyncer, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, reachabilityManager: IReachabilityManager, logger: Logger? = nil) {
+    init(address: Address, storage: IApiStorage, syncer: IRpcSyncer, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, logger: Logger? = nil) {
         self.address = address
         self.storage = storage
         self.syncer = syncer
         self.transactionSigner = transactionSigner
         self.transactionBuilder = transactionBuilder
-        self.reachabilityManager = reachabilityManager
         self.logger = logger
-
-        reachabilityManager.reachabilityObservable
-                .observeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
-                .subscribe(onNext: { [weak self] _ in
-                    self?.syncSyncer()
-                })
-                .disposed(by: disposeBag)
     }
 
     private func sendSingle(rawTransaction: RawTransaction, nonce: Int) throws -> Single<Transaction> {
@@ -70,18 +59,6 @@ class RpcBlockchain {
 
                     return resultLogs
                 }
-    }
-
-    private func syncSyncer() {
-        guard isStarted else {
-            return
-        }
-
-        if reachabilityManager.isReachable {
-            syncer.start()
-        } else {
-            syncer.stop(error: Kit.SyncError.noNetworkConnection)
-        }
     }
 
 }
@@ -125,29 +102,14 @@ extension RpcBlockchain: IBlockchain {
     }
 
     func start() {
-        guard !isStarted else {
-            return
-        }
-
-        isStarted = true
-        syncSyncer()
+        syncer.start()
     }
 
     func stop() {
-        guard isStarted else {
-            return
-        }
-
-        isStarted = false
-
         syncer.stop(error: Kit.SyncError.notStarted)
     }
 
     func refresh() {
-        guard isStarted, reachabilityManager.isReachable else {
-            return
-        }
-
         syncer.refresh()
     }
 
@@ -212,8 +174,7 @@ extension RpcBlockchain: IBlockchain {
 extension RpcBlockchain {
 
     static func instance(address: Address, storage: IApiStorage, syncer: IRpcSyncer, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, logger: Logger? = nil) -> RpcBlockchain {
-        let reachabilityManager = ReachabilityManager()
-        let blockchain = RpcBlockchain(address: address, storage: storage, syncer: syncer, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, reachabilityManager: reachabilityManager, logger: logger)
+        let blockchain = RpcBlockchain(address: address, storage: storage, syncer: syncer, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, logger: logger)
         syncer.delegate = blockchain
         return blockchain
     }

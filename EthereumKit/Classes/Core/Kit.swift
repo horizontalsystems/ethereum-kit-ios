@@ -265,11 +265,11 @@ extension Kit {
         switch syncSource {
         case let .infuraWebSocket(id, secret):
             let socket = InfuraWebSocket(domain: infuraDomain, projectId: id, projectSecret: secret, logger: logger)
-            syncer = WebSocketSyncer.instance(address: address, socket: socket, logger: logger)
+            syncer = WebSocketRpcSyncer.instance(address: address, socket: socket, logger: logger)
         case let .infura(id, secret):
-            syncer = ApiSyncer(address: address, rpcApiProvider: InfuraApiProvider(networkManager: networkManager, domain: infuraDomain, id: id, secret: secret))
+            syncer = ApiRpcSyncer(address: address, rpcApiProvider: InfuraApiProvider(networkManager: networkManager, domain: infuraDomain, id: id, secret: secret), reachabilityManager: ReachabilityManager())
         case .incubed:
-            syncer = ApiSyncer(address: address, rpcApiProvider: IncubedRpcApiProvider(logger: logger))
+            syncer = ApiRpcSyncer(address: address, rpcApiProvider: IncubedRpcApiProvider(logger: logger), reachabilityManager: ReachabilityManager())
         }
 
         var blockchain: IBlockchain

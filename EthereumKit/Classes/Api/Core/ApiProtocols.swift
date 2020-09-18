@@ -37,13 +37,29 @@ protocol IRpcSyncerDelegate: AnyObject {
 protocol IWebSocket: AnyObject {
     var delegate: IWebSocketDelegate? { get set }
 
-    func connect()
-    func disconnect(error: Error)
-    func send<T>(rpc: JsonRpc<T>, onSuccess: @escaping (T) -> (), onError: @escaping (Error) -> ())
-    func subscribe<T>(subscription: RpcSubscription<T>, onSuccess: @escaping () -> (), onError: @escaping (Error) -> (), successHandler: @escaping (T) -> (), errorHandler: @escaping (Error) -> ())
+    func start()
+    func stop()
+
+    func send(data: Data) throws
 }
 
 protocol IWebSocketDelegate: AnyObject {
-    func didConnect()
-    func didDisconnect(error: Error)
+    func didUpdate(state: WebSocketState)
+    func didReceive(data: Data)
+}
+
+enum WebSocketState {
+    case connecting
+    case connected
+    case disconnected(error: Error)
+
+    enum DisconnectError: Error {
+        case notStarted
+        case socketDisconnected(reason: String)
+    }
+
+    enum StateError: Error {
+        case notConnected
+    }
+
 }
