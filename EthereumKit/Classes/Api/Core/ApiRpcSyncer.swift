@@ -81,11 +81,11 @@ extension ApiRpcSyncer: IRpcSyncer {
         sync()
     }
 
-    func stop(error: Error) {
+    func stop() {
         isStarted = false
 
         disposeBag = DisposeBag()
-        syncState = .notSynced(error: error)
+        syncState = .notSynced(error: Kit.SyncError.notStarted)
     }
 
     func refresh() {

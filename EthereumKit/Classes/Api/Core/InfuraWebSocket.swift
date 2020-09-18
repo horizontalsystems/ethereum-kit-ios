@@ -84,6 +84,10 @@ extension InfuraWebSocket: WebSocketDelegate {
 
 extension InfuraWebSocket: IWebSocket {
 
+    var source: String {
+        "Infura"
+    }
+
     func start() {
         state = .connecting
 

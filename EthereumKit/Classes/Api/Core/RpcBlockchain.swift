@@ -106,7 +106,7 @@ extension RpcBlockchain: IBlockchain {
     }
 
     func stop() {
-        syncer.stop(error: Kit.SyncError.notStarted)
+        syncer.stop()
     }
 
     func refresh() {

@@ -167,6 +167,11 @@ class WebSocketRpcSyncer {
 extension WebSocketRpcSyncer: IWebSocketDelegate {
 
     func didUpdate(state: WebSocketState) {
+        if case .notSynced(let error) = syncState, let syncError = error as? Kit.SyncError, syncError == .notStarted {
+            // do not react to web socket state if syncer was stopped
+            return
+        }
+
         switch state {
         case .connecting:
             syncState = .syncing(progress: nil)
@@ -211,14 +216,18 @@ extension WebSocketRpcSyncer: IWebSocketDelegate {
 extension WebSocketRpcSyncer: IRpcSyncer {
 
     var source: String {
-        "WebSocket Infura"
+        "WebSocket \(socket.source)"
     }
 
     func start() {
+        syncState = .syncing(progress: nil)
+
         socket.start()
     }
 
-    func stop(error: Error) {
+    func stop() {
+        syncState = .notSynced(error: Kit.SyncError.notStarted)
+
         socket.stop()
     }
 

@@ -21,7 +21,7 @@ protocol IRpcSyncer: AnyObject {
     var syncState: SyncState { get }
 
     func start()
-    func stop(error: Error)
+    func stop()
     func refresh()
 
     func single<T>(rpc: JsonRpc<T>) -> Single<T>
@@ -36,6 +36,7 @@ protocol IRpcSyncerDelegate: AnyObject {
 
 protocol IWebSocket: AnyObject {
     var delegate: IWebSocketDelegate? { get set }
+    var source: String { get }
 
     func start()
     func stop()
