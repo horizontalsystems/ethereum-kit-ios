@@ -1,17 +1,8 @@
 import Foundation
 
 class GetLogsJsonRpc: JsonRpc<[EthereumLog]> {
-    let address: Address?
-    let fromBlock: Int
-    let toBlock: Int
-    let topics: [Any?]
 
     init(address: Address?, fromBlock: Int, toBlock: Int, topics: [Any?]) {
-        self.address = address
-        self.fromBlock = fromBlock
-        self.toBlock = toBlock
-        self.topics = topics
-
         let toBlockStr = "0x" + String(toBlock, radix: 16)
         let fromBlockStr = "0x" + String(fromBlock, radix: 16)
 
@@ -42,25 +33,16 @@ class GetLogsJsonRpc: JsonRpc<[EthereumLog]> {
 
     override func parse(result: Any) throws -> [EthereumLog] {
         guard let resultArray = result as? [Any] else {
-            throw ParseError.invalidResult(value: result)
+            throw ResponseError.invalidResult(value: result)
         }
 
         return try resultArray.map { logJson in
             guard let log = EthereumLog(json: logJson) else {
-                throw ParseError.invalidLog(value: logJson)
+                throw ResponseError.invalidResult(value: result)
             }
 
             return log
         }
-    }
-
-}
-
-extension GetLogsJsonRpc {
-
-    enum ParseError: Error {
-        case invalidResult(value: Any)
-        case invalidLog(value: Any)
     }
 
 }

@@ -49,29 +49,29 @@ extension IncubedRpcApiProvider {
 
 }
 
-extension IncubedRpcApiProvider: IRpcApiProvider {
-
-    var source: String {
-        "Incubed"
-    }
-
-    func single<T>(rpc: JsonRpc<T>) -> Single<T> {
-        guard let method = (rpc.parameters()["method"] as? String),
-              let params = (rpc.parameters()["params"] as? [Any]) else {
-            return Single.error(IncubedError.invalidData)
-        }
-
-       return Single<String>.fromIncubed {
-            self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: call \(method)")
-
-            return try self.sendRpc(method: method, parameters: params)
-        }.flatMap { result in
-            do {
-                return Single.just(try rpc.parse(result: result))
-            } catch {
-                return Single.error(error)
-            }
-        }.subscribeOn(serialQueueScheduler)
-    }
-
-}
+//extension IncubedRpcApiProvider: IRpcApiProvider {
+//
+//    var source: String {
+//        "Incubed"
+//    }
+//
+//    func single<T>(rpc: JsonRpc<T>) -> Single<T> {
+//        guard let method = (rpc.parameters()["method"] as? String),
+//              let params = (rpc.parameters()["params"] as? [Any]) else {
+//            return Single.error(IncubedError.invalidData)
+//        }
+//
+//       return Single<String>.fromIncubed {
+//            self.logger?.log(level: .debug, message: "IncubedRpcApiProvider: call \(method)")
+//
+//            return try self.sendRpc(method: method, parameters: params)
+//        }.flatMap { result in
+//            do {
+//                return Single.just(try rpc.parse(result: result))
+//            } catch {
+//                return Single.error(error)
+//            }
+//        }.subscribeOn(serialQueueScheduler)
+//    }
+//
+//}

@@ -1,5 +1,3 @@
-import Foundation
-
 class SubscribeJsonRpc: IntJsonRpc {
 
     init(params: [Any]) {

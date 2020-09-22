@@ -268,8 +268,8 @@ extension Kit {
             syncer = WebSocketRpcSyncer.instance(address: address, socket: socket, logger: logger)
         case let .infura(id, secret):
             syncer = ApiRpcSyncer(address: address, rpcApiProvider: InfuraApiProvider(networkManager: networkManager, domain: infuraDomain, id: id, secret: secret), reachabilityManager: ReachabilityManager())
-        case .incubed:
-            syncer = ApiRpcSyncer(address: address, rpcApiProvider: IncubedRpcApiProvider(logger: logger), reachabilityManager: ReachabilityManager())
+//        case .incubed:
+//            syncer = ApiRpcSyncer(address: address, rpcApiProvider: IncubedRpcApiProvider(logger: logger), reachabilityManager: ReachabilityManager())
         }
 
         var blockchain: IBlockchain

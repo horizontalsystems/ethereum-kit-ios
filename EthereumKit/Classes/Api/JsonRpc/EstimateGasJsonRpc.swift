@@ -1,21 +1,8 @@
 import BigInt
 
 class EstimateGasJsonRpc: IntJsonRpc {
-    let from: Address
-    let to: Address
-    var amount: BigUInt?
-    var gasLimit: Int?
-    var gasPrice: Int?
-    var data: Data?
 
     init(from: Address, to: Address, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) {
-        self.from = from
-        self.to = to
-        self.amount = amount
-        self.gasLimit = gasLimit
-        self.gasPrice = gasPrice
-        self.data = data
-
         var params: [String: Any] = [
             "from": from.hex,
             "to": to.hex

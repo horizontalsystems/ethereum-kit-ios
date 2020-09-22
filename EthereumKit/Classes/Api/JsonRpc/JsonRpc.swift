@@ -1,3 +1,5 @@
+import ObjectMapper
+
 class JsonRpc<T> {
     private let method: String
     private let params: [Any]
@@ -17,7 +19,25 @@ class JsonRpc<T> {
     }
 
     func parse(result: Any) throws -> T {
-        fatalError("This method should be overriden")
+        fatalError("This method should be overridden")
+    }
+
+    func parse(response: JsonRpcResponse) throws -> T {
+        switch response {
+        case .success(let successResponse):
+            return try parse(result: successResponse.result)
+        case .error(let errorResponse):
+            throw ResponseError.rpcError(errorResponse.error)
+        }
+    }
+
+}
+
+extension JsonRpc {
+
+    enum ResponseError: Error {
+        case rpcError(JsonRpcResponse.RpcError)
+        case invalidResult(value: Any)
     }
 
 }

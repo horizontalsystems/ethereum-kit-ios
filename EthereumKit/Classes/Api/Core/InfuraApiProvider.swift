@@ -36,9 +36,8 @@ class InfuraApiProvider {
 extension InfuraApiProvider {
 
     public enum RequestError: Error {
-        case invalidResult
+        case invalidResponse(jsonObject: Any)
         case rateLimitExceeded(backoffSeconds: TimeInterval)
-        case responseError(code: Int, message: String)
     }
 
 }
@@ -60,32 +59,32 @@ extension InfuraApiProvider: RequestInterceptor {
 extension InfuraApiProvider: IApiMapper {
 
     func map(statusCode: Int, data: Any?) throws -> Any {
-        guard let map = data as? [String: Any] else {
+        guard let response = data else {
             throw NetworkManager.RequestError.invalidResponse(statusCode: statusCode, data: data)
         }
 
-        if let error = map["error"] as? [String: Any] {
-            let message = (error["message"] as? String) ?? ""
-            let code = (error["message"] as? Int) ?? -1
+//        if let error = map["error"] as? [String: Any] {
+//            let message = (error["message"] as? String) ?? ""
+//            let code = (error["message"] as? Int) ?? -1
+//
+//            if code == -32005 {
+//                var backoffSeconds = 1.0
+//
+//                if let errorData = error["data"] as? [String: Any], let timeInterval = errorData["backoff_seconds"] as? TimeInterval {
+//                    backoffSeconds = timeInterval
+//                }
+//
+//                throw RequestError.rateLimitExceeded(backoffSeconds: backoffSeconds)
+//            }
+//
+//            throw RequestError.responseError(code: code, message: message)
+//        }
+//
+//        guard let result = map["result"] else {
+//            throw RequestError.invalidResult
+//        }
 
-            if code == -32005 {
-                var backoffSeconds = 1.0
-
-                if let errorData = error["data"] as? [String: Any], let timeInterval = errorData["backoff_seconds"] as? TimeInterval {
-                    backoffSeconds = timeInterval
-                }
-
-                throw RequestError.rateLimitExceeded(backoffSeconds: backoffSeconds)
-            }
-
-            throw RequestError.responseError(code: code, message: message)
-        }
-
-        guard let result = map["result"] else {
-            throw RequestError.invalidResult
-        }
-
-        return result
+        return response
     }
 
 }
@@ -98,9 +97,13 @@ extension InfuraApiProvider: IRpcApiProvider {
 
     func single<T>(rpc: JsonRpc<T>) -> Single<T> {
         rpcResultSingle(parameters: rpc.parameters())
-                .flatMap { result in
+                .flatMap { jsonObject in
                     do {
-                        return Single.just(try rpc.parse(result: result))
+                        guard let rpcResponse = JsonRpcResponse.response(jsonObject: jsonObject) else {
+                            throw RequestError.invalidResponse(jsonObject: jsonObject)
+                        }
+
+                        return Single.just(try rpc.parse(response: rpcResponse))
                     } catch {
                         return Single.error(error)
                     }

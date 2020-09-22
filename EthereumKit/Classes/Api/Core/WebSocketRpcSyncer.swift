@@ -4,7 +4,8 @@ import BigInt
 import HsToolKit
 
 class WebSocketRpcSyncer {
-    typealias RpcHandler = (Any) -> ()
+    typealias RpcHandler = (JsonRpcResponse) -> ()
+    typealias SubscriptionHandler = (RpcSubscriptionResponse) -> ()
 
     weak var delegate: IRpcSyncerDelegate?
 
@@ -14,7 +15,7 @@ class WebSocketRpcSyncer {
 
     private var currentRpcId = 0
     private var rpcHandlers = [Int: RpcHandler]()
-    private var subscriptionHandlers = [Int: RpcHandler]()
+    private var subscriptionHandlers = [Int: SubscriptionHandler]()
 
     private var isSubscribedToNewHeads = false
 
@@ -55,9 +56,9 @@ class WebSocketRpcSyncer {
     func send<T>(rpc: JsonRpc<T>, onSuccess: @escaping (T) -> (), onError: @escaping (Error) -> ()) {
         queue.async { [weak self] in
             do {
-                try self?.send(rpc: rpc) { result in
+                try self?.send(rpc: rpc) { response in
                     do {
-                        onSuccess(try rpc.parse(result: result))
+                        onSuccess(try rpc.parse(response: response))
                     } catch {
                         onError(error)
                     }
@@ -72,9 +73,9 @@ class WebSocketRpcSyncer {
         send(
                 rpc: SubscribeJsonRpc(params: subscription.params),
                 onSuccess: { [weak self] subscriptionId in
-                    self?.subscriptionHandlers[subscriptionId] = { result in
+                    self?.subscriptionHandlers[subscriptionId] = { response in
                         do {
-                            successHandler(try subscription.parse(result: result))
+                            successHandler(try subscription.parse(result: response.params.result))
                         } catch {
                             errorHandler(error)
                         }
@@ -85,30 +86,13 @@ class WebSocketRpcSyncer {
         )
     }
 
-    private func handleRpc(response: [String: Any], rpcId: Int) throws {
-        let handler = rpcHandlers.removeValue(forKey: rpcId)
-
-        guard let result = response["result"] else {
-            throw ParseError.noResult(response: response)
-        }
-
-        handler?(result)
+    private func handle(rpcResponse: JsonRpcResponse) throws {
+        let handler = rpcHandlers.removeValue(forKey: rpcResponse.id)
+        handler?(rpcResponse)
     }
 
-    private func handleSubscription(response: [String: Any]) throws {
-        guard let params = response["params"] as? [String: Any] else {
-            throw ParseError.noParams(response: response)
-        }
-
-        guard let subscriptionHex = params["subscription"] as? String, let subscriptionId = Int(subscriptionHex.stripHexPrefix(), radix: 16) else {
-            throw ParseError.noSubscriptionId(params: params)
-        }
-
-        guard let result = params["result"] else {
-            throw ParseError.noResult(response: response)
-        }
-
-        subscriptionHandlers[subscriptionId]?(result)
+    private func handle(subscriptionResponse: RpcSubscriptionResponse) throws {
+        subscriptionHandlers[subscriptionResponse.params.subscriptionId]?(subscriptionResponse)
     }
 
     private func fetchLastBlockHeight() {
@@ -194,16 +178,12 @@ extension WebSocketRpcSyncer: IWebSocketDelegate {
             do {
                 let jsonObject = try JSONSerialization.jsonObject(with: data)
 
-                guard let response = jsonObject as? [String: Any] else {
-                    throw ParseError.invalidJson(value: jsonObject)
-                }
-
-                if let rpcId = response["id"] as? Int {
-                    try self?.handleRpc(response: response, rpcId: rpcId)
-                } else if response["method"] as? String == "eth_subscription" {
-                    try self?.handleSubscription(response: response)
+                if let rpcResponse = JsonRpcResponse.response(jsonObject: jsonObject) {
+                    try self?.handle(rpcResponse: rpcResponse)
+                } else if let subscriptionResponse = try? RpcSubscriptionResponse(JSONObject: jsonObject) {
+                    try self?.handle(subscriptionResponse: subscriptionResponse)
                 } else {
-                    throw ParseError.unknownResponse(response: response)
+                    throw ParseError.invalidResponse(jsonObject: jsonObject)
                 }
             } catch {
                 self?.logger?.error("Handle Failed: \(error)")
@@ -256,12 +236,7 @@ extension WebSocketRpcSyncer: IRpcSyncer {
 extension WebSocketRpcSyncer {
 
     enum ParseError: Error {
-        case invalidJson(value: Any)
-        case unknownResponse(response: [String: Any])
-        case noResult(response: [String: Any])
-        case noParams(response: [String: Any])
-        case noSubscriptionId(params: [String: Any])
-        case noBlockNumber(result: [String: Any])
+        case invalidResponse(jsonObject: Any)
     }
 
 }
