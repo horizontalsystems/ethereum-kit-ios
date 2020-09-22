@@ -50,6 +50,13 @@ class GrdbStorage {
                 t.add(column: Transaction.Columns.isError.name, .blob).notNull().defaults(to: false)
             }
         }
+
+        migrator.registerMigration("addTypeToTransactions") { db in
+            try db.alter(table: Transaction.databaseTableName) { t in
+                t.add(column: Transaction.Columns.type.name, .text).notNull().defaults(to: TransactionType.transfer.rawValue)
+            }
+        }
+
         return migrator
     }
 }
