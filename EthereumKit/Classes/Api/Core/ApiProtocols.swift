@@ -49,6 +49,22 @@ protocol IWebSocketDelegate: AnyObject {
     func didReceive(data: Data)
 }
 
+protocol IRpcWebSocket: AnyObject {
+    var delegate: IRpcWebSocketDelegate? { get set }
+    var source: String { get }
+
+    func start()
+    func stop()
+
+    func send<T>(rpc: JsonRpc<T>, rpcId: Int) throws
+}
+
+protocol IRpcWebSocketDelegate: AnyObject {
+    func didUpdate(state: WebSocketState)
+    func didReceive(rpcResponse: JsonRpcResponse)
+    func didReceive(subscriptionResponse: RpcSubscriptionResponse)
+}
+
 enum WebSocketState {
     case connecting
     case connected

@@ -1,6 +1,4 @@
 import RxSwift
-import Starscream
-import BigInt
 import HsToolKit
 
 class WebSocketRpcSyncer {
@@ -10,7 +8,7 @@ class WebSocketRpcSyncer {
     weak var delegate: IRpcSyncerDelegate?
 
     private let address: Address
-    private let socket: IWebSocket
+    private let rpcSocket: IRpcWebSocket
     private var logger: Logger?
 
     private var currentRpcId = 0
@@ -29,9 +27,9 @@ class WebSocketRpcSyncer {
         }
     }
 
-    private init(address: Address, socket: IWebSocket, logger: Logger? = nil) {
+    private init(address: Address, rpcSocket: IRpcWebSocket, logger: Logger? = nil) {
         self.address = address
-        self.socket = socket
+        self.rpcSocket = rpcSocket
         self.logger = logger
     }
 
@@ -43,14 +41,9 @@ class WebSocketRpcSyncer {
     private func send<T>(rpc: JsonRpc<T>, handler: @escaping RpcHandler) throws {
         let rpcId = nextRpcId
 
-        let parameters = rpc.parameters(id: rpcId)
-        let data = try JSONSerialization.data(withJSONObject: parameters)
-
-        try socket.send(data: data)
+        try rpcSocket.send(rpc: rpc, rpcId: rpcId)
 
         rpcHandlers[rpcId] = handler
-
-        logger?.debug("Send RPC: \(parameters)")
     }
 
     func send<T>(rpc: JsonRpc<T>, onSuccess: @escaping (T) -> (), onError: @escaping (Error) -> ()) {
@@ -84,15 +77,6 @@ class WebSocketRpcSyncer {
                 },
                 onError: onError
         )
-    }
-
-    private func handle(rpcResponse: JsonRpcResponse) throws {
-        let handler = rpcHandlers.removeValue(forKey: rpcResponse.id)
-        handler?(rpcResponse)
-    }
-
-    private func handle(subscriptionResponse: RpcSubscriptionResponse) throws {
-        subscriptionHandlers[subscriptionResponse.params.subscriptionId]?(subscriptionResponse)
     }
 
     private func fetchLastBlockHeight() {
@@ -148,7 +132,7 @@ class WebSocketRpcSyncer {
 
 }
 
-extension WebSocketRpcSyncer: IWebSocketDelegate {
+extension WebSocketRpcSyncer: IRpcWebSocketDelegate {
 
     func didUpdate(state: WebSocketState) {
         if case .notSynced(let error) = syncState, let syncError = error as? Kit.SyncError, syncError == .notStarted {
@@ -173,21 +157,16 @@ extension WebSocketRpcSyncer: IWebSocketDelegate {
         }
     }
 
-    func didReceive(data: Data) {
+    func didReceive(rpcResponse: JsonRpcResponse) {
         queue.async { [weak self] in
-            do {
-                let jsonObject = try JSONSerialization.jsonObject(with: data)
+            let handler = self?.rpcHandlers.removeValue(forKey: rpcResponse.id)
+            handler?(rpcResponse)
+        }
+    }
 
-                if let rpcResponse = JsonRpcResponse.response(jsonObject: jsonObject) {
-                    try self?.handle(rpcResponse: rpcResponse)
-                } else if let subscriptionResponse = try? RpcSubscriptionResponse(JSONObject: jsonObject) {
-                    try self?.handle(subscriptionResponse: subscriptionResponse)
-                } else {
-                    throw ParseError.invalidResponse(jsonObject: jsonObject)
-                }
-            } catch {
-                self?.logger?.error("Handle Failed: \(error)")
-            }
+    func didReceive(subscriptionResponse: RpcSubscriptionResponse) {
+        queue.async { [weak self] in
+            self?.subscriptionHandlers[subscriptionResponse.params.subscriptionId]?(subscriptionResponse)
         }
     }
 
@@ -196,19 +175,19 @@ extension WebSocketRpcSyncer: IWebSocketDelegate {
 extension WebSocketRpcSyncer: IRpcSyncer {
 
     var source: String {
-        "WebSocket \(socket.source)"
+        "WebSocket \(rpcSocket.source)"
     }
 
     func start() {
         syncState = .syncing(progress: nil)
 
-        socket.start()
+        rpcSocket.start()
     }
 
     func stop() {
         syncState = .notSynced(error: Kit.SyncError.notStarted)
 
-        socket.stop()
+        rpcSocket.stop()
     }
 
     func refresh() {
@@ -235,17 +214,13 @@ extension WebSocketRpcSyncer: IRpcSyncer {
 
 extension WebSocketRpcSyncer {
 
-    enum ParseError: Error {
-        case invalidResponse(jsonObject: Any)
-    }
-
-}
-
-extension WebSocketRpcSyncer {
-
     static func instance(address: Address, socket: IWebSocket, logger: Logger? = nil) -> WebSocketRpcSyncer {
-        let syncer = WebSocketRpcSyncer(address: address, socket: socket, logger: logger)
-        socket.delegate = syncer
+        let rpcSocket = RpcWebSocket(socket: socket, logger: logger)
+        socket.delegate = rpcSocket
+
+        let syncer = WebSocketRpcSyncer(address: address, rpcSocket: rpcSocket, logger: logger)
+        rpcSocket.delegate = syncer
+
         return syncer
     }
 
