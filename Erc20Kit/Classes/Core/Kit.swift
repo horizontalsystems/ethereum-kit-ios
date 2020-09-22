@@ -115,8 +115,11 @@ extension Kit {
         allowanceManager.estimateApproveSingle(spenderAddress: spenderAddress, amount: amount, gasPrice: gasPrice)
     }
 
-    public func approveSingle(spenderAddress: Address, amount: BigUInt, gasLimit: Int, gasPrice: Int) -> Single<TransactionWithInternal> {
+    public func approveSingle(spenderAddress: Address, amount: BigUInt, gasLimit: Int, gasPrice: Int) -> Single<Transaction> {
         allowanceManager.approveSingle(spenderAddress: spenderAddress, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice)
+            .do(onSuccess: { [weak self] tx in
+                self?.state.transactionsSubject.onNext([tx])
+            })
     }
 
 }
@@ -165,7 +168,7 @@ extension Kit {
         let transactionProvider: ITransactionProvider = EtherscanTransactionProvider(provider: ethereumKit.etherscanApiProvider)
         var transactionManager: ITransactionManager = TransactionManager(contractAddress: contractAddress, address: address, storage: storage, transactionProvider: transactionProvider, dataProvider: dataProvider, transactionBuilder: transactionBuilder)
         var balanceManager: IBalanceManager = BalanceManager(contractAddress: contractAddress, address: address, storage: storage, dataProvider: dataProvider)
-        let allowanceManager = AllowanceManager(ethereumKit: ethereumKit, contractAddress: contractAddress, address: address)
+        let allowanceManager = AllowanceManager(ethereumKit: ethereumKit, storage: storage, contractAddress: contractAddress, address: address)
 
         let erc20Kit = Kit(ethereumKit: ethereumKit, transactionManager: transactionManager, balanceManager: balanceManager, allowanceManager: allowanceManager)
 

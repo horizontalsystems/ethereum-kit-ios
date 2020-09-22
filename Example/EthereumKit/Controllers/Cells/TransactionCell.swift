@@ -29,6 +29,7 @@ class TransactionCell: UITableViewCell {
                     Block:
                     Confirmations:
                     Failed:
+                    Type:
                     """, alignment: .left, label: titleLabel)
 
         set(string: """
@@ -41,6 +42,7 @@ class TransactionCell: UITableViewCell {
                     \(transaction.blockHeight.map { "# \($0)" } ?? "n/a")
                     \(confirmations)
                     \(transaction.isError)
+                    \(transaction.type)
                     """, alignment: .right, label: valueLabel)
     }
 

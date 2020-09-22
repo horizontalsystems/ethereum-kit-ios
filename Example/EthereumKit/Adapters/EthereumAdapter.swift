@@ -52,7 +52,8 @@ class EthereumAdapter {
                 from: from,
                 to: to,
                 blockHeight: transaction.blockNumber,
-                isError: isError
+                isError: isError,
+                type: ""
         )
     }
 

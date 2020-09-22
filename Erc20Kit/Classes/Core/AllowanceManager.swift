@@ -3,33 +3,29 @@ import BigInt
 import EthereumKit
 import OpenSslKit
 
+enum AllowanceParsingError: Error {
+    case notFound
+}
+
 class AllowanceManager {
     private let disposeBag = DisposeBag()
 
     private let ethereumKit: EthereumKit.Kit
+    private let storage: ITransactionStorage
     private let contractAddress: Address
     private let address: Address
 
-    init(ethereumKit: EthereumKit.Kit, contractAddress: Address, address: Address) {
+    init(ethereumKit: EthereumKit.Kit, storage: ITransactionStorage, contractAddress: Address, address: Address) {
         self.ethereumKit = ethereumKit
+        self.storage = storage
         self.contractAddress = contractAddress
         self.address = address
     }
 
-    private func approveMethod(spenderAddress: Address, amount: BigUInt) -> ContractMethod {
-        ContractMethod(name: "approve", arguments: [
-            .address(spenderAddress),
-            .uint256(amount)
-        ])
-    }
-
     func allowanceSingle(spenderAddress: Address) -> Single<BigUInt> {
-        let method = ContractMethod(name: "allowance", arguments: [
-            .address(address),
-            .address(spenderAddress)
-        ])
+        let data = AllowanceMethod(owner: address, spender: spenderAddress).encodedABI()
 
-        return ethereumKit.call(contractAddress: contractAddress, data: method.encodedData)
+        return ethereumKit.call(contractAddress: contractAddress, data: data)
                 .map { data in
                     BigUInt(data[0...31])
                 }
@@ -40,18 +36,27 @@ class AllowanceManager {
                 to: contractAddress,
                 amount: nil,
                 gasPrice: gasPrice,
-                data: approveMethod(spenderAddress: spenderAddress, amount: amount).encodedData
+                data: ApproveMethod(spender: spenderAddress, value: amount).encodedABI()
         )
     }
 
-    func approveSingle(spenderAddress: Address, amount: BigUInt, gasLimit: Int, gasPrice: Int) -> Single<TransactionWithInternal> {
-        ethereumKit.sendSingle(
+    func approveSingle(spenderAddress: Address, amount: BigUInt, gasLimit: Int, gasPrice: Int) -> Single<Transaction> {
+        let approveMethod = ApproveMethod(spender: spenderAddress, value: amount)
+
+        return ethereumKit.sendSingle(
                         address: contractAddress,
-                        value: 0,
-                        transactionInput: approveMethod(spenderAddress: spenderAddress, amount: amount).encodedData,
+                        value: BigUInt.zero,
+                        transactionInput: ApproveMethod(spender: spenderAddress, value: amount).encodedABI(),
                         gasPrice: gasPrice,
                         gasLimit: gasLimit
-                )
+                ).flatMap { transactionWithInternal in
+                    guard let approve = approveMethod.erc20Transactions(ethTx: transactionWithInternal.transaction).first else {
+                        return Single.error(AllowanceParsingError.notFound)
+                    }
+                    return Single.just(approve)
+                }.do(onSuccess: { [weak self] transaction in
+                    self?.storage.save(transactions: [transaction])
+                })
     }
 
 }

@@ -23,7 +23,7 @@ public class Transaction: Record {
     public var transactionIndex: Int?
     public var txReceiptStatus: Int?
 
-    init(hash: Data, nonce: Int, input: Data = Data(), from: Address, to: Address, value: BigUInt, gasLimit: Int, gasPrice: Int, timestamp: TimeInterval = Date().timeIntervalSince1970) {
+    public init(hash: Data, nonce: Int, input: Data = Data(), from: Address, to: Address, value: BigUInt, gasLimit: Int, gasPrice: Int, timestamp: TimeInterval = Date().timeIntervalSince1970) {
         self.hash = hash
         self.nonce = nonce
         self.input = input

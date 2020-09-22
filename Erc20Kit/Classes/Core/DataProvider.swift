@@ -50,9 +50,7 @@ extension DataProvider: IDataProvider {
     }
 
     func getBalance(contractAddress: Address, address: Address) -> Single<BigUInt> {
-        let method = ContractMethod(name: "balanceOf", arguments: [.address(address)])
-
-        return ethereumKit.call(contractAddress: contractAddress, data: method.encodedData)
+        ethereumKit.call(contractAddress: contractAddress, data: BalanceOfMethod(owner: address).encodedABI())
                 .flatMap { data -> Single<BigUInt> in
                     guard let value = BigUInt(data.hex, radix: 16) else {
                         return Single.error(Erc20Kit.TokenError.invalidHex)

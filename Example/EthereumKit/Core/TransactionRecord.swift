@@ -14,6 +14,7 @@ struct TransactionRecord {
 
     let blockHeight: Int?
     let isError: Bool
+    let type: String
 }
 
 struct TransactionAddress {

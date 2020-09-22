@@ -4,7 +4,7 @@ import BigInt
 class TransactionBuilder: ITransactionBuilder {
 
     func transferTransactionInput(to toAddress: Address, value: BigUInt) -> Data {
-        ContractMethod(name: "transfer", arguments: [.address(toAddress), .uint256(value)]).encodedData
+        TransferMethod(to: toAddress, value: value).encodedABI()
     }
 
 }

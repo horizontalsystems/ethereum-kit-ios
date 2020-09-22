@@ -16,66 +16,68 @@ class TradeManager {
         self.address = address
     }
 
-    private func buildSwapData(tradeData: TradeData) -> SwapData {
-        let methodName: String
-        let arguments: [ContractMethod.Argument]
-        let amount: BigUInt
-
+    private func buildSwapData(tradeData: TradeData) throws -> SwapData {
         let trade = tradeData.trade
 
         let tokenIn = trade.tokenAmountIn.token
         let tokenOut = trade.tokenAmountOut.token
 
-        let path: ContractMethod.Argument = .addresses(trade.route.path.map { $0.address })
-        let to: ContractMethod.Argument = .address(tradeData.options.recipient ?? address)
-        let deadline: ContractMethod.Argument = .uint256(BigUInt(Date().timeIntervalSince1970 + tradeData.options.ttl))
+        let path = trade.route.path.map {
+            $0.address
+        }
+        let to = tradeData.options.recipient ?? address
+        let deadline = BigUInt(Date().timeIntervalSince1970 + tradeData.options.ttl)
+
+        let method: ContractMethod
+        var amount: BigUInt
 
         switch trade.type {
         case .exactIn:
-            let amountIn = trade.tokenAmountIn.rawAmount
-            let amountOutMin = tradeData.tokenAmountOutMin.rawAmount
-
-            amount = amountIn
-
-            switch (tokenIn, tokenOut) {
-            case (.eth, .erc20):
-                methodName = tradeData.options.feeOnTransfer ? "swapExactETHForTokensSupportingFeeOnTransferTokens" : "swapExactETHForTokens"
-                arguments = [.uint256(amountOutMin), path, to, deadline]
-            case (.erc20, .eth):
-                methodName = tradeData.options.feeOnTransfer ? "swapExactTokensForETHSupportingFeeOnTransferTokens" : "swapExactTokensForETH"
-                arguments = [.uint256(amountIn), .uint256(amountOutMin), path, to, deadline]
-            case (.erc20, .erc20):
-                methodName = tradeData.options.feeOnTransfer ? "swapExactTokensForTokensSupportingFeeOnTransferTokens" : "swapExactTokensForTokens"
-                arguments = [.uint256(amountIn), .uint256(amountOutMin), path, to, deadline]
-            default: fatalError()
-            }
-
+            amount = tokenIn.isEther ? trade.tokenAmountIn.rawAmount : 0
+            method = try buildMethodForExactIn(tokenIn: tokenIn, tokenOut: tokenOut, path: path, to: address, deadline: deadline, tradeData: tradeData, trade: trade)
         case .exactOut:
-            let amountOut = trade.tokenAmountOut.rawAmount
-            let amountInMax = tradeData.tokenAmountInMax.rawAmount
-
-            amount = amountInMax
-
-            switch (tokenIn, tokenOut) {
-            case (.eth, .erc20):
-                methodName = "swapETHForExactTokens"
-                arguments = [.uint256(amountOut), path, to, deadline]
-            case (.erc20, .eth):
-                methodName = "swapTokensForExactETH"
-                arguments = [.uint256(amountOut), .uint256(amountInMax), path, to, deadline]
-            case (.erc20, .erc20):
-                methodName = "swapTokensForExactTokens"
-                arguments = [.uint256(amountOut), .uint256(amountInMax), path, to, deadline]
-            default: fatalError()
-            }
+            amount = tokenIn.isEther ? tradeData.tokenAmountInMax.rawAmount : 0
+            method = try buildMethodForExactOut(tokenIn: tokenIn, tokenOut: tokenOut, path: path, to: to, deadline: deadline, tradeData: tradeData)
         }
 
-        let method = ContractMethod(name: methodName, arguments: arguments)
+        return SwapData(amount: amount, input: method.encodedABI())
+    }
 
-        if tokenIn.isEther {
-            return SwapData(amount: amount, input: method.encodedData)
-        } else {
-            return SwapData(amount: 0, input: method.encodedData)
+    private func buildMethodForExactOut(tokenIn: Token, tokenOut: Token, path: [Address], to: Address, deadline: BigUInt, tradeData: TradeData) throws -> ContractMethod {
+        let amountInMax = tradeData.tokenAmountInMax.rawAmount
+        let amountOut = tradeData.trade.tokenAmountOut.rawAmount
+
+        guard tokenIn != tokenOut else {
+            throw Kit.TradeError.invalidTokensForSwap
+        }
+
+        switch tokenIn {
+        case .eth: return SwapETHForExactTokensMethod(amountOut: amountOut, path: path, to: to, deadline: deadline)
+        case .erc20:
+            if case .eth = tokenOut {
+                return SwapTokensForExactETHMethod(amountOut: amountOut, amountInMax: amountInMax, path: path, to: to, deadline: deadline)
+            }
+            return SwapTokensForExactTokensMethod(amountOut: amountOut, amountInMax: amountInMax, path: path, to: to, deadline: deadline)
+        }
+
+    }
+
+    private func buildMethodForExactIn(tokenIn: Token, tokenOut: Token, path: [Address], to: Address, deadline: BigUInt, tradeData: TradeData, trade: Trade) throws -> ContractMethod {
+        let amountIn = trade.tokenAmountIn.rawAmount
+        let amountOutMin = tradeData.tokenAmountOutMin.rawAmount
+        let supportingFeeOnTransfer = tradeData.options.feeOnTransfer
+
+        guard tokenIn != tokenOut else {
+            throw Kit.TradeError.invalidTokensForSwap
+        }
+
+        switch tokenIn {
+        case .eth: return SwapExactETHForTokensMethod(amountOut: amountOutMin, path: path, to: to, deadline: deadline, supportingFeeOnTransfer: supportingFeeOnTransfer)
+        case .erc20:
+            if case .eth = tokenOut {
+                return SwapExactTokensForETHMethod(amountIn: amountIn, amountOutMin: amountOutMin, path: path, to: to, deadline: deadline, supportingFeeOnTransfer: supportingFeeOnTransfer)
+            }
+            return SwapExactTokensForTokensMethod(amountIn: amountIn, amountOutMin: amountOutMin, path: path, to: to, deadline: deadline, supportingFeeOnTransfer: supportingFeeOnTransfer)
         }
     }
 
@@ -84,15 +86,13 @@ class TradeManager {
 extension TradeManager {
 
     func pairSingle(tokenA: Token, tokenB: Token) -> Single<Pair> {
-        let method = ContractMethod(name: "getReserves")
-
         let (token0, token1) = tokenA.sortsBefore(token: tokenB) ? (tokenA, tokenB) : (tokenB, tokenA)
 
         let pairAddress = Pair.address(token0: token0, token1: token1)
 
 //        print("PAIR ADDRESS: \(pairAddress.toHexString())")
 
-        return self.ethereumKit.call(contractAddress: pairAddress, data: method.encodedData)
+        return self.ethereumKit.call(contractAddress: pairAddress, data: GetReservesMethod().encodedABI())
                 .map { data in
 //                    print("DATA: \(data.toHexString())")
 
@@ -114,26 +114,34 @@ extension TradeManager {
     }
 
     func estimateSwapSingle(tradeData: TradeData, gasPrice: Int) -> Single<Int> {
-        let swapData = buildSwapData(tradeData: tradeData)
+        do {
+            let swapData = try buildSwapData(tradeData: tradeData)
 
-        return ethereumKit.estimateGas(
-                to: TradeManager.routerAddress,
-                amount: swapData.amount == 0 ? nil : swapData.amount,
-                gasPrice: gasPrice,
-                data: swapData.input
-        )
+            return ethereumKit.estimateGas(
+                    to: TradeManager.routerAddress,
+                    amount: swapData.amount == 0 ? nil : swapData.amount,
+                    gasPrice: gasPrice,
+                    data: swapData.input
+            )
+        } catch {
+            return Single.error(error)
+        }
     }
 
     func swapSingle(tradeData: TradeData, gasLimit: Int, gasPrice: Int) -> Single<TransactionWithInternal> {
-        let swapData = buildSwapData(tradeData: tradeData)
+        do {
+            let swapData = try buildSwapData(tradeData: tradeData)
 
-        return ethereumKit.sendSingle(
-                        address: TradeManager.routerAddress,
-                        value: swapData.amount,
-                        transactionInput: swapData.input,
-                        gasPrice: gasPrice,
-                        gasLimit: gasLimit
-                )
+            return ethereumKit.sendSingle(
+                    address: TradeManager.routerAddress,
+                    value: swapData.amount,
+                    transactionInput: swapData.input,
+                    gasPrice: gasPrice,
+                    gasLimit: gasLimit
+            )
+        } catch {
+            return Single.error(error)
+        }
     }
 
 }

@@ -123,6 +123,7 @@ extension Kit {
     public enum TradeError: Error {
         case zeroAmount
         case tradeNotFound
+        case invalidTokensForSwap
     }
 
     public enum PairError: Error {

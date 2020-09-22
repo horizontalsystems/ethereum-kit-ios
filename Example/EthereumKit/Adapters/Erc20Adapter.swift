@@ -48,7 +48,8 @@ class Erc20Adapter {
                 from: from,
                 to: to,
                 blockHeight: transaction.blockNumber,
-                isError: transaction.isError
+                isError: transaction.isError,
+                type: transaction.type.rawValue
         )
     }
 
@@ -73,8 +74,8 @@ class Erc20Adapter {
         let amount = BigUInt(amount.roundedString(decimal: token.decimal))!
 
         return erc20Kit.approveSingle(spenderAddress: spenderAddress, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice)
-                .map { transactionWithInternal in
-                    transactionWithInternal.transaction.hash.toHexString()
+                .map { transaction in
+                    transaction.transactionHash.toHexString()
                 }
     }
 
