@@ -65,4 +65,9 @@ extension JsonRpcResponse {
         }
     }
 
+    enum ResponseError: Error {
+        case rpcError(JsonRpcResponse.RpcError)
+        case invalidResult(value: Any)
+    }
+
 }

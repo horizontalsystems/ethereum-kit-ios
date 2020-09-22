@@ -11,7 +11,7 @@ class GetBalanceJsonRpc: JsonRpc<BigUInt> {
 
     override func parse(result: Any) throws -> BigUInt {
         guard let hexString = result as? String, let value = BigUInt(hexString.stripHexPrefix(), radix: 16) else {
-            throw ResponseError.invalidResult(value: result)
+            throw JsonRpcResponse.ResponseError.invalidResult(value: result)
         }
 
         return value

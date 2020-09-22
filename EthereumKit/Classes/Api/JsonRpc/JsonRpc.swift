@@ -27,17 +27,8 @@ class JsonRpc<T> {
         case .success(let successResponse):
             return try parse(result: successResponse.result)
         case .error(let errorResponse):
-            throw ResponseError.rpcError(errorResponse.error)
+            throw JsonRpcResponse.ResponseError.rpcError(errorResponse.error)
         }
-    }
-
-}
-
-extension JsonRpc {
-
-    enum ResponseError: Error {
-        case rpcError(JsonRpcResponse.RpcError)
-        case invalidResult(value: Any)
     }
 
 }

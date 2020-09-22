@@ -9,7 +9,7 @@ class GetBlockByNumberJsonRpc: JsonRpc<Block> {
 
     override func parse(result: Any) throws -> Block {
         guard let block = Block(json: result) else {
-            throw ResponseError.invalidResult(value: result)
+            throw JsonRpcResponse.ResponseError.invalidResult(value: result)
         }
 
         return block

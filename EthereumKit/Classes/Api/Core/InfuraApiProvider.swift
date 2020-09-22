@@ -37,7 +37,6 @@ extension InfuraApiProvider {
 
     public enum RequestError: Error {
         case invalidResponse(jsonObject: Any)
-        case rateLimitExceeded(backoffSeconds: TimeInterval)
     }
 
 }
@@ -47,7 +46,13 @@ extension InfuraApiProvider: RequestInterceptor {
     public func retry(_ request: Request, for session: Session, dueTo error: Error, completion: @escaping (RetryResult) -> ()) {
         let error = NetworkManager.unwrap(error: error)
 
-        if case let RequestError.rateLimitExceeded(backoffSeconds) = error {
+        if case let JsonRpcResponse.ResponseError.rpcError(rpcError) = error, rpcError.code == -32005 {
+            var backoffSeconds = 1.0
+
+            if let errorData = rpcError.data as? [String: Any], let timeInterval = errorData["backoff_seconds"] as? TimeInterval {
+                backoffSeconds = timeInterval
+            }
+
             completion(.retryWithDelay(backoffSeconds))
         } else {
             completion(.doNotRetry)
@@ -62,27 +67,6 @@ extension InfuraApiProvider: IApiMapper {
         guard let response = data else {
             throw NetworkManager.RequestError.invalidResponse(statusCode: statusCode, data: data)
         }
-
-//        if let error = map["error"] as? [String: Any] {
-//            let message = (error["message"] as? String) ?? ""
-//            let code = (error["message"] as? Int) ?? -1
-//
-//            if code == -32005 {
-//                var backoffSeconds = 1.0
-//
-//                if let errorData = error["data"] as? [String: Any], let timeInterval = errorData["backoff_seconds"] as? TimeInterval {
-//                    backoffSeconds = timeInterval
-//                }
-//
-//                throw RequestError.rateLimitExceeded(backoffSeconds: backoffSeconds)
-//            }
-//
-//            throw RequestError.responseError(code: code, message: message)
-//        }
-//
-//        guard let result = map["result"] else {
-//            throw RequestError.invalidResult
-//        }
 
         return response
     }

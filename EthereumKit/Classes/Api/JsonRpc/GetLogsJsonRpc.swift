@@ -33,12 +33,12 @@ class GetLogsJsonRpc: JsonRpc<[EthereumLog]> {
 
     override func parse(result: Any) throws -> [EthereumLog] {
         guard let resultArray = result as? [Any] else {
-            throw ResponseError.invalidResult(value: result)
+            throw JsonRpcResponse.ResponseError.invalidResult(value: result)
         }
 
         return try resultArray.map { logJson in
             guard let log = EthereumLog(json: logJson) else {
-                throw ResponseError.invalidResult(value: result)
+                throw JsonRpcResponse.ResponseError.invalidResult(value: result)
             }
 
             return log
