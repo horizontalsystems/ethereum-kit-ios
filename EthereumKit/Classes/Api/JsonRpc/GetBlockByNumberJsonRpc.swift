@@ -8,11 +8,7 @@ class GetBlockByNumberJsonRpc: JsonRpc<Block> {
     }
 
     override func parse(result: Any) throws -> Block {
-        guard let block = Block(json: result) else {
-            throw JsonRpcResponse.ResponseError.invalidResult(value: result)
-        }
-
-        return block
+        try Block(JSONObject: result)
     }
 
 }

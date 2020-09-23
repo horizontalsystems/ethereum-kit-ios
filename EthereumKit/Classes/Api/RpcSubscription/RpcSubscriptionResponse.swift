@@ -23,19 +23,3 @@ extension RpcSubscriptionResponse {
     }
 
 }
-
-struct HexIntTransform: TransformType {
-
-    func transformFromJSON(_ value: Any?) -> Int? {
-        guard let hexString = value as? String else {
-            return nil
-        }
-
-        return Int(hexString.stripHexPrefix(), radix: 16)
-    }
-
-    func transformToJSON(_ value: Int?) -> String? {
-        fatalError("transformToJSON(_:) has not been implemented")
-    }
-
-}
