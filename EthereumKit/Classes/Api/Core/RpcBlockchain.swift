@@ -144,14 +144,8 @@ extension RpcBlockchain: IBlockchain {
                 }
     }
 
-    func transactionReceiptStatusSingle(transactionHash: Data) -> Single<TransactionStatus> {
+    func transactionReceiptSingle(transactionHash: Data) -> Single<TransactionReceipt?> {
         syncer.single(rpc: GetTransactionReceiptJsonRpc(transactionHash: transactionHash))
-                .map { resultMap in
-                    guard let resultMap = resultMap, let statusString = resultMap["status"] as? String, let success = Int(statusString.stripHexPrefix(), radix: 16) else {
-                        return .notFound
-                    }
-                    return success == 0 ? .failed : .success
-                }
     }
 
     func transactionSingle(transactionHash: Data) -> Single<RpcTransaction?> {

@@ -16,7 +16,7 @@ protocol IBlockchain {
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction>
 
     func getLogsSingle(address: Address?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]>
-    func transactionReceiptStatusSingle(transactionHash: Data) -> Single<TransactionStatus>
+    func transactionReceiptSingle(transactionHash: Data) -> Single<TransactionReceipt?>
     func transactionSingle(transactionHash: Data) -> Single<RpcTransaction?>
     func getStorageAt(contractAddress: Address, positionData: Data, defaultBlockParameter: DefaultBlockParameter) -> Single<Data>
     func call(contractAddress: Address, data: Data, defaultBlockParameter: DefaultBlockParameter) -> Single<Data>

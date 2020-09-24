@@ -143,16 +143,22 @@ extension Kit {
     }
 
     public func transactionStatus(transactionHash: Data) -> Single<TransactionStatus> {
-        blockchain.transactionReceiptStatusSingle(transactionHash: transactionHash).flatMap { [unowned self] transactionStatus -> Single<TransactionStatus> in
-            switch transactionStatus {
-            case .success, .failed:
-                return Single.just(transactionStatus)
-            default:
-                return self.blockchain.transactionSingle(transactionHash: transactionHash).flatMap { transaction -> Single<TransactionStatus> in
-                    Single.just(transaction != nil ? .pending : .notFound)
+        blockchain.transactionReceiptSingle(transactionHash: transactionHash)
+                .flatMap { [unowned self] receipt -> Single<TransactionStatus> in
+                    if let receipt = receipt {
+                        if let status = receipt.status {
+                            return Single.just(status == 0 ? .failed : .success)
+                        } else {
+                            // todo: handle nil status for pre Byzantium
+                            return Single.just(.success)
+                        }
+                    }
+
+                    return self.blockchain.transactionSingle(transactionHash: transactionHash)
+                            .map { transaction -> TransactionStatus in
+                                transaction != nil ? .pending : .notFound
+                            }
                 }
-            }
-        }
     }
 
     public func getStorageAt(contractAddress: Address, positionData: Data, defaultBlockParameter: DefaultBlockParameter = .latest) -> Single<Data> {
