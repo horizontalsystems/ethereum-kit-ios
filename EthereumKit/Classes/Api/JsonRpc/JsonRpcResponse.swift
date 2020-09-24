@@ -32,7 +32,7 @@ extension JsonRpcResponse {
     struct SuccessResponse: ImmutableMappable {
         let version: String
         let id: Int
-        let result: Any
+        var result: Any?
 
         init(map: Map) throws {
             version = try map.value("jsonrpc")
@@ -72,7 +72,7 @@ extension JsonRpcResponse {
 
     enum ResponseError: Error {
         case rpcError(JsonRpcResponse.RpcError)
-        case invalidResult(value: Any)
+        case invalidResult(value: Any?)
     }
 
 }

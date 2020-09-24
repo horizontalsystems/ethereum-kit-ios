@@ -17,7 +17,7 @@ protocol IBlockchain {
 
     func getLogsSingle(address: Address?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]>
     func transactionReceiptStatusSingle(transactionHash: Data) -> Single<TransactionStatus>
-    func transactionExistSingle(transactionHash: Data) -> Single<Bool>
+    func transactionSingle(transactionHash: Data) -> Single<RpcTransaction?>
     func getStorageAt(contractAddress: Address, positionData: Data, defaultBlockParameter: DefaultBlockParameter) -> Single<Data>
     func call(contractAddress: Address, data: Data, defaultBlockParameter: DefaultBlockParameter) -> Single<Data>
     func estimateGas(to: Address, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int>

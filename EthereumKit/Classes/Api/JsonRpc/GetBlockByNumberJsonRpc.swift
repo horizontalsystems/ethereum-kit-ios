@@ -1,4 +1,4 @@
-class GetBlockByNumberJsonRpc: JsonRpc<Block> {
+class GetBlockByNumberJsonRpc: JsonRpc<Block?> {
 
     init(number: Int) {
         super.init(
@@ -7,8 +7,8 @@ class GetBlockByNumberJsonRpc: JsonRpc<Block> {
         )
     }
 
-    override func parse(result: Any) throws -> Block {
-        try Block(JSONObject: result)
+    override func parse(result: Any?) throws -> Block? {
+        try result.map { try Block(JSONObject: $0) }
     }
 
 }

@@ -18,7 +18,7 @@ class JsonRpc<T> {
         ]
     }
 
-    func parse(result: Any) throws -> T {
+    func parse(result: Any?) throws -> T {
         fatalError("This method should be overridden")
     }
 

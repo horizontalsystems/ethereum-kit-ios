@@ -148,8 +148,8 @@ extension Kit {
             case .success, .failed:
                 return Single.just(transactionStatus)
             default:
-                return self.blockchain.transactionExistSingle(transactionHash: transactionHash).flatMap { exist -> Single<TransactionStatus> in
-                    Single.just(exist ? .pending : .notFound)
+                return self.blockchain.transactionSingle(transactionHash: transactionHash).flatMap { transaction -> Single<TransactionStatus> in
+                    Single.just(transaction != nil ? .pending : .notFound)
                 }
             }
         }

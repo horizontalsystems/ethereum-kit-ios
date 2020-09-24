@@ -88,7 +88,7 @@ extension SpvBlockchain: IBlockchain {
 //        rpcApiProvider.transactionReceiptStatusSingle(transactionHash: transactionHash)
     }
 
-    func transactionExistSingle(transactionHash: Data) -> Single<Bool> {
+    func transactionSingle(transactionHash: Data) -> Single<RpcTransaction?> {
         fatalError("Not implemented yet")
 //        rpcApiProvider.transactionExistSingle(transactionHash: transactionHash)
     }

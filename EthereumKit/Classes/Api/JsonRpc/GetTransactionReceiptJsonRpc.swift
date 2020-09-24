@@ -7,7 +7,7 @@ class GetTransactionReceiptJsonRpc: JsonRpc<[String: Any]?> {
         )
     }
 
-    override func parse(result: Any) throws -> [String: Any]? {
+    override func parse(result: Any?) throws -> [String: Any]? {
         result as? [String: Any]
     }
 

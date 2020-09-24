@@ -154,9 +154,8 @@ extension RpcBlockchain: IBlockchain {
                 }
     }
 
-    func transactionExistSingle(transactionHash: Data) -> Single<Bool> {
+    func transactionSingle(transactionHash: Data) -> Single<RpcTransaction?> {
         syncer.single(rpc: GetTransactionByHashJsonRpc(transactionHash: transactionHash))
-                .map { $0 != nil }
     }
 
     func getStorageAt(contractAddress: Address, positionData: Data, defaultBlockParameter: DefaultBlockParameter) -> Single<Data> {
