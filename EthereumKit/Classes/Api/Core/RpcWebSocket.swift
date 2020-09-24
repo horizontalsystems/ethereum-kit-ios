@@ -34,7 +34,7 @@ extension RpcWebSocket: IRpcWebSocket {
 
         try socket.send(data: data)
 
-        logger?.debug("Send RPC: \(parameters)")
+        logger?.debug("Send RPC: \(String(data: data, encoding: .utf8) ?? "nil")")
     }
 
 }

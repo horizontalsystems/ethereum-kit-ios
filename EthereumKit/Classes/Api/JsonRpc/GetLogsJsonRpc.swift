@@ -2,28 +2,34 @@ import Foundation
 
 class GetLogsJsonRpc: JsonRpc<[EthereumLog]> {
 
-    init(address: Address?, fromBlock: Int, toBlock: Int, topics: [Any?]) {
-        let toBlockStr = "0x" + String(toBlock, radix: 16)
-        let fromBlockStr = "0x" + String(fromBlock, radix: 16)
+    init(address: Address?, fromBlock: DefaultBlockParameter?, toBlock: DefaultBlockParameter?, topics: [Any?]?) {
+        var params = [String: Any]()
 
-        let jsonTopics: [Any?] = topics.map {
-            if let array = $0 as? [Data?] {
-                return array.map { topic -> String? in
-                    topic?.toHexString()
-                }
-            } else if let data = $0 as? Data {
-                return data.toHexString()
-            } else {
-                return nil
-            }
+        if let address = address {
+            params["address"] = address.hex
         }
 
-        let params: [String: Any] = [
-            "fromBlock": fromBlockStr,
-            "toBlock": toBlockStr,
-            "address": address?.hex as Any,
-            "topics": jsonTopics
-        ]
+        if let fromBlock = fromBlock {
+            params["fromBlock"] = fromBlock.raw
+        }
+
+        if let toBlock = toBlock {
+            params["toBlock"] = toBlock.raw
+        }
+
+        if let topics = topics {
+            params["topics"] = topics.map { topic -> Any? in
+                if let array = topic as? [Data?] {
+                    return array.map { topic -> String? in
+                        topic?.toHexString()
+                    }
+                } else if let data = topic as? Data {
+                    return data.toHexString()
+                } else {
+                    return nil
+                }
+            }
+        }
 
         super.init(
                 method: "eth_getLogs",
@@ -32,16 +38,12 @@ class GetLogsJsonRpc: JsonRpc<[EthereumLog]> {
     }
 
     override func parse(result: Any) throws -> [EthereumLog] {
-        guard let resultArray = result as? [Any] else {
+        guard let array = result as? [Any] else {
             throw JsonRpcResponse.ResponseError.invalidResult(value: result)
         }
 
-        return try resultArray.map { logJson in
-            guard let log = EthereumLog(json: logJson) else {
-                throw JsonRpcResponse.ResponseError.invalidResult(value: result)
-            }
-
-            return log
+        return try array.map { jsonObject in
+            try EthereumLog(JSONObject: jsonObject)
         }
     }
 

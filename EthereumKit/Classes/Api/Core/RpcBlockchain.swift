@@ -34,32 +34,32 @@ class RpcBlockchain {
                 }
     }
 
-    private func pullTransactionTimestamps(ethereumLogs: [EthereumLog]) -> Single<[EthereumLog]> {
-        let logsByBlockNumber = Dictionary(grouping: ethereumLogs, by: { $0.blockNumber })
-
-        var requestSingles = [Single<Block>]()
-        for blockNumber in logsByBlockNumber.keys {
-            requestSingles.append(syncer.single(rpc: GetBlockByNumberJsonRpc(number: blockNumber)))
-        }
-
-        return Single.zip(requestSingles)
-                .map { (blocks: [Block]) in
-                    var resultLogs = [EthereumLog]()
-
-                    for block in blocks {
-                        guard let logsOfBlock = logsByBlockNumber[block.number] else {
-                            continue
-                        }
-
-                        for log in logsOfBlock {
-                            log.timestamp = Double(block.timestamp)
-                            resultLogs.append(log)
-                        }
-                    }
-
-                    return resultLogs
-                }
-    }
+//    private func pullTransactionTimestamps(ethereumLogs: [EthereumLog]) -> Single<[EthereumLog]> {
+//        let logsByBlockNumber = Dictionary(grouping: ethereumLogs, by: { $0.blockNumber })
+//
+//        var requestSingles = [Single<Block>]()
+//        for blockNumber in logsByBlockNumber.keys {
+//            requestSingles.append(syncer.single(rpc: GetBlockByNumberJsonRpc(number: blockNumber)))
+//        }
+//
+//        return Single.zip(requestSingles)
+//                .map { (blocks: [Block]) in
+//                    var resultLogs = [EthereumLog]()
+//
+//                    for block in blocks {
+//                        guard let logsOfBlock = logsByBlockNumber[block.number] else {
+//                            continue
+//                        }
+//
+//                        for log in logsOfBlock {
+//                            log.timestamp = Double(block.timestamp)
+//                            resultLogs.append(log)
+//                        }
+//                    }
+//
+//                    return resultLogs
+//                }
+//    }
 
 }
 
@@ -132,13 +132,15 @@ extension RpcBlockchain: IBlockchain {
     }
 
     func getLogsSingle(address: Address?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
-        syncer.single(rpc: GetLogsJsonRpc(address: address, fromBlock: fromBlock, toBlock: toBlock, topics: topics))
+        syncer.single(rpc: GetLogsJsonRpc(address: address, fromBlock: .blockNumber(value: fromBlock), toBlock: .blockNumber(value: toBlock), topics: topics))
                 .flatMap { [unowned self] logs in
-                    if pullTimestamps {
-                        return self.pullTransactionTimestamps(ethereumLogs: logs)
-                    } else {
-                        return Single.just(logs)
-                    }
+                    Single.just(logs)
+
+//                    if pullTimestamps {
+//                        return self.pullTransactionTimestamps(ethereumLogs: logs)
+//                    } else {
+//                        return Single.just(logs)
+//                    }
                 }
     }
 

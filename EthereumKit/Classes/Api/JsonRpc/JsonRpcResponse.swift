@@ -37,6 +37,11 @@ extension JsonRpcResponse {
         init(map: Map) throws {
             version = try map.value("jsonrpc")
             id = try map.value("id")
+
+            guard map["result"].isKeyPresent else {
+                throw MapError(key: "result", currentValue: nil, reason: nil)
+            }
+
             result = try map.value("result")
         }
     }

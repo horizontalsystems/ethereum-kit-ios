@@ -33,6 +33,22 @@ struct HexDataTransform: TransformType {
 
 }
 
+struct HexAddressTransform: TransformType {
+
+    func transformFromJSON(_ value: Any?) -> Address? {
+        guard let hexString = value as? String else {
+            return nil
+        }
+
+        return try? Address(hex: hexString)
+    }
+
+    func transformToJSON(_ value: Address?) -> String? {
+        fatalError("transformToJSON(_:) has not been implemented")
+    }
+
+}
+
 struct HexBigUIntTransform: TransformType {
 
     func transformFromJSON(_ value: Any?) -> BigUInt? {

@@ -1,5 +1,3 @@
-import BigInt
-
 public enum DefaultBlockParameter {
     case blockNumber(value: Int)
     case earliest
@@ -9,7 +7,7 @@ public enum DefaultBlockParameter {
     var raw: String {
         switch self {
         case .blockNumber(let value):
-            return BigUInt(value).serialize().toHexString()
+            return "0x" + String(value, radix: 16)
         case .earliest:
             return "earliest"
         case .latest:
