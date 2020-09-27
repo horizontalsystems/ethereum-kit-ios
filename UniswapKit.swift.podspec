@@ -17,7 +17,7 @@ Pod::Spec.new do |s|
 
   s.requires_arc = true
 
-  s.dependency 'EthereumKit.swift', '~> 0.9'
+  s.dependency 'EthereumKit.swift', '~> 0.11'
   s.dependency 'OpenSslKit.swift', '~> 1.0'
   s.dependency 'Secp256k1Kit.swift', '~> 1.0'
 
