@@ -21,6 +21,7 @@ class SwapController: UIViewController {
     private let executionPriceLabel = UILabel()
     private let midPriceLabel = UILabel()
     private let priceImpactLabel = UILabel()
+    private let providerFeeLabel = UILabel()
     private let pathLabel = UILabel()
     private let approveButton = UIButton(type: .system)
     private let swapButton = UIButton(type: .system)
@@ -175,10 +176,19 @@ class SwapController: UIViewController {
         priceImpactLabel.font = .systemFont(ofSize: 12)
         priceImpactLabel.textAlignment = .left
 
+        view.addSubview(providerFeeLabel)
+        providerFeeLabel.snp.makeConstraints { maker in
+            maker.leading.trailing.equalToSuperview().inset(24)
+            maker.top.equalTo(priceImpactLabel.snp.bottom).offset(12)
+        }
+
+        providerFeeLabel.font = .systemFont(ofSize: 12)
+        providerFeeLabel.textAlignment = .left
+
         view.addSubview(pathLabel)
         pathLabel.snp.makeConstraints { maker in
             maker.leading.trailing.equalToSuperview().inset(24)
-            maker.top.equalTo(priceImpactLabel.snp.bottom).offset(12)
+            maker.top.equalTo(providerFeeLabel.snp.bottom).offset(12)
         }
 
         pathLabel.font = .systemFont(ofSize: 12)
@@ -248,6 +258,7 @@ class SwapController: UIViewController {
             midPriceLabel.text = tradeData.midPrice.map { "Mid Price: \($0.description) \(tokenCoin(token: toToken)) per \(tokenCoin(token: fromToken))" }
 
             priceImpactLabel.text = tradeData.priceImpact.map { "Price Impact: \($0.description)%" }
+            providerFeeLabel.text = tradeData.providerFee.map { "Provider Fee: \($0.description)" }
 
             pathLabel.text = "Route: \(pathString(path: tradeData.path))"
         } else {
@@ -255,6 +266,7 @@ class SwapController: UIViewController {
             executionPriceLabel.text = nil
             midPriceLabel.text = nil
             priceImpactLabel.text = nil
+            providerFeeLabel.text = nil
             pathLabel.text = nil
         }
 
