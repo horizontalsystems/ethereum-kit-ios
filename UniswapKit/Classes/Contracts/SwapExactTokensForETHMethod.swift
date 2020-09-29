@@ -23,7 +23,7 @@ class SwapExactTokensForETHMethod: ContractMethod {
 
     override var methodSignature: String {
         let supporting = supportingFeeOnTransfer ? "SupportingFeeOnTransferTokens" : ""
-        return "swapExactTokensForETH\(supporting)(uint256,address[],address,uint256)"
+        return "swapExactTokensForETH\(supporting)(uint256,uint256,address[],address,uint256)"
     }
 
     override var arguments: [Any] {
