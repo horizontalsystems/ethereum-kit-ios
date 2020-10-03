@@ -65,14 +65,25 @@ extension InfuraWebSocket: WebSocketDelegate {
         case .pong(_):
             break
 
-        case .viabilityChanged(_):
-            break
+        case .viabilityChanged(let viable):
+            if viable {
+                if case .connecting = state {} else {
+                    start()
+                }
+            } else {
+                stop()
+            }
 
-        case .reconnectSuggested(_):
-            break
+        case .reconnectSuggested(let isBetter):
+            if isBetter {
+                stop()
+                start()
+            }
 
         case .cancelled:
             logger?.debug("WebSocket Cancelled")
+
+            state = .disconnected(error: WebSocketState.DisconnectError.socketDisconnected(reason: "Disconnected from server end"))
 
         case .error(let error):
             logger?.error("WebSocket Error: \(error?.localizedDescription ?? "unknown error")")
