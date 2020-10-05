@@ -25,7 +25,7 @@ extension SendTransactionTaskHandler: ITaskHandler {
 
         tasks[requestId] = task
 
-        let message = SendTransactionMessage(requestId: requestId, rawTransaction: task.rawTransaction, nonce: task.nonce, signature: task.signature)
+        let message = SendTransactionMessage(requestId: requestId, rawTransaction: task.rawTransaction, signature: task.signature)
 
         requester.send(message: message)
 

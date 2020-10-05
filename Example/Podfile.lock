@@ -104,7 +104,7 @@ SPEC CHECKSUMS:
   BlueSocket: 1acd943acb07b55905291d608649fcfbf8cbd57d
   Cuckoo: 57f71c6616b6b08cd9fe27f803da056fb619ff3e
   Erc20Kit.swift: 62a32994af3b0915486fbf62cb0f255f3eca2a68
-  EthereumKit.swift: 0134a5496b3d59976ddff31eff8e128353bb948b
+  EthereumKit.swift: bdb232756cd841a3e00764d4871e26ee12b08aa2
   GRDB.swift: 8cc3ab7c8b8b4ac1761deb8dca4b51c1c9d429f8
   HdWalletKit.swift: 4af4ef744a446904261971e5c31daf2eea8403c5
   HsToolKit.swift: d47ef3e8c507a6e980f2f6d819c5b0cf05845910

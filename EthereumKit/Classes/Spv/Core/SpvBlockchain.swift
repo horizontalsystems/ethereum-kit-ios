@@ -65,6 +65,10 @@ extension SpvBlockchain: IBlockchain {
         storage.accountState?.balance
     }
 
+    func nonceSingle() -> Single<Int?> {
+        Single<Int?>.just(storage.accountState?.nonce)
+    }
+
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction> {
         let sendId = RandomHelper.shared.randomInt
 

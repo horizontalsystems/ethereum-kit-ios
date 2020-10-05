@@ -8,16 +8,16 @@ class TransactionBuilder {
         self.address = address
     }
 
-    func rawTransaction(gasPrice: Int, gasLimit: Int, to: Address, value: BigUInt, data: Data = Data()) -> RawTransaction {
-        RawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: to, value: value, data: data)
+    func rawTransaction(gasPrice: Int, gasLimit: Int, to: Address, value: BigUInt, data: Data = Data(), nonce: Int) -> RawTransaction {
+        RawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: to, value: value, data: data, nonce: nonce)
     }
 
-    func transaction(rawTransaction: RawTransaction, nonce: Int, signature: Signature) -> Transaction {
-        let transactionHash = OpenSslKit.Kit.sha3(encode(rawTransaction: rawTransaction, signature: signature, nonce: nonce))
+    func transaction(rawTransaction: RawTransaction, signature: Signature) -> Transaction {
+        let transactionHash = OpenSslKit.Kit.sha3(encode(rawTransaction: rawTransaction, signature: signature))
 
         return Transaction(
                 hash: transactionHash,
-                nonce: nonce,
+                nonce: rawTransaction.nonce,
                 input: rawTransaction.data,
                 from: address,
                 to: rawTransaction.to,
@@ -27,9 +27,9 @@ class TransactionBuilder {
         )
     }
 
-    func encode(rawTransaction: RawTransaction, signature: Signature, nonce: Int) -> Data {
+    func encode(rawTransaction: RawTransaction, signature: Signature) -> Data {
         RLP.encode([
-            nonce,
+            rawTransaction.nonce,
             rawTransaction.gasPrice,
             rawTransaction.gasLimit,
             rawTransaction.to.raw,

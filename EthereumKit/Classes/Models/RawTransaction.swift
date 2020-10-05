@@ -6,13 +6,15 @@ class RawTransaction {
     let to: Address
     let value: BigUInt
     let data: Data
+    let nonce: Int
 
-    init(gasPrice: Int, gasLimit: Int, to: Address, value: BigUInt, data: Data) {
+    init(gasPrice: Int, gasLimit: Int, to: Address, value: BigUInt, data: Data, nonce: Int) {
         self.gasPrice = gasPrice
         self.gasLimit = gasLimit
         self.to = to
         self.value = value
         self.data = data
+        self.nonce = nonce
     }
 
 }

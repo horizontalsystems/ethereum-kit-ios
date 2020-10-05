@@ -11,9 +11,9 @@ class TransactionSigner {
         self.privateKey = privateKey
     }
 
-    func sign(rawTransaction: RawTransaction, nonce: Int) throws -> Data {
+    func sign(rawTransaction: RawTransaction) throws -> Data {
         var toEncode: [Any] = [
-            nonce,
+            rawTransaction.nonce,
             rawTransaction.gasPrice,
             rawTransaction.gasLimit,
             rawTransaction.to.raw,
@@ -31,14 +31,14 @@ class TransactionSigner {
         return try Secp256k1Kit.Kit.ellipticSign(rawTransactionHash, privateKey: privateKey)
     }
 
-    func signature(rawTransaction: RawTransaction, nonce: Int) throws -> Signature {
-        let signatureData: Data = try sign(rawTransaction: rawTransaction, nonce: nonce)
+    func signature(rawTransaction: RawTransaction) throws -> Signature {
+        let signatureData: Data = try sign(rawTransaction: rawTransaction)
 
         return signature(from: signatureData)
     }
 
     func signature(from data: Data) -> Signature {
-        return Signature(
+        Signature(
                 v: Int(data[64]) + (chainId == 0 ? 27 : (35 + 2 * chainId)),
                 r: BigUInt(data[..<32].hex, radix: 16)!,
                 s: BigUInt(data[32..<64].hex, radix: 16)!

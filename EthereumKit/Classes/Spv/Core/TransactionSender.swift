@@ -19,13 +19,9 @@ class TransactionSender {
     }
 
     func send(sendId: Int, taskPerformer: ITaskPerformer, rawTransaction: RawTransaction) throws {
-        guard let accountState = storage.accountState else {
-            throw SendError.noAccountState
-        }
+        let signature = try transactionSigner.signature(rawTransaction: rawTransaction)
 
-        let signature = try transactionSigner.signature(rawTransaction: rawTransaction, nonce: accountState.nonce)
-
-        taskPerformer.add(task: SendTransactionTask(sendId: sendId, rawTransaction: rawTransaction, nonce: accountState.nonce, signature: signature))
+        taskPerformer.add(task: SendTransactionTask(sendId: sendId, rawTransaction: rawTransaction, signature: signature))
     }
 
 }
@@ -33,21 +29,13 @@ class TransactionSender {
 extension TransactionSender: ISendTransactionTaskHandlerDelegate {
 
     func onSendSuccess(task: SendTransactionTask) {
-        let transaction = transactionBuilder.transaction(rawTransaction: task.rawTransaction, nonce: task.nonce, signature: task.signature)
+        let transaction = transactionBuilder.transaction(rawTransaction: task.rawTransaction, signature: task.signature)
 
         delegate?.onSendSuccess(sendId: task.sendId, transaction: transaction)
     }
 
     func onSendFailure(task: SendTransactionTask, error: Error) {
         delegate?.onSendFailure(sendId: task.sendId, error: error)
-    }
-
-}
-
-extension TransactionSender {
-
-    enum SendError: Error {
-        case noAccountState
     }
 
 }

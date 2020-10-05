@@ -1,13 +1,11 @@
 class SendTransactionMessage: IOutMessage {
     let requestId: Int
     let rawTransaction: RawTransaction
-    let nonce: Int
     let signature: Signature
 
-    init(requestId: Int, rawTransaction: RawTransaction, nonce: Int, signature: Signature) {
+    init(requestId: Int, rawTransaction: RawTransaction, signature: Signature) {
         self.requestId = requestId
         self.rawTransaction = rawTransaction
-        self.nonce = nonce
         self.signature = signature
     }
 
@@ -16,7 +14,7 @@ class SendTransactionMessage: IOutMessage {
             requestId,
             [
                 [
-                    nonce,
+                    rawTransaction.nonce,
                     rawTransaction.gasPrice,
                     rawTransaction.gasLimit,
                     rawTransaction.to.raw,
@@ -33,7 +31,7 @@ class SendTransactionMessage: IOutMessage {
     }
 
     func toString() -> String {
-        return "SEND_TX [requestId: \(requestId), nonce: \(nonce), gasPrice: \(rawTransaction.gasPrice), gasLimit: \(rawTransaction.gasLimit), " +
+        return "SEND_TX [requestId: \(requestId), nonce: \(rawTransaction.nonce), gasPrice: \(rawTransaction.gasPrice), gasLimit: \(rawTransaction.gasLimit), " +
                 "to: \(rawTransaction.to), value: \(rawTransaction.value), data: \(rawTransaction.data.toHexString()), " +
                 "v: \(signature.v), r: \(signature.r), s: \(signature.s)]"
     }

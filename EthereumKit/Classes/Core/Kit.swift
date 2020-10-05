@@ -21,6 +21,7 @@ public class Kit {
     private let blockchain: IBlockchain
     private let transactionManager: ITransactionManager
     private let transactionBuilder: TransactionBuilder
+    private let transactionSigner: TransactionSigner
     private let state: EthereumKitState
 
     public let address: Address
@@ -31,10 +32,11 @@ public class Kit {
 
     public let logger: Logger
 
-    init(blockchain: IBlockchain, transactionManager: ITransactionManager, transactionBuilder: TransactionBuilder, state: EthereumKitState = EthereumKitState(), address: Address, networkType: NetworkType, uniqueId: String, etherscanApiProvider: EtherscanApiProvider, logger: Logger) {
+    init(blockchain: IBlockchain, transactionManager: ITransactionManager, transactionBuilder: TransactionBuilder, transactionSigner: TransactionSigner, state: EthereumKitState = EthereumKitState(), address: Address, networkType: NetworkType, uniqueId: String, etherscanApiProvider: EtherscanApiProvider, logger: Logger) {
         self.blockchain = blockchain
         self.transactionManager = transactionManager
         self.transactionBuilder = transactionBuilder
+        self.transactionSigner = transactionSigner
         self.state = state
         self.address = address
         self.networkType = networkType
@@ -118,16 +120,34 @@ extension Kit {
         transactionManager.transaction(hash: hash)
     }
 
-    public func sendSingle(address: Address, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int) -> Single<TransactionWithInternal> {
-        let rawTransaction = transactionBuilder.rawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: address, value: value, data: transactionInput)
+    public func sendSingle(address: Address, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int, nonce: Int? = nil) -> Single<TransactionWithInternal> {
+        var syncNonceSingle = blockchain.nonceSingle()
 
-        return blockchain.sendSingle(rawTransaction: rawTransaction)
-                .do(onSuccess: { [weak self] transaction in
-                    self?.transactionManager.handle(sentTransaction: transaction)
-                })
-                .map {
-                    TransactionWithInternal(transaction: $0)
-                }
+        if let nonce = nonce {
+            syncNonceSingle = Single<Int?>.just(nonce)
+        }
+
+        return syncNonceSingle.flatMap { [weak self] nonce in
+            guard let nonce = nonce, let kit = self else {
+                return Single<TransactionWithInternal>.error(SendError.nonceNotAvailable)
+            }
+
+            let rawTransaction = kit.transactionBuilder.rawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: address, value: value, data: transactionInput, nonce: nonce)
+
+            return kit.blockchain.sendSingle(rawTransaction: rawTransaction)
+                    .do(onSuccess: { [weak self] transaction in
+                        self?.transactionManager.handle(sentTransaction: transaction)
+                    })
+                    .map {
+                        TransactionWithInternal(transaction: $0)
+                    }
+        }
+    }
+
+    public func signedTransaction(address: Address, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int, nonce: Int) throws -> Data {
+        let rawTransaction = transactionBuilder.rawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: address, value: value, data: transactionInput, nonce: nonce)
+        let signature = try transactionSigner.signature(rawTransaction: rawTransaction)
+        return transactionBuilder.encode(rawTransaction: rawTransaction, signature: signature)
     }
 
     public var debugInfo: String {
@@ -324,7 +344,7 @@ extension Kit {
         let transactionStorage: ITransactionStorage & IInternalTransactionStorage = TransactionStorage(databaseDirectoryUrl: try dataDirectoryUrl(), databaseFileName: "transactions-\(uniqueId)")
         let transactionManager = TransactionManager(storage: transactionStorage, transactionsProvider: transactionsProvider)
 
-        let ethereumKit = Kit(blockchain: blockchain, transactionManager: transactionManager, transactionBuilder: transactionBuilder, address: address, networkType: networkType, uniqueId: uniqueId, etherscanApiProvider: etherscanApiProvider, logger: logger)
+        let ethereumKit = Kit(blockchain: blockchain, transactionManager: transactionManager, transactionBuilder: transactionBuilder, transactionSigner: transactionSigner, address: address, networkType: networkType, uniqueId: uniqueId, etherscanApiProvider: etherscanApiProvider, logger: logger)
 
         blockchain.delegate = ethereumKit
         transactionManager.delegate = ethereumKit
@@ -379,6 +399,10 @@ extension Kit {
     public enum SyncError: Error {
         case notStarted
         case noNetworkConnection
+    }
+
+    public enum SendError: Error {
+        case nonceNotAvailable
     }
 
 }

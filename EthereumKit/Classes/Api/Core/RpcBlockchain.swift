@@ -23,17 +23,6 @@ class RpcBlockchain {
         self.logger = logger
     }
 
-    private func sendSingle(rawTransaction: RawTransaction, nonce: Int) throws -> Single<Transaction> {
-        let signature = try transactionSigner.signature(rawTransaction: rawTransaction, nonce: nonce)
-        let transaction = transactionBuilder.transaction(rawTransaction: rawTransaction, nonce: nonce, signature: signature)
-        let encoded = transactionBuilder.encode(rawTransaction: rawTransaction, signature: signature, nonce: nonce)
-
-        return syncer.single(rpc: SendRawTransactionJsonRpc(signedTransaction: encoded))
-                .map { _ in
-                    transaction
-                }
-    }
-
 //    private func pullTransactionTimestamps(ethereumLogs: [EthereumLog]) -> Single<[EthereumLog]> {
 //        let logsByBlockNumber = Dictionary(grouping: ethereumLogs, by: { $0.blockNumber })
 //
@@ -121,14 +110,24 @@ extension RpcBlockchain: IBlockchain {
         storage.balance
     }
 
-    func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction> {
+    func nonceSingle() -> Single<Int?> {
         syncer.single(rpc: GetTransactionCountJsonRpc(address: address, defaultBlockParameter: .pending))
-                .flatMap { [unowned self] nonce -> Single<Transaction> in
-                    try self.sendSingle(rawTransaction: rawTransaction, nonce: nonce)
-                }
-                .do(onSuccess: { [weak self] transaction in
-//                    self?.sync() // todo: check is sync is required
-                })
+                .flatMap { Single<Int?>.just($0) }
+    }
+
+    func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction> {
+        do {
+            let signature = try transactionSigner.signature(rawTransaction: rawTransaction)
+            let transaction = transactionBuilder.transaction(rawTransaction: rawTransaction, signature: signature)
+            let encoded = transactionBuilder.encode(rawTransaction: rawTransaction, signature: signature)
+
+            return syncer.single(rpc: SendRawTransactionJsonRpc(signedTransaction: encoded))
+                    .map { _ in
+                        transaction
+                    }
+        } catch {
+            return Single.error(error)
+        }
     }
 
     func getLogsSingle(address: Address?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
