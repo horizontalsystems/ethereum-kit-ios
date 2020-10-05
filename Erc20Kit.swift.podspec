@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name             = 'Erc20Kit.swift'
   s.module_name      = 'Erc20Kit'
-  s.version          = '0.10.0'
+  s.version          = '0.11.0'
   s.summary          = 'Erc20 token library for Swift.'
 
   s.homepage         = 'https://github.com/horizontalsystems/ethereum-kit-ios'
@@ -17,10 +17,10 @@ Pod::Spec.new do |s|
 
   s.requires_arc = true
 
-  s.dependency 'EthereumKit.swift', '~> 0.9'
+  s.dependency 'EthereumKit.swift', '~> 0.11'
   s.dependency 'OpenSslKit.swift', '~> 1.0'
   s.dependency 'Secp256k1Kit.swift', '~> 1.0'
-  s.dependency 'UIExtensions.swift', '~> 1.0'
+  s.dependency 'UIExtensions.swift', '~> 1.1.0'
 
   s.dependency 'RxSwift', '~> 5.0'
   s.dependency 'BigInt', '~> 5.0'

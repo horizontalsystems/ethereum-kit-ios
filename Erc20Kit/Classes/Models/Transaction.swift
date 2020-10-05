@@ -2,6 +2,24 @@ import GRDB
 import BigInt
 import EthereumKit
 
+public enum TransactionType: String, DatabaseValueConvertible {
+    case transfer = "transfer"
+    case approve = "approve"
+
+    public var databaseValue: DatabaseValue {
+        self.rawValue.databaseValue
+    }
+
+    public static func fromDatabaseValue(_ dbValue: DatabaseValue) -> TransactionType? {
+        if case let DatabaseValue.Storage.string(value) = dbValue.storage {
+            return TransactionType(rawValue: value)
+        }
+
+        return nil
+    }
+
+}
+
 public class Transaction: Record {
     public let transactionHash: Data
     public var transactionIndex: Int?
@@ -16,8 +34,9 @@ public class Transaction: Record {
     public var blockHash: Data?
     public var blockNumber: Int?
     public var isError: Bool
+    public var type: TransactionType
 
-    init(transactionHash: Data, transactionIndex: Int? = nil, from: Address, to: Address, value: BigUInt, timestamp: TimeInterval = Date().timeIntervalSince1970, interTransactionIndex: Int = 0, isError: Bool = false) {
+    init(transactionHash: Data, transactionIndex: Int? = nil, from: Address, to: Address, value: BigUInt, timestamp: TimeInterval = Date().timeIntervalSince1970, interTransactionIndex: Int = 0, isError: Bool = false, type: TransactionType = .transfer) {
         self.transactionHash = transactionHash
         self.transactionIndex = transactionIndex
         self.from = from
@@ -26,6 +45,7 @@ public class Transaction: Record {
         self.timestamp = timestamp
         self.interTransactionIndex = interTransactionIndex
         self.isError = isError
+        self.type = type
 
         super.init()
     }
@@ -46,6 +66,7 @@ public class Transaction: Record {
         case blockHash
         case blockNumber
         case isError
+        case type
     }
 
     required init(row: Row) {
@@ -60,6 +81,7 @@ public class Transaction: Record {
         blockHash = row[Columns.blockHash]
         blockNumber = row[Columns.blockNumber]
         isError = row[Columns.isError]
+        type = row[Columns.type]
 
         super.init(row: row)
     }
@@ -76,6 +98,7 @@ public class Transaction: Record {
         container[Columns.blockHash] = blockHash
         container[Columns.blockNumber] = blockNumber
         container[Columns.isError] = isError
+        container[Columns.type] = type
     }
 
 }

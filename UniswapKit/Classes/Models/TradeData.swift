@@ -55,6 +55,14 @@ extension TradeData {
         trade.priceImpact.toDecimal(decimals: 2)
     }
 
+    public var providerFee: Decimal? {
+        guard let amountIn = type == .exactIn ? trade.tokenAmountIn.decimalAmount : tokenAmountInMax.decimalAmount else {
+            return nil
+        }
+
+        return trade.liquidityProviderFee.toDecimal(decimals: trade.tokenAmountIn.token.decimals).map { $0 * amountIn }
+    }
+
     public var path: [Token] {
         trade.route.path
     }

@@ -7,6 +7,7 @@ struct Trade {
     let tokenAmountOut: TokenAmount
     let executionPrice: Price
     let priceImpact: Fraction
+    let liquidityProviderFee: Fraction
 
     init(type: TradeType, route: Route, tokenAmountIn: TokenAmount, tokenAmountOut: TokenAmount) {
         self.type = type
@@ -17,11 +18,16 @@ struct Trade {
         executionPrice = Price(baseTokenAmount: tokenAmountIn, quoteTokenAmount: tokenAmountOut)
 
         priceImpact = Trade.computePriceImpact(midPrice: route.midPrice, tokenAmountIn: tokenAmountIn, tokenAmountOut: tokenAmountOut)
+        liquidityProviderFee = Trade.computeLiquidityProviderFee(pairCount: route.pairs.count)
     }
 
     private static func computePriceImpact(midPrice: Price, tokenAmountIn: TokenAmount, tokenAmountOut: TokenAmount) -> Fraction {
         let exactQuote = midPrice.fraction * Fraction(numerator: tokenAmountIn.rawAmount) * Fraction(numerator: 997, denominator: 1000)
         return (exactQuote - Fraction(numerator: tokenAmountOut.rawAmount)) / exactQuote * Fraction(numerator: 100)
+    }
+
+    private static func computeLiquidityProviderFee(pairCount: Int) -> Fraction {
+        Fraction(numerator: 1) - Fraction(numerator: BigUInt(997).power(pairCount), denominator: BigUInt(1000).power(pairCount))
     }
 
 }

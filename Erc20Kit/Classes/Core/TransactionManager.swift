@@ -61,8 +61,7 @@ class TransactionManager {
 
     private func failedTransactions(pendingTransactions: [Transaction], statuses: [(Data, TransactionStatus)]) -> [Transaction] {
         statuses.compactMap { (hash, status) -> Transaction? in
-            if status == .failed || status == .notFound,
-               let txIndex = pendingTransactions.firstIndex(where: { $0.transactionHash == hash }) {
+            if status == .failed, let txIndex = pendingTransactions.firstIndex(where: { $0.transactionHash == hash }) {
                 pendingTransactions[txIndex].isError = true
                 return pendingTransactions[txIndex]
             }
