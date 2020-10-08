@@ -13,4 +13,8 @@ public enum NetworkType {
             return Kovan()
         }
     }
+
+    public var chainId: Int {
+        network.chainId
+    }
 }
