@@ -1,12 +1,17 @@
+import RxSwift
 import Starscream
 import HsToolKit
 
 class InfuraWebSocket {
+    private var disposeBag = DisposeBag()
+
     weak var delegate: IWebSocketDelegate?
 
     private var logger: Logger?
 
     private let queue = DispatchQueue(label: "io.horizontal-systems.ethereum-kit.infura-web-socket", qos: .userInitiated)
+    private let reachabilityManager: IReachabilityManager
+    private var isStarted = false
 
     private let socket: WebSocket
     private var state: WebSocketState = .disconnected(error: WebSocketState.DisconnectError.notStarted) {
@@ -15,7 +20,8 @@ class InfuraWebSocket {
         }
     }
 
-    init(domain: String, projectId: String, projectSecret: String?, logger: Logger? = nil) {
+    init(domain: String, projectId: String, projectSecret: String?, reachabilityManager: IReachabilityManager, logger: Logger? = nil) {
+        self.reachabilityManager = reachabilityManager
         self.logger = logger
 
         var request = URLRequest(url: URL(string: "wss://\(domain)/ws/v3/\(projectId)")!)
@@ -29,66 +35,59 @@ class InfuraWebSocket {
         socket = WebSocket(request: request)
         socket.delegate = self
         socket.callbackQueue = queue
+
+        reachabilityManager.reachabilityObservable
+                .observeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+                .subscribe(onNext: { [weak self] _ in
+                    if reachabilityManager.isReachable {
+                        self?.resume()
+                    }
+                })
+                .disposed(by: disposeBag)
+    }
+
+    private func resume() {
+        guard isStarted else {
+            return
+        }
+
+        if case .connecting = state {
+            return
+        }
+
+        state = .connecting
+
+        socket.connect()
     }
 
 }
 
 extension InfuraWebSocket: WebSocketDelegate {
 
-    func didReceive(event: WebSocketEvent, client: WebSocket) {
-        switch event {
-        case .connected(let headers):
-            logger?.debug("WebSocket is connected: \(headers)")
+    public func websocketDidConnect(socket: WebSocketClient) {
+        logger?.debug("WebSocket is connected: \(socket)")
 
-            state = .connected
+        state = .connected
+    }
 
-        case .disconnected(let reason, let code):
-            logger?.debug("WebSocket is disconnected: \(reason) with code: \(code)")
+    public func websocketDidDisconnect(socket: WebSocketClient, error: Error?) {
+        logger?.debug("WebSocket is disconnected: \(error?.localizedDescription)")
 
-            state = .disconnected(error: WebSocketState.DisconnectError.socketDisconnected(reason: reason))
+        state = .disconnected(error: error ?? WebSocketState.DisconnectError.socketDisconnected(reason: "Unknown reason"))
+    }
 
-        case .text(let string):
-            logger?.debug("WebSocket Received text: \(string)")
+    public func websocketDidReceiveMessage(socket: WebSocketClient, text: String) {
+        logger?.debug("WebSocket Received text: \(text)")
 
-            if let data = string.data(using: .utf8) {
-                delegate?.didReceive(data: data)
-            } else {
-                // todo: handle invalid message
-            }
-
-        case .binary(let data):
-            logger?.debug("WebSocket Received data: \(data.count)")
-
-        case .ping(_):
-            break
-
-        case .pong(_):
-            break
-
-        case .viabilityChanged(let viable):
-            if viable {
-                if case .connecting = state {} else {
-                    start()
-                }
-            } else {
-                stop()
-            }
-
-        case .reconnectSuggested(let isBetter):
-            if isBetter {
-                stop()
-                start()
-            }
-
-        case .cancelled:
-            logger?.debug("WebSocket Cancelled")
-
-            state = .disconnected(error: WebSocketState.DisconnectError.socketDisconnected(reason: "Disconnected from server end"))
-
-        case .error(let error):
-            logger?.error("WebSocket Error: \(error?.localizedDescription ?? "unknown error")")
-
+        if let data = text.data(using: .utf8) {
+            delegate?.didReceive(data: data)
+        } else {
+            // todo: handle invalid message
         }
+    }
+
+    public func websocketDidReceiveData(socket: WebSocketClient, data: Data) {
+        logger?.debug("WebSocket Received data: \(data.count)")
     }
 
 }
@@ -100,13 +99,14 @@ extension InfuraWebSocket: IWebSocket {
     }
 
     func start() {
-        state = .connecting
-
+        isStarted = true
         socket.connect()
     }
 
     func stop() {
+        isStarted = false
         socket.disconnect()
+        disposeBag = DisposeBag()
     }
 
     func send(data: Data) throws {

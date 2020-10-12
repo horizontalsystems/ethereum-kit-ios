@@ -287,13 +287,14 @@ extension Kit {
         }
 
         let syncer: IRpcSyncer
+        let reachabilityManager = ReachabilityManager()
 
         switch syncSource {
         case let .infuraWebSocket(id, secret):
-            let socket = InfuraWebSocket(domain: infuraDomain, projectId: id, projectSecret: secret, logger: logger)
+            let socket = InfuraWebSocket(domain: infuraDomain, projectId: id, projectSecret: secret, reachabilityManager: reachabilityManager, logger: logger)
             syncer = WebSocketRpcSyncer.instance(address: address, socket: socket, logger: logger)
         case let .infura(id, secret):
-            syncer = ApiRpcSyncer(address: address, rpcApiProvider: InfuraApiProvider(networkManager: networkManager, domain: infuraDomain, id: id, secret: secret), reachabilityManager: ReachabilityManager())
+            syncer = ApiRpcSyncer(address: address, rpcApiProvider: InfuraApiProvider(networkManager: networkManager, domain: infuraDomain, id: id, secret: secret), reachabilityManager: reachabilityManager)
 //        case .incubed:
 //            syncer = ApiRpcSyncer(address: address, rpcApiProvider: IncubedRpcApiProvider(logger: logger), reachabilityManager: ReachabilityManager())
         }
