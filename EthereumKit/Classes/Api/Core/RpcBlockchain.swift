@@ -110,9 +110,8 @@ extension RpcBlockchain: IBlockchain {
         storage.balance
     }
 
-    func nonceSingle() -> Single<Int?> {
+    func nonceSingle() -> Single<Int> {
         syncer.single(rpc: GetTransactionCountJsonRpc(address: address, defaultBlockParameter: .pending))
-                .flatMap { Single<Int?>.just($0) }
     }
 
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction> {

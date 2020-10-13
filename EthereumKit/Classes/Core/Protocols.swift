@@ -13,7 +13,7 @@ protocol IBlockchain {
     var lastBlockHeight: Int? { get }
     var balance: BigUInt? { get }
 
-    func nonceSingle() -> Single<Int?>
+    func nonceSingle() -> Single<Int>
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction>
 
     func getLogsSingle(address: Address?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]>

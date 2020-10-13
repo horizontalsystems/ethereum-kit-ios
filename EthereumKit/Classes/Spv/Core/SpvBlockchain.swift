@@ -65,8 +65,12 @@ extension SpvBlockchain: IBlockchain {
         storage.accountState?.balance
     }
 
-    func nonceSingle() -> Single<Int?> {
-        Single<Int?>.just(storage.accountState?.nonce)
+    func nonceSingle() -> Single<Int> {
+        guard let nonce = storage.accountState?.nonce else {
+            return Single.error(Kit.SendError.noAccountState)
+        }
+
+        return Single.just(nonce)
     }
 
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction> {

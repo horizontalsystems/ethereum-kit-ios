@@ -124,11 +124,11 @@ extension Kit {
         var syncNonceSingle = blockchain.nonceSingle()
 
         if let nonce = nonce {
-            syncNonceSingle = Single<Int?>.just(nonce)
+            syncNonceSingle = Single<Int>.just(nonce)
         }
 
         return syncNonceSingle.flatMap { [weak self] nonce in
-            guard let nonce = nonce, let kit = self else {
+            guard let kit = self else {
                 return Single<TransactionWithInternal>.error(SendError.nonceNotAvailable)
             }
 
@@ -404,6 +404,7 @@ extension Kit {
 
     public enum SendError: Error {
         case nonceNotAvailable
+        case noAccountState
     }
 
 }
