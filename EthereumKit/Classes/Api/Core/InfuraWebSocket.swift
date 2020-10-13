@@ -3,6 +3,9 @@ import Starscream
 import HsToolKit
 
 class InfuraWebSocket {
+    static let unexpectedDisconnectErrorDomain = "NSPOSIXErrorDomain"
+    static let unexpectedDisconnectErrorCode = 57
+
     private var disposeBag = DisposeBag()
 
     weak var delegate: IWebSocketDelegate?
@@ -40,13 +43,13 @@ class InfuraWebSocket {
                 .observeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .subscribe(onNext: { [weak self] _ in
                     if reachabilityManager.isReachable {
-                        self?.resume()
+                        self?.reconnect()
                     }
                 })
                 .disposed(by: disposeBag)
     }
 
-    private func resume() {
+    private func reconnect() {
         guard isStarted else {
             return
         }
@@ -71,9 +74,14 @@ extension InfuraWebSocket: WebSocketDelegate {
     }
 
     public func websocketDidDisconnect(socket: WebSocketClient, error: Error?) {
-        logger?.debug("WebSocket is disconnected: \(error?.localizedDescription)")
+        logger?.debug("WebSocket is disconnected: \(error?.localizedDescription ?? "Unknown error")")
 
         state = .disconnected(error: error ?? WebSocketState.DisconnectError.socketDisconnected(reason: "Unknown reason"))
+
+        if let nsError = error as NSError?,
+           nsError.domain == InfuraWebSocket.unexpectedDisconnectErrorDomain && nsError.code == InfuraWebSocket.unexpectedDisconnectErrorCode {
+            reconnect()
+        }
     }
 
     public func websocketDidReceiveMessage(socket: WebSocketClient, text: String) {
@@ -106,7 +114,6 @@ extension InfuraWebSocket: IWebSocket {
     func stop() {
         isStarted = false
         socket.disconnect()
-        disposeBag = DisposeBag()
     }
 
     func send(data: Data) throws {
