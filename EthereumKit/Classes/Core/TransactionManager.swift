@@ -1,12 +1,17 @@
 import RxSwift
 
 class TransactionManager {
+    private let scheduler = ConcurrentDispatchQueueScheduler(queue: DispatchQueue(label: "transactionManager.ethereum_transactions", qos: .background))
     private let disposeBag = DisposeBag()
 
     weak var delegate: ITransactionManagerDelegate?
 
     private let storage: ITransactionStorage & IInternalTransactionStorage
     private let transactionsProvider: ITransactionsProvider
+
+    private var delayTime = 3
+    private let delayTimeIncreaseFactor = 2
+    private var retryCount = 0
 
     private(set) var syncState: SyncState = .notSynced(error: Kit.SyncError.notStarted) {
         didSet {
@@ -45,6 +50,44 @@ class TransactionManager {
         transactionWithInternal.transaction.value == 0 && transactionWithInternal.internalTransactions.isEmpty
     }
 
+    func sync(delayTime: Int? = nil) {
+        let lastTransaction = storage.lastTransaction
+        let lastTransactionBlockHeight = lastTransaction?.blockNumber ?? 0
+        let lastInternalTransactionBlockHeight = storage.lastInternalTransactionBlockHeight ?? 0
+
+        var requestsSingle = Single.zip(
+                transactionsProvider.transactionsSingle(startBlock: lastTransactionBlockHeight + 1),
+                transactionsProvider.internalTransactionsSingle(startBlock: lastInternalTransactionBlockHeight + 1)
+        ) { ($0, $1)}
+
+        if let delayTime = delayTime {
+            requestsSingle = requestsSingle.delaySubscription(DispatchTimeInterval.seconds(delayTime), scheduler: scheduler)
+        }
+
+        requestsSingle
+                .subscribeOn(scheduler)
+                .subscribe(onSuccess: { [weak self] transactions, internalTransactions in
+                    guard let manager = self else {
+                        return
+                    }
+
+                    if transactions.isEmpty && internalTransactions.isEmpty && manager.retryCount > 0 {
+                        manager.retryCount -= 1
+                        manager.delayTime = manager.delayTime * manager.delayTimeIncreaseFactor
+                        manager.sync(delayTime: manager.delayTime)
+                        return
+                    }
+
+                    manager.retryCount = 0
+                    manager.update(transactions: transactions, internalTransactions: internalTransactions, lastTransactionHash: lastTransaction?.hash)
+                    manager.syncState = .synced
+                }, onError: { [weak self] error in
+                    self?.retryCount = 0
+                    self?.syncState = .notSynced(error: error)
+                })
+                .disposed(by: disposeBag)
+    }
+
 }
 
 extension TransactionManager: ITransactionManager {
@@ -53,25 +96,21 @@ extension TransactionManager: ITransactionManager {
         transactionsProvider.source
     }
 
-    func refresh() {
+    func refresh(delay: Bool) {
+        if case .syncing = syncState {
+            return
+        }
+
         syncState = .syncing(progress: nil)
 
-        let lastTransaction = storage.lastTransaction
-        let lastTransactionBlockHeight = lastTransaction?.blockNumber ?? 0
-        let lastInternalTransactionBlockHeight = storage.lastInternalTransactionBlockHeight ?? 0
+        if delay {
+            retryCount = 5
+            delayTime = 3
 
-        Single.zip(
-                transactionsProvider.transactionsSingle(startBlock: lastTransactionBlockHeight + 1),
-                transactionsProvider.internalTransactionsSingle(startBlock: lastInternalTransactionBlockHeight + 1)
-        ) { ($0, $1)}
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                .subscribe(onSuccess: { [weak self] transactions, internalTransactions in
-                    self?.update(transactions: transactions, internalTransactions: internalTransactions, lastTransactionHash: lastTransaction?.hash)
-                    self?.syncState = .synced
-                }, onError: { [weak self] error in
-                    self?.syncState = .notSynced(error: error)
-                })
-                .disposed(by: disposeBag)
+            sync(delayTime: delayTime)
+        } else {
+            sync()
+        }
     }
 
     func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[TransactionWithInternal]> {

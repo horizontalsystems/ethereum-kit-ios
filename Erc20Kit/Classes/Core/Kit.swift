@@ -50,6 +50,7 @@ public class Kit {
         case .synced:
             state.syncState = .syncing
             balanceManager.sync()
+            transactionManager.immediateSync()
         case .syncing:
             state.syncState = .syncing
         case .notSynced(let error):
@@ -62,8 +63,8 @@ public class Kit {
 extension Kit {
 
     public func refresh() {
-        state.transactionsSyncState = .syncing
-        transactionManager.sync()
+//        state.transactionsSyncState = .syncing
+//        transactionManager.sync()
     }
 
     public var syncState: SyncState {
@@ -141,6 +142,10 @@ extension Kit {
 
 extension Kit: ITransactionManagerDelegate {
 
+    func onSyncStarted() {
+        state.transactionsSyncState = .syncing
+    }
+
     func onSyncSuccess(transactions: [Transaction]) {
         if !transactions.isEmpty {
             state.transactionsSubject.onNext(transactions)
@@ -158,8 +163,16 @@ extension Kit: ITransactionManagerDelegate {
 extension Kit: IBalanceManagerDelegate {
 
     func onSyncBalanceSuccess(balance: BigUInt) {
-        state.balance = balance
+        if state.balance == balance {
+            if case .synced = state.syncState {
+                transactionManager.delayedSync(expectTransaction: false)
+            }
+        } else {
+            transactionManager.delayedSync(expectTransaction: true)
+        }
+
         state.syncState = .synced
+        state.balance = balance
     }
 
     func onSyncBalanceFailed(error: Error) {

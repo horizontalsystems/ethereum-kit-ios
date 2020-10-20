@@ -32,6 +32,7 @@ protocol IRpcSyncerDelegate: AnyObject {
     func didUpdate(lastBlockLogsBloom: String)
     func didUpdate(lastBlockHeight: Int)
     func didUpdate(balance: BigUInt)
+    func didUpdate(nonce: Int)
 }
 
 protocol IWebSocket: AnyObject {

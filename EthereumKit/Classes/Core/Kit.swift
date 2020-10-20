@@ -100,7 +100,6 @@ extension Kit {
 
     public func start() {
         blockchain.start()
-        transactionManager.refresh()
     }
 
     public func stop() {
@@ -108,8 +107,8 @@ extension Kit {
     }
 
     public func refresh() {
-        blockchain.refresh()
-        transactionManager.refresh()
+//        blockchain.refresh()
+//        transactionManager.refresh()
     }
 
     public func transactionsSingle(fromHash: Data? = nil, limit: Int? = nil) -> Single<[TransactionWithInternal]> {
@@ -238,6 +237,7 @@ extension Kit: IBlockchainDelegate {
             return
         }
 
+        transactionManager.refresh(delay: state.balance != nil)
         state.balance = balance
 
         balanceSubject.onNext(balance)
@@ -245,6 +245,15 @@ extension Kit: IBlockchainDelegate {
 
     func onUpdate(syncState: SyncState) {
         syncStateSubject.onNext(syncState)
+    }
+
+    func onUpdate(nonce: Int) {
+        guard state.nonce != nonce else {
+            return
+        }
+
+        transactionManager.refresh(delay: state.nonce != nil)
+        state.nonce = nonce
     }
 
 }

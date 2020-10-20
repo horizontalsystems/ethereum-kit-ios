@@ -3,7 +3,7 @@ import BigInt
 import EthereumKit
 
 class TransactionManager {
-    private let scheduler = ConcurrentDispatchQueueScheduler(queue: DispatchQueue(label: "transactionManager.handle_logs", qos: .background))
+    private let scheduler = ConcurrentDispatchQueueScheduler(queue: DispatchQueue(label: "transactionManager.erc20_transactions", qos: .background))
     private let disposeBag = DisposeBag()
 
     weak var delegate: ITransactionManagerDelegate?
@@ -15,6 +15,11 @@ class TransactionManager {
     private let dataProvider: IDataProvider
     private let transactionBuilder: ITransactionBuilder
 
+    private var delayTime = 3
+    private let delayTimeIncreaseFactor = 2
+    private var retryCount = 0
+    private var syncing: Bool = false
+
     init(contractAddress: Address, address: Address, storage: ITransactionStorage, transactionProvider: ITransactionProvider, dataProvider: IDataProvider, transactionBuilder: ITransactionBuilder) {
         self.contractAddress = contractAddress
         self.address = address
@@ -24,7 +29,7 @@ class TransactionManager {
         self.transactionBuilder = transactionBuilder
     }
 
-    private func handle(transactions: [Transaction]) {
+    private func withFailedTransactions(transactions: [Transaction]) -> Single<[Transaction]> {
         var pendingTransactions = storage.pendingTransactions
 
         for transaction in transactions {
@@ -37,26 +42,35 @@ class TransactionManager {
         }
 
         guard !pendingTransactions.isEmpty else {
-            finishSync(transactions: transactions)
-            return
+            return Single.just(transactions)
         }
 
-        dataProvider.getTransactionStatuses(transactionHashes: pendingTransactions.map { $0.transactionHash })
+        return dataProvider.getTransactionStatuses(transactionHashes: pendingTransactions.map { $0.transactionHash })
                 .observeOn(scheduler)
                 .map { [weak self] statuses -> [Transaction] in
-                    self?.failedTransactions(pendingTransactions: pendingTransactions, statuses: statuses) ?? []
+                    transactions + (self?.failedTransactions(pendingTransactions: pendingTransactions, statuses: statuses) ?? [])
                 }
-                .subscribe(onSuccess: { [weak self] failedTransactions in
-                    self?.finishSync(transactions: transactions + failedTransactions)
-                }, onError: { [weak self] _ in
-                    self?.finishSync(transactions: transactions)
-                })
-                .disposed(by: disposeBag)
+                .catchErrorJustReturn(transactions)
     }
 
     private func finishSync(transactions: [Transaction]) {
+        if transactions.isEmpty && retryCount > 0 {
+            retryCount -= 1
+            delayTime = delayTime * delayTimeIncreaseFactor
+            sync(delayTime: delayTime)
+            return
+        }
+        
+        syncing = false
+        retryCount = 0
         storage.save(transactions: transactions)
         delegate?.onSyncSuccess(transactions: transactions)
+    }
+
+    func finishSync(error: Error) {
+        syncing = false
+        retryCount = 0
+        delegate?.onSyncTransactionsFailed(error: error)
     }
 
     private func failedTransactions(pendingTransactions: [Transaction], statuses: [(Data, TransactionStatus)]) -> [Transaction] {
@@ -67,6 +81,29 @@ class TransactionManager {
             }
             return nil
         }
+    }
+
+    private func sync(delayTime: Int? = nil) {
+        let lastBlockHeight = dataProvider.lastBlockHeight
+        let lastTransactionBlockHeight = storage.lastTransactionBlockHeight ?? 0
+
+        var single = transactionProvider
+                .transactions(contractAddress: contractAddress, address: address, from: lastTransactionBlockHeight + 1, to: lastBlockHeight)
+                .subscribeOn(scheduler)
+                .flatMap { [weak self] transactions -> Single<[Transaction]> in
+                    self?.withFailedTransactions(transactions: transactions.filter { $0.value != 0 }) ?? Single.just(transactions)
+                }
+
+        if let delayTime = delayTime {
+            single = single.delaySubscription(DispatchTimeInterval.seconds(delayTime), scheduler: scheduler)
+        }
+
+        single.subscribe(onSuccess: { [weak self] transactions in
+                    self?.finishSync(transactions: transactions)
+                }, onError: { [weak self] error in
+                    self?.finishSync(error: error)
+                })
+                .disposed(by: disposeBag)
     }
 
 }
@@ -97,18 +134,28 @@ extension TransactionManager: ITransactionManager {
                 })
     }
 
-    func sync() {
-        let lastBlockHeight = dataProvider.lastBlockHeight
-        let lastTransactionBlockHeight = storage.lastTransactionBlockHeight ?? 0
+    func immediateSync() {
+        guard !syncing else {
+            return
+        }
 
-        transactionProvider.transactions(contractAddress: contractAddress, address: address, from: lastTransactionBlockHeight + 1, to: lastBlockHeight)
-                .subscribeOn(scheduler)
-                .subscribe(onSuccess: { [weak self] transactions in
-                    self?.handle(transactions: transactions.filter { $0.value != 0 })
-                }, onError: { [weak self] error in
-                    self?.delegate?.onSyncTransactionsFailed(error: error)
-                })
-                .disposed(by: disposeBag)
+        syncing = true
+        delegate?.onSyncStarted()
+
+        sync()
     }
 
+    func delayedSync(expectTransaction: Bool) {
+        guard !syncing else {
+            return
+        }
+
+        retryCount = expectTransaction ? 5 : 3
+        delayTime = 3
+
+        syncing = true
+        delegate?.onSyncStarted()
+
+        sync(delayTime: delayTime)
+    }
 }

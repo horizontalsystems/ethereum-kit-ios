@@ -8,6 +8,7 @@ protocol IBalanceManagerDelegate: class {
 }
 
 protocol ITransactionManagerDelegate: class {
+    func onSyncStarted()
     func onSyncSuccess(transactions: [Transaction])
     func onSyncTransactionsFailed(error: Error)
 }
@@ -22,7 +23,8 @@ protocol ITransactionManager {
     func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[Transaction]>
     func transaction(hash: Data, interTransactionIndex: Int) -> Transaction?
 
-    func sync()
+    func immediateSync()
+    func delayedSync(expectTransaction: Bool)
     func transactionContractData(to: Address, value: BigUInt) -> Data
     func sendSingle(to: Address, value: BigUInt, gasPrice: Int, gasLimit: Int) -> Single<Transaction>
 }

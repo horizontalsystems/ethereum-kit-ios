@@ -29,6 +29,7 @@ protocol IBlockchainDelegate: class {
     func onUpdate(lastBlockHeight: Int)
     func onUpdate(balance: BigUInt)
     func onUpdate(syncState: SyncState)
+    func onUpdate(nonce: Int)
 }
 
 protocol ITransactionManager {
@@ -36,7 +37,7 @@ protocol ITransactionManager {
     var source: String { get }
     var delegate: ITransactionManagerDelegate? { get set }
 
-    func refresh()
+    func refresh(delay: Bool)
     func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[TransactionWithInternal]>
     func transaction(hash: Data) -> TransactionWithInternal?
     func handle(sentTransaction: Transaction)
