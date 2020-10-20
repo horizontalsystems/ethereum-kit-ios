@@ -78,6 +78,10 @@ extension RpcBlockchain: IRpcSyncerDelegate {
         delegate?.onUpdate(balance: balance)
     }
 
+    func didUpdate(nonce: Int) {
+        delegate?.onUpdate(nonce: nonce)
+    }
+
 }
 
 extension RpcBlockchain: IBlockchain {

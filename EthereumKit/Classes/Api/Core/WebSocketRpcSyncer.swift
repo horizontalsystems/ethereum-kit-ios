@@ -85,6 +85,7 @@ class WebSocketRpcSyncer {
                 onSuccess: { [weak self] lastBlockHeight in
                     self?.delegate?.didUpdate(lastBlockHeight: lastBlockHeight)
                     self?.fetchBalance()
+                    self?.fetchNonce()
                 },
                 onError: { [weak self] error in
                     self?.onFailSync(error: error)
@@ -105,6 +106,18 @@ class WebSocketRpcSyncer {
         )
     }
 
+    private func fetchNonce() {
+        send(
+                rpc: GetTransactionCountJsonRpc(address: address, defaultBlockParameter: .latest),
+                onSuccess: { [weak self] nonce in
+                    self?.delegate?.didUpdate(nonce: nonce)
+                },
+                onError: { [weak self] error in
+                    self?.onFailSync(error: error)
+                }
+        )
+    }
+
     private func subscribeToNewHeads() {
         subscribe(
                 subscription: NewHeadsRpcSubscription(),
@@ -118,6 +131,7 @@ class WebSocketRpcSyncer {
                     self?.delegate?.didUpdate(lastBlockLogsBloom: header.logsBloom)
                     self?.delegate?.didUpdate(lastBlockHeight: header.number)
                     self?.fetchBalance()
+                    self?.fetchNonce()
                 },
                 errorHandler: { [weak self] error in
                     self?.logger?.error("NewHeads Handle Failed: \(error)")
