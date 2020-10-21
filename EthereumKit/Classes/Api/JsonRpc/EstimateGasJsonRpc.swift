@@ -2,12 +2,14 @@ import BigInt
 
 class EstimateGasJsonRpc: IntJsonRpc {
 
-    init(from: Address, to: Address, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) {
+    init(from: Address, to: Address?, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) {
         var params: [String: Any] = [
-            "from": from.hex,
-            "to": to.hex
+            "from": from.hex
         ]
 
+        if let to = to {
+            params["to"] = to.hex
+        }
         if let amount = amount {
             params["value"] = "0x" + amount.serialize().hex.removeLeadingZeros()
         }

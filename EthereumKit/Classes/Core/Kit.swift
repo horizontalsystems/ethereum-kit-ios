@@ -200,7 +200,7 @@ extension Kit {
         return blockchain.estimateGas(to: to, amount: resolvedAmount, gasLimit: maxGasLimit, gasPrice: gasPrice, data: nil)
     }
 
-    public func estimateGas(to: Address, amount: BigUInt?, gasPrice: Int?, data: Data?) -> Single<Int> {
+    public func estimateGas(to: Address?, amount: BigUInt?, gasPrice: Int?, data: Data?) -> Single<Int> {
         blockchain.estimateGas(to: to, amount: amount, gasLimit: maxGasLimit, gasPrice: gasPrice, data: data)
     }
 
