@@ -11,7 +11,7 @@ class EstimateGasJsonRpc: IntJsonRpc {
             params["to"] = to.hex
         }
         if let amount = amount {
-            params["value"] = "0x" + amount.serialize().hex.removeLeadingZeros()
+            params["value"] = "0x" + (amount == 0 ? "0" : amount.serialize().hex.removeLeadingZeros())
         }
         if let gasLimit = gasLimit {
             params["gas"] = "0x" + String(gasLimit, radix: 16).removeLeadingZeros()
