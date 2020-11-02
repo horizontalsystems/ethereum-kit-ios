@@ -31,32 +31,12 @@ class AllowanceManager {
                 }
     }
 
-    func estimateApproveSingle(spenderAddress: Address, amount: BigUInt, gasPrice: Int) -> Single<Int> {
-        ethereumKit.estimateGas(
+    func approveTransactionData(spenderAddress: Address, amount: BigUInt) -> TransactionData {
+        TransactionData(
                 to: contractAddress,
-                amount: nil,
-                gasPrice: gasPrice,
-                data: ApproveMethod(spender: spenderAddress, value: amount).encodedABI()
+                value: BigUInt.zero,
+                input: ApproveMethod(spender: spenderAddress, value: amount).encodedABI()
         )
-    }
-
-    func approveSingle(spenderAddress: Address, amount: BigUInt, gasLimit: Int, gasPrice: Int) -> Single<Transaction> {
-        let approveMethod = ApproveMethod(spender: spenderAddress, value: amount)
-
-        return ethereumKit.sendSingle(
-                        address: contractAddress,
-                        value: BigUInt.zero,
-                        transactionInput: ApproveMethod(spender: spenderAddress, value: amount).encodedABI(),
-                        gasPrice: gasPrice,
-                        gasLimit: gasLimit
-                ).flatMap { transactionWithInternal in
-                    guard let approve = approveMethod.erc20Transactions(ethTx: transactionWithInternal.transaction).first else {
-                        return Single.error(AllowanceParsingError.notFound)
-                    }
-                    return Single.just(approve)
-                }.do(onSuccess: { [weak self] transaction in
-                    self?.storage.save(transactions: [transaction])
-                })
     }
 
 }

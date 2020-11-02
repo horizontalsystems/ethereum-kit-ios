@@ -127,15 +127,8 @@ extension Kit {
                 }
     }
 
-    public func estimateApproveSingle(spenderAddress: Address, amount: BigUInt, gasPrice: Int) -> Single<Int> {
-        allowanceManager.estimateApproveSingle(spenderAddress: spenderAddress, amount: amount, gasPrice: gasPrice)
-    }
-
-    public func approveSingle(spenderAddress: Address, amount: BigUInt, gasLimit: Int, gasPrice: Int) -> Single<Transaction> {
-        allowanceManager.approveSingle(spenderAddress: spenderAddress, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice)
-            .do(onSuccess: { [weak self] tx in
-                self?.state.transactionsSubject.onNext([tx])
-            })
+    public func approveTransactionData(spenderAddress: Address, amount: BigUInt) -> TransactionData {
+        allowanceManager.approveTransactionData(spenderAddress: spenderAddress, amount: amount)
     }
 
 }
