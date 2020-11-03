@@ -34,6 +34,7 @@ class SwapController: UIViewController {
 
     private let gasPrice = 200_000_000_000
 
+    private let ethereumKit = Manager.shared.ethereumKit!
     private let fromAdapter: IAdapter = Manager.shared.erc20Adapters[1]
     private let toAdapter: IAdapter = Manager.shared.ethereumAdapter
 
@@ -408,21 +409,23 @@ class SwapController: UIViewController {
     }
 
     @objc private func onTapApprove() {
-        guard let adapter = fromAdapter as? Erc20Adapter else {
+        guard let adapter = fromAdapter as? Erc20Adapter, let token = fromToken else {
             return
         }
 
-        guard let amount = amount(textField: fromTextField) else {
+        guard let decimalAmount = amount(textField: fromTextField), let amount = BigUInt(decimalAmount.roundedString(decimal: token.decimal)) else {
             return
         }
 
         let gasPrice = self.gasPrice
         let spenderAddress = uniswapKit.routerAddress
+        
+        let transactionData = adapter.erc20Kit.approveTransactionData(spenderAddress: spenderAddress, amount: amount)
 
-        adapter.estimateApproveSingle(spenderAddress: spenderAddress, amount: amount, gasPrice: gasPrice)
-                .flatMap { gasLimit -> Single<String> in
+        ethereumKit.estimateGas(to: transactionData.to, amount: transactionData.value, gasPrice: gasPrice, data: transactionData.input)
+                .flatMap { gasLimit -> Single<TransactionWithInternal> in
                     print("GAS LIMIT SUCCESS: \(gasLimit)")
-                    return adapter.approveSingle(spenderAddress: spenderAddress, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice)
+                    return self.ethereumKit.sendSingle(address: transactionData.to, value: transactionData.value, transactionInput: transactionData.input, gasPrice: gasPrice, gasLimit: gasLimit)
                 }
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)

@@ -4,7 +4,7 @@ import RxSwift
 import BigInt
 
 class EthereumAdapter {
-    private let ethereumKit: Kit
+    let ethereumKit: Kit
     private let decimal = 18
 
     init(ethereumKit: Kit) {
