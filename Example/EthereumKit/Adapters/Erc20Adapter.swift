@@ -5,7 +5,7 @@ import BigInt
 
 class Erc20Adapter {
     private let ethereumKit: EthereumKit.Kit
-    private let erc20Kit: Erc20Kit.Kit
+    let erc20Kit: Erc20Kit.Kit
 
     let token: Erc20Token
 
@@ -61,21 +61,6 @@ class Erc20Adapter {
                     }
 
                     return 0
-                }
-    }
-
-    func estimateApproveSingle(spenderAddress: Address, amount: Decimal, gasPrice: Int) -> Single<Int> {
-        let amount = BigUInt(amount.roundedString(decimal: token.decimal))!
-
-        return erc20Kit.estimateApproveSingle(spenderAddress: spenderAddress, amount: amount, gasPrice: gasPrice)
-    }
-
-    func approveSingle(spenderAddress: Address, amount: Decimal, gasLimit: Int, gasPrice: Int) -> Single<String> {
-        let amount = BigUInt(amount.roundedString(decimal: token.decimal))!
-
-        return erc20Kit.approveSingle(spenderAddress: spenderAddress, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice)
-                .map { transaction in
-                    transaction.transactionHash.toHexString()
                 }
     }
 
