@@ -22,6 +22,7 @@ class InfuraWebSocket {
             delegate?.didUpdate(state: state)
         }
     }
+    private var mustReconnect = false
 
     init(domain: String, projectId: String, projectSecret: String?, reachabilityManager: IReachabilityManager, logger: Logger? = nil) {
         self.reachabilityManager = reachabilityManager
@@ -47,20 +48,34 @@ class InfuraWebSocket {
                     }
                 })
                 .disposed(by: disposeBag)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(appCameToForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
+    }
+    
+    @objc func appCameToForeground() {
+        reconnect()
+    }
+    
+    private func connect() {
+        guard case .disconnected = state else {
+            return
+        }
+        state = .connecting
+        
+        socket.connect()
+        mustReconnect = false
     }
 
     private func reconnect() {
         guard isStarted else {
             return
         }
-
-        if case .connecting = state {
-            return
+        
+        if case .disconnected = state {
+            connect()
+        } else {
+            mustReconnect = true
         }
-
-        state = .connecting
-
-        socket.connect()
     }
 
 }
@@ -77,9 +92,8 @@ extension InfuraWebSocket: WebSocketDelegate {
         logger?.debug("WebSocket is disconnected: \(error?.localizedDescription ?? "Unknown error")")
 
         state = .disconnected(error: error ?? WebSocketState.DisconnectError.socketDisconnected(reason: "Unknown reason"))
-
-        if let nsError = error as NSError?,
-           nsError.domain == InfuraWebSocket.unexpectedDisconnectErrorDomain && nsError.code == InfuraWebSocket.unexpectedDisconnectErrorCode {
+        
+        if mustReconnect {
             reconnect()
         }
     }
@@ -108,7 +122,7 @@ extension InfuraWebSocket: IWebSocket {
 
     func start() {
         isStarted = true
-        socket.connect()
+        connect()
     }
 
     func stop() {
