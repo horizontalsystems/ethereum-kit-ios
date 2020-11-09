@@ -442,19 +442,33 @@ class SwapController: UIViewController {
             return
         }
 
-        uniswapKit.estimateSwapSingle(tradeData: tradeData, gasPrice: gasPrice)
-                .flatMap { [unowned self] gasLimit -> Single<TransactionWithInternal> in
-                    print("GAS LIMIT SUCCESS: \(gasLimit)")
-                    return self.uniswapKit.swapSingle(tradeData: tradeData, gasLimit: gasLimit, gasPrice: self.gasPrice)
-                }
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
-                .observeOn(MainScheduler.instance)
-                .subscribe(onSuccess: { transactionWithInternal in
-                    print("SUCCESS: \(transactionWithInternal.transaction.hash.toHexString())")
-                }, onError: { error in
-                    print("ERROR: \(error)")
-                })
-                .disposed(by: disposeBag)
+        do {
+            let transactionData = try uniswapKit.transactionData(tradeData: tradeData)
+            return ethereumKit.estimateGas(
+                            to: transactionData.to,
+                            amount: transactionData.value == 0 ? nil : transactionData.value,
+                            gasPrice: gasPrice,
+                            data: transactionData.input
+                    ).flatMap { [unowned self] gasLimit -> Single<TransactionWithInternal> in
+                        print("GAS LIMIT SUCCESS: \(gasLimit)")
+                        return ethereumKit.sendSingle(
+                                address: transactionData.to,
+                                value: transactionData.value,
+                                transactionInput: transactionData.input,
+                                gasPrice: gasPrice,
+                                gasLimit: gasLimit)
+                    }
+                    .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+                    .observeOn(MainScheduler.instance)
+                    .subscribe(onSuccess: { transactionWithInternal in
+                        print("SUCCESS: \(transactionWithInternal.transaction.hash.toHexString())")
+                    }, onError: { error in
+                        print("ERROR: \(error)")
+                    })
+                    .disposed(by: disposeBag)
+        } catch {
+            print("ERROR: \(error)")
+        }
     }
 
 }

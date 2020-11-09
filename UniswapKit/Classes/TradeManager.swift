@@ -113,35 +113,14 @@ extension TradeManager {
                 }
     }
 
-    func estimateSwapSingle(tradeData: TradeData, gasPrice: Int) -> Single<Int> {
-        do {
-            let swapData = try buildSwapData(tradeData: tradeData)
+    func transactionData(tradeData: TradeData) throws -> TransactionData {
+        let swapData = try buildSwapData(tradeData: tradeData)
 
-            return ethereumKit.estimateGas(
-                    to: TradeManager.routerAddress,
-                    amount: swapData.amount == 0 ? nil : swapData.amount,
-                    gasPrice: gasPrice,
-                    data: swapData.input
-            )
-        } catch {
-            return Single.error(error)
-        }
-    }
-
-    func swapSingle(tradeData: TradeData, gasLimit: Int, gasPrice: Int) -> Single<TransactionWithInternal> {
-        do {
-            let swapData = try buildSwapData(tradeData: tradeData)
-
-            return ethereumKit.sendSingle(
-                    address: TradeManager.routerAddress,
-                    value: swapData.amount,
-                    transactionInput: swapData.input,
-                    gasPrice: gasPrice,
-                    gasLimit: gasLimit
-            )
-        } catch {
-            return Single.error(error)
-        }
+        return TransactionData(
+                to: TradeManager.routerAddress,
+                value: swapData.amount,
+                input: swapData.input
+        )
     }
 
 }

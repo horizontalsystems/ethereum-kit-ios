@@ -78,7 +78,7 @@ extension Kit {
                 tokenAmountOut: tokenAmountOut
         ).sorted()
 
-        print("Trades: \(sortedTrades)")
+//        print("Trades: \(sortedTrades)")
 
         guard let bestTrade = sortedTrades.first else {
             throw TradeError.tradeNotFound
@@ -87,12 +87,8 @@ extension Kit {
         return TradeData(trade: bestTrade, options: options)
     }
 
-    public func estimateSwapSingle(tradeData: TradeData, gasPrice: Int) -> Single<Int> {
-        tradeManager.estimateSwapSingle(tradeData: tradeData, gasPrice: gasPrice)
-    }
-
-    public func swapSingle(tradeData: TradeData, gasLimit: Int, gasPrice: Int) -> Single<TransactionWithInternal> {
-        tradeManager.swapSingle(tradeData: tradeData, gasLimit: gasLimit, gasPrice: gasPrice)
+    public func transactionData(tradeData: TradeData) throws -> TransactionData {
+        try tradeManager.transactionData(tradeData: tradeData)
     }
 
 }
