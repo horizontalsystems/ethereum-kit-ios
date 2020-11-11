@@ -2,7 +2,7 @@ import BigInt
 
 public class TradeData {
     let trade: Trade
-    let options: TradeOptions
+    public let options: TradeOptions
 
     init(trade: Trade, options: TradeOptions) {
         self.trade = trade
