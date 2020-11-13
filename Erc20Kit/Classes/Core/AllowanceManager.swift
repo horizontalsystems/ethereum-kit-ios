@@ -22,10 +22,10 @@ class AllowanceManager {
         self.address = address
     }
 
-    func allowanceSingle(spenderAddress: Address) -> Single<BigUInt> {
+    func allowanceSingle(spenderAddress: Address, defaultBlockParameter: DefaultBlockParameter) -> Single<BigUInt> {
         let data = AllowanceMethod(owner: address, spender: spenderAddress).encodedABI()
 
-        return ethereumKit.call(contractAddress: contractAddress, data: data)
+        return ethereumKit.call(contractAddress: contractAddress, data: data, defaultBlockParameter: defaultBlockParameter)
                 .map { data in
                     BigUInt(data[0...31])
                 }

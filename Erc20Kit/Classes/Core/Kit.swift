@@ -120,8 +120,8 @@ extension Kit {
         return ethereumKit.estimateGas(to: contractAddress, amount: nil, gasPrice: gasPrice, data: data)
     }
 
-    public func allowanceSingle(spenderAddress: Address) -> Single<String> {
-        allowanceManager.allowanceSingle(spenderAddress: spenderAddress)
+    public func allowanceSingle(spenderAddress: Address, defaultBlockParameter: DefaultBlockParameter = .latest) -> Single<String> {
+        allowanceManager.allowanceSingle(spenderAddress: spenderAddress, defaultBlockParameter: defaultBlockParameter)
                 .map { amount in
                     amount.description
                 }
