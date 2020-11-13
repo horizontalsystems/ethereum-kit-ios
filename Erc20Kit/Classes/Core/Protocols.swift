@@ -27,6 +27,7 @@ protocol ITransactionManager {
     func delayedSync(expectTransaction: Bool)
     func transactionContractData(to: Address, value: BigUInt) -> Data
     func sendSingle(to: Address, value: BigUInt, gasPrice: Int, gasLimit: Int) -> Single<Transaction>
+    func pendingTransactions() -> [Transaction]
 }
 
 protocol ITransactionProvider {
