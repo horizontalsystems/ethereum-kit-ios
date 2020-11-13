@@ -114,6 +114,10 @@ extension TransactionManager: ITransactionManager {
         storage.transactionsSingle(from: from, limit: limit)
     }
 
+    func pendingTransactions() -> [Transaction] {
+        storage.pendingTransactions
+    }
+
     func transaction(hash: Data, interTransactionIndex: Int) -> Transaction? {
         storage.transaction(hash: hash, interTransactionIndex: interTransactionIndex)
     }

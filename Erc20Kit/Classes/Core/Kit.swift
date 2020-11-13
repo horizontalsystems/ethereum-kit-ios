@@ -90,6 +90,10 @@ extension Kit {
         transactionManager.transactionsSingle(from: from, limit: limit)
     }
 
+    public func pendingTransactions() -> [Transaction] {
+        transactionManager.pendingTransactions()
+    }
+
     public func transaction(hash: Data, interTransactionIndex: Int) -> Transaction? {
         transactionManager.transaction(hash: hash, interTransactionIndex: interTransactionIndex)
     }
@@ -129,6 +133,13 @@ extension Kit {
 
     public func approveTransactionData(spenderAddress: Address, amount: BigUInt) -> TransactionData {
         allowanceManager.approveTransactionData(spenderAddress: spenderAddress, amount: amount)
+    }
+
+    public func approveSingle(spenderAddress: Address, amount: BigUInt, gasLimit: Int, gasPrice: Int) -> Single<Transaction> {
+        allowanceManager.approveSingle(spenderAddress: spenderAddress, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice)
+                .do(onSuccess: { [weak self] tx in
+                    self?.state.transactionsSubject.onNext([tx])
+                })
     }
 
 }
