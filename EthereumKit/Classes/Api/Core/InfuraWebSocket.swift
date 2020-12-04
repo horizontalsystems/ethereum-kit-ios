@@ -92,7 +92,14 @@ extension InfuraWebSocket: WebSocketDelegate {
         logger?.debug("WebSocket is disconnected: \(error?.localizedDescription ?? "Unknown error")")
 
         state = .disconnected(error: error ?? WebSocketState.DisconnectError.socketDisconnected(reason: "Unknown reason"))
-        
+
+        // This error occurs when network connection is changed (ex. from WiFi to LTE)
+        // ReachabilityManager doesn't signal when this happens, so this is added as exception
+        if let nsError = error as NSError?,
+           nsError.domain == InfuraWebSocket.unexpectedDisconnectErrorDomain && nsError.code == InfuraWebSocket.unexpectedDisconnectErrorCode {
+            mustReconnect = true
+        }
+
         if mustReconnect {
             reconnect()
         }
