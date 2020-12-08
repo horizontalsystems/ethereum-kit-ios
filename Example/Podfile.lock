@@ -5,7 +5,7 @@ PODS:
   - Cuckoo (1.4.1):
     - Cuckoo/Swift (= 1.4.1)
   - Cuckoo/Swift (1.4.1)
-  - Erc20Kit.swift (0.11.0):
+  - Erc20Kit.swift (0.11.1):
     - BigInt (~> 5.0)
     - EthereumKit.swift (~> 0.11)
     - GRDB.swift (~> 4.0)
@@ -13,7 +13,7 @@ PODS:
     - RxSwift (~> 5.0)
     - Secp256k1Kit.swift (~> 1.0)
     - UIExtensions.swift (~> 1.1.0)
-  - EthereumKit.swift (0.11.0):
+  - EthereumKit.swift (0.11.1):
     - BigInt (~> 5.0)
     - BlueSocket (~> 1.0)
     - GRDB.swift (~> 4.0)
@@ -103,8 +103,8 @@ SPEC CHECKSUMS:
   BigInt: f668a80089607f521586bbe29513d708491ef2f7
   BlueSocket: 1acd943acb07b55905291d608649fcfbf8cbd57d
   Cuckoo: 4625f7f54d9bb880123270e8969898d6c1d036b5
-  Erc20Kit.swift: 62a32994af3b0915486fbf62cb0f255f3eca2a68
-  EthereumKit.swift: 8d4284760d5845a410dd5630d145c7c3958f10bf
+  Erc20Kit.swift: 67a2b09cbb67881b6063ff758dcf54dc133c2f49
+  EthereumKit.swift: e07c58547b5ff30ae536b555ef060bc313f04160
   GRDB.swift: 8cc3ab7c8b8b4ac1761deb8dca4b51c1c9d429f8
   HdWalletKit.swift: 4af4ef744a446904261971e5c31daf2eea8403c5
   HsToolKit.swift: d47ef3e8c507a6e980f2f6d819c5b0cf05845910
@@ -121,4 +121,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 43ed41a4a715d1a068ba9b0c76f21db141f5d502
 
-COCOAPODS: 1.9.3
+COCOAPODS: 1.10.0
