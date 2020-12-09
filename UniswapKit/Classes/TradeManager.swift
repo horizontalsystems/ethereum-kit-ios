@@ -34,7 +34,7 @@ class TradeManager {
         switch trade.type {
         case .exactIn:
             amount = tokenIn.isEther ? trade.tokenAmountIn.rawAmount : 0
-            method = try buildMethodForExactIn(tokenIn: tokenIn, tokenOut: tokenOut, path: path, to: address, deadline: deadline, tradeData: tradeData, trade: trade)
+            method = try buildMethodForExactIn(tokenIn: tokenIn, tokenOut: tokenOut, path: path, to: to, deadline: deadline, tradeData: tradeData, trade: trade)
         case .exactOut:
             amount = tokenIn.isEther ? tradeData.tokenAmountInMax.rawAmount : 0
             method = try buildMethodForExactOut(tokenIn: tokenIn, tokenOut: tokenOut, path: path, to: to, deadline: deadline, tradeData: tradeData)
