@@ -16,12 +16,12 @@ protocol IBlockchain {
     func nonceSingle() -> Single<Int>
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction>
 
-    func getLogsSingle(address: Address?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]>
-    func transactionReceiptSingle(transactionHash: Data) -> Single<TransactionReceipt?>
+    func transactionReceiptSingle(transactionHash: Data) -> Single<RpcTransactionReceipt?>
     func transactionSingle(transactionHash: Data) -> Single<RpcTransaction?>
     func getStorageAt(contractAddress: Address, positionData: Data, defaultBlockParameter: DefaultBlockParameter) -> Single<Data>
     func call(contractAddress: Address, data: Data, defaultBlockParameter: DefaultBlockParameter) -> Single<Data>
     func estimateGas(to: Address?, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int>
+    func getBlock(blockNumber: Int) -> Single<RpcBlock?>
 }
 
 protocol IBlockchainDelegate: class {
@@ -32,38 +32,38 @@ protocol IBlockchainDelegate: class {
     func onUpdate(nonce: Int)
 }
 
-protocol ITransactionManager {
-    var syncState: SyncState { get }
-    var source: String { get }
-    var delegate: ITransactionManagerDelegate? { get set }
-
-    func refresh(delay: Bool)
-    func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[TransactionWithInternal]>
-    func transaction(hash: Data) -> TransactionWithInternal?
-    func handle(sentTransaction: Transaction)
-}
-
 protocol ITransactionStorage {
-    var lastTransaction: Transaction? { get }
+    func getNotSyncedTransactions(limit: Int) -> [NotSyncedTransaction]
+    func add(notSyncedTransactions: [NotSyncedTransaction])
+    func update(notSyncedTransaction: NotSyncedTransaction)
+    func remove(notSyncedTransaction: NotSyncedTransaction)
 
-    func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[TransactionWithInternal]>
-    func transaction(hash: Data) -> TransactionWithInternal?
+    func save(transaction: Transaction)
     func save(transactions: [Transaction])
-}
 
-protocol IInternalTransactionStorage {
-    var lastInternalTransactionBlockHeight: Int? { get }
+    func save(transactionReceipt: TransactionReceipt)
+    func getTransactionReceipt(hash: Data) -> TransactionReceipt?
+
+    func save(logs: [TransactionLog])
     func save(internalTransactions: [InternalTransaction])
+
+    func getHashesFromTransactions() -> [Data]
+    func etherTransactionsSingle(address: Address, fromHash: Data?, limit: Int?) -> Single<[FullTransaction]>
+    func transaction(hash: Data) -> FullTransaction?
+    func fullTransactions(byHashes: [Data]) -> [FullTransaction]
+
+    func transactionSyncerState(id: String) -> TransactionSyncerState?
+    func save(transactionSyncerState: TransactionSyncerState)
 }
 
 protocol ITransactionsProvider {
     var source: String { get }
 
-    func transactionsSingle(startBlock: Int) -> Single<[Transaction]>
+    func transactionsSingle(startBlock: Int) -> Single<[EtherscanTransaction]>
     func internalTransactionsSingle(startBlock: Int) -> Single<[InternalTransaction]>
 }
 
 protocol ITransactionManagerDelegate: AnyObject {
     func onUpdate(transactionsSyncState: SyncState)
-    func onUpdate(transactionsWithInternal: [TransactionWithInternal])
+    func onUpdate(transactionsWithInternal: [FullTransaction])
 }

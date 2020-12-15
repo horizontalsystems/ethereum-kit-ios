@@ -11,8 +11,8 @@ class EthereumAdapter {
         self.ethereumKit = ethereumKit
     }
 
-    private func transactionRecord(transactionWithInternal: TransactionWithInternal) -> TransactionRecord {
-        let transaction = transactionWithInternal.transaction
+    private func transactionRecord(fullTransaction: FullTransaction) -> TransactionRecord {
+        let transaction = fullTransaction.transaction
 
         let from = TransactionAddress(
                 address: transaction.from,
@@ -31,7 +31,7 @@ class EthereumAdapter {
             amount = Decimal(sign: sign, exponent: -decimal, significand: significand)
         }
 
-        for internalTransaction in transactionWithInternal.internalTransactions {
+        for internalTransaction in fullTransaction.internalTransactions {
             if let significand = Decimal(string: internalTransaction.value.description), significand != 0 {
                 let mine = internalTransaction.from == receiveAddress
                 let sign: FloatingPointSign = mine ? .minus : .plus
@@ -40,18 +40,18 @@ class EthereumAdapter {
             }
         }
 
-        let isError = (transaction.isError ?? 0) != 0
+        let isError = (fullTransaction.receiptWithLogs?.receipt.status ?? 0) != 0
 
         return TransactionRecord(
                 transactionHash: transaction.hash.toHexString(),
                 transactionHashData: transaction.hash,
-                transactionIndex: transaction.transactionIndex ?? 0,
+                transactionIndex: fullTransaction.receiptWithLogs?.receipt.transactionIndex ?? 0,
                 interTransactionIndex: 0,
                 amount: amount,
                 timestamp: transaction.timestamp,
                 from: from,
                 to: to,
-                blockHeight: transaction.blockNumber,
+                blockHeight: fullTransaction.receiptWithLogs?.receipt.blockNumber,
                 isError: isError,
                 type: ""
         )
@@ -124,16 +124,16 @@ extension EthereumAdapter: IAdapter {
     }
 
     func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionRecord]> {
-        ethereumKit.transactionsSingle(fromHash: from?.hash, limit: limit)
+        ethereumKit.etherTransactionsSingle(fromHash: from?.hash, limit: limit)
                 .map { [weak self] in
                     $0.compactMap {
-                        self?.transactionRecord(transactionWithInternal: $0)
+                        self?.transactionRecord(fullTransaction: $0)
                     }
                 }
     }
 
     func transaction(hash: Data, interTransactionIndex: Int) -> TransactionRecord? {
-        ethereumKit.transaction(hash: hash).map { transactionRecord(transactionWithInternal: $0) }
+        ethereumKit.transaction(hash: hash).map { transactionRecord(fullTransaction: $0) }
     }
 
     func estimatedGasLimit(to address: Address, value: Decimal) -> Single<Int> {

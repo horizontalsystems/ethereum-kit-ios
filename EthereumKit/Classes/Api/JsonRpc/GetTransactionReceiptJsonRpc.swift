@@ -1,4 +1,4 @@
-class GetTransactionReceiptJsonRpc: JsonRpc<TransactionReceipt?> {
+class GetTransactionReceiptJsonRpc: JsonRpc<RpcTransactionReceipt?> {
 
     init(transactionHash: Data) {
         super.init(
@@ -7,8 +7,8 @@ class GetTransactionReceiptJsonRpc: JsonRpc<TransactionReceipt?> {
         )
     }
 
-    override func parse(result: Any?) throws -> TransactionReceipt? {
-        try result.map { try TransactionReceipt(JSONObject: $0) }
+    override func parse(result: Any?) throws -> RpcTransactionReceipt? {
+        try result.map { try RpcTransactionReceipt(JSONObject: $0) }
     }
 
 }

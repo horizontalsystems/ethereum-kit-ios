@@ -18,6 +18,6 @@ struct TransactionRecord {
 }
 
 struct TransactionAddress {
-    let address: Address
+    let address: Address?
     let mine: Bool
 }

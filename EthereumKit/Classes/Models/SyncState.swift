@@ -2,6 +2,18 @@ public enum SyncState {
     case synced
     case syncing(progress: Double?)
     case notSynced(error: Error)
+
+    var notSynced: Bool {
+        if case .notSynced = self { return true } else { return false }
+    }
+
+    var syncing: Bool {
+        if case .syncing = self { return true } else { return false }
+    }
+
+    var synced: Bool {
+        self == .synced
+    }
 }
 
 extension SyncState: Equatable {

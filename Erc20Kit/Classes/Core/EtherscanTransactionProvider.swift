@@ -35,13 +35,13 @@ class EtherscanTransactionProvider {
                         }
 
                         let ethTx = EthereumKit.Transaction(hash: hash, nonce: nonce, input: input, from: from, to: to, value: value, gasLimit: gasLimit, gasPrice: gasPrice, timestamp: timestamp)
-                        ethTx.blockHash = tx["blockHash"].flatMap { Data(hex: $0) }
-                        ethTx.blockNumber = tx["blockNumber"].flatMap({ Int($0)})
-                        ethTx.gasUsed = tx["gasUsed"].flatMap({ Int($0)})
-                        ethTx.cumulativeGasUsed = tx["cumulativeGasUsed"].flatMap({ Int($0)})
-                        ethTx.isError = tx["isError"].flatMap({ Int($0)})
-                        ethTx.transactionIndex = tx["transactionIndex"].flatMap({ Int($0)})
-                        ethTx.txReceiptStatus = tx["txreceipt_status"].flatMap({ Int($0)})
+//                        ethTx.blockHash = tx["blockHash"].flatMap { Data(hex: $0) }
+//                        ethTx.blockNumber = tx["blockNumber"].flatMap({ Int($0)})
+//                        ethTx.gasUsed = tx["gasUsed"].flatMap({ Int($0)})
+//                        ethTx.cumulativeGasUsed = tx["cumulativeGasUsed"].flatMap({ Int($0)})
+//                        ethTx.isError = tx["isError"].flatMap({ Int($0)})
+//                        ethTx.transactionIndex = tx["transactionIndex"].flatMap({ Int($0)})
+//                        ethTx.txReceiptStatus = tx["txreceipt_status"].flatMap({ Int($0)})
                         
                         return ethTx
                     }

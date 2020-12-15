@@ -7,7 +7,7 @@ class Configuration {
     let syncMode: SyncMode = .api
     let networkType: NetworkType = .ropsten
     let minLogLevel: Logger.Level = .error
-    let defaultsWords = ""
+    let defaultsWords = "apart approve black  comfort steel spin real renew tone primary key cherry"
 
     let infuraCredentials: (id: String, secret: String?) = (id: "2a1306f1d12f4c109a4d4fb9be46b02e", secret: "fc479a9290b64a84a15fa6544a130218")
     let etherscanApiKey = "GKNHXT22ED7PRVCKZATFZQD1YI7FK9AAYE"

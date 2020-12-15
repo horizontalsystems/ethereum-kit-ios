@@ -133,20 +133,7 @@ extension RpcBlockchain: IBlockchain {
         }
     }
 
-    func getLogsSingle(address: Address?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
-        syncer.single(rpc: GetLogsJsonRpc(address: address, fromBlock: .blockNumber(value: fromBlock), toBlock: .blockNumber(value: toBlock), topics: topics))
-                .flatMap { [unowned self] logs in
-                    Single.just(logs)
-
-//                    if pullTimestamps {
-//                        return self.pullTransactionTimestamps(ethereumLogs: logs)
-//                    } else {
-//                        return Single.just(logs)
-//                    }
-                }
-    }
-
-    func transactionReceiptSingle(transactionHash: Data) -> Single<TransactionReceipt?> {
+    func transactionReceiptSingle(transactionHash: Data) -> Single<RpcTransactionReceipt?> {
         syncer.single(rpc: GetTransactionReceiptJsonRpc(transactionHash: transactionHash))
     }
 
@@ -164,6 +151,10 @@ extension RpcBlockchain: IBlockchain {
 
     func estimateGas(to: Address?, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int> {
         syncer.single(rpc: EstimateGasJsonRpc(from: address, to: to, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice, data: data))
+    }
+
+    func getBlock(blockNumber: Int) -> Single<RpcBlock?> {
+        syncer.single(rpc: GetBlockByNumberJsonRpc(number: blockNumber))
     }
 
 }

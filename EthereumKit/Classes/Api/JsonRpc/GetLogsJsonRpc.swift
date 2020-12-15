@@ -1,6 +1,6 @@
 import Foundation
 
-class GetLogsJsonRpc: JsonRpc<[EthereumLog]> {
+class GetLogsJsonRpc: JsonRpc<[TransactionLog]> {
 
     init(address: Address?, fromBlock: DefaultBlockParameter?, toBlock: DefaultBlockParameter?, topics: [Any?]?) {
         var params = [String: Any]()
@@ -37,13 +37,13 @@ class GetLogsJsonRpc: JsonRpc<[EthereumLog]> {
         )
     }
 
-    override func parse(result: Any?) throws -> [EthereumLog] {
+    override func parse(result: Any?) throws -> [TransactionLog] {
         guard let array = result as? [Any] else {
             throw JsonRpcResponse.ResponseError.invalidResult(value: result)
         }
 
         return try array.map { jsonObject in
-            try EthereumLog(JSONObject: jsonObject)
+            try TransactionLog(JSONObject: jsonObject)
         }
     }
 
