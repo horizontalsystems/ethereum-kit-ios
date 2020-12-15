@@ -1,133 +1,79 @@
 import RxSwift
 
 class TransactionManager {
-    private let scheduler = ConcurrentDispatchQueueScheduler(queue: DispatchQueue(label: "transactionManager.ethereum_transactions", qos: .background))
+    private let address: Address
+    private let storage: ITransactionStorage
+
+    private let etherTransactionsSubject = PublishSubject<[FullTransaction]>()
     private let disposeBag = DisposeBag()
 
-    weak var delegate: ITransactionManagerDelegate?
-
-    private let storage: ITransactionStorage & IInternalTransactionStorage
-    private let transactionsProvider: ITransactionsProvider
-
-    private var delayTime = 3
-    private let delayTimeIncreaseFactor = 2
-    private var retryCount = 0
-
-    private(set) var syncState: SyncState = .notSynced(error: Kit.SyncError.notStarted) {
-        didSet {
-            if syncState != oldValue {
-                delegate?.onUpdate(transactionsSyncState: syncState)
-            }
-        }
+    var etherTransactionsObservable: Observable<[FullTransaction]> {
+        etherTransactionsSubject.asObservable()
     }
 
-    init(storage: ITransactionStorage & IInternalTransactionStorage, transactionsProvider: ITransactionsProvider) {
+    init(address: Address, storage: ITransactionStorage, transactionSyncManager: TransactionSyncManager) {
+        self.address = address
         self.storage = storage
-        self.transactionsProvider = transactionsProvider
-    }
 
-    private func update(transactions: [Transaction], internalTransactions: [InternalTransaction], lastTransactionHash: Data?) {
-        storage.save(transactions: transactions)
-        storage.save(internalTransactions: internalTransactions)
+        transactionSyncManager
+                .transactionsObservable
+                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+                .subscribe(
+                        onNext: { [weak self] transactions in
+                            guard let manager = self else {
+                                return
+                            }
 
-        let transactionsWithInternals: [TransactionWithInternal] = transactions.compactMap { transaction in
-            let internalTransactions = internalTransactions.filter {
-                $0.hash.hex == transaction.hash.hex
-            }
+                            let etherTransactions = transactions.filter {
+                                manager.isEtherTransferred(fullTransaction: $0)
+                            }
 
-            let transactionWithInternal = TransactionWithInternal(transaction: transaction, internalTransactions: internalTransactions)
+                            guard !transactions.isEmpty else {
+                                return
+                            }
 
-            if !isEmpty(transactionWithInternal: transactionWithInternal) {
-                return transactionWithInternal
-            } else {
-                return nil
-            }
-        }
-        delegate?.onUpdate(transactionsWithInternal: transactionsWithInternals)
-    }
-
-    private func isEmpty(transactionWithInternal: TransactionWithInternal) -> Bool {
-        transactionWithInternal.transaction.value == 0 && transactionWithInternal.internalTransactions.isEmpty
-    }
-
-    func sync(delayTime: Int? = nil) {
-        let lastTransaction = storage.lastTransaction
-        let lastTransactionBlockHeight = lastTransaction?.blockNumber ?? 0
-        let lastInternalTransactionBlockHeight = storage.lastInternalTransactionBlockHeight ?? 0
-
-        var requestsSingle = Single.zip(
-                transactionsProvider.transactionsSingle(startBlock: lastTransactionBlockHeight + 1),
-                transactionsProvider.internalTransactionsSingle(startBlock: lastInternalTransactionBlockHeight + 1)
-        ) { ($0, $1)}
-
-        if let delayTime = delayTime {
-            requestsSingle = requestsSingle.delaySubscription(DispatchTimeInterval.seconds(delayTime), scheduler: scheduler)
-        }
-
-        requestsSingle
-                .subscribeOn(scheduler)
-                .subscribe(onSuccess: { [weak self] transactions, internalTransactions in
-                    guard let manager = self else {
-                        return
-                    }
-
-                    if transactions.isEmpty && internalTransactions.isEmpty && manager.retryCount > 0 {
-                        manager.retryCount -= 1
-                        manager.delayTime = manager.delayTime * manager.delayTimeIncreaseFactor
-                        manager.sync(delayTime: manager.delayTime)
-                        return
-                    }
-
-                    manager.retryCount = 0
-                    manager.update(transactions: transactions, internalTransactions: internalTransactions, lastTransactionHash: lastTransaction?.hash)
-                    manager.syncState = .synced
-                }, onError: { [weak self] error in
-                    self?.retryCount = 0
-                    self?.syncState = .notSynced(error: error)
-                })
+                            manager.etherTransactionsSubject.onNext(etherTransactions)
+                        }
+                )
                 .disposed(by: disposeBag)
+    }
+
+    private func isEtherTransferred(fullTransaction: FullTransaction) -> Bool {
+        (fullTransaction.transaction.from == address && fullTransaction.transaction.value > 0) ||
+                fullTransaction.transaction.to == address ||
+                fullTransaction.internalTransactions.contains {
+                    $0.to == address
+                }
     }
 
 }
 
-extension TransactionManager: ITransactionManager {
+extension TransactionManager {
 
-    var source: String {
-        transactionsProvider.source
+    func etherTransactionsSingle(fromHash: Data?, limit: Int?) -> Single<[FullTransaction]> {
+        storage.etherTransactionsSingle(address: address, fromHash: fromHash, limit: limit)
     }
 
-    func refresh(delay: Bool) {
-        if case .syncing = syncState {
-            return
-        }
+    func transactionsSingle(byHashes hashes: [Data]) -> Single<[FullTransaction]> {
+        Single<[FullTransaction]>.create { [weak self] observer in
+            let transactions = self?.storage.fullTransactions(byHashes: hashes) ?? []
+            observer(.success(transactions))
 
-        syncState = .syncing(progress: nil)
-
-        if delay {
-            retryCount = 5
-            delayTime = 3
-
-            sync(delayTime: delayTime)
-        } else {
-            sync()
+            return Disposables.create()
         }
     }
 
-    func transactionsSingle(fromHash: Data?, limit: Int?) -> Single<[TransactionWithInternal]> {
-        storage.transactionsSingle(fromHash: fromHash, limit: limit)
-    }
-
-    func transaction(hash: Data) -> TransactionWithInternal? {
+    func transaction(hash: Data) -> FullTransaction? {
         storage.transaction(hash: hash)
     }
 
     func handle(sentTransaction: Transaction) {
         storage.save(transactions: [sentTransaction])
 
-        let transactionWithInternal = TransactionWithInternal(transaction: sentTransaction)
+        let fullTransaction = FullTransaction(transaction: sentTransaction)
 
-        if !isEmpty(transactionWithInternal: transactionWithInternal) {
-            delegate?.onUpdate(transactionsWithInternal: [transactionWithInternal])
+        if !isEtherTransferred(fullTransaction: fullTransaction) {
+            etherTransactionsSubject.onNext([fullTransaction])
         }
     }
 

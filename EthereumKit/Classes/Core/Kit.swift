@@ -12,14 +12,16 @@ public class Kit {
     private let defaultMinAmount: BigUInt = 1
 
     private let lastBlockBloomFilterSubject = PublishSubject<BloomFilter>()
+    private let nonceSubject = PublishSubject<Int>()
     private let lastBlockHeightSubject = PublishSubject<Int>()
     private let syncStateSubject = PublishSubject<SyncState>()
     private let transactionsSyncStateSubject = PublishSubject<SyncState>()
     private let balanceSubject = PublishSubject<BigUInt>()
-    private let transactionsSubject = PublishSubject<[TransactionWithInternal]>()
+    private let transactionsSubject = PublishSubject<[FullTransaction]>()
 
     private let blockchain: IBlockchain
-    private let transactionManager: ITransactionManager
+    private let transactionManager: TransactionManager
+    private let transactionSyncManager: TransactionSyncManager
     private let transactionBuilder: TransactionBuilder
     private let transactionSigner: TransactionSigner
     private let state: EthereumKitState
@@ -32,9 +34,11 @@ public class Kit {
 
     public let logger: Logger
 
-    init(blockchain: IBlockchain, transactionManager: ITransactionManager, transactionBuilder: TransactionBuilder, transactionSigner: TransactionSigner, state: EthereumKitState = EthereumKitState(), address: Address, networkType: NetworkType, uniqueId: String, etherscanApiProvider: EtherscanApiProvider, logger: Logger) {
+
+    init(blockchain: IBlockchain, transactionManager: TransactionManager, transactionSyncManager: TransactionSyncManager, transactionBuilder: TransactionBuilder, transactionSigner: TransactionSigner, state: EthereumKitState = EthereumKitState(), address: Address, networkType: NetworkType, uniqueId: String, etherscanApiProvider: EtherscanApiProvider, logger: Logger) {
         self.blockchain = blockchain
         self.transactionManager = transactionManager
+        self.transactionSyncManager = transactionSyncManager
         self.transactionBuilder = transactionBuilder
         self.transactionSigner = transactionSigner
         self.state = state
@@ -67,7 +71,7 @@ extension Kit {
     }
 
     public var transactionsSyncState: SyncState {
-        transactionManager.syncState
+        transactionSyncManager.state
     }
 
     public var receiveAddress: Address {
@@ -76,6 +80,10 @@ extension Kit {
 
     public var lastBlockHeightObservable: Observable<Int> {
         lastBlockHeightSubject.asObservable()
+    }
+
+    public var nonceObservable: Observable<Int> {
+        nonceSubject.asObservable()
     }
 
     public var lastBlockBloomFilterObservable: Observable<BloomFilter> {
@@ -94,7 +102,7 @@ extension Kit {
         balanceSubject.asObservable()
     }
 
-    public var transactionsObservable: Observable<[TransactionWithInternal]> {
+    public var transactionsObservable: Observable<[FullTransaction]> {
         transactionsSubject.asObservable()
     }
 
@@ -111,15 +119,15 @@ extension Kit {
 //        transactionManager.refresh()
     }
 
-    public func transactionsSingle(fromHash: Data? = nil, limit: Int? = nil) -> Single<[TransactionWithInternal]> {
-        transactionManager.transactionsSingle(fromHash: fromHash, limit: limit)
+    public func etherTransactionsSingle(fromHash: Data? = nil, limit: Int? = nil) -> Single<[FullTransaction]> {
+        transactionManager.etherTransactionsSingle(fromHash: fromHash, limit: limit)
     }
 
-    public func transaction(hash: Data) -> TransactionWithInternal? {
+    public func transaction(hash: Data) -> FullTransaction? {
         transactionManager.transaction(hash: hash)
     }
 
-    public func sendSingle(address: Address, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int, nonce: Int? = nil) -> Single<TransactionWithInternal> {
+    public func sendSingle(address: Address, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int, nonce: Int? = nil) -> Single<FullTransaction> {
         var syncNonceSingle = blockchain.nonceSingle()
 
         if let nonce = nonce {
@@ -128,7 +136,7 @@ extension Kit {
 
         return syncNonceSingle.flatMap { [weak self] nonce in
             guard let kit = self else {
-                return Single<TransactionWithInternal>.error(SendError.nonceNotAvailable)
+                return Single<FullTransaction>.error(SendError.nonceNotAvailable)
             }
 
             let rawTransaction = kit.transactionBuilder.rawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: address, value: value, data: transactionInput, nonce: nonce)
@@ -138,7 +146,7 @@ extension Kit {
                         self?.transactionManager.handle(sentTransaction: transaction)
                     })
                     .map {
-                        TransactionWithInternal(transaction: $0)
+                        FullTransaction(transaction: $0)
                     }
         }
     }
@@ -155,10 +163,6 @@ extension Kit {
         lines.append("ADDRESS: \(address.hex)")
 
         return lines.joined(separator: "\n")
-    }
-
-    public func getLogsSingle(address: Address?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[EthereumLog]> {
-        blockchain.getLogsSingle(address: address, topics: topics, fromBlock: fromBlock, toBlock: toBlock, pullTimestamps: pullTimestamps)
     }
 
     public func transactionStatus(transactionHash: Data) -> Single<TransactionStatus> {
@@ -209,7 +213,7 @@ extension Kit {
             ("Last Block Height", "\(state.lastBlockHeight.map { "\($0)" } ?? "N/A")"),
             ("Sync State", blockchain.syncState.description),
             ("Blockchain Source", blockchain.source),
-            ("Transactions Source", transactionManager.source)
+            ("Transactions Source", "Infura.io, Etherscan.io")
         ]
     }
 
@@ -237,9 +241,7 @@ extension Kit: IBlockchainDelegate {
             return
         }
 
-        transactionManager.refresh(delay: state.balance != nil)
         state.balance = balance
-
         balanceSubject.onNext(balance)
     }
 
@@ -252,15 +254,15 @@ extension Kit: IBlockchainDelegate {
             return
         }
 
-        transactionManager.refresh(delay: state.nonce != nil)
         state.nonce = nonce
+        nonceSubject.onNext(nonce)
     }
 
 }
 
 extension Kit: ITransactionManagerDelegate {
 
-    func onUpdate(transactionsWithInternal: [TransactionWithInternal]) {
+    func onUpdate(transactionsWithInternal: [FullTransaction]) {
         transactionsSubject.onNext(transactionsWithInternal)
     }
 
@@ -351,13 +353,23 @@ extension Kit {
 //            blockchain = try GethBlockchain.instance(nodeDirectory: nodeDirectory, network: network, storage: storage, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, address: address, logger: logger)
         }
 
-        let transactionStorage: ITransactionStorage & IInternalTransactionStorage = TransactionStorage(databaseDirectoryUrl: try dataDirectoryUrl(), databaseFileName: "transactions-\(uniqueId)")
-        let transactionManager = TransactionManager(storage: transactionStorage, transactionsProvider: transactionsProvider)
+        let transactionStorage: ITransactionStorage = TransactionStorage(databaseDirectoryUrl: try dataDirectoryUrl(), databaseFileName: "transactions-\(uniqueId)")
 
-        let ethereumKit = Kit(blockchain: blockchain, transactionManager: transactionManager, transactionBuilder: transactionBuilder, transactionSigner: transactionSigner, address: address, networkType: networkType, uniqueId: uniqueId, etherscanApiProvider: etherscanApiProvider, logger: logger)
+        let notSyncedTransactionPool = NotSyncedTransactionPool(storage: transactionStorage)
+        let internalTransactionSyncer = InternalTransactionSyncer(ethereumTransactionProvider: transactionsProvider, notSyncedTransactionPool: notSyncedTransactionPool, storage: transactionStorage)
+        let etherTransactionSyncer = EthereumTransactionSyncer(ethereumTransactionProvider: transactionsProvider, notSyncedTransactionPool: notSyncedTransactionPool, storage: transactionStorage)
+        let transactionSyncer = TransactionSyncer(pool: notSyncedTransactionPool, blockchain: blockchain, storage: transactionStorage)
+        let transactionSyncManager = TransactionSyncManager()
+        let transactionManager = TransactionManager(address: address, storage: transactionStorage, transactionSyncManager: transactionSyncManager)
+
+        transactionSyncManager.add(syncer: etherTransactionSyncer)
+        transactionSyncManager.add(syncer: internalTransactionSyncer)
+        transactionSyncManager.add(syncer: transactionSyncer)
+
+        let ethereumKit = Kit(blockchain: blockchain, transactionManager: transactionManager, transactionSyncManager: transactionSyncManager, transactionBuilder: transactionBuilder, transactionSigner: transactionSigner, address: address, networkType: networkType, uniqueId: uniqueId, etherscanApiProvider: etherscanApiProvider, logger: logger)
 
         blockchain.delegate = ethereumKit
-        transactionManager.delegate = ethereumKit
+        transactionSyncManager.set(ethereumKit: ethereumKit)
 
         return ethereumKit
     }

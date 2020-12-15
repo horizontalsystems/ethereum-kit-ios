@@ -35,7 +35,7 @@ class SwapController: UIViewController {
     private let gasPrice = 200_000_000_000
 
     private let ethereumKit = Manager.shared.ethereumKit!
-    private let fromAdapter: IAdapter = Manager.shared.erc20Adapters[1]
+    private let fromAdapter: IAdapter = Manager.shared.ethereumAdapter // Manager.shared.erc20Adapters[1]
     private let toAdapter: IAdapter = Manager.shared.ethereumAdapter
 
     private var fromToken: Erc20Token? { erc20Token(adapter: fromAdapter) }
@@ -423,7 +423,7 @@ class SwapController: UIViewController {
         let transactionData = adapter.erc20Kit.approveTransactionData(spenderAddress: spenderAddress, amount: amount)
 
         ethereumKit.estimateGas(to: transactionData.to, amount: transactionData.value, gasPrice: gasPrice, data: transactionData.input)
-                .flatMap { gasLimit -> Single<TransactionWithInternal> in
+                .flatMap { gasLimit -> Single<FullTransaction> in
                     print("GAS LIMIT SUCCESS: \(gasLimit)")
                     return self.ethereumKit.sendSingle(address: transactionData.to, value: transactionData.value, transactionInput: transactionData.input, gasPrice: gasPrice, gasLimit: gasLimit)
                 }
@@ -449,7 +449,7 @@ class SwapController: UIViewController {
                             amount: transactionData.value == 0 ? nil : transactionData.value,
                             gasPrice: gasPrice,
                             data: transactionData.input
-                    ).flatMap { [unowned self] gasLimit -> Single<TransactionWithInternal> in
+                    ).flatMap { [unowned self] gasLimit -> Single<FullTransaction> in
                         print("GAS LIMIT SUCCESS: \(gasLimit)")
                         return ethereumKit.sendSingle(
                                 address: transactionData.to,
@@ -460,8 +460,8 @@ class SwapController: UIViewController {
                     }
                     .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                     .observeOn(MainScheduler.instance)
-                    .subscribe(onSuccess: { transactionWithInternal in
-                        print("SUCCESS: \(transactionWithInternal.transaction.hash.toHexString())")
+                    .subscribe(onSuccess: { FullTransaction in
+                        print("SUCCESS: \(FullTransaction.transaction.hash.toHexString())")
                     }, onError: { error in
                         print("ERROR: \(error)")
                     })

@@ -27,8 +27,8 @@ extension ApproveMethod: IErc20ContractMethodWithTransactions {
                 timestamp: ethTx.timestamp,
                 type: TransactionType.approve)
 
-        newTx.blockHash = ethTx.blockHash
-        newTx.blockNumber = ethTx.blockNumber
+//        newTx.blockHash = ethTx.blockHash
+//        newTx.blockNumber = ethTx.blockNumber
 
         return [newTx]
     }

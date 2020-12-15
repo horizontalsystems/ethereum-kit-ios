@@ -32,13 +32,16 @@ class TransactionCell: UITableViewCell {
                     Type:
                     """, alignment: .left, label: titleLabel)
 
+        let fromAddress = transaction.from.address.map { format(hash: $0.eip55) } ?? "n/a"
+        let toAddress = transaction.to.address.map { format(hash: $0.eip55) } ?? "n/a"
+
         set(string: """
                     \(format(hash: transaction.transactionHash))
                     \(transaction.transactionIndex)
                     \(transaction.interTransactionIndex)
                     \(TransactionCell.dateFormatter.string(from: Date(timeIntervalSince1970: transaction.timestamp)))
                     \(transaction.amount) \(coin)
-                    \(format(hash: transaction.from.mine ? transaction.to.address.eip55 : transaction.from.address.eip55))
+                    \(transaction.from.mine ? toAddress : fromAddress)
                     \(transaction.blockHeight.map { "# \($0)" } ?? "n/a")
                     \(confirmations)
                     \(transaction.isError)

@@ -158,6 +158,7 @@ extension WebSocketRpcSyncer: IRpcWebSocketDelegate {
         case .connecting:
             syncState = .syncing(progress: nil)
         case .connected:
+            // TODO: fetch last block instead of block height
             fetchLastBlockHeight()
             subscribeToNewHeads()
         case .disconnected(let error):

@@ -17,6 +17,22 @@ struct HexIntTransform: TransformType {
 
 }
 
+struct HexDataArrayTransform: TransformType {
+
+    func transformFromJSON(_ value: Any?) -> [Data]? {
+        guard let hexStrings = value as? [String] else {
+            return nil
+        }
+
+        return hexStrings.compactMap { Data(hex: $0) }
+    }
+
+    func transformToJSON(_ value: [Data]?) -> String? {
+        fatalError("transformToJSON(_:) has not been implemented")
+    }
+
+}
+
 struct HexDataTransform: TransformType {
 
     func transformFromJSON(_ value: Any?) -> Data? {

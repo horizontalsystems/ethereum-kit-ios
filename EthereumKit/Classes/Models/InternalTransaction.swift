@@ -26,7 +26,7 @@ public class InternalTransaction: Record {
         "internal_transactions"
     }
 
-    enum Columns: String, ColumnExpression {
+    enum Columns: String, ColumnExpression, CaseIterable {
         case hash
         case blockNumber
         case from

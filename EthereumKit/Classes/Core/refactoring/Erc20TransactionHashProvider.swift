@@ -1,0 +1,3 @@
+class Erc20TransactionHashProvider {
+
+}

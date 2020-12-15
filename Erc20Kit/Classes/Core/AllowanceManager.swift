@@ -48,8 +48,8 @@ class AllowanceManager {
                 transactionInput: ApproveMethod(spender: spenderAddress, value: amount).encodedABI(),
                 gasPrice: gasPrice,
                 gasLimit: gasLimit
-        ).flatMap { transactionWithInternal in
-            guard let approve = approveMethod.erc20Transactions(ethTx: transactionWithInternal.transaction).first else {
+        ).flatMap { FullTransaction in
+            guard let approve = approveMethod.erc20Transactions(ethTx: FullTransaction.transaction).first else {
                 return Single.error(AllowanceParsingError.notFound)
             }
             return Single.just(approve)

@@ -43,7 +43,6 @@ protocol IBalanceManager {
 
 protocol IDataProvider {
     var lastBlockHeight: Int { get }
-    func getTransactionLogs(contractAddress: Address, address: Address, from: Int, to: Int) -> Single<[EthereumLog]>
     func getTransactionStatuses(transactionHashes: [Data]) -> Single<[(Data, TransactionStatus)]>
     func getBalance(contractAddress: Address, address: Address) -> Single<BigUInt>
     func sendSingle(contractAddress: Address, transactionInput: Data, gasPrice: Int, gasLimit: Int) -> Single<Data>

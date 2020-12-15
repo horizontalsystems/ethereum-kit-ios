@@ -95,9 +95,9 @@ class EtherscanTransactionProvider: ITransactionsProvider {
         "etherscan.io"
     }
 
-    func transactionsSingle(startBlock: Int) -> Single<[Transaction]> {
-        provider.transactionsSingle(startBlock: startBlock).map { array -> [Transaction] in
-            array.compactMap { data -> Transaction? in
+    func transactionsSingle(startBlock: Int) -> Single<[EtherscanTransaction]> {
+        provider.transactionsSingle(startBlock: startBlock).map { array -> [EtherscanTransaction] in
+            array.compactMap { data -> EtherscanTransaction? in
                 guard let hash = data["hash"].flatMap({ Data(hex: $0) }) else { return nil }
                 guard let nonce = data["nonce"].flatMap({ Int($0) }) else { return nil }
                 guard let from = data["from"].flatMap({ Data(hex: $0) }).map({ Address(raw: $0) }) else { return nil }
@@ -108,7 +108,7 @@ class EtherscanTransactionProvider: ITransactionsProvider {
                 guard let input = data["input"].flatMap({ Data(hex: $0) }) else { return nil }
                 guard let timestamp = data["timeStamp"].flatMap({ Double($0) }) else { return nil }
 
-                let transaction = Transaction(hash: hash, nonce: nonce, input: input, from: from, to: to, value: value, gasLimit: gasLimit, gasPrice: gasPrice, timestamp: timestamp)
+                let transaction = EtherscanTransaction(hash: hash, nonce: nonce, input: input, from: from, to: to, value: value, gasLimit: gasLimit, gasPrice: gasPrice, timestamp: timestamp)
 
                 transaction.blockHash = data["blockHash"].flatMap({ Data(hex: $0) })
                 transaction.blockNumber = data["blockNumber"].flatMap { Int($0) }
