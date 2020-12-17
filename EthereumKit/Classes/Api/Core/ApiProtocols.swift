@@ -66,17 +66,17 @@ protocol IRpcWebSocketDelegate: AnyObject {
     func didReceive(subscriptionResponse: RpcSubscriptionResponse)
 }
 
-enum WebSocketState {
+public enum WebSocketState {
     case connecting
     case connected
     case disconnected(error: Error)
 
-    enum DisconnectError: Error {
+    public enum DisconnectError: Error {
         case notStarted
         case socketDisconnected(reason: String)
     }
 
-    enum StateError: Error {
+    public enum StateError: Error {
         case notConnected
     }
 
