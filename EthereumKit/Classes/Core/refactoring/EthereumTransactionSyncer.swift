@@ -37,11 +37,7 @@ class EthereumTransactionSyncer {
         storage.save(transactionSyncerState: TransactionSyncerState(id: id, lastBlockNumber: lastSyncBlockNumber))
     }
 
-}
-
-extension EthereumTransactionSyncer: ITransactionSyncer {
-
-    func sync() {
+    private func sync() {
         print("syncing EthereumTransactionProvider")
         guard !state.syncing else {
             return
@@ -89,6 +85,14 @@ extension EthereumTransactionSyncer: ITransactionSyncer {
                         }
                 )
                 .disposed(by: disposeBag)
+    }
+
+}
+
+extension EthereumTransactionSyncer: ITransactionSyncer {
+
+    func onEthereumSynced() {
+        sync()
     }
 
     func onUpdateNonce(nonce: Int) {

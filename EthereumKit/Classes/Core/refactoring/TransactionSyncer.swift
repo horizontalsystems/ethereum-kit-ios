@@ -45,6 +45,15 @@ class TransactionSyncer {
         stateSubject.asObservable()
     }
 
+    private func sync() {
+        print("TransactionSyncer sync \(state.syncing)")
+        guard !state.syncing else {
+            return
+        }
+
+        doSync()
+    }
+
     private func doSync() {
         print("TransactionSyncer doing sync")
         let notSyncedTransactions = pool.getNotSyncedTransactions(limit: txSyncBatchSize)
@@ -192,13 +201,8 @@ class TransactionSyncer {
 
 extension TransactionSyncer: ITransactionSyncer {
 
-    func sync() {
-        print("TransactionSyncer sync \(state.syncing)")
-        guard !state.syncing else {
-            return
-        }
-
-        doSync()
+    func onEthereumSynced() {
+        sync()
     }
 
 }

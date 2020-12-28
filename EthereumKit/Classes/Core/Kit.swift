@@ -15,9 +15,7 @@ public class Kit {
     private let nonceSubject = PublishSubject<Int>()
     private let lastBlockHeightSubject = PublishSubject<Int>()
     private let syncStateSubject = PublishSubject<SyncState>()
-    private let transactionsSyncStateSubject = PublishSubject<SyncState>()
     private let balanceSubject = PublishSubject<BigUInt>()
-    private let transactionsSubject = PublishSubject<[FullTransaction]>()
 
     private let blockchain: IBlockchain
     private let transactionManager: TransactionManager
@@ -95,7 +93,7 @@ extension Kit {
     }
 
     public var transactionsSyncStateObservable: Observable<SyncState> {
-        transactionsSyncStateSubject.asObservable()
+        transactionSyncManager.stateObservable
     }
 
     public var balanceObservable: Observable<BigUInt> {
@@ -103,7 +101,7 @@ extension Kit {
     }
 
     public var transactionsObservable: Observable<[FullTransaction]> {
-        transactionsSubject.asObservable()
+        transactionManager.etherTransactionsObservable
     }
 
     public func start() {
@@ -260,18 +258,6 @@ extension Kit: IBlockchainDelegate {
 
 }
 
-extension Kit: ITransactionManagerDelegate {
-
-    func onUpdate(transactionsWithInternal: [FullTransaction]) {
-        transactionsSubject.onNext(transactionsWithInternal)
-    }
-
-    func onUpdate(transactionsSyncState: SyncState) {
-        transactionsSyncStateSubject.onNext(syncState)
-    }
-
-}
-
 extension Kit {
 
     public static func instance(privateKey: Data, syncMode: SyncMode, networkType: NetworkType = .mainNet, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
@@ -359,12 +345,14 @@ extension Kit {
         let internalTransactionSyncer = InternalTransactionSyncer(ethereumTransactionProvider: transactionsProvider, notSyncedTransactionPool: notSyncedTransactionPool, storage: transactionStorage)
         let etherTransactionSyncer = EthereumTransactionSyncer(ethereumTransactionProvider: transactionsProvider, notSyncedTransactionPool: notSyncedTransactionPool, storage: transactionStorage)
         let transactionSyncer = TransactionSyncer(pool: notSyncedTransactionPool, blockchain: blockchain, storage: transactionStorage)
+        let outgoingPendingTransactionSyncer = OutgoingPendingTransactionSyncer(blockchain: blockchain, storage: transactionStorage)
         let transactionSyncManager = TransactionSyncManager()
         let transactionManager = TransactionManager(address: address, storage: transactionStorage, transactionSyncManager: transactionSyncManager)
 
         transactionSyncManager.add(syncer: etherTransactionSyncer)
         transactionSyncManager.add(syncer: internalTransactionSyncer)
         transactionSyncManager.add(syncer: transactionSyncer)
+        transactionSyncManager.add(syncer: outgoingPendingTransactionSyncer)
 
         let ethereumKit = Kit(blockchain: blockchain, transactionManager: transactionManager, transactionSyncManager: transactionSyncManager, transactionBuilder: transactionBuilder, transactionSigner: transactionSigner, address: address, networkType: networkType, uniqueId: uniqueId, etherscanApiProvider: etherscanApiProvider, logger: logger)
 

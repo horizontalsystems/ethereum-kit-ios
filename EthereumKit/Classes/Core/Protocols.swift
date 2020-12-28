@@ -40,6 +40,7 @@ protocol ITransactionStorage {
 
     func save(transaction: Transaction)
     func save(transactions: [Transaction])
+    func getFirstPendingTransaction() -> Transaction?
 
     func save(transactionReceipt: TransactionReceipt)
     func getTransactionReceipt(hash: Data) -> TransactionReceipt?

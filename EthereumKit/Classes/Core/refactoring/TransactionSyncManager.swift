@@ -6,14 +6,16 @@ protocol ITransactionSyncer {
     var state: SyncState { get }
     var stateObservable: Observable<SyncState> { get }
 
-    func sync()
-
+    func onEthereumSynced()
+    func onLastBlockNumber(blockNumber: Int)
     func onLastBlockBloomFilter(bloomFilter: BloomFilter)
     func onUpdateNonce(nonce: Int)
     func onUpdateBalance(balance: BigUInt)
 }
 
 extension ITransactionSyncer {
+    func onEthereumSynced() {}
+    func onLastBlockNumber(blockNumber: Int) {}
     func onLastBlockBloomFilter(bloomFilter: BloomFilter) {}
     func onUpdateNonce(nonce: Int) {}
     func onUpdateBalance(balance: BigUInt) {}
@@ -34,6 +36,7 @@ class TransactionSyncManager {
             }
         }
     }
+
     var stateObservable: Observable<SyncState> {
         stateSubject.asObservable()
     }
@@ -45,21 +48,28 @@ class TransactionSyncManager {
     func set(ethereumKit: EthereumKit.Kit) {
         ethereumKit.balanceObservable
                 .observeOn(scheduler)
-                .subscribe(onNext:  { [weak self] in
+                .subscribe(onNext: { [weak self] in
                     self?.onUpdateBalance(balance: $0)
                 })
                 .disposed(by: disposeBag)
 
         ethereumKit.nonceObservable
                 .observeOn(scheduler)
-                .subscribe(onNext:  { [weak self] in
+                .subscribe(onNext: { [weak self] in
                     self?.onUpdateNonce(nonce: $0)
+                })
+                .disposed(by: disposeBag)
+
+        ethereumKit.lastBlockHeightObservable
+                .observeOn(scheduler)
+                .subscribe(onNext: { [weak self] in
+                    self?.onLastBlockNumber(blockNumber: $0)
                 })
                 .disposed(by: disposeBag)
 
         ethereumKit.lastBlockBloomFilterObservable
                 .observeOn(scheduler)
-                .subscribe(onNext:  { [weak self] in
+                .subscribe(onNext: { [weak self] in
                     self?.onLastBlockBloomFilter(bloomFilter: $0)
                 })
                 .disposed(by: disposeBag)
@@ -73,9 +83,13 @@ class TransactionSyncManager {
     }
 
     private func onEthereumKitSyncState(state: SyncState) {
-        if .synced == state { //?? resync on network reconnection
-            syncers.forEach { $0.sync() }
+        if .synced == state {
+            syncers.forEach { $0.onEthereumSynced() }
         }
+    }
+
+    private func onLastBlockNumber(blockNumber: Int) {
+        syncers.forEach { $0.onLastBlockNumber(blockNumber: blockNumber) }
     }
 
     private func onLastBlockBloomFilter(bloomFilter: BloomFilter) {
