@@ -227,6 +227,16 @@ extension TransactionStorage: ITransactionStorage {
         }
     }
 
+    func getFirstPendingTransaction() -> Transaction? {
+        try? dbPool.read { db in
+            try Transaction
+                    .joining(optional: Transaction.receipt)
+                    .filter(sql: "transaction_receipts.transactionHash IS NULL")
+                    .order(Transaction.Columns.nonce.asc)
+                    .fetchOne(db)
+        }
+    }
+
     func save(transactionReceipt: TransactionReceipt) {
         try! dbPool.write { db in
             try transactionReceipt.insert(db)
