@@ -48,11 +48,11 @@ public class Kit {
     private func onUpdateSyncState(syncState: EthereumKit.SyncState) {
         switch syncState {
         case .synced:
-            state.syncState = .syncing
+            state.syncState = .syncing(progress: nil)
             balanceManager.sync()
             transactionManager.immediateSync()
         case .syncing:
-            state.syncState = .syncing
+            state.syncState = .syncing(progress: nil)
         case .notSynced(let error):
             state.syncState = .notSynced(error: error)
         }
@@ -72,7 +72,7 @@ extension Kit {
     }
 
     public var transactionsSyncState: SyncState {
-        state.transactionsSyncState
+        ethereumKit.transactionsSyncState
     }
 
     public var balance: BigUInt? {
@@ -103,7 +103,7 @@ extension Kit {
     }
 
     public var transactionsSyncStateObservable: Observable<SyncState> {
-        state.transactionsSyncStateSubject.asObservable()
+        ethereumKit.transactionsSyncStateObservable
     }
 
     public var balanceObservable: Observable<BigUInt> {
@@ -140,26 +140,6 @@ extension Kit {
                 .do(onSuccess: { [weak self] tx in
                     self?.state.transactionsSubject.onNext([tx])
                 })
-    }
-
-}
-
-extension Kit: ITransactionManagerDelegate {
-
-    func onSyncStarted() {
-        state.transactionsSyncState = .syncing
-    }
-
-    func onSyncSuccess(transactions: [Transaction]) {
-        if !transactions.isEmpty {
-            state.transactionsSubject.onNext(transactions)
-        }
-
-        state.transactionsSyncState = .synced
-    }
-
-    func onSyncTransactionsFailed(error: Error) {
-        state.transactionsSyncState = .notSynced(error: error)
     }
 
 }
@@ -204,7 +184,6 @@ extension Kit {
 
         let erc20Kit = Kit(contractAddress: contractAddress, ethereumKit: ethereumKit, transactionManager: transactionManager, balanceManager: balanceManager, allowanceManager: allowanceManager)
 
-        transactionManager.delegate = erc20Kit
         balanceManager.delegate = erc20Kit
 
         return erc20Kit
