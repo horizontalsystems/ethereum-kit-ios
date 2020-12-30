@@ -65,7 +65,7 @@ class TransactionSyncer {
         }
 
         print("TransactionSyncer set syncing")
-        state = .syncing(progress: 0)
+        state = .syncing(progress: nil)
 
         Single
                 .zip(notSyncedTransactions.map { syncSingle(notSyncedTransaction: $0) })

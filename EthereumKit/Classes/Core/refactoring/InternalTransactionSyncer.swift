@@ -44,7 +44,7 @@ class InternalTransactionSyncer {
         }
 
         print("InternalTransactionProvider syncing")
-        state = .syncing(progress: 0)
+        state = .syncing(progress: nil)
 
         // gets transaction starting from last tx's block height
         ethereumTransactionProvider

@@ -47,6 +47,8 @@ class OutgoingPendingTransactionSyncer {
                     syncer.storage.save(transactionReceipt: TransactionReceipt(rpcReceipt: receipt))
                     syncer.storage.save(logs: receipt.logs)
 
+                    syncer.listener?.onTransactionsSynced(fullTransactions: syncer.storage.fullTransactions(byHashes: [receipt.transactionHash]))
+
                     return syncer.doSync()
                 }
     }
@@ -57,7 +59,7 @@ class OutgoingPendingTransactionSyncer {
             return
         }
 
-        state = .syncing(progress: 0)
+        state = .syncing(progress: nil)
 
         doSync()
                 .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
