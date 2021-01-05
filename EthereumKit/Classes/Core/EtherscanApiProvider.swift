@@ -106,7 +106,7 @@ class EtherscanTransactionProvider {
                 guard let gasLimit = data["gas"].flatMap({ Int($0) }) else { return nil }
                 guard let gasPrice = data["gasPrice"].flatMap({ Int($0) }) else { return nil }
                 guard let input = data["input"].flatMap({ Data(hex: $0) }) else { return nil }
-                guard let timestamp = data["timeStamp"].flatMap({ Double($0) }) else { return nil }
+                guard let timestamp = data["timeStamp"].flatMap({ Int($0) }) else { return nil }
 
                 let transaction = EtherscanTransaction(hash: hash, nonce: nonce, input: input, from: from, to: to, value: value, gasLimit: gasLimit, gasPrice: gasPrice, timestamp: timestamp)
 

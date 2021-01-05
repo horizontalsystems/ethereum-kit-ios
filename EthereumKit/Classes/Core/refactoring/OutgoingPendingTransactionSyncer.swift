@@ -24,7 +24,7 @@ class OutgoingPendingTransactionSyncer: AbstractTransactionSyncer {
 
         return blockchain.transactionReceiptSingle(transactionHash: pendingTransaction.hash)
                 .flatMap { [weak self] receipt in
-                    print("OutputPendingTransactionSyncer got receipt")
+                    print("OutputPendingTransactionSyncer got receipt \(receipt)")
                     guard let syncer = self, let receipt = receipt else {
                         return Single.just(())
                     }

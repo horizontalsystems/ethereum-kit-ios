@@ -80,7 +80,7 @@ class TransactionSyncer: AbstractTransactionSyncer {
 
                     return syncer.syncTimestampSingle(transactionAndReceipt: txReceiptPair, notSyncedTransaction: notSyncedTransaction)
                 }
-                .map { [weak self] (result: (transaction: RpcTransaction, timestamp: TimeInterval)?) in
+                .map { [weak self] (result: (transaction: RpcTransaction, timestamp: Int)?) in
                     print("Result received for \(notSyncedTransaction.hash.hex): \(result?.transaction) | \(result?.timestamp)")
                     guard let syncer = self,
                           let result = result else {
@@ -94,7 +94,7 @@ class TransactionSyncer: AbstractTransactionSyncer {
                 }
     }
 
-    private func finalizeSync(notSyncedTransaction: NotSyncedTransaction, transaction: RpcTransaction, timestamp: TimeInterval) {
+    private func finalizeSync(notSyncedTransaction: NotSyncedTransaction, transaction: RpcTransaction, timestamp: Int) {
         let transaction = Transaction(
                 hash: transaction.hash,
                 nonce: transaction.nonce,
@@ -151,10 +151,10 @@ class TransactionSyncer: AbstractTransactionSyncer {
                 }
     }
 
-    private func syncTimestampSingle(transactionAndReceipt: (transaction: RpcTransaction, receipt: RpcTransactionReceipt?), notSyncedTransaction: NotSyncedTransaction) -> Single<(transaction: RpcTransaction, timestamp: TimeInterval)?> {
+    private func syncTimestampSingle(transactionAndReceipt: (transaction: RpcTransaction, receipt: RpcTransactionReceipt?), notSyncedTransaction: NotSyncedTransaction) -> Single<(transaction: RpcTransaction, timestamp: Int)?> {
         guard let receipt = transactionAndReceipt.receipt else {
             //pending
-            return Single.just((transaction: transactionAndReceipt.transaction, timestamp: Date().timeIntervalSince1970))
+            return Single.just((transaction: transactionAndReceipt.transaction, timestamp: Int(Date().timeIntervalSince1970)))
         }
 
         if let timestamp = notSyncedTransaction.timestamp {
@@ -162,7 +162,7 @@ class TransactionSyncer: AbstractTransactionSyncer {
         }
 
         return blockchain.getBlock(blockNumber: receipt.blockNumber)
-                .map { block -> (transaction: RpcTransaction, timestamp: TimeInterval)? in
+                .map { block -> (transaction: RpcTransaction, timestamp: Int)? in
                     block.map { (transaction: transactionAndReceipt.transaction, timestamp: $0.timestamp) }
                 }
     }

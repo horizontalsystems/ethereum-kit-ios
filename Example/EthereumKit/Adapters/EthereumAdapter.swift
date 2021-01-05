@@ -61,6 +61,14 @@ class EthereumAdapter {
 
 extension EthereumAdapter: IAdapter {
 
+    func start() {
+        ethereumKit.start()
+    }
+
+    func stop() {
+        ethereumKit.stop()
+    }
+
     func refresh() {
         ethereumKit.refresh()
     }
@@ -114,7 +122,7 @@ extension EthereumAdapter: IAdapter {
     }
 
     var transactionsObservable: Observable<Void> {
-        ethereumKit.transactionsObservable.map { _ in () }
+        ethereumKit.etherTransactionsObservable.map { _ in () }
     }
 
     func sendSingle(to: Address, amount: Decimal, gasLimit: Int) -> Single<Void> {

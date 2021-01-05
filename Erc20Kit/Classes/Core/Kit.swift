@@ -147,8 +147,10 @@ extension Kit {
     public static func instance(ethereumKit: EthereumKit.Kit, contractAddress: Address) throws -> Kit {
         let databaseFileName = "\(ethereumKit.uniqueId)-\(contractAddress)"
 
-        let address = ethereumKit.address
+        ContractMethodFactories.shared.register(factory: ApproveMethodFactory())
+        ContractMethodFactories.shared.register(factory: TransferMethodFactory())
 
+        let address = ethereumKit.address
         let storage: ITransactionStorage & ITokenBalanceStorage = try GrdbStorage(databaseDirectoryUrl: databaseDirectoryUrl(), databaseFileName: databaseFileName)
 
         let dataProvider: IDataProvider = DataProvider(ethereumKit: ethereumKit)
