@@ -1,40 +1,13 @@
 import RxSwift
 import BigInt
 
-class EthereumTransactionSyncer {
-    private let ethereumTransactionProvider: ITransactionsProvider
-    private let notSyncedTransactionPool: NotSyncedTransactionPool
-    private let storage: ITransactionStorage
-    private let disposeBag = DisposeBag()
-    private let stateSubject = PublishSubject<SyncState>()
+class EthereumTransactionSyncer: AbstractTransactionSyncer {
+    private let ethereumTransactionProvider: EtherscanTransactionProvider
 
-    private var lastSyncBlockNumber: Int
-
-    let id: String = "ethereum_transaction_syncer"
-
-    var state: SyncState = .notSynced(error: Kit.SyncError.notStarted) {
-        didSet {
-            if state != oldValue {
-                stateSubject.onNext(state)
-            }
-        }
-    }
-
-    var stateObservable: Observable<SyncState> {
-        stateSubject.asObservable()
-    }
-
-    init(ethereumTransactionProvider: ITransactionsProvider, notSyncedTransactionPool: NotSyncedTransactionPool, storage: ITransactionStorage) {
+    init(ethereumTransactionProvider: EtherscanTransactionProvider) {
         self.ethereumTransactionProvider = ethereumTransactionProvider
-        self.notSyncedTransactionPool = notSyncedTransactionPool
-        self.storage = storage
 
-        lastSyncBlockNumber = storage.transactionSyncerState(id: id)?.lastBlockNumber ?? 0
-    }
-
-    private func update(lastSyncBlockNumber: Int) {
-        self.lastSyncBlockNumber = lastSyncBlockNumber
-        storage.save(transactionSyncerState: TransactionSyncerState(id: id, lastBlockNumber: lastSyncBlockNumber))
+        super.init(id: "ethereum_transaction_syncer")
     }
 
     private func sync() {
@@ -46,6 +19,8 @@ class EthereumTransactionSyncer {
         print("EthereumTransactionProvider syncing")
         state = .syncing(progress: nil)
 
+        let lastSyncBlockNumber = super.lastSyncBlockNumber
+
         // gets transaction starting from last tx's block height
         ethereumTransactionProvider
                 .transactionsSingle(startBlock: lastSyncBlockNumber + 1)
@@ -53,8 +28,17 @@ class EthereumTransactionSyncer {
                 .subscribe(
                         onSuccess: { [weak self] txList in
                             print("EthereumTransactionProvider got \(txList.count) transactions")
+                            guard let syncer = self else {
+                                return
+                            }
+
+                            guard !txList.isEmpty else {
+                                syncer.state = .synced
+                                return
+                            }
+
                             if let blockNumber = txList.first?.blockNumber {
-                                self?.update(lastSyncBlockNumber: blockNumber)
+                                syncer.update(lastSyncBlockNumber: blockNumber)
                             }
 
                             let notSyncedTransactions = txList.map { etherscanTransaction in
@@ -77,8 +61,8 @@ class EthereumTransactionSyncer {
                                 )
                             }
 
-                            self?.notSyncedTransactionPool.add(notSyncedTransactions: notSyncedTransactions)
-                            self?.state = .synced
+                            syncer.delegate.add(notSyncedTransactions: notSyncedTransactions)
+                            syncer.state = .synced
                         },
                         onError: { [weak self] error in
                             self?.state = .notSynced(error: error)
@@ -87,19 +71,15 @@ class EthereumTransactionSyncer {
                 .disposed(by: disposeBag)
     }
 
-}
-
-extension EthereumTransactionSyncer: ITransactionSyncer {
-
-    func onEthereumSynced() {
+    override func onEthereumSynced() {
         sync()
     }
 
-    func onUpdateNonce(nonce: Int) {
+    override func onUpdateNonce(nonce: Int) {
         sync()
     }
 
-    func onUpdateBalance(balance: BigUInt) {
+    override func onUpdateBalance(balance: BigUInt) {
         sync()
     }
 

@@ -84,7 +84,7 @@ extension EtherscanApiProvider {
 
 }
 
-class EtherscanTransactionProvider: ITransactionsProvider {
+class EtherscanTransactionProvider {
     private let provider: EtherscanApiProvider
 
     init(provider: EtherscanApiProvider) {

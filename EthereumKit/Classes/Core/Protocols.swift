@@ -52,16 +52,39 @@ protocol ITransactionStorage {
     func etherTransactionsSingle(address: Address, fromHash: Data?, limit: Int?) -> Single<[FullTransaction]>
     func transaction(hash: Data) -> FullTransaction?
     func fullTransactions(byHashes: [Data]) -> [FullTransaction]
+    func fullTransactions(fromHash: Data?) -> [FullTransaction]
+}
 
+public protocol ITransactionSyncerStateStorage {
     func transactionSyncerState(id: String) -> TransactionSyncerState?
     func save(transactionSyncerState: TransactionSyncerState)
 }
 
-protocol ITransactionsProvider {
-    var source: String { get }
+protocol ITransactionSyncerListener: class {
+    func onTransactionsSynced(fullTransactions: [FullTransaction])
+}
 
-    func transactionsSingle(startBlock: Int) -> Single<[EtherscanTransaction]>
-    func internalTransactionsSingle(startBlock: Int) -> Single<[InternalTransaction]>
+public protocol ITransactionSyncer {
+    var id: String { get }
+    var state: SyncState { get }
+    var stateObservable: Observable<SyncState> { get }
+
+    func set(delegate: ITransactionSyncerDelegate)
+    func onEthereumSynced()
+    func onLastBlockNumber(blockNumber: Int)
+    func onLastBlockBloomFilter(bloomFilter: BloomFilter)
+    func onUpdateNonce(nonce: Int)
+    func onUpdateBalance(balance: BigUInt)
+}
+
+public protocol ITransactionSyncerDelegate {
+    var notSyncedTransactionsSignal: Signal { get }
+    func transactionSyncerState(id: String) -> TransactionSyncerState?
+    func update(transactionSyncerState: TransactionSyncerState)
+    func add(notSyncedTransactions: [NotSyncedTransaction])
+    func notSyncedTransactions(limit: Int) -> [NotSyncedTransaction]
+    func remove(notSyncedTransaction: NotSyncedTransaction)
+    func update(notSyncedTransaction: NotSyncedTransaction)
 }
 
 protocol ITransactionManagerDelegate: AnyObject {

@@ -34,12 +34,12 @@ public class Kit {
         ethereumKit.lastBlockBloomFilterObservable
                 .observeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .subscribe(onNext: { [weak self] in
-                    self?.onUpdateLastBlock(bloomFilter: $0)
+                    self?.onUpdate(bloomFilter: $0)
                 })
                 .disposed(by: disposeBag)
     }
 
-    private func onUpdateLastBlock(bloomFilter: BloomFilter) {
+    private func onUpdate(bloomFilter: BloomFilter) {
         if bloomFilter.mayContain(contractAddress: contractAddress) {
             balanceManager.sync()
         }
@@ -50,7 +50,6 @@ public class Kit {
         case .synced:
             state.syncState = .syncing(progress: nil)
             balanceManager.sync()
-            transactionManager.immediateSync()
         case .syncing:
             state.syncState = .syncing(progress: nil)
         case .notSynced(let error):
@@ -62,9 +61,15 @@ public class Kit {
 
 extension Kit {
 
+    public func start() {
+        transactionManager.sync()
+    }
+
+    public func stop() {
+        ethereumKit.removeSyncer(byId: Kit.syncerId(contractAddress: contractAddress))
+    }
+
     public func refresh() {
-//        state.transactionsSyncState = .syncing
-//        transactionManager.sync()
     }
 
     public var syncState: SyncState {
@@ -79,13 +84,6 @@ extension Kit {
         state.balance
     }
 
-    public func sendSingle(to: Address, value: BigUInt, gasPrice: Int, gasLimit: Int) throws -> Single<Transaction> {
-        transactionManager.sendSingle(to: to, value: value, gasPrice: gasPrice, gasLimit: gasLimit)
-                .do(onSuccess: { [weak self] transaction in
-                    self?.state.transactionsSubject.onNext([transaction])
-                })
-    }
-
     public func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) throws -> Single<[Transaction]> {
         transactionManager.transactionsSingle(from: from, limit: limit)
     }
@@ -93,10 +91,10 @@ extension Kit {
     public func pendingTransactions() -> [Transaction] {
         transactionManager.pendingTransactions()
     }
-
-    public func transaction(hash: Data, interTransactionIndex: Int) -> Transaction? {
-        transactionManager.transaction(hash: hash, interTransactionIndex: interTransactionIndex)
-    }
+//
+//    public func transaction(hash: Data, interTransactionIndex: Int) -> Transaction? {
+//        transactionManager.transaction(hash: hash, interTransactionIndex: interTransactionIndex)
+//    }
 
     public var syncStateObservable: Observable<SyncState> {
         state.syncStateSubject.asObservable()
@@ -111,17 +109,7 @@ extension Kit {
     }
 
     public var transactionsObservable: Observable<[Transaction]> {
-        state.transactionsSubject.asObservable()
-    }
-
-    public func estimateGas(to: Address?, contractAddress: Address, value: BigUInt, gasPrice: Int?) -> Single<Int> {
-        // without address - provide default gas limit
-        guard let to = to else {
-            return Single.just(EthereumKit.Kit.defaultGasLimit)
-        }
-
-        let data = transactionManager.transactionContractData(to: to, value: value)
-        return ethereumKit.estimateGas(to: contractAddress, amount: nil, gasPrice: gasPrice, data: data)
+        transactionManager.transactionsObservable
     }
 
     public func allowanceSingle(spenderAddress: Address, defaultBlockParameter: DefaultBlockParameter = .latest) -> Single<String> {
@@ -135,11 +123,8 @@ extension Kit {
         allowanceManager.approveTransactionData(spenderAddress: spenderAddress, amount: amount)
     }
 
-    public func approveSingle(spenderAddress: Address, amount: BigUInt, gasLimit: Int, gasPrice: Int) -> Single<Transaction> {
-        allowanceManager.approveSingle(spenderAddress: spenderAddress, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice)
-                .do(onSuccess: { [weak self] tx in
-                    self?.state.transactionsSubject.onNext([tx])
-                })
+    public func transferTransactionData(to: Address, value: BigUInt) -> TransactionData {
+        transactionManager.transferTransactionData(to: to, value: value)
     }
 
 }
@@ -147,14 +132,6 @@ extension Kit {
 extension Kit: IBalanceManagerDelegate {
 
     func onSyncBalanceSuccess(balance: BigUInt) {
-        if state.balance == balance {
-            if case .synced = state.syncState {
-                transactionManager.delayedSync(expectTransaction: false)
-            }
-        } else {
-            transactionManager.delayedSync(expectTransaction: true)
-        }
-
         state.syncState = .synced
         state.balance = balance
     }
@@ -175,16 +152,15 @@ extension Kit {
         let storage: ITransactionStorage & ITokenBalanceStorage = try GrdbStorage(databaseDirectoryUrl: databaseDirectoryUrl(), databaseFileName: databaseFileName)
 
         let dataProvider: IDataProvider = DataProvider(ethereumKit: ethereumKit)
-        let transactionBuilder: ITransactionBuilder = TransactionBuilder()
-//        let transactionProvider: ITransactionProvider = TransactionProvider(dataProvider: dataProvider)
-        let transactionProvider: ITransactionProvider = EtherscanTransactionProvider(provider: ethereumKit.etherscanApiProvider)
-        var transactionManager: ITransactionManager = TransactionManager(contractAddress: contractAddress, address: address, storage: storage, transactionProvider: transactionProvider, dataProvider: dataProvider, transactionBuilder: transactionBuilder)
+        let transactionSyncer = Erc20TransactionSyncer(id: syncerId(contractAddress: contractAddress), contractAddress: contractAddress, ethereumTransactionProvider: ethereumKit.etherscanApiProvider)
+        var transactionManager: ITransactionManager = TransactionManager(contractAddress: contractAddress, ethereumKit: ethereumKit, contractMethodFactories: ContractMethodFactories.shared, storage: storage)
         var balanceManager: IBalanceManager = BalanceManager(contractAddress: contractAddress, address: address, storage: storage, dataProvider: dataProvider)
         let allowanceManager = AllowanceManager(ethereumKit: ethereumKit, storage: storage, contractAddress: contractAddress, address: address)
 
         let erc20Kit = Kit(contractAddress: contractAddress, ethereumKit: ethereumKit, transactionManager: transactionManager, balanceManager: balanceManager, allowanceManager: allowanceManager)
 
         balanceManager.delegate = erc20Kit
+        ethereumKit.add(syncer: transactionSyncer)
 
         return erc20Kit
     }
@@ -210,6 +186,10 @@ extension Kit {
         try fileManager.createDirectory(at: url, withIntermediateDirectories: true)
 
         return url
+    }
+
+    private static func syncerId(contractAddress: Address) -> String {
+        "erc20_transaction_syncer_\(contractAddress.hex)"
     }
 
 }

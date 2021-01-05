@@ -1,33 +1,15 @@
 import RxSwift
 import BigInt
 
-protocol ITransactionSyncer {
-    var id: String { get }
-    var state: SyncState { get }
-    var stateObservable: Observable<SyncState> { get }
-
-    func onEthereumSynced()
-    func onLastBlockNumber(blockNumber: Int)
-    func onLastBlockBloomFilter(bloomFilter: BloomFilter)
-    func onUpdateNonce(nonce: Int)
-    func onUpdateBalance(balance: BigUInt)
-}
-
-extension ITransactionSyncer {
-    func onEthereumSynced() {}
-    func onLastBlockNumber(blockNumber: Int) {}
-    func onLastBlockBloomFilter(bloomFilter: BloomFilter) {}
-    func onUpdateNonce(nonce: Int) {}
-    func onUpdateBalance(balance: BigUInt) {}
-}
-
 class TransactionSyncManager {
     private let disposeBag = DisposeBag()
+    private let scheduler = ConcurrentDispatchQueueScheduler(qos: .background)
     private let stateSubject = PublishSubject<SyncState>()
-    private var transactionsSubject = PublishSubject<[FullTransaction]>()
+    private let transactionsSubject = PublishSubject<[FullTransaction]>()
+    private let notSyncedTransactionManager: NotSyncedTransactionManager
+
     private var syncers = [ITransactionSyncer]()
     private var syncerDisposables = [String: Disposable]()
-    private var scheduler = ConcurrentDispatchQueueScheduler(qos: .background)
 
     var state: SyncState = .notSynced(error: Kit.SyncError.notStarted) {
         didSet {
@@ -43,6 +25,10 @@ class TransactionSyncManager {
 
     var transactionsObservable: Observable<[FullTransaction]> {
         transactionsSubject.asObservable()
+    }
+
+    init(notSyncedTransactionManager: NotSyncedTransactionManager) {
+        self.notSyncedTransactionManager = notSyncedTransactionManager
     }
 
     func set(ethereumKit: EthereumKit.Kit) {
@@ -105,15 +91,16 @@ class TransactionSyncManager {
     }
 
     private func syncState() {
-        print("syncer states: \(syncers.map { $0.state })")
+        print("syncer states: \(syncers.map { "\($0.id) -> \($0.state)" })")
         state = syncers.first { $0.state.notSynced }?.state ??
                 syncers.first { $0.state.syncing }?.state ??
                 .synced
     }
 
     func add(syncer: ITransactionSyncer) {
-        syncers.append(syncer)
+        syncer.set(delegate: notSyncedTransactionManager)
 
+        syncers.append(syncer)
         syncerDisposables[syncer.id] = syncer.stateObservable
                 .observeOn(scheduler)
                 .subscribe(onNext: { [weak self] _ in

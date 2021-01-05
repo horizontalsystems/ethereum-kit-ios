@@ -21,5 +21,4 @@ class KitState {
 
     let syncStateSubject = PublishSubject<SyncState>()
     let balanceSubject = PublishSubject<BigUInt>()
-    let transactionsSubject = PublishSubject<[Transaction]>()
 }

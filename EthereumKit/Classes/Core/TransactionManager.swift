@@ -5,10 +5,15 @@ class TransactionManager {
     private let storage: ITransactionStorage
 
     private let etherTransactionsSubject = PublishSubject<[FullTransaction]>()
+    private let allTransactionsSubject = PublishSubject<[FullTransaction]>()
     private let disposeBag = DisposeBag()
 
     var etherTransactionsObservable: Observable<[FullTransaction]> {
         etherTransactionsSubject.asObservable()
+    }
+
+    var allTransactionsObservable: Observable<[FullTransaction]> {
+        allTransactionsSubject.asObservable()
     }
 
     init(address: Address, storage: ITransactionStorage, transactionSyncManager: TransactionSyncManager) {
@@ -24,15 +29,19 @@ class TransactionManager {
                                 return
                             }
 
+                            if !transactions.isEmpty {
+                                print("emitting \(transactions.count) transactions to allTransactionsSubject")
+                                manager.allTransactionsSubject.onNext(transactions)
+                            }
+
                             let etherTransactions = transactions.filter {
                                 manager.isEtherTransferred(fullTransaction: $0)
                             }
 
-                            guard !transactions.isEmpty else {
-                                return
+                            if !etherTransactions.isEmpty {
+                                print("emitting \(etherTransactions.count) transactions to etherTransactionsSubject")
+                                manager.etherTransactionsSubject.onNext(etherTransactions)
                             }
-
-                            manager.etherTransactionsSubject.onNext(etherTransactions)
                         }
                 )
                 .disposed(by: disposeBag)
@@ -54,13 +63,8 @@ extension TransactionManager {
         storage.etherTransactionsSingle(address: address, fromHash: fromHash, limit: limit)
     }
 
-    func transactionsSingle(byHashes hashes: [Data]) -> Single<[FullTransaction]> {
-        Single<[FullTransaction]>.create { [weak self] observer in
-            let transactions = self?.storage.fullTransactions(byHashes: hashes) ?? []
-            observer(.success(transactions))
-
-            return Disposables.create()
-        }
+    func transactions(byHashes hashes: [Data]) -> [FullTransaction] {
+        storage.fullTransactions(byHashes: hashes)
     }
 
     func transaction(hash: Data) -> FullTransaction? {
@@ -75,6 +79,10 @@ extension TransactionManager {
         if !isEtherTransferred(fullTransaction: fullTransaction) {
             etherTransactionsSubject.onNext([fullTransaction])
         }
+    }
+
+    func transactions(fromHash: Data?) -> [FullTransaction] {
+        storage.fullTransactions(fromHash: fromHash)
     }
 
 }

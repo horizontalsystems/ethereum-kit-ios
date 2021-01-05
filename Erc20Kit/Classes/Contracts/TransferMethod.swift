@@ -2,8 +2,10 @@ import EthereumKit
 import BigInt
 
 class TransferMethod: ContractMethod {
-    private let to: Address
-    private let value: BigUInt
+    static let methodSignature = "transfer(address,uint256)"
+
+    let to: Address
+    let value: BigUInt
 
     init(to: Address, value: BigUInt) {
         self.to = to
@@ -12,6 +14,6 @@ class TransferMethod: ContractMethod {
         super.init()
     }
 
-    override var methodSignature: String { "transfer(address,uint256)" }
+    override var methodSignature: String { TransferMethod.methodSignature }
     override var arguments: [Any] { [to, value] }
 }

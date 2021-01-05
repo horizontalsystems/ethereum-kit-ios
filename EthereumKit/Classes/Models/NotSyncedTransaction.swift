@@ -1,12 +1,12 @@
 import GRDB
 import BigInt
 
-class NotSyncedTransaction: Record {
+public class NotSyncedTransaction: Record {
     let hash: Data
     var transaction: RpcTransaction?
     let timestamp: TimeInterval?
 
-    init(hash: Data, transaction: RpcTransaction? = nil, timestamp: TimeInterval? = nil) {
+    public init(hash: Data, transaction: RpcTransaction? = nil, timestamp: TimeInterval? = nil) {
         self.hash = hash
         self.transaction = transaction
         self.timestamp = timestamp

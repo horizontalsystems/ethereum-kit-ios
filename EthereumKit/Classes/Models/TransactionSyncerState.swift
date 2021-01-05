@@ -1,10 +1,10 @@
 import GRDB
 
-class TransactionSyncerState: Record {
-    let id: String
-    let lastBlockNumber: Int
+public class TransactionSyncerState: Record {
+    public let id: String
+    public let lastBlockNumber: Int
 
-    init(id: String, lastBlockNumber: Int) {
+    public init(id: String, lastBlockNumber: Int) {
         self.id = id
         self.lastBlockNumber = lastBlockNumber
 
