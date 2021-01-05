@@ -59,7 +59,7 @@ class TransactionStorage {
                 t.column(Transaction.Columns.value.name, .text).notNull()
                 t.column(Transaction.Columns.gasLimit.name, .integer).notNull()
                 t.column(Transaction.Columns.gasPrice.name, .integer).notNull()
-                t.column(Transaction.Columns.timestamp.name, .double).notNull()
+                t.column(Transaction.Columns.timestamp.name, .integer).notNull()
 
                 t.primaryKey([Transaction.Columns.hash.name], onConflict: .replace)
             }
@@ -136,7 +136,7 @@ class TransactionStorage {
                 t.column(NotSyncedTransaction.Columns.blockHash.name, .text)
                 t.column(NotSyncedTransaction.Columns.blockNumber.name, .integer)
                 t.column(NotSyncedTransaction.Columns.transactionIndex.name, .integer)
-                t.column(NotSyncedTransaction.Columns.timestamp.name, .double)
+                t.column(NotSyncedTransaction.Columns.timestamp.name, .integer)
 
                 t.primaryKey([NotSyncedTransaction.Columns.hash.name], onConflict: .replace)
             }
@@ -273,7 +273,7 @@ extension TransactionStorage: ITransactionStorage {
         }
     }
 
-    func etherTransactionsSingle(address: Address, fromHash: Data?, limit: Int?) -> Single<[FullTransaction]> {
+    func etherTransactionsBeforeSingle(address: Address, hash: Data?, limit: Int?) -> Single<[FullTransaction]> {
         Single.create { [weak self] observer in
             guard let storage = self else {
                 observer(.success([]))
@@ -290,15 +290,15 @@ extension TransactionStorage: ITransactionStorage {
                                   )
                                   """
 
-                if let fromHash = fromHash,
+                if let fromHash = hash,
                    let fromTransaction = try Transaction.filter(Transaction.Columns.hash == fromHash).fetchOne(db) {
                     let transactionIndex = (try fromTransaction.receipt.fetchOne(db))?.transactionIndex ?? 0
 
                     whereClause += """
                                    AND (
-                                    \(Transaction.Columns.timestamp.name) < \(fromTransaction.timestamp) || 
+                                    \(Transaction.Columns.timestamp.name) < \(fromTransaction.timestamp) OR 
                                         (
-                                            \(Transaction.databaseTableName).\(Transaction.Columns.timestamp.name) == \(fromTransaction.timestamp) AND 
+                                            \(Transaction.databaseTableName).\(Transaction.Columns.timestamp.name) = \(fromTransaction.timestamp) AND 
                                             \(TransactionReceipt.databaseTableName).\(TransactionReceipt.Columns.transactionIndex.name) < \(transactionIndex)
                                         )
                                    )
@@ -350,28 +350,27 @@ extension TransactionStorage: ITransactionStorage {
         return fullTransactions(from: transactions)
     }
 
-    func fullTransactions(fromHash: Data?) -> [FullTransaction] {
+    func fullTransactionsAfter(hash: Data?) -> [FullTransaction] {
         let transactions: [Transaction] = try! dbPool.read { db in
             var whereClause = ""
 
-            if let fromHash = fromHash,
+            if let fromHash = hash,
                let fromTransaction = try Transaction.filter(Transaction.Columns.hash == fromHash).fetchOne(db) {
                 let transactionIndex = (try fromTransaction.receipt.fetchOne(db))?.transactionIndex ?? 0
 
                 whereClause += """
-                               WHERE (
-                                \(Transaction.Columns.timestamp.name) < \(fromTransaction.timestamp) || 
-                                    (
-                                        \(Transaction.databaseTableName).\(Transaction.Columns.timestamp.name) == \(fromTransaction.timestamp) AND 
-                                        \(TransactionReceipt.databaseTableName).\(TransactionReceipt.Columns.transactionIndex.name) < \(transactionIndex)
-                                    )
-                               )
+                               WHERE
+                                \(Transaction.Columns.timestamp.name) > \(fromTransaction.timestamp) OR 
+                                (
+                                    \(Transaction.databaseTableName).\(Transaction.Columns.timestamp.name) = \(fromTransaction.timestamp) AND 
+                                    \(TransactionReceipt.databaseTableName).\(TransactionReceipt.Columns.transactionIndex.name) > \(transactionIndex)
+                                )
                                """
             }
 
             let orderClause = """
-                              ORDER BY \(Transaction.databaseTableName).\(Transaction.Columns.timestamp.name) DESC, 
-                              \(TransactionReceipt.databaseTableName).\(TransactionReceipt.Columns.transactionIndex.name) DESC
+                              ORDER BY \(Transaction.databaseTableName).\(Transaction.Columns.timestamp.name) ASC, 
+                              \(TransactionReceipt.databaseTableName).\(TransactionReceipt.Columns.transactionIndex.name) ASC
                               """
 
             let sql = """

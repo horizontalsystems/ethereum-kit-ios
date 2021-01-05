@@ -18,9 +18,9 @@ public class Transaction: Record {
     public let gasPrice: Int
     public let gasLimit: Int
     public let input: Data
-    public let timestamp: TimeInterval
+    public let timestamp: Int
 
-    public init(hash: Data, nonce: Int, input: Data = Data(), from: Address, to: Address?, value: BigUInt, gasLimit: Int, gasPrice: Int, timestamp: TimeInterval = Date().timeIntervalSince1970) {
+    public init(hash: Data, nonce: Int, input: Data = Data(), from: Address, to: Address?, value: BigUInt, gasLimit: Int, gasPrice: Int, timestamp: Int = Int(Date().timeIntervalSince1970)) {
         self.hash = hash
         self.nonce = nonce
         self.input = input

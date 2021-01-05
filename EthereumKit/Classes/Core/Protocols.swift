@@ -52,7 +52,7 @@ protocol ITransactionStorage {
     func etherTransactionsSingle(address: Address, fromHash: Data?, limit: Int?) -> Single<[FullTransaction]>
     func transaction(hash: Data) -> FullTransaction?
     func fullTransactions(byHashes: [Data]) -> [FullTransaction]
-    func fullTransactions(fromHash: Data?) -> [FullTransaction]
+    func fullTransactionsAfter(hash: Data?) -> [FullTransaction]
 }
 
 public protocol ITransactionSyncerStateStorage {

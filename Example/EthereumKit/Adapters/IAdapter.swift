@@ -2,6 +2,8 @@ import EthereumKit
 import RxSwift
 
 protocol IAdapter {
+    func start()
+    func stop()
     func refresh()
 
     var name: String { get }

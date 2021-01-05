@@ -30,16 +30,14 @@ class TransactionManager {
                             }
 
                             if !transactions.isEmpty {
-                                print("emitting \(transactions.count) transactions to allTransactionsSubject")
                                 manager.allTransactionsSubject.onNext(transactions)
                             }
 
                             let etherTransactions = transactions.filter {
-                                manager.isEtherTransferred(fullTransaction: $0)
+                                manager.hasEtherTransferred(fullTransaction: $0)
                             }
 
                             if !etherTransactions.isEmpty {
-                                print("emitting \(etherTransactions.count) transactions to etherTransactionsSubject")
                                 manager.etherTransactionsSubject.onNext(etherTransactions)
                             }
                         }
@@ -47,7 +45,7 @@ class TransactionManager {
                 .disposed(by: disposeBag)
     }
 
-    private func isEtherTransferred(fullTransaction: FullTransaction) -> Bool {
+    private func hasEtherTransferred(fullTransaction: FullTransaction) -> Bool {
         (fullTransaction.transaction.from == address && fullTransaction.transaction.value > 0) ||
                 fullTransaction.transaction.to == address ||
                 fullTransaction.internalTransactions.contains {
@@ -75,14 +73,15 @@ extension TransactionManager {
         storage.save(transactions: [sentTransaction])
 
         let fullTransaction = FullTransaction(transaction: sentTransaction)
+        allTransactionsSubject.onNext([fullTransaction])
 
-        if !isEtherTransferred(fullTransaction: fullTransaction) {
+        if !hasEtherTransferred(fullTransaction: fullTransaction) {
             etherTransactionsSubject.onNext([fullTransaction])
         }
     }
 
     func transactions(fromHash: Data?) -> [FullTransaction] {
-        storage.fullTransactions(fromHash: fromHash)
+        storage.fullTransactionsAfter(hash: fromHash)
     }
 
 }

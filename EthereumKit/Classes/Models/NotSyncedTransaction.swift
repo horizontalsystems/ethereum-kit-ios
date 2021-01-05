@@ -4,9 +4,9 @@ import BigInt
 public class NotSyncedTransaction: Record {
     let hash: Data
     var transaction: RpcTransaction?
-    let timestamp: TimeInterval?
+    let timestamp: Int?
 
-    public init(hash: Data, transaction: RpcTransaction? = nil, timestamp: TimeInterval? = nil) {
+    public init(hash: Data, transaction: RpcTransaction? = nil, timestamp: Int? = nil) {
         self.hash = hash
         self.transaction = transaction
         self.timestamp = timestamp

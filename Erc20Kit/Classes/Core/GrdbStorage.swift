@@ -62,12 +62,12 @@ class GrdbStorage {
 
             try db.create(table: TransactionRecord.databaseTableName) { t in
                 t.column(TransactionRecord.Columns.hash.name, .text).notNull()
-                t.column(TransactionRecord.Columns.interTransactionIndex.name, .text).notNull()
-                t.column(TransactionRecord.Columns.logIndex.name, .text)
+                t.column(TransactionRecord.Columns.interTransactionIndex.name, .integer).notNull()
+                t.column(TransactionRecord.Columns.logIndex.name, .integer)
                 t.column(TransactionRecord.Columns.from.name, .text).notNull()
                 t.column(TransactionRecord.Columns.to.name, .text).notNull()
                 t.column(TransactionRecord.Columns.value.name, .text).notNull()
-                t.column(TransactionRecord.Columns.timestamp.name, .text).notNull()
+                t.column(TransactionRecord.Columns.timestamp.name, .integer).notNull()
                 t.column(TransactionRecord.Columns.type.name, .text).notNull()
 
                 t.primaryKey([TransactionRecord.Columns.hash.name, TransactionRecord.Columns.interTransactionIndex.name], onConflict: .replace)

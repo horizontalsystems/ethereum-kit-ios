@@ -75,7 +75,7 @@ class Manager {
         ethereumKit.start()
 
         for adapter in erc20Adapters {
-            adapter.refresh()
+            adapter.start()
         }
     }
 

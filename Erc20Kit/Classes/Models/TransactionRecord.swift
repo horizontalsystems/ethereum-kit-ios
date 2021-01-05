@@ -9,10 +9,10 @@ class TransactionRecord: Record {
     let from: Address
     let to: Address
     let value: BigUInt
-    let timestamp: TimeInterval
+    let timestamp: Int
     let type: TransactionType
 
-    init(hash: Data, interTransactionIndex: Int, logIndex: Int?, from: Address, to: Address, value: BigUInt, timestamp: Double, type: TransactionType) {
+    init(hash: Data, interTransactionIndex: Int, logIndex: Int?, from: Address, to: Address, value: BigUInt, timestamp: Int, type: TransactionType) {
         self.hash = hash
         self.interTransactionIndex = interTransactionIndex
         self.logIndex = logIndex

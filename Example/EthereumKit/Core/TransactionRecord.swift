@@ -7,7 +7,7 @@ struct TransactionRecord {
     let transactionIndex: Int
     let interTransactionIndex: Int
     let amount: Decimal
-    let timestamp: Double
+    let timestamp: Int
 
     let from: TransactionAddress
     let to: TransactionAddress

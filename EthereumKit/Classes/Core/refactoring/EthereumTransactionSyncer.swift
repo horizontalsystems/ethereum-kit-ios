@@ -26,22 +26,22 @@ class EthereumTransactionSyncer: AbstractTransactionSyncer {
                 .transactionsSingle(startBlock: lastSyncBlockNumber + 1)
                 .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(
-                        onSuccess: { [weak self] txList in
-                            print("EthereumTransactionProvider got \(txList.count) transactions")
+                        onSuccess: { [weak self] transactions in
+                            print("EthereumTransactionProvider got \(transactions.count) transactions")
                             guard let syncer = self else {
                                 return
                             }
 
-                            guard !txList.isEmpty else {
+                            guard !transactions.isEmpty else {
                                 syncer.state = .synced
                                 return
                             }
 
-                            if let blockNumber = txList.first?.blockNumber {
+                            if let blockNumber = transactions.first?.blockNumber {
                                 syncer.update(lastSyncBlockNumber: blockNumber)
                             }
 
-                            let notSyncedTransactions = txList.map { etherscanTransaction in
+                            let notSyncedTransactions = transactions.map { etherscanTransaction in
                                 NotSyncedTransaction(
                                         hash: etherscanTransaction.hash,
                                         transaction: RpcTransaction(

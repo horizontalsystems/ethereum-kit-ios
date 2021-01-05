@@ -26,16 +26,21 @@ class Erc20TransactionSyncer: AbstractTransactionSyncer {
         provider.tokenTransactionsSingle(contractAddress: contractAddress, startBlock: lastSyncBlockNumber + 1)
                 .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(
-                        onSuccess: { [weak self] array in
-                            print("Erc20TransactionSyncer got \(array.count) transactions")
+                        onSuccess: { [weak self] transactions in
+                            print("Erc20TransactionSyncer got \(transactions.count) transactions")
 
                             guard let syncer = self else {
                                 return
                             }
 
+                            guard !transactions.isEmpty else {
+                                syncer.state = .synced
+                                return
+                            }
+
                             var lastBlockNumber = lastSyncBlockNumber
 
-                            let hashes = array.compactMap { data -> Data? in
+                            let hashes = transactions.compactMap { data -> Data? in
                                 if let blockNumber = data["blockNumber"].flatMap { Int($0) }, blockNumber > lastBlockNumber {
                                     lastBlockNumber = blockNumber
                                 }

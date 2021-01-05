@@ -130,7 +130,7 @@ class TransactionManager {
 
             switch contractMethod {
             case let method as TransferMethod:
-                if transaction.from == address && method.to == address {
+                if transaction.from == address || method.to == address {
                     return [TransactionRecord(
                             hash: transaction.hash,
                             interTransactionIndex: 0,
@@ -209,8 +209,8 @@ extension TransactionManager: ITransactionManager {
 }
 
 enum Erc20LogEvent {
-    static let transferEventSignature = ContractEvent.eventId(signature: "Transfer(address,address,uint256)")
-    static let approvalEventSignature = ContractEvent.eventId(signature: "Approval(address,address,uint256)")
+    static let transferEventId = ContractEvent.eventId(signature: "Transfer(address,address,uint256)")
+    static let approvalEventId = ContractEvent.eventId(signature: "Approval(address,address,uint256)")
 
     case transfer(from: Address, to: Address, value: BigUInt)
     case approve(owner: Address, spender: Address, value: BigUInt)
@@ -223,15 +223,15 @@ extension TransactionLog {
             return nil
         }
 
-        let methodSignature = topics[0]
+        let eventId = topics[0]
         let firstParam = Address(raw: topics[1])
         let secondParam = Address(raw: topics[2])
 
-        if methodSignature == Erc20LogEvent.transferEventSignature && (firstParam == address || secondParam == address) {
+        if eventId == Erc20LogEvent.transferEventId && (firstParam == address || secondParam == address) {
             return .transfer(from: firstParam, to: secondParam, value: BigUInt(data))
         }
 
-        if methodSignature == Erc20LogEvent.approvalEventSignature && firstParam == address {
+        if eventId == Erc20LogEvent.approvalEventId && firstParam == address {
             return .approve(owner: firstParam, spender: secondParam, value: BigUInt(data))
         }
 
