@@ -1,109 +1,167 @@
-import RxSwift
-import BigInt
 import EthereumKit
+import BigInt
+import RxSwift
 
 class TransactionManager {
-    private let scheduler = ConcurrentDispatchQueueScheduler(queue: DispatchQueue(label: "transactionManager.erc20_transactions", qos: .background))
     private let disposeBag = DisposeBag()
 
-    weak var delegate: ITransactionManagerDelegate?
-
     private let contractAddress: Address
-    private let address: Address
+    private let ethereumKit: EthereumKit.Kit
+    private let contractMethodFactories: ContractMethodFactories
     private let storage: ITransactionStorage
-    private let transactionProvider: ITransactionProvider
-    private let dataProvider: IDataProvider
-    private let transactionBuilder: ITransactionBuilder
+    private let address: Address
 
-    private var delayTime = 3
-    private let delayTimeIncreaseFactor = 2
-    private var retryCount = 0
-    private var syncing: Bool = false
+    private let transactionsSubject = PublishSubject<[Transaction]>()
 
-    init(contractAddress: Address, address: Address, storage: ITransactionStorage, transactionProvider: ITransactionProvider, dataProvider: IDataProvider, transactionBuilder: ITransactionBuilder) {
+    var transactionsObservable: Observable<[Transaction]> {
+        transactionsSubject.asObservable()
+    }
+
+    init(contractAddress: Address, ethereumKit: EthereumKit.Kit, contractMethodFactories: ContractMethodFactories, storage: ITransactionStorage) {
         self.contractAddress = contractAddress
-        self.address = address
+        self.ethereumKit = ethereumKit
+        self.contractMethodFactories = contractMethodFactories
         self.storage = storage
-        self.transactionProvider = transactionProvider
-        self.dataProvider = dataProvider
-        self.transactionBuilder = transactionBuilder
-    }
 
-    private func withFailedTransactions(transactions: [Transaction]) -> Single<[Transaction]> {
-        var pendingTransactions = storage.pendingTransactions
+        address = ethereumKit.receiveAddress
 
-        for transaction in transactions {
-            if let txIndex = pendingTransactions.firstIndex(where: { $0.transactionHash == transaction.transactionHash && $0.from == transaction.from && $0.to == transaction.to }) {
-                pendingTransactions.remove(at: txIndex)
-
-                // when this transaction was sent interTransactionIndex was set to 0, so we need it to set 0 for it to replace the transaction in database
-                transaction.interTransactionIndex = 0
-            }
-        }
-
-        guard !pendingTransactions.isEmpty else {
-            return Single.just(transactions)
-        }
-
-        return dataProvider.getTransactionStatuses(transactionHashes: pendingTransactions.map { $0.transactionHash })
-                .observeOn(scheduler)
-                .map { [weak self] statuses -> [Transaction] in
-                    transactions + (self?.failedTransactions(pendingTransactions: pendingTransactions, statuses: statuses) ?? [])
+        ethereumKit.allTransactionsObservable
+                .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+                .subscribe { [weak self] in
+                    self?.processTransactions(fullTransactions: $0)
                 }
-                .catchErrorJustReturn(transactions)
+                .disposed(by: disposeBag)
     }
 
-    private func finishSync(transactions: [Transaction]) {
-        if transactions.isEmpty && retryCount > 0 {
-            retryCount -= 1
-            delayTime = delayTime * delayTimeIncreaseFactor
-            sync(delayTime: delayTime)
+    private func processTransactions(fullTransactions: [FullTransaction]) {
+        let records: [TransactionRecord] = fullTransactions
+                .map { extractErc20TransactionRecords(from: $0) }
+                .reduce([]) { $0 + $1 }
+
+        guard !records.isEmpty else {
             return
         }
-        
-        syncing = false
-        retryCount = 0
-        storage.save(transactions: transactions)
-        delegate?.onSyncSuccess(transactions: transactions)
-    }
 
-    func finishSync(error: Error) {
-        syncing = false
-        retryCount = 0
-        delegate?.onSyncTransactionsFailed(error: error)
-    }
+        var pendingTransactionRecords = storage.pendingTransactions
 
-    private func failedTransactions(pendingTransactions: [Transaction], statuses: [(Data, TransactionStatus)]) -> [Transaction] {
-        statuses.compactMap { (hash, status) -> Transaction? in
-            if status == .failed, let txIndex = pendingTransactions.firstIndex(where: { $0.transactionHash == hash }) {
-                pendingTransactions[txIndex].isError = true
-                return pendingTransactions[txIndex]
+        for transaction in records {
+            if let pendingTransactionRecord = pendingTransactionRecords.first(where: { $0.hash == transaction.hash }) {
+                transaction.interTransactionIndex = pendingTransactionRecord.interTransactionIndex
+
+                pendingTransactionRecords.removeAll { $0 === pendingTransactionRecord }
             }
-            return nil
+
+            storage.save(transaction: transaction)
         }
+
+        let erc20Transactions = makeTransactions(records: records, fullTransactions: fullTransactions)
+        transactionsSubject.onNext(erc20Transactions)
     }
 
-    private func sync(delayTime: Int? = nil) {
-        let lastBlockHeight = dataProvider.lastBlockHeight
-        let lastTransactionBlockHeight = storage.lastTransactionBlockHeight ?? 0
+    private func makeTransactions(records: [TransactionRecord], fullTransactions: [FullTransaction]) -> [Transaction] {
+        records.compactMap({ transactionRecord in
+            let fullTransaction = fullTransactions.first {
+                $0.transaction.hash == transactionRecord.hash
+            }
 
-        var single = transactionProvider
-                .transactions(contractAddress: contractAddress, address: address, from: lastTransactionBlockHeight + 1, to: lastBlockHeight)
-                .subscribeOn(scheduler)
-                .flatMap { [weak self] transactions -> Single<[Transaction]> in
-                    self?.withFailedTransactions(transactions: transactions.filter { $0.value != 0 }) ?? Single.just(transactions)
+            return fullTransaction.flatMap({
+                Transaction(
+                        hash: transactionRecord.hash,
+                        interTransactionIndex: transactionRecord.interTransactionIndex,
+                        transactionIndex: $0.receiptWithLogs?.receipt.transactionIndex,
+                        from: transactionRecord.from,
+                        to: transactionRecord.to,
+                        value: transactionRecord.value,
+                        timestamp: transactionRecord.timestamp,
+                        isError: $0.failed,
+                        type: transactionRecord.type,
+                        fullTransaction: $0
+                )
+            })
+        })
+    }
+
+    private func extractErc20TransactionRecords(from fullTransaction: FullTransaction) -> [TransactionRecord] {
+        let transaction = fullTransaction.transaction
+
+        if let receiptWithLogs = fullTransaction.receiptWithLogs {
+            return receiptWithLogs.logs.compactMap { log -> TransactionRecord? in
+                guard log.address == contractAddress else {
+                    return nil
                 }
 
-        if let delayTime = delayTime {
-            single = single.delaySubscription(DispatchTimeInterval.seconds(delayTime), scheduler: scheduler)
-        }
+                let event = log.getErc20Event(address: address)
 
-        single.subscribe(onSuccess: { [weak self] transactions in
-                    self?.finishSync(transactions: transactions)
-                }, onError: { [weak self] error in
-                    self?.finishSync(error: error)
-                })
-                .disposed(by: disposeBag)
+                switch event {
+                case .transfer(let from, let to, let value):
+                    return TransactionRecord(
+                            hash: transaction.hash,
+                            interTransactionIndex: log.logIndex,
+                            logIndex: log.logIndex,
+                            from: from,
+                            to: to,
+                            value: value,
+                            timestamp: transaction.timestamp,
+                            type: .transfer
+                    )
+
+                case .approve(let owner, let spender, let amount):
+                    return TransactionRecord(
+                            hash: transaction.hash,
+                            interTransactionIndex: log.logIndex,
+                            logIndex: log.logIndex,
+                            from: owner,
+                            to: spender,
+                            value: amount,
+                            timestamp: transaction.timestamp,
+                            type: .approve
+                    )
+                default: ()
+                }
+
+                return nil
+            }
+        } else {
+            guard transaction.to == contractAddress else {
+                return []
+            }
+
+            let contractMethod = contractMethodFactories.createMethod(input: fullTransaction.transaction.input)
+
+            switch contractMethod {
+            case let method as TransferMethod:
+                if transaction.from == address && method.to == address {
+                    return [TransactionRecord(
+                            hash: transaction.hash,
+                            interTransactionIndex: 0,
+                            logIndex: nil,
+                            from: transaction.from,
+                            to: method.to,
+                            value: method.value,
+                            timestamp: transaction.timestamp,
+                            type: .transfer
+                    )]
+                }
+
+            case let method as ApproveMethod:
+                if transaction.from == address {
+                    return [TransactionRecord(
+                            hash: transaction.hash,
+                            interTransactionIndex: 0,
+                            logIndex: nil,
+                            from: transaction.from,
+                            to: method.spender,
+                            value: method.value,
+                            timestamp: transaction.timestamp,
+                            type: .approve
+                    )]
+                }
+
+            default: ()
+            }
+
+            return []
+        }
     }
 
 }
@@ -112,54 +170,80 @@ extension TransactionManager: ITransactionManager {
 
     func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[Transaction]> {
         storage.transactionsSingle(from: from, limit: limit)
+                .map { [weak self] records in
+                    guard let manager = self else {
+                        return []
+                    }
+
+                    let fullTransactions = manager.ethereumKit.fullTransactions(byHashes: records.map { $0.hash })
+                    return manager.makeTransactions(records: records, fullTransactions: fullTransactions)
+                }
     }
 
     func pendingTransactions() -> [Transaction] {
-        storage.pendingTransactions
+        let records = storage.pendingTransactions
+        let fullTransactions = ethereumKit.fullTransactions(byHashes: records.map { $0.hash })
+
+        return makeTransactions(records: records, fullTransactions: fullTransactions)
+    }
+//
+//    func transaction(hash: Data, interTransactionIndex: Int) -> Transaction? {
+//        storage.transaction(hash: hash, interTransactionIndex: interTransactionIndex)
+//    }
+
+    func transferTransactionData(to: Address, value: BigUInt) -> TransactionData {
+        TransactionData(
+                to: contractAddress,
+                value: BigUInt.zero,
+                input: TransferMethod(to: to, value: value).encodedABI()
+        )
     }
 
-    func transaction(hash: Data, interTransactionIndex: Int) -> Transaction? {
-        storage.transaction(hash: hash, interTransactionIndex: interTransactionIndex)
+    func sync() {
+        let lastTransaction = storage.lastTransaction
+        let fullTransactions = ethereumKit.fullTransactions(fromHash: lastTransaction?.hash)
+
+        processTransactions(fullTransactions: fullTransactions)
     }
 
-    func transactionContractData(to: Address, value: BigUInt) -> Data {
-        transactionBuilder.transferTransactionInput(to: to, value: value)
-    }
+}
 
-    func sendSingle(to: Address, value: BigUInt, gasPrice: Int, gasLimit: Int) -> Single<Transaction> {
-        let transactionInput = transactionBuilder.transferTransactionInput(to: to, value: value)
+enum Erc20LogEvent {
+    static let transferEventSignature = ContractEvent.eventId(signature: "Transfer(address,address,uint256)")
+    static let approvalEventSignature = ContractEvent.eventId(signature: "Approval(address,address,uint256)")
 
-        return dataProvider.sendSingle(contractAddress: contractAddress, transactionInput: transactionInput, gasPrice: gasPrice, gasLimit: gasLimit)
-                .map { [unowned self] hash in
-                    Transaction(transactionHash: hash, from: self.address, to: to, value: value)
-                }
-                .do(onSuccess: { [weak self] transaction in
-                    self?.storage.save(transactions: [transaction])
-                })
-    }
+    case transfer(from: Address, to: Address, value: BigUInt)
+    case approve(owner: Address, spender: Address, value: BigUInt)
+}
 
-    func immediateSync() {
-        guard !syncing else {
-            return
+extension TransactionLog {
+
+    func getErc20Event(address: Address) -> Erc20LogEvent? {
+        guard topics.count == 3 else {
+            return nil
         }
 
-        syncing = true
-        delegate?.onSyncStarted()
+        let methodSignature = topics[0]
+        let firstParam = Address(raw: topics[1])
+        let secondParam = Address(raw: topics[2])
 
-        sync()
-    }
-
-    func delayedSync(expectTransaction: Bool) {
-        guard !syncing else {
-            return
+        if methodSignature == Erc20LogEvent.transferEventSignature && (firstParam == address || secondParam == address) {
+            return .transfer(from: firstParam, to: secondParam, value: BigUInt(data))
         }
 
-        retryCount = expectTransaction ? 5 : 3
-        delayTime = 3
+        if methodSignature == Erc20LogEvent.approvalEventSignature && firstParam == address {
+            return .approve(owner: firstParam, spender: secondParam, value: BigUInt(data))
+        }
 
-        syncing = true
-        delegate?.onSyncStarted()
-
-        sync(delayTime: delayTime)
+        return nil
     }
+
+}
+
+extension Array {
+
+    subscript (safe index: Index) -> Element? {
+        indices.contains(index) ? self[index] : nil
+    }
+
 }

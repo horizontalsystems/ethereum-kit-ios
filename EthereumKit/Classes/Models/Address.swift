@@ -4,7 +4,11 @@ public struct Address {
     public let raw: Data
 
     public init(raw: Data) {
-        self.raw = raw
+        if raw.count == 32 {
+            self.raw = raw[12..<raw.count]
+        } else {
+            self.raw = raw
+        }
     }
 
     public init(hex: String) throws {

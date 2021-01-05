@@ -10,6 +10,19 @@ public struct FullTransaction {
         self.receiptWithLogs = receiptWithLogs
         self.internalTransactions = internalTransactions
     }
+
+    public var failed: Bool {
+        if let receipt = receiptWithLogs?.receipt {
+            if let status = receipt.status {
+                return status == 0
+            } else {
+                return transaction.gasLimit == receipt.cumulativeGasUsed
+            }
+        } else {
+            return false
+        }
+    }
+
 }
 
 public struct ReceiptWithLogs: FetchableRecord {

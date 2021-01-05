@@ -3,15 +3,15 @@ public enum SyncState {
     case syncing(progress: Double?)
     case notSynced(error: Error)
 
-    var notSynced: Bool {
+    public var notSynced: Bool {
         if case .notSynced = self { return true } else { return false }
     }
 
-    var syncing: Bool {
+    public var syncing: Bool {
         if case .syncing = self { return true } else { return false }
     }
 
-    var synced: Bool {
+    public var synced: Bool {
         self == .synced
     }
 }

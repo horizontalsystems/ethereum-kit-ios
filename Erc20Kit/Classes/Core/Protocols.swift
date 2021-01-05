@@ -13,25 +13,13 @@ protocol ITransactionManagerDelegate: class {
     func onSyncTransactionsFailed(error: Error)
 }
 
-protocol ITransactionBuilder {
-    func transferTransactionInput(to toAddress: Address, value: BigUInt) -> Data
-}
-
 protocol ITransactionManager {
-    var delegate: ITransactionManagerDelegate? { get set }
+    var transactionsObservable: Observable<[Transaction]> { get }
 
     func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[Transaction]>
-    func transaction(hash: Data, interTransactionIndex: Int) -> Transaction?
-
-    func immediateSync()
-    func delayedSync(expectTransaction: Bool)
-    func transactionContractData(to: Address, value: BigUInt) -> Data
-    func sendSingle(to: Address, value: BigUInt, gasPrice: Int, gasLimit: Int) -> Single<Transaction>
     func pendingTransactions() -> [Transaction]
-}
-
-protocol ITransactionProvider {
-    func transactions(contractAddress: Address, address: Address, from: Int, to: Int) -> Single<[Transaction]>
+    func transferTransactionData(to: Address, value: BigUInt) -> TransactionData
+    func sync()
 }
 
 protocol IBalanceManager {
@@ -49,12 +37,10 @@ protocol IDataProvider {
 }
 
 protocol ITransactionStorage {
-    var lastTransactionBlockHeight: Int? { get }
-    var pendingTransactions: [Transaction] { get }
-    func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[Transaction]>
-    func transaction(hash: Data, interTransactionIndex: Int) -> Transaction?
-    func save(transactions: [Transaction])
-    func update(transaction: Transaction)
+    var lastTransaction: TransactionRecord? { get }
+    var pendingTransactions: [TransactionRecord] { get }
+    func save(transaction: TransactionRecord)
+    func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionRecord]>
 }
 
 protocol ITokenBalanceStorage {

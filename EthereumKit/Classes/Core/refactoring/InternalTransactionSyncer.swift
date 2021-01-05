@@ -1,40 +1,15 @@
 import RxSwift
 import BigInt
 
-class InternalTransactionSyncer {
-    private let ethereumTransactionProvider: ITransactionsProvider
-    private let notSyncedTransactionPool: NotSyncedTransactionPool
+class InternalTransactionSyncer: AbstractTransactionSyncer {
+    private let ethereumTransactionProvider: EtherscanTransactionProvider
     private let storage: ITransactionStorage
-    private let disposeBag = DisposeBag()
-    private let stateSubject = PublishSubject<SyncState>()
 
-    private var lastSyncBlockNumber: Int
-
-    let id: String = "internal_transaction_syncer"
-
-    var state: SyncState = .notSynced(error: Kit.SyncError.notStarted) {
-        didSet {
-            if state != oldValue {
-                stateSubject.onNext(state)
-            }
-        }
-    }
-
-    var stateObservable: Observable<SyncState> {
-        stateSubject.asObservable()
-    }
-
-    init(ethereumTransactionProvider: ITransactionsProvider, notSyncedTransactionPool: NotSyncedTransactionPool, storage: ITransactionStorage) {
+    init(ethereumTransactionProvider: EtherscanTransactionProvider, storage: ITransactionStorage) {
         self.ethereumTransactionProvider = ethereumTransactionProvider
-        self.notSyncedTransactionPool = notSyncedTransactionPool
         self.storage = storage
 
-        lastSyncBlockNumber = storage.transactionSyncerState(id: id)?.lastBlockNumber ?? 0
-    }
-
-    private func update(lastSyncBlockNumber: Int) {
-        self.lastSyncBlockNumber = lastSyncBlockNumber
-        storage.save(transactionSyncerState: TransactionSyncerState(id: id, lastBlockNumber: lastSyncBlockNumber))
+        super.init(id: "internal_transaction_syncer")
     }
 
     private func sync() {
@@ -46,6 +21,8 @@ class InternalTransactionSyncer {
         print("InternalTransactionProvider syncing")
         state = .syncing(progress: nil)
 
+        let lastSyncBlockNumber = super.lastSyncBlockNumber
+
         // gets transaction starting from last tx's block height
         ethereumTransactionProvider
                 .internalTransactionsSingle(startBlock: lastSyncBlockNumber + 1)
@@ -53,8 +30,19 @@ class InternalTransactionSyncer {
                 .subscribe(
                         onSuccess: { [weak self] txList in
                             print("InternalTransactionProvider got \(txList.count) transactions")
+                            guard let syncer = self else {
+                                return
+                            }
+
+                            guard !txList.isEmpty else {
+                                syncer.state = .synced
+                                return
+                            }
+
+                            syncer.storage.save(internalTransactions: txList)
+
                             if let blockNumber = txList.first?.blockNumber {
-                                self?.update(lastSyncBlockNumber: blockNumber)
+                                syncer.update(lastSyncBlockNumber: blockNumber)
                             }
 
                             let notSyncedTransactions = txList.map { etherscanTransaction in
@@ -63,8 +51,8 @@ class InternalTransactionSyncer {
                                 )
                             }
 
-                            self?.notSyncedTransactionPool.add(notSyncedTransactions: notSyncedTransactions)
-                            self?.state = .synced
+                            syncer.delegate.add(notSyncedTransactions: notSyncedTransactions)
+                            syncer.state = .synced
                         },
                         onError: { [weak self] error in
                             self?.state = .notSynced(error: error)
@@ -73,19 +61,15 @@ class InternalTransactionSyncer {
                 .disposed(by: disposeBag)
     }
 
-}
-
-extension InternalTransactionSyncer: ITransactionSyncer {
-
-    func onEthereumSynced() {
+    override func onEthereumSynced() {
         sync()
     }
 
-    func onUpdateNonce(nonce: Int) {
+    override func onUpdateNonce(nonce: Int) {
         sync()
     }
 
-    func onUpdateBalance(balance: BigUInt) {
+    override func onUpdateBalance(balance: BigUInt) {
         sync()
     }
 

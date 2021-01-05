@@ -1,31 +1,16 @@
 import RxSwift
 
-class OutgoingPendingTransactionSyncer {
+class OutgoingPendingTransactionSyncer: AbstractTransactionSyncer {
     private let blockchain: IBlockchain
     private let storage: ITransactionStorage
 
     weak var listener: ITransactionSyncerListener?
 
-    private let disposeBag = DisposeBag()
-    private let stateSubject = PublishSubject<SyncState>()
-
     init(blockchain: IBlockchain, storage: ITransactionStorage) {
         self.blockchain = blockchain
         self.storage = storage
-    }
 
-    let id: String = "outgoing_pending_transaction_syncer"
-
-    var state: SyncState = .notSynced(error: Kit.SyncError.notStarted) {
-        didSet {
-            if state != oldValue {
-                stateSubject.onNext(state)
-            }
-        }
-    }
-
-    var stateObservable: Observable<SyncState> {
-        stateSubject.asObservable()
+        super.init(id: "outgoing_pending_transaction_syncer")
     }
 
     private func doSync() -> Single<Void> {
@@ -69,15 +54,11 @@ class OutgoingPendingTransactionSyncer {
                 .disposed(by: disposeBag)
     }
 
-}
-
-extension OutgoingPendingTransactionSyncer: ITransactionSyncer {
-
-    func onEthereumSynced() {
+    override func onEthereumSynced() {
         sync()
     }
 
-    func onLastBlockNumber(blockNumber: Int) {
+    override func onLastBlockNumber(blockNumber: Int) {
         sync()
     }
 

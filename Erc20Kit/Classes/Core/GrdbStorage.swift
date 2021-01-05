@@ -29,31 +29,48 @@ class GrdbStorage {
         }
 
         migrator.registerMigration("createTransactions") { db in
-            try db.create(table: Transaction.databaseTableName) { t in
-                t.column(Transaction.Columns.transactionHash.name, .text).notNull()
-                t.column(Transaction.Columns.transactionIndex.name, .integer)
-                t.column(Transaction.Columns.from.name, .text).notNull()
-                t.column(Transaction.Columns.to.name, .text).notNull()
-                t.column(Transaction.Columns.value.name, .text).notNull()
-                t.column(Transaction.Columns.timestamp.name, .double).notNull()
-                t.column(Transaction.Columns.interTransactionIndex.name, .integer).notNull()
-                t.column(Transaction.Columns.logIndex.name, .integer)
-                t.column(Transaction.Columns.blockHash.name, .text)
-                t.column(Transaction.Columns.blockNumber.name, .integer)
+            try db.create(table: TransactionRecord.databaseTableName) { t in
+                t.column(TransactionRecord.Columns.hash.name, .text).notNull()
+//                t.column(TransactionRecord.Columns.transactionIndex.name, .integer)
+                t.column(TransactionRecord.Columns.from.name, .text).notNull()
+                t.column(TransactionRecord.Columns.to.name, .text).notNull()
+                t.column(TransactionRecord.Columns.value.name, .text).notNull()
+                t.column(TransactionRecord.Columns.timestamp.name, .double).notNull()
+                t.column(TransactionRecord.Columns.interTransactionIndex.name, .integer).notNull()
+                t.column(TransactionRecord.Columns.logIndex.name, .integer)
+//                t.column(TransactionRecord.Columns.blockHash.name, .text)
+//                t.column(TransactionRecord.Columns.blockNumber.name, .integer)
 
-                t.primaryKey([Transaction.Columns.transactionHash.name, Transaction.Columns.interTransactionIndex.name], onConflict: .replace)
+                t.primaryKey([TransactionRecord.Columns.hash.name, TransactionRecord.Columns.interTransactionIndex.name], onConflict: .replace)
             }
         }
 
         migrator.registerMigration("addIsErrorToTransactions") { db in
-            try db.alter(table: Transaction.databaseTableName) { t in
-                t.add(column: Transaction.Columns.isError.name, .blob).notNull().defaults(to: false)
+            try db.alter(table: TransactionRecord.databaseTableName) { t in
+//                t.add(column: TransactionRecord.Columns.isError.name, .blob).notNull().defaults(to: false)
             }
         }
 
         migrator.registerMigration("addTypeToTransactions") { db in
-            try db.alter(table: Transaction.databaseTableName) { t in
-                t.add(column: Transaction.Columns.type.name, .text).notNull().defaults(to: TransactionType.transfer.rawValue)
+            try db.alter(table: TransactionRecord.databaseTableName) { t in
+                t.add(column: TransactionRecord.Columns.type.name, .text).notNull().defaults(to: TransactionType.transfer.rawValue)
+            }
+        }
+
+        migrator.registerMigration("recreateTransactions") { db in
+            try db.drop(table: TransactionRecord.databaseTableName)
+
+            try db.create(table: TransactionRecord.databaseTableName) { t in
+                t.column(TransactionRecord.Columns.hash.name, .text).notNull()
+                t.column(TransactionRecord.Columns.interTransactionIndex.name, .text).notNull()
+                t.column(TransactionRecord.Columns.logIndex.name, .text)
+                t.column(TransactionRecord.Columns.from.name, .text).notNull()
+                t.column(TransactionRecord.Columns.to.name, .text).notNull()
+                t.column(TransactionRecord.Columns.value.name, .text).notNull()
+                t.column(TransactionRecord.Columns.timestamp.name, .text).notNull()
+                t.column(TransactionRecord.Columns.type.name, .text).notNull()
+
+                t.primaryKey([TransactionRecord.Columns.hash.name, TransactionRecord.Columns.interTransactionIndex.name], onConflict: .replace)
             }
         }
 
@@ -83,29 +100,29 @@ extension GrdbStorage: ITokenBalanceStorage {
 
 extension GrdbStorage: ITransactionStorage {
 
-    var lastTransactionBlockHeight: Int? {
+    var pendingTransactions: [TransactionRecord] {
         try! dbPool.read { db in
-            try Transaction.order(Transaction.Columns.blockNumber.desc).fetchOne(db)?.blockNumber
+            try TransactionRecord.filter(TransactionRecord.Columns.logIndex == nil).fetchAll(db)
         }
     }
 
-    var pendingTransactions: [Transaction] {
-        try! dbPool.read { db in
-            try Transaction.filter(Transaction.Columns.blockNumber == nil && Transaction.Columns.isError == false).fetchAll(db)
+    var lastTransaction: TransactionRecord? {
+        try? dbPool.read { db in
+            try TransactionRecord.order(TransactionRecord.Columns.timestamp.desc, TransactionRecord.Columns.interTransactionIndex.desc).fetchOne(db)
         }
     }
 
-    func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[Transaction]> {
+    func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionRecord]> {
         Single.create { [weak self] observer in
             try! self?.dbPool.read { db in
-                var request = Transaction.order(Transaction.Columns.timestamp.desc, Transaction.Columns.transactionIndex.desc, Transaction.Columns.interTransactionIndex.desc)
+                var request = TransactionRecord.order(TransactionRecord.Columns.timestamp.desc, TransactionRecord.Columns.interTransactionIndex.desc)
 
-                if let from = from, let fromTransaction = try request.filter(Transaction.Columns.transactionHash == from.hash).filter(Transaction.Columns.interTransactionIndex == from.interTransactionIndex).fetchOne(db) {
-                    let transactionIndex = fromTransaction.transactionIndex ?? 0
+                if let from = from, let fromTransaction = try request.filter(TransactionRecord.Columns.hash == from.hash).filter(TransactionRecord.Columns.interTransactionIndex == from.interTransactionIndex).fetchOne(db) {
+                    let index = fromTransaction.interTransactionIndex
                     request = request.filter(
-                            Transaction.Columns.timestamp < fromTransaction.timestamp ||
-                                    (Transaction.Columns.timestamp == fromTransaction.timestamp && Transaction.Columns.transactionIndex < transactionIndex) ||
-                                    (Transaction.Columns.timestamp == fromTransaction.timestamp && Transaction.Columns.transactionIndex == fromTransaction.transactionIndex && Transaction.Columns.interTransactionIndex < from.interTransactionIndex)
+                            TransactionRecord.Columns.timestamp < fromTransaction.timestamp ||
+                                    (TransactionRecord.Columns.timestamp == fromTransaction.timestamp && TransactionRecord.Columns.interTransactionIndex < index) ||
+                                    (TransactionRecord.Columns.timestamp == fromTransaction.timestamp && TransactionRecord.Columns.interTransactionIndex == fromTransaction.interTransactionIndex && TransactionRecord.Columns.interTransactionIndex < from.interTransactionIndex)
                     )
                 }
                 if let limit = limit {
@@ -119,23 +136,9 @@ extension GrdbStorage: ITransactionStorage {
         }
     }
 
-    func transaction(hash: Data, interTransactionIndex: Int) -> Transaction? {
-        try? dbPool.read { db in
-            try Transaction.filter(Transaction.Columns.transactionHash == hash && Transaction.Columns.interTransactionIndex == interTransactionIndex).fetchOne(db)
-        }
-    }
-
-    func save(transactions: [Transaction]) {
+    func save(transaction: TransactionRecord) {
         _ = try! dbPool.write { db in
-            for transaction in transactions {
-                try transaction.insert(db)
-            }
-        }
-    }
-
-    func update(transaction: Transaction) {
-        _ = try! dbPool.write { db in
-            try transaction.update(db)
+            try transaction.insert(db)
         }
     }
 

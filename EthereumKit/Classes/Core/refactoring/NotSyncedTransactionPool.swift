@@ -25,7 +25,7 @@ class NotSyncedTransactionPool {
         storage.update(notSyncedTransaction: notSyncedTransaction)
     }
 
-    func getNotSyncedTransactions(limit: Int) -> [NotSyncedTransaction] {
+    func notSyncedTransactions(limit: Int) -> [NotSyncedTransaction] {
         storage.getNotSyncedTransactions(limit: limit)
     }
 

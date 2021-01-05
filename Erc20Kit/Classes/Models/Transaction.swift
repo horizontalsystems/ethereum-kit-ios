@@ -20,8 +20,8 @@ public enum TransactionType: String, DatabaseValueConvertible {
 
 }
 
-public class Transaction: Record {
-    public let transactionHash: Data
+public class Transaction {
+    public let hash: Data
     public var transactionIndex: Int?
 
     public let from: Address
@@ -35,70 +35,21 @@ public class Transaction: Record {
     public var blockNumber: Int?
     public var isError: Bool
     public var type: TransactionType
+    public var fullTransaction: FullTransaction
 
-    init(transactionHash: Data, transactionIndex: Int? = nil, from: Address, to: Address, value: BigUInt, timestamp: TimeInterval = Date().timeIntervalSince1970, interTransactionIndex: Int = 0, isError: Bool = false, type: TransactionType = .transfer) {
-        self.transactionHash = transactionHash
+    init(hash: Data, interTransactionIndex: Int, transactionIndex: Int? = nil, from: Address, to: Address, value: BigUInt,
+         timestamp: TimeInterval = Date().timeIntervalSince1970,
+         isError: Bool = false, type: TransactionType = .transfer, fullTransaction: FullTransaction) {
+        self.hash = hash
+        self.interTransactionIndex = interTransactionIndex
         self.transactionIndex = transactionIndex
         self.from = from
         self.to = to
         self.value = value
         self.timestamp = timestamp
-        self.interTransactionIndex = interTransactionIndex
         self.isError = isError
         self.type = type
-
-        super.init()
-    }
-
-    public override class var databaseTableName: String {
-        "transactions"
-    }
-
-    enum Columns: String, ColumnExpression {
-        case transactionHash
-        case transactionIndex
-        case from
-        case to
-        case value
-        case timestamp
-        case interTransactionIndex
-        case logIndex
-        case blockHash
-        case blockNumber
-        case isError
-        case type
-    }
-
-    required init(row: Row) {
-        transactionHash = row[Columns.transactionHash]
-        transactionIndex = row[Columns.transactionIndex]
-        from = Address(raw: row[Columns.from])
-        to = Address(raw: row[Columns.to])
-        value = row[Columns.value]
-        timestamp = row[Columns.timestamp]
-        interTransactionIndex = row[Columns.interTransactionIndex]
-        logIndex = row[Columns.logIndex]
-        blockHash = row[Columns.blockHash]
-        blockNumber = row[Columns.blockNumber]
-        isError = row[Columns.isError]
-        type = row[Columns.type]
-
-        super.init(row: row)
-    }
-
-    public override func encode(to container: inout PersistenceContainer) {
-        container[Columns.transactionHash] = transactionHash
-        container[Columns.transactionIndex] = transactionIndex
-        container[Columns.from] = from.raw
-        container[Columns.to] = to.raw
-        container[Columns.value] = value
-        container[Columns.timestamp] = timestamp
-        container[Columns.interTransactionIndex] = interTransactionIndex
-        container[Columns.logIndex] = logIndex
-        container[Columns.blockHash] = blockHash
-        container[Columns.blockNumber] = blockNumber
-        container[Columns.isError] = isError
-        container[Columns.type] = type
+        self.fullTransaction = fullTransaction
     }
 
 }

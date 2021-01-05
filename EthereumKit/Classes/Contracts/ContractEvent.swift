@@ -16,6 +16,10 @@ public struct ContractEvent {
         return OpenSslKit.Kit.sha3(structure.data(using: .ascii)!)
     }
 
+    public static func eventId(signature: String) -> Data {
+        OpenSslKit.Kit.sha3(signature.data(using: .ascii)!)
+    }
+
 }
 
 extension ContractEvent {

@@ -6,9 +6,8 @@ class TransactionStorage {
 
     init(databaseDirectoryUrl: URL, databaseFileName: String) {
         let databaseURL = databaseDirectoryUrl.appendingPathComponent("\(databaseFileName).sqlite")
-var c = Configuration()
-        c.trace = { print($0) }
-        dbPool = try! DatabasePool(path: databaseURL.path, configuration: c)
+
+        dbPool = try! DatabasePool(path: databaseURL.path)
 
         try? migrator.migrate(dbPool)
     }
@@ -268,7 +267,9 @@ extension TransactionStorage: ITransactionStorage {
     func getHashesFromTransactions() -> [Data] {
         try! dbPool.read { db in
             let rows = try Row.fetchAll(db, sql: "SELECT \(Transaction.Columns.hash.name) FROM \(Transaction.databaseTableName)")
-            return rows.compactMap { $0[Transaction.Columns.hash.name] as? Data }
+            return rows.compactMap {
+                $0[Transaction.Columns.hash.name] as? Data
+            }
         }
     }
 
@@ -348,6 +349,51 @@ extension TransactionStorage: ITransactionStorage {
 
         return fullTransactions(from: transactions)
     }
+
+    func fullTransactions(fromHash: Data?) -> [FullTransaction] {
+        let transactions: [Transaction] = try! dbPool.read { db in
+            var whereClause = ""
+
+            if let fromHash = fromHash,
+               let fromTransaction = try Transaction.filter(Transaction.Columns.hash == fromHash).fetchOne(db) {
+                let transactionIndex = (try fromTransaction.receipt.fetchOne(db))?.transactionIndex ?? 0
+
+                whereClause += """
+                               WHERE (
+                                \(Transaction.Columns.timestamp.name) < \(fromTransaction.timestamp) || 
+                                    (
+                                        \(Transaction.databaseTableName).\(Transaction.Columns.timestamp.name) == \(fromTransaction.timestamp) AND 
+                                        \(TransactionReceipt.databaseTableName).\(TransactionReceipt.Columns.transactionIndex.name) < \(transactionIndex)
+                                    )
+                               )
+                               """
+            }
+
+            let orderClause = """
+                              ORDER BY \(Transaction.databaseTableName).\(Transaction.Columns.timestamp.name) DESC, 
+                              \(TransactionReceipt.databaseTableName).\(TransactionReceipt.Columns.transactionIndex.name) DESC
+                              """
+
+            let sql = """
+                      SELECT transactions.*
+                      FROM transactions
+                      LEFT JOIN transaction_receipts ON transactions.hash = transaction_receipts.transactionHash
+                      \(whereClause)
+                      \(orderClause)
+                      """
+
+            let rows = try Row.fetchAll(db.makeSelectStatement(sql: sql))
+            return rows.map { row -> Transaction in
+                Transaction(row: row)
+            }
+        }
+
+        return fullTransactions(from: transactions)
+    }
+
+}
+
+extension TransactionStorage: ITransactionSyncerStateStorage {
 
     func transactionSyncerState(id: String) -> TransactionSyncerState? {
         try! dbPool.read { db in

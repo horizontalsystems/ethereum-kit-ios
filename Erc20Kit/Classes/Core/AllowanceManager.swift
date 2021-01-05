@@ -39,23 +39,4 @@ class AllowanceManager {
         )
     }
 
-    func approveSingle(spenderAddress: Address, amount: BigUInt, gasLimit: Int, gasPrice: Int) -> Single<Transaction> {
-        let approveMethod = ApproveMethod(spender: spenderAddress, value: amount)
-
-        return ethereumKit.sendSingle(
-                address: contractAddress,
-                value: BigUInt.zero,
-                transactionInput: ApproveMethod(spender: spenderAddress, value: amount).encodedABI(),
-                gasPrice: gasPrice,
-                gasLimit: gasLimit
-        ).flatMap { FullTransaction in
-            guard let approve = approveMethod.erc20Transactions(ethTx: FullTransaction.transaction).first else {
-                return Single.error(AllowanceParsingError.notFound)
-            }
-            return Single.just(approve)
-        }.do(onSuccess: { [weak self] transaction in
-            self?.storage.save(transactions: [transaction])
-        })
-    }
-
 }

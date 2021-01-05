@@ -1,48 +1,18 @@
 import RxSwift
 
-protocol ITransactionSyncerListener: class {
-    func onTransactionsSynced(fullTransactions: [FullTransaction])
-}
-
-class TransactionSyncer {
-    private let pool: NotSyncedTransactionPool
+class TransactionSyncer: AbstractTransactionSyncer {
     private let blockchain: IBlockchain
     private let storage: ITransactionStorage
 
     weak var listener: ITransactionSyncerListener?
 
-    private let disposeBag = DisposeBag()
-    private let stateSubject = PublishSubject<SyncState>()
     private let txSyncBatchSize = 10
 
-    init(pool: NotSyncedTransactionPool, blockchain: IBlockchain, storage: ITransactionStorage) {
-        self.pool = pool
+    init(blockchain: IBlockchain, storage: ITransactionStorage) {
         self.blockchain = blockchain
         self.storage = storage
 
-        //subscribe to txHashPool and sync when new hashes received
-        print("TransactionSyncer subscribing")
-        pool.notSyncedTransactionsSignal
-                .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                .subscribe(onNext: { [weak self] in
-                    print("TransactionSyncer running sync")
-                    self?.sync()
-                })
-                .disposed(by: disposeBag)
-    }
-
-    let id: String = "transaction_syncer"
-
-    var state: SyncState = .notSynced(error: Kit.SyncError.notStarted) {
-        didSet {
-            if state != oldValue {
-                stateSubject.onNext(state)
-            }
-        }
-    }
-
-    var stateObservable: Observable<SyncState> {
-        stateSubject.asObservable()
+        super.init(id: "transaction_syncer")
     }
 
     private func sync() {
@@ -56,7 +26,7 @@ class TransactionSyncer {
 
     private func doSync() {
         print("TransactionSyncer doing sync")
-        let notSyncedTransactions = pool.getNotSyncedTransactions(limit: txSyncBatchSize)
+        let notSyncedTransactions = delegate.notSyncedTransactions(limit: txSyncBatchSize)
         print("TransactionSyncer \(notSyncedTransactions.count) transactions")
 
         guard !notSyncedTransactions.isEmpty else {
@@ -138,7 +108,7 @@ class TransactionSyncer {
         )
 
         storage.save(transaction: transaction)
-        pool.remove(notSyncedTransaction: notSyncedTransaction)
+        delegate.remove(notSyncedTransaction: notSyncedTransaction)
     }
 
     private func syncRpcTransactionSingle(notSyncedTransaction: NotSyncedTransaction) -> Single<RpcTransaction?> {
@@ -153,7 +123,7 @@ class TransactionSyncer {
                     }
 
                     notSyncedTransaction.transaction = transaction
-                    self?.pool.update(notSyncedTransaction: notSyncedTransaction)
+                    self?.delegate.update(notSyncedTransaction: notSyncedTransaction)
                 })
     }
 
@@ -197,11 +167,21 @@ class TransactionSyncer {
                 }
     }
 
-}
+    override func set(delegate: ITransactionSyncerDelegate) {
+        super.set(delegate: delegate)
 
-extension TransactionSyncer: ITransactionSyncer {
+        //subscribe to txHashPool and sync when new hashes received
+        print("TransactionSyncer subscribing")
+        delegate.notSyncedTransactionsSignal
+                .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+                .subscribe(onNext: { [weak self] in
+                    print("TransactionSyncer running sync")
+                    self?.sync()
+                })
+                .disposed(by: disposeBag)
+    }
 
-    func onEthereumSynced() {
+    override func onEthereumSynced() {
         sync()
     }
 
