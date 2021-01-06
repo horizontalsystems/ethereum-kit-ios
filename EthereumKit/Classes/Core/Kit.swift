@@ -422,6 +422,7 @@ extension Kit {
         var causes: [String] {
             [
                 "execution reverted",
+                "insufficient funds for transfer",
                 "gas required exceeds"
             ]
         }
