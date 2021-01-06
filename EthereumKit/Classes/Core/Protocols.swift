@@ -49,7 +49,7 @@ protocol ITransactionStorage {
     func save(internalTransactions: [InternalTransaction])
 
     func getHashesFromTransactions() -> [Data]
-    func etherTransactionsSingle(address: Address, fromHash: Data?, limit: Int?) -> Single<[FullTransaction]>
+    func etherTransactionsBeforeSingle(address: Address, hash: Data?, limit: Int?) -> Single<[FullTransaction]>
     func transaction(hash: Data) -> FullTransaction?
     func fullTransactions(byHashes: [Data]) -> [FullTransaction]
     func fullTransactionsAfter(hash: Data?) -> [FullTransaction]
@@ -78,7 +78,7 @@ public protocol ITransactionSyncer {
 }
 
 public protocol ITransactionSyncerDelegate {
-    var notSyncedTransactionsSignal: Signal { get }
+    var notSyncedTransactionsSignal: PublishSubject<Void> { get }
     func transactionSyncerState(id: String) -> TransactionSyncerState?
     func update(transactionSyncerState: TransactionSyncerState)
     func add(notSyncedTransactions: [NotSyncedTransaction])

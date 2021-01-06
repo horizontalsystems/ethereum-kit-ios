@@ -11,13 +11,11 @@ class AllowanceManager {
     private let disposeBag = DisposeBag()
 
     private let ethereumKit: EthereumKit.Kit
-    private let storage: ITransactionStorage
     private let contractAddress: Address
     private let address: Address
 
-    init(ethereumKit: EthereumKit.Kit, storage: ITransactionStorage, contractAddress: Address, address: Address) {
+    init(ethereumKit: EthereumKit.Kit, contractAddress: Address, address: Address) {
         self.ethereumKit = ethereumKit
-        self.storage = storage
         self.contractAddress = contractAddress
         self.address = address
     }

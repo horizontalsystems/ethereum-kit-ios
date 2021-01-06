@@ -422,10 +422,10 @@ class SwapController: UIViewController {
         
         let transactionData = adapter.erc20Kit.approveTransactionData(spenderAddress: spenderAddress, amount: amount)
 
-        ethereumKit.estimateGas(to: transactionData.to, amount: transactionData.value, gasPrice: gasPrice, data: transactionData.input)
+        ethereumKit.estimateGas(transactionData: transactionData, gasPrice: gasPrice)
                 .flatMap { gasLimit -> Single<FullTransaction> in
                     print("GAS LIMIT SUCCESS: \(gasLimit)")
-                    return self.ethereumKit.sendSingle(address: transactionData.to, value: transactionData.value, transactionInput: transactionData.input, gasPrice: gasPrice, gasLimit: gasLimit)
+                    return self.ethereumKit.sendSingle(transactionData: transactionData, gasPrice: gasPrice, gasLimit: gasLimit)
                 }
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
@@ -445,16 +445,12 @@ class SwapController: UIViewController {
         do {
             let transactionData = try uniswapKit.transactionData(tradeData: tradeData)
             return ethereumKit.estimateGas(
-                            to: transactionData.to,
-                            amount: transactionData.value == 0 ? nil : transactionData.value,
-                            gasPrice: gasPrice,
-                            data: transactionData.input
+                            transactionData: transactionData,
+                            gasPrice: gasPrice
                     ).flatMap { [unowned self] gasLimit -> Single<FullTransaction> in
                         print("GAS LIMIT SUCCESS: \(gasLimit)")
                         return ethereumKit.sendSingle(
-                                address: transactionData.to,
-                                value: transactionData.value,
-                                transactionInput: transactionData.input,
+                                transactionData: transactionData,
                                 gasPrice: gasPrice,
                                 gasLimit: gasLimit)
                     }
