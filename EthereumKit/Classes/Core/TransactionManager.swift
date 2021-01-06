@@ -58,7 +58,7 @@ class TransactionManager {
 extension TransactionManager {
 
     func etherTransactionsSingle(fromHash: Data?, limit: Int?) -> Single<[FullTransaction]> {
-        storage.etherTransactionsSingle(address: address, fromHash: fromHash, limit: limit)
+        storage.etherTransactionsBeforeSingle(address: address, hash: fromHash, limit: limit)
     }
 
     func transactions(byHashes hashes: [Data]) -> [FullTransaction] {

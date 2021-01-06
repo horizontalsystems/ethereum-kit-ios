@@ -160,6 +160,10 @@ extension Kit {
         }
     }
 
+    public func sendSingle(transactionData: TransactionData, gasPrice: Int, gasLimit: Int, nonce: Int? = nil) -> Single<FullTransaction> {
+        sendSingle(transactionData: transactionData, gasPrice: gasPrice, gasLimit: gasLimit, nonce: nonce)
+    }
+
     public func signedTransaction(address: Address, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int, nonce: Int) throws -> Data {
         let rawTransaction = transactionBuilder.rawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: address, value: value, data: transactionInput, nonce: nonce)
         let signature = try transactionSigner.signature(rawTransaction: rawTransaction)
@@ -172,25 +176,6 @@ extension Kit {
         lines.append("ADDRESS: \(address.hex)")
 
         return lines.joined(separator: "\n")
-    }
-
-    public func transactionStatus(transactionHash: Data) -> Single<TransactionStatus> {
-        blockchain.transactionReceiptSingle(transactionHash: transactionHash)
-                .flatMap { [unowned self] receipt -> Single<TransactionStatus> in
-                    if let receipt = receipt {
-                        if let status = receipt.status {
-                            return Single.just(status == 0 ? .failed : .success)
-                        } else {
-                            // todo: handle nil status for pre Byzantium
-                            return Single.just(.success)
-                        }
-                    }
-
-                    return self.blockchain.transactionSingle(transactionHash: transactionHash)
-                            .map { transaction -> TransactionStatus in
-                                transaction != nil ? .pending : .notFound
-                            }
-                }
     }
 
     public func getStorageAt(contractAddress: Address, positionData: Data, defaultBlockParameter: DefaultBlockParameter = .latest) -> Single<Data> {
@@ -215,6 +200,10 @@ extension Kit {
 
     public func estimateGas(to: Address?, amount: BigUInt?, gasPrice: Int?, data: Data?) -> Single<Int> {
         blockchain.estimateGas(to: to, amount: amount, gasLimit: maxGasLimit, gasPrice: gasPrice, data: data)
+    }
+
+    public func estimateGas(transactionData: TransactionData, gasPrice: Int?) -> Single<Int> {
+        estimateGas(to: transactionData.to, amount: transactionData.value, gasPrice: gasPrice, data: transactionData.input)
     }
 
     public func add(syncer: ITransactionSyncer) {

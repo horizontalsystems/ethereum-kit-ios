@@ -91,10 +91,6 @@ extension Kit {
     public func pendingTransactions() -> [Transaction] {
         transactionManager.pendingTransactions()
     }
-//
-//    public func transaction(hash: Data, interTransactionIndex: Int) -> Transaction? {
-//        transactionManager.transaction(hash: hash, interTransactionIndex: interTransactionIndex)
-//    }
 
     public var syncStateObservable: Observable<SyncState> {
         state.syncStateSubject.asObservable()
@@ -157,7 +153,7 @@ extension Kit {
         let transactionSyncer = Erc20TransactionSyncer(id: syncerId(contractAddress: contractAddress), contractAddress: contractAddress, ethereumTransactionProvider: ethereumKit.etherscanApiProvider)
         var transactionManager: ITransactionManager = TransactionManager(contractAddress: contractAddress, ethereumKit: ethereumKit, contractMethodFactories: ContractMethodFactories.shared, storage: storage)
         var balanceManager: IBalanceManager = BalanceManager(contractAddress: contractAddress, address: address, storage: storage, dataProvider: dataProvider)
-        let allowanceManager = AllowanceManager(ethereumKit: ethereumKit, storage: storage, contractAddress: contractAddress, address: address)
+        let allowanceManager = AllowanceManager(ethereumKit: ethereumKit, contractAddress: contractAddress, address: address)
 
         let erc20Kit = Kit(contractAddress: contractAddress, ethereumKit: ethereumKit, transactionManager: transactionManager, balanceManager: balanceManager, allowanceManager: allowanceManager)
 

@@ -30,10 +30,7 @@ protocol IBalanceManager {
 }
 
 protocol IDataProvider {
-    var lastBlockHeight: Int { get }
-    func getTransactionStatuses(transactionHashes: [Data]) -> Single<[(Data, TransactionStatus)]>
     func getBalance(contractAddress: Address, address: Address) -> Single<BigUInt>
-    func sendSingle(contractAddress: Address, transactionInput: Data, gasPrice: Int, gasLimit: Int) -> Single<Data>
 }
 
 protocol ITransactionStorage {

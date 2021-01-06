@@ -1,6 +1,6 @@
 import RxSwift
 
-public typealias Signal = PublishSubject<Void>
+typealias Signal = PublishSubject<Void>
 
 extension PublishSubject where Element == Void {
 
