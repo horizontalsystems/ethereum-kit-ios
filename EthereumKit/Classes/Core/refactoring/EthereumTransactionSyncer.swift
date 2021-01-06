@@ -2,10 +2,10 @@ import RxSwift
 import BigInt
 
 class EthereumTransactionSyncer: AbstractTransactionSyncer {
-    private let ethereumTransactionProvider: EtherscanTransactionProvider
+    private let provider: EtherscanTransactionProvider
 
-    init(ethereumTransactionProvider: EtherscanTransactionProvider) {
-        self.ethereumTransactionProvider = ethereumTransactionProvider
+    init(provider: EtherscanTransactionProvider) {
+        self.provider = provider
 
         super.init(id: "ethereum_transaction_syncer")
     }
@@ -22,7 +22,7 @@ class EthereumTransactionSyncer: AbstractTransactionSyncer {
         let lastSyncBlockNumber = super.lastSyncBlockNumber
 
         // gets transaction starting from last tx's block height
-        ethereumTransactionProvider
+        provider
                 .transactionsSingle(startBlock: lastSyncBlockNumber + 1)
                 .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(

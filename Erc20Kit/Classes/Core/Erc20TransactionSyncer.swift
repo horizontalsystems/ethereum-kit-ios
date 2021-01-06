@@ -3,12 +3,12 @@ import BigInt
 import EthereumKit
 
 class Erc20TransactionSyncer: AbstractTransactionSyncer {
-    private let contractAddress: Address
     private let provider: EtherscanApiProvider
+    private let contractAddress: Address
 
-    init(id: String, contractAddress: Address, ethereumTransactionProvider: EtherscanApiProvider) {
+    init(provider: EtherscanApiProvider, contractAddress: Address, id: String) {
+        self.provider = provider
         self.contractAddress = contractAddress
-        provider = ethereumTransactionProvider
 
         super.init(id: id)
     }

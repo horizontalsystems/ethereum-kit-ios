@@ -13,6 +13,22 @@ class OutgoingPendingTransactionSyncer: AbstractTransactionSyncer {
         super.init(id: "outgoing_pending_transaction_syncer")
     }
 
+    private func sync() {
+        print("OutgoingPendingTransactionSyncer sync \(state.syncing)")
+        guard !state.syncing else {
+            return
+        }
+
+        state = .syncing(progress: nil)
+
+        doSync()
+                .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+                .subscribe { [weak self] in
+                    self?.state = .synced
+                }
+                .disposed(by: disposeBag)
+    }
+
     private func doSync() -> Single<Void> {
         print("OutputPendingTransactionSyncer doing sync")
         guard let pendingTransaction = storage.getFirstPendingTransaction() else {
@@ -36,22 +52,6 @@ class OutgoingPendingTransactionSyncer: AbstractTransactionSyncer {
 
                     return syncer.doSync()
                 }
-    }
-
-    private func sync() {
-        print("OutgoingPendingTransactionSyncer sync \(state.syncing)")
-        guard !state.syncing else {
-            return
-        }
-
-        state = .syncing(progress: nil)
-
-        doSync()
-                .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                .subscribe { [weak self] in
-                    self?.state = .synced
-                }
-                .disposed(by: disposeBag)
     }
 
     override func onEthereumSynced() {

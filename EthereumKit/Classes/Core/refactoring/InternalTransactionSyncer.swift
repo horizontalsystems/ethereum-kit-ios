@@ -2,11 +2,11 @@ import RxSwift
 import BigInt
 
 class InternalTransactionSyncer: AbstractTransactionSyncer {
-    private let ethereumTransactionProvider: EtherscanTransactionProvider
+    private let provider: EtherscanTransactionProvider
     private let storage: ITransactionStorage
 
-    init(ethereumTransactionProvider: EtherscanTransactionProvider, storage: ITransactionStorage) {
-        self.ethereumTransactionProvider = ethereumTransactionProvider
+    init(provider: EtherscanTransactionProvider, storage: ITransactionStorage) {
+        self.provider = provider
         self.storage = storage
 
         super.init(id: "internal_transaction_syncer")
@@ -24,7 +24,7 @@ class InternalTransactionSyncer: AbstractTransactionSyncer {
         let lastSyncBlockNumber = super.lastSyncBlockNumber
 
         // gets transaction starting from last tx's block height
-        ethereumTransactionProvider
+        provider
                 .internalTransactionsSingle(startBlock: lastSyncBlockNumber + 1)
                 .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(
