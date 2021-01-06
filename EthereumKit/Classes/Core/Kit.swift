@@ -351,8 +351,8 @@ extension Kit {
         let notSyncedTransactionPool = NotSyncedTransactionPool(storage: transactionStorage)
         let notSyncedTransactionManager = NotSyncedTransactionManager(pool: notSyncedTransactionPool, storage: transactionStorage)
 
-        let internalTransactionSyncer = InternalTransactionSyncer(ethereumTransactionProvider: transactionsProvider, storage: transactionStorage)
-        let ethereumTransactionSyncer = EthereumTransactionSyncer(ethereumTransactionProvider: transactionsProvider)
+        let internalTransactionSyncer = InternalTransactionSyncer(provider: transactionsProvider, storage: transactionStorage)
+        let ethereumTransactionSyncer = EthereumTransactionSyncer(provider: transactionsProvider)
         let transactionSyncer = TransactionSyncer(blockchain: blockchain, storage: transactionStorage)
         let outgoingPendingTransactionSyncer = OutgoingPendingTransactionSyncer(blockchain: blockchain, storage: transactionStorage)
         let transactionSyncManager = TransactionSyncManager(notSyncedTransactionManager: notSyncedTransactionManager)
