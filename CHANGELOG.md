@@ -5,4 +5,4 @@ All notable changes to this project will be documented in this file.
   
 * `EthereumKit`
   * make `WebSocketState` errors public
-
+  * add rpc error case
