@@ -45,9 +45,7 @@ public class Kit {
         self.etherscanApiProvider = etherscanApiProvider
         self.logger = logger
 
-        let accountState = blockchain.accountState
-        state.balance = accountState?.balance
-        state.nonce = accountState?.nonce
+        state.accountState = blockchain.accountState
         state.lastBlockHeight = blockchain.lastBlockHeight
     }
 
@@ -61,8 +59,8 @@ extension Kit {
         state.lastBlockHeight
     }
 
-    public var balance: BigUInt? {
-        state.balance
+    public var accountState: AccountState? {
+        state.accountState
     }
 
     public var syncState: SyncState {
@@ -158,7 +156,7 @@ extension Kit {
     }
 
     public func sendSingle(transactionData: TransactionData, gasPrice: Int, gasLimit: Int, nonce: Int? = nil) -> Single<FullTransaction> {
-        sendSingle(transactionData: transactionData, gasPrice: gasPrice, gasLimit: gasLimit, nonce: nonce)
+        sendSingle(address: transactionData.to, value: transactionData.value, transactionInput: transactionData.input, gasPrice: gasPrice, gasLimit: gasLimit, nonce: nonce)
     }
 
     public func signedTransaction(address: Address, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int, nonce: Int) throws -> Data {
@@ -240,12 +238,11 @@ extension Kit: IBlockchainDelegate {
     }
 
     func onUpdate(accountState: AccountState) {
-        guard state.balance != accountState.balance || state.nonce != accountState.nonce else {
+        guard state.accountState != accountState else {
             return
         }
 
-        state.balance = accountState.balance
-        state.nonce = accountState.nonce
+        state.accountState = accountState
         accountStateSubject.onNext(accountState)
     }
 

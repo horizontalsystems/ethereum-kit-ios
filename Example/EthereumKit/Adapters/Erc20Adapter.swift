@@ -144,7 +144,7 @@ extension Erc20Adapter: IAdapter {
         let value = BigUInt(amount.roundedString(decimal: token.decimal))!
         let transactionData = erc20Kit.transferTransactionData(to: to, value: value)
 
-        return ethereumKit.sendSingle(transactionData: transactionData, gasPrice: 5_000_000, gasLimit: gasLimit).map { _ in ()}
+        return ethereumKit.sendSingle(transactionData: transactionData, gasPrice: 50_000_000_000, gasLimit: gasLimit).map { _ in ()}
     }
 
     func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionRecord]> {
@@ -157,15 +157,14 @@ extension Erc20Adapter: IAdapter {
     }
 
     func transaction(hash: Data, interTransactionIndex: Int) -> TransactionRecord? {
-        return nil
-//        erc20Kit.transaction(hash: hash, interTransactionIndex: interTransactionIndex).flatMap { transactionRecord(fromTransaction: $0) }
+        nil
     }
 
     func estimatedGasLimit(to address: Address, value: Decimal) -> Single<Int> {
         let value = BigUInt(value.roundedString(decimal: token.decimal))!
         let transactionData = erc20Kit.transferTransactionData(to: address, value: value)
 
-        return ethereumKit.estimateGas(transactionData: transactionData, gasPrice: 5_000_000_000)
+        return ethereumKit.estimateGas(transactionData: transactionData, gasPrice: 50_000_000_000)
     }
 
 }

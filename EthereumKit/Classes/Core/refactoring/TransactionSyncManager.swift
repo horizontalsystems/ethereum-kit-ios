@@ -10,6 +10,7 @@ class TransactionSyncManager {
 
     private var syncers = [ITransactionSyncer]()
     private var syncerDisposables = [String: Disposable]()
+    private var accountState: AccountState? = nil
 
     var state: SyncState = .notSynced(error: Kit.SyncError.notStarted) {
         didSet {
@@ -32,6 +33,8 @@ class TransactionSyncManager {
     }
 
     func set(ethereumKit: EthereumKit.Kit) {
+        accountState = ethereumKit.accountState
+
         ethereumKit.accountStateObservable
                 .observeOn(scheduler)
                 .subscribe(onNext: { [weak self] in
@@ -76,7 +79,13 @@ class TransactionSyncManager {
     }
 
     private func onUpdateAccountState(accountState: AccountState) {
-        syncers.forEach { $0.onUpdateAccountState(accountState: accountState)}
+        if self.accountState != nil {
+            syncers.forEach {
+                $0.onUpdateAccountState(accountState: accountState)
+            }
+        }
+
+        self.accountState = accountState
     }
 
     private func syncState() {

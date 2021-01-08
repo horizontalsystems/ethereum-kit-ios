@@ -26,6 +26,10 @@ class ApiStorage {
         }
 
         migrator.registerMigration("createAccountStates") { db in
+            if try db.tableExists("ethereumBalance") {
+                try db.drop(table: "ethereumBalance")
+            }
+
             try db.create(table: AccountState.databaseTableName) { t in
                 t.column(AccountState.Columns.primaryKey.name, .text).notNull()
                 t.column(AccountState.Columns.balance.name, .text).notNull()

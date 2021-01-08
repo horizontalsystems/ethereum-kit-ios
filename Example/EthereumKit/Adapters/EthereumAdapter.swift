@@ -94,7 +94,7 @@ extension EthereumAdapter: IAdapter {
     }
 
     var balance: Decimal {
-        if let balance = ethereumKit.balance, let significand = Decimal(string: balance.description) {
+        if let balance = ethereumKit.accountState?.balance, let significand = Decimal(string: balance.description) {
             return Decimal(sign: .plus, exponent: -decimal, significand: significand)
         }
 
@@ -128,7 +128,7 @@ extension EthereumAdapter: IAdapter {
     func sendSingle(to: Address, amount: Decimal, gasLimit: Int) -> Single<Void> {
         let amount = BigUInt(amount.roundedString(decimal: decimal))!
 
-        return ethereumKit.sendSingle(address: to, value: amount, gasPrice: 5_000_000_000, gasLimit: gasLimit).map { _ in ()}
+        return ethereumKit.sendSingle(address: to, value: amount, gasPrice: 50_000_000_000, gasLimit: gasLimit).map { _ in ()}
     }
 
     func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionRecord]> {
@@ -147,7 +147,7 @@ extension EthereumAdapter: IAdapter {
     func estimatedGasLimit(to address: Address, value: Decimal) -> Single<Int> {
         let value = BigUInt(value.roundedString(decimal: decimal))!
 
-        return ethereumKit.estimateGas(to: address, amount: value, gasPrice: 5_000_000_000)
+        return ethereumKit.estimateGas(to: address, amount: value, gasPrice: 50_000_000_000)
     }
 
 }

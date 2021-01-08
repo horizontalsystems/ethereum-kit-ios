@@ -6,8 +6,8 @@ public class AccountState: Record {
 
     private let primaryKey: String = AccountState.primaryKey
 
-    let balance: BigUInt
-    let nonce: Int
+    public let balance: BigUInt
+    public let nonce: Int
 
     init(balance: BigUInt, nonce: Int) {
         self.balance = balance
@@ -37,6 +37,14 @@ public class AccountState: Record {
         container[Columns.primaryKey] = primaryKey
         container[Columns.balance] = balance
         container[Columns.nonce] = nonce
+    }
+
+}
+
+extension AccountState: Equatable {
+
+    public static func ==(lhs: AccountState, rhs: AccountState) -> Bool {
+        lhs.balance == rhs.balance && lhs.nonce == lhs.nonce
     }
 
 }

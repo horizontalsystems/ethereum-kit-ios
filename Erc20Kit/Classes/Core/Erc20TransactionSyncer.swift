@@ -15,22 +15,11 @@ class Erc20TransactionSyncer: AbstractTransactionSyncer {
         super.init(id: id)
     }
 
-    private func sync(mayContain: Bool = false, force: Bool = false) {
-        print("syncing Erc20TransactionSyncer")
-        if state.syncing && !force {
-            if mayContain {
-                resync = true
-            }
-            return
-        }
-
-        print("Erc20TransactionSyncer syncing")
-        state = .syncing(progress: nil)
-
+    private func doSync(retry: Bool) {
         let lastSyncBlockNumber = super.lastSyncBlockNumber
         var single = provider.tokenTransactionsSingle(contractAddress: contractAddress, startBlock: lastSyncBlockNumber + 1)
 
-        if mayContain {
+        if retry {
             single = single.retryWith(options: RetryOptions(mustRetry: { $0.isEmpty }), scheduler: scheduler)
         }
 
@@ -68,7 +57,7 @@ class Erc20TransactionSyncer: AbstractTransactionSyncer {
 
                             if syncer.resync {
                                 syncer.resync = false
-                                syncer.sync(mayContain: true, force: true)
+                                syncer.doSync(retry: true)
                             } else {
                                 syncer.state = .synced
                             }
@@ -80,13 +69,27 @@ class Erc20TransactionSyncer: AbstractTransactionSyncer {
                 .disposed(by: disposeBag)
     }
 
+    private func sync(retry: Bool = false) {
+        print("syncing Erc20TransactionSyncer")
+        if state.syncing {
+            if retry {
+                resync = true
+            }
+            return
+        }
+
+        print("Erc20TransactionSyncer syncing")
+        state = .syncing(progress: nil)
+        doSync(retry: retry)
+    }
+
     override func onEthereumSynced() {
         sync()
     }
 
     override func onLastBlockBloomFilter(bloomFilter: BloomFilter) {
         if bloomFilter.mayContain(contractAddress: contractAddress) {
-            sync()
+            sync(retry: true)
         }
     }
 

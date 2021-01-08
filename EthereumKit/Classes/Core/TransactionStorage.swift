@@ -231,7 +231,7 @@ extension TransactionStorage: ITransactionStorage {
             try Transaction
                     .joining(optional: Transaction.receipt)
                     .filter(sql: "transaction_receipts.transactionHash IS NULL")
-                    .order(Transaction.Columns.nonce.asc)
+                    .order(Transaction.Columns.nonce.asc, Transaction.Columns.timestamp.desc)
                     .fetchOne(db)
         }
     }
