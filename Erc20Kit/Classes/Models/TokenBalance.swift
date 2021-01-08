@@ -12,7 +12,7 @@ class TokenBalance: Record {
     }
 
     override class var databaseTableName: String {
-        return "token_balances"
+        "token_balances"
     }
 
     enum Columns: String, ColumnExpression {

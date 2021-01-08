@@ -34,10 +34,10 @@ protocol IDataProvider {
 }
 
 protocol ITransactionStorage {
-    var lastTransaction: TransactionRecord? { get }
-    var pendingTransactions: [TransactionRecord] { get }
-    func save(transaction: TransactionRecord)
-    func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionRecord]>
+    var lastTransaction: TransactionCache? { get }
+    var pendingTransactions: [TransactionCache] { get }
+    func save(transaction: TransactionCache)
+    func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionCache]>
 }
 
 protocol ITokenBalanceStorage {

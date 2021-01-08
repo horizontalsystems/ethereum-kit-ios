@@ -34,58 +34,58 @@ class TransactionManager {
     }
 
     private func processTransactions(fullTransactions: [FullTransaction]) {
-        let records: [TransactionRecord] = fullTransactions
-                .map { extractErc20TransactionRecords(from: $0) }
+        let transactions: [TransactionCache] = fullTransactions
+                .map { extractErc20Transactions(from: $0) }
                 .reduce([]) { $0 + $1 }
 
-        guard !records.isEmpty else {
+        guard !transactions.isEmpty else {
             return
         }
 
-        var pendingTransactionRecords = storage.pendingTransactions
+        var pendingTransactions = storage.pendingTransactions
 
-        for transaction in records {
-            if let pendingTransactionRecord = pendingTransactionRecords.first(where: { $0.hash == transaction.hash }) {
-                transaction.interTransactionIndex = pendingTransactionRecord.interTransactionIndex
+        for transaction in transactions {
+            if let pendingTransaction = pendingTransactions.first(where: { $0.hash == transaction.hash }) {
+                transaction.interTransactionIndex = pendingTransaction.interTransactionIndex
 
-                pendingTransactionRecords.removeAll { $0 === pendingTransactionRecord }
+                pendingTransactions.removeAll { $0 === pendingTransaction }
             }
 
             storage.save(transaction: transaction)
         }
 
-        let erc20Transactions = makeTransactions(records: records, fullTransactions: fullTransactions)
+        let erc20Transactions = makeTransactions(transactions: transactions, fullTransactions: fullTransactions)
         transactionsSubject.onNext(erc20Transactions)
     }
 
-    private func makeTransactions(records: [TransactionRecord], fullTransactions: [FullTransaction]) -> [Transaction] {
-        records.compactMap({ transactionRecord in
+    private func makeTransactions(transactions: [TransactionCache], fullTransactions: [FullTransaction]) -> [Transaction] {
+        transactions.compactMap({ transaction in
             let fullTransaction = fullTransactions.first {
-                $0.transaction.hash == transactionRecord.hash
+                $0.transaction.hash == transaction.hash
             }
 
             return fullTransaction.flatMap({
                 Transaction(
-                        hash: transactionRecord.hash,
-                        interTransactionIndex: transactionRecord.interTransactionIndex,
+                        hash: transaction.hash,
+                        interTransactionIndex: transaction.interTransactionIndex,
                         transactionIndex: $0.receiptWithLogs?.receipt.transactionIndex,
-                        from: transactionRecord.from,
-                        to: transactionRecord.to,
-                        value: transactionRecord.value,
-                        timestamp: transactionRecord.timestamp,
+                        from: transaction.from,
+                        to: transaction.to,
+                        value: transaction.value,
+                        timestamp: transaction.timestamp,
                         isError: $0.failed,
-                        type: transactionRecord.type,
+                        type: transaction.type,
                         fullTransaction: $0
                 )
             })
         })
     }
 
-    private func extractErc20TransactionRecords(from fullTransaction: FullTransaction) -> [TransactionRecord] {
+    private func extractErc20Transactions(from fullTransaction: FullTransaction) -> [TransactionCache] {
         let transaction = fullTransaction.transaction
 
         if let receiptWithLogs = fullTransaction.receiptWithLogs {
-            return receiptWithLogs.logs.compactMap { log -> TransactionRecord? in
+            return receiptWithLogs.logs.compactMap { log -> TransactionCache? in
                 guard log.address == contractAddress else {
                     return nil
                 }
@@ -94,7 +94,7 @@ class TransactionManager {
 
                 switch event {
                 case .transfer(let from, let to, let value):
-                    return TransactionRecord(
+                    return TransactionCache(
                             hash: transaction.hash,
                             interTransactionIndex: log.logIndex,
                             logIndex: log.logIndex,
@@ -106,7 +106,7 @@ class TransactionManager {
                     )
 
                 case .approve(let owner, let spender, let amount):
-                    return TransactionRecord(
+                    return TransactionCache(
                             hash: transaction.hash,
                             interTransactionIndex: log.logIndex,
                             logIndex: log.logIndex,
@@ -131,7 +131,7 @@ class TransactionManager {
             switch contractMethod {
             case let method as TransferMethod:
                 if transaction.from == address || method.to == address {
-                    return [TransactionRecord(
+                    return [TransactionCache(
                             hash: transaction.hash,
                             interTransactionIndex: 0,
                             logIndex: nil,
@@ -145,7 +145,7 @@ class TransactionManager {
 
             case let method as ApproveMethod:
                 if transaction.from == address {
-                    return [TransactionRecord(
+                    return [TransactionCache(
                             hash: transaction.hash,
                             interTransactionIndex: 0,
                             logIndex: nil,
@@ -170,21 +170,21 @@ extension TransactionManager: ITransactionManager {
 
     func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[Transaction]> {
         storage.transactionsSingle(from: from, limit: limit)
-                .map { [weak self] records in
+                .map { [weak self] trransactions in
                     guard let manager = self else {
                         return []
                     }
 
-                    let fullTransactions = manager.ethereumKit.fullTransactions(byHashes: records.map { $0.hash })
-                    return manager.makeTransactions(records: records, fullTransactions: fullTransactions)
+                    let fullTransactions = manager.ethereumKit.fullTransactions(byHashes: trransactions.map { $0.hash })
+                    return manager.makeTransactions(transactions: trransactions, fullTransactions: fullTransactions)
                 }
     }
 
     func pendingTransactions() -> [Transaction] {
-        let records = storage.pendingTransactions
-        let fullTransactions = ethereumKit.fullTransactions(byHashes: records.map { $0.hash })
+        let transactions = storage.pendingTransactions
+        let fullTransactions = ethereumKit.fullTransactions(byHashes: transactions.map { $0.hash })
 
-        return makeTransactions(records: records, fullTransactions: fullTransactions)
+        return makeTransactions(transactions: transactions, fullTransactions: fullTransactions)
     }
 
     func transferTransactionData(to: Address, value: BigUInt) -> TransactionData {
@@ -200,46 +200,6 @@ extension TransactionManager: ITransactionManager {
         let fullTransactions = ethereumKit.fullTransactions(fromHash: lastTransaction?.hash)
 
         processTransactions(fullTransactions: fullTransactions)
-    }
-
-}
-
-enum Erc20LogEvent {
-    static let transferSignature = ContractEvent(name: "Transfer", arguments: [.address, .address, .uint256]).signature
-    static let approvalSignature = ContractEvent(name: "Approval", arguments: [.address, .address, .uint256]).signature
-
-    case transfer(from: Address, to: Address, value: BigUInt)
-    case approve(owner: Address, spender: Address, value: BigUInt)
-}
-
-extension TransactionLog {
-
-    func getErc20Event(address: Address) -> Erc20LogEvent? {
-        guard topics.count == 3 else {
-            return nil
-        }
-
-        let signature = topics[0]
-        let firstParam = Address(raw: topics[1])
-        let secondParam = Address(raw: topics[2])
-
-        if signature == Erc20LogEvent.transferSignature && (firstParam == address || secondParam == address) {
-            return .transfer(from: firstParam, to: secondParam, value: BigUInt(data))
-        }
-
-        if signature == Erc20LogEvent.approvalSignature && firstParam == address {
-            return .approve(owner: firstParam, spender: secondParam, value: BigUInt(data))
-        }
-
-        return nil
-    }
-
-}
-
-extension Array {
-
-    subscript (safe index: Index) -> Element? {
-        indices.contains(index) ? self[index] : nil
     }
 
 }
