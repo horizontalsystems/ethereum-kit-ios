@@ -17,11 +17,3 @@ class ApproveMethod: ContractMethod {
     override var methodSignature: String { ApproveMethod.methodSignature }
     override var arguments: [Any] { [spender, value] }
 }
-
-extension ApproveMethod: IErc20ContractMethodWithTransactions {
-
-    func erc20Transactions(ethTx: EthereumKit.Transaction) -> [Transaction] {
-        []
-    }
-
-}

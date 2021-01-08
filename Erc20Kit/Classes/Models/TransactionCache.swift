@@ -2,7 +2,7 @@ import EthereumKit
 import BigInt
 import GRDB
 
-class TransactionRecord: Record {
+class TransactionCache: Record {
     let hash: Data
     var interTransactionIndex: Int
     let logIndex: Int?
