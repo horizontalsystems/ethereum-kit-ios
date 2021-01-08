@@ -16,7 +16,6 @@ class TransactionSyncer: AbstractTransactionSyncer {
     }
 
     private func sync() {
-        print("TransactionSyncer sync \(state.syncing)")
         guard !state.syncing else {
             return
         }
@@ -25,16 +24,13 @@ class TransactionSyncer: AbstractTransactionSyncer {
     }
 
     private func doSync() {
-        print("TransactionSyncer doing sync")
         let notSyncedTransactions = delegate.notSyncedTransactions(limit: txSyncBatchSize)
-        print("TransactionSyncer \(notSyncedTransactions.count) transactions")
 
         guard !notSyncedTransactions.isEmpty else {
             state = .synced
             return
         }
 
-        print("TransactionSyncer set syncing")
         state = .syncing(progress: nil)
 
         Single
@@ -45,7 +41,7 @@ class TransactionSyncer: AbstractTransactionSyncer {
                             guard let syncer = self else {
                                 return
                             }
-                            print("Synced transactions: \(syncedTransactionHashes)")
+
                             let hashes: [Data] = syncedTransactionHashes.compactMap { $0 }
                             let fullTransactions = syncer.storage.fullTransactions(byHashes: hashes)
 
@@ -53,7 +49,6 @@ class TransactionSyncer: AbstractTransactionSyncer {
                             syncer.doSync()
                         },
                         onError: { [weak self] in
-                            print("Error = \($0)")
                             self?.state = .notSynced(error: $0)
                         }
                 )
@@ -63,7 +58,6 @@ class TransactionSyncer: AbstractTransactionSyncer {
     private func syncSingle(notSyncedTransaction: NotSyncedTransaction) -> Single<Data?> {
         syncRpcTransactionSingle(notSyncedTransaction: notSyncedTransaction)
                 .flatMap { [weak self] transaction in
-                    print("RpcTransaction received for \(notSyncedTransaction.hash.hex): \(transaction)")
                     guard let syncer = self,
                           let transaction = transaction else {
                         return Single.just(nil)
@@ -72,7 +66,6 @@ class TransactionSyncer: AbstractTransactionSyncer {
                     return syncer.syncReceiptSingle(transaction: transaction)
                 }
                 .flatMap { [weak self] (txReceiptPair: (transaction: RpcTransaction, receipt: RpcTransactionReceipt?)?) in
-                    print("ReceiptPair received for \(notSyncedTransaction.hash.hex): \(txReceiptPair?.receipt)")
                     guard let syncer = self,
                           let txReceiptPair = txReceiptPair else {
                         return Single.just(nil)
@@ -81,13 +74,11 @@ class TransactionSyncer: AbstractTransactionSyncer {
                     return syncer.syncTimestampSingle(transactionAndReceipt: txReceiptPair, notSyncedTransaction: notSyncedTransaction)
                 }
                 .map { [weak self] (result: (transaction: RpcTransaction, timestamp: Int)?) in
-                    print("Result received for \(notSyncedTransaction.hash.hex): \(result?.transaction) | \(result?.timestamp)")
                     guard let syncer = self,
                           let result = result else {
                         return nil
                     }
 
-                    print("finalizing \(notSyncedTransaction.hash.hex)")
                     syncer.finalizeSync(notSyncedTransaction: notSyncedTransaction, transaction: result.transaction, timestamp: result.timestamp)
 
                     return result.transaction.hash
@@ -170,12 +161,9 @@ class TransactionSyncer: AbstractTransactionSyncer {
     override func set(delegate: ITransactionSyncerDelegate) {
         super.set(delegate: delegate)
 
-        //subscribe to txHashPool and sync when new hashes received
-        print("TransactionSyncer subscribing")
         delegate.notSyncedTransactionsSignal
                 .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(onNext: { [weak self] in
-                    print("TransactionSyncer running sync")
                     self?.sync()
                 })
                 .disposed(by: disposeBag)

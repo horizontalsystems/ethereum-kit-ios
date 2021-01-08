@@ -89,7 +89,6 @@ class TransactionSyncManager {
     }
 
     private func syncState() {
-        print("syncer states: \(syncers.map { "\($0.id) -> \($0.state)" })")
         state = syncers.first { $0.state.notSynced }?.state ??
                 syncers.first { $0.state.syncing }?.state ??
                 .synced

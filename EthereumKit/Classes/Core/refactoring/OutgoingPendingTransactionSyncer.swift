@@ -14,7 +14,6 @@ class OutgoingPendingTransactionSyncer: AbstractTransactionSyncer {
     }
 
     private func sync() {
-        print("OutgoingPendingTransactionSyncer sync \(state.syncing)")
         guard !state.syncing else {
             return
         }
@@ -30,17 +29,12 @@ class OutgoingPendingTransactionSyncer: AbstractTransactionSyncer {
     }
 
     private func doSync() -> Single<Void> {
-        print("OutputPendingTransactionSyncer doing sync")
         guard let pendingTransaction = storage.getFirstPendingTransaction() else {
-            print("OutputPendingTransactionSyncer didn't find pending transaction")
             return Single.just(())
         }
 
-        print("OutputPendingTransactionSyncer set syncing")
-
         return blockchain.transactionReceiptSingle(transactionHash: pendingTransaction.hash)
                 .flatMap { [weak self] receipt in
-                    print("OutputPendingTransactionSyncer got receipt \(receipt)")
                     guard let syncer = self, let receipt = receipt else {
                         return Single.just(())
                     }
