@@ -11,9 +11,9 @@ protocol IBlockchain {
 
     var syncState: SyncState { get }
     var lastBlockHeight: Int? { get }
-    var balance: BigUInt? { get }
+    var accountState: AccountState? { get }
 
-    func nonceSingle() -> Single<Int>
+    func nonceSingle(defaultBlockParameter: DefaultBlockParameter) -> Single<Int>
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction>
 
     func transactionReceiptSingle(transactionHash: Data) -> Single<RpcTransactionReceipt?>
@@ -27,9 +27,8 @@ protocol IBlockchain {
 protocol IBlockchainDelegate: class {
     func onUpdate(lastBlockBloomFilter: BloomFilter)
     func onUpdate(lastBlockHeight: Int)
-    func onUpdate(balance: BigUInt)
     func onUpdate(syncState: SyncState)
-    func onUpdate(nonce: Int)
+    func onUpdate(accountState: AccountState)
 }
 
 protocol ITransactionStorage {
@@ -73,8 +72,7 @@ public protocol ITransactionSyncer {
     func onEthereumSynced()
     func onLastBlockNumber(blockNumber: Int)
     func onLastBlockBloomFilter(bloomFilter: BloomFilter)
-    func onUpdateNonce(nonce: Int)
-    func onUpdateBalance(balance: BigUInt)
+    func onUpdateAccountState(accountState: AccountState)
 }
 
 public protocol ITransactionSyncerDelegate {

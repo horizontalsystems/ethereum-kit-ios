@@ -52,12 +52,13 @@ class ApiRpcSyncer {
 
         Single.zip(
                         rpcApiProvider.single(rpc: BlockNumberJsonRpc()),
-                        rpcApiProvider.single(rpc: GetBalanceJsonRpc(address: address, defaultBlockParameter: .latest))
+                        rpcApiProvider.single(rpc: GetBalanceJsonRpc(address: address, defaultBlockParameter: .latest)),
+                        rpcApiProvider.single(rpc: GetTransactionCountJsonRpc(address: address, defaultBlockParameter: .latest))
                 )
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                .subscribe(onSuccess: { [weak self] lastBlockHeight, balance in
+                .subscribe(onSuccess: { [weak self] lastBlockHeight, balance, nonce in
                     self?.delegate?.didUpdate(lastBlockHeight: lastBlockHeight)
-                    self?.delegate?.didUpdate(balance: balance)
+                    self?.delegate?.didUpdate(state: AccountState(balance: balance, nonce: nonce))
 
                     self?.syncState = .synced
                 }, onError: { [weak self] error in

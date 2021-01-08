@@ -1,7 +1,7 @@
 import GRDB
 import BigInt
 
-class AccountState: Record {
+class AccountStateSpv: Record {
     let address: Address
     let nonce: Int
     let balance: BigUInt

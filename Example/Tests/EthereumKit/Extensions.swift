@@ -134,7 +134,7 @@ extension BlockHeader: Equatable {
 
 }
 
-extension AccountState {
+extension AccountStateSpv {
 
     convenience init(address: Data = Data()) {
         self.init(address: address, nonce: 0, balance: 0, storageHash: Data(), codeHash: Data())

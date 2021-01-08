@@ -40,14 +40,14 @@ class SpvStorage {
         }
 
         migrator.registerMigration("createAccountStates") { db in
-            try db.create(table: AccountState.databaseTableName) { t in
-                t.column(AccountState.Columns.address.name, .blob).notNull()
-                t.column(AccountState.Columns.nonce.name, .integer).notNull()
-                t.column(AccountState.Columns.balance.name, .text).notNull()
-                t.column(AccountState.Columns.storageHash.name, .blob).notNull()
-                t.column(AccountState.Columns.codeHash.name, .blob).notNull()
+            try db.create(table: AccountStateSpv.databaseTableName) { t in
+                t.column(AccountStateSpv.Columns.address.name, .blob).notNull()
+                t.column(AccountStateSpv.Columns.nonce.name, .integer).notNull()
+                t.column(AccountStateSpv.Columns.balance.name, .text).notNull()
+                t.column(AccountStateSpv.Columns.storageHash.name, .blob).notNull()
+                t.column(AccountStateSpv.Columns.codeHash.name, .blob).notNull()
 
-                t.primaryKey([AccountState.Columns.address.name], onConflict: .replace)
+                t.primaryKey([AccountStateSpv.Columns.address.name], onConflict: .replace)
             }
         }
 
@@ -88,13 +88,13 @@ extension SpvStorage: ISpvStorage {
 
     // AccountState
 
-    var accountState: AccountState? {
+    var accountState: AccountStateSpv? {
         return try! dbPool.read { db in
-            try AccountState.fetchOne(db)
+            try AccountStateSpv.fetchOne(db)
         }
     }
 
-    func save(accountState: AccountState) {
+    func save(accountState: AccountStateSpv) {
         _ = try? dbPool.write { db in
             try accountState.insert(db)
         }

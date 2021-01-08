@@ -118,7 +118,7 @@ extension EthereumAdapter: IAdapter {
     }
 
     var balanceObservable: Observable<Void> {
-        ethereumKit.balanceObservable.map { _ in () }
+        ethereumKit.accountStateObservable.map { _ in () }
     }
 
     var transactionsObservable: Observable<Void> {

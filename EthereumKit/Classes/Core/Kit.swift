@@ -12,10 +12,9 @@ public class Kit {
     private let defaultMinAmount: BigUInt = 1
 
     private let lastBlockBloomFilterSubject = PublishSubject<BloomFilter>()
-    private let nonceSubject = PublishSubject<Int>()
     private let lastBlockHeightSubject = PublishSubject<Int>()
     private let syncStateSubject = PublishSubject<SyncState>()
-    private let balanceSubject = PublishSubject<BigUInt>()
+    private let accountStateSubject = PublishSubject<AccountState>()
 
     private let blockchain: IBlockchain
     private let transactionManager: TransactionManager
@@ -46,7 +45,9 @@ public class Kit {
         self.etherscanApiProvider = etherscanApiProvider
         self.logger = logger
 
-        state.balance = blockchain.balance
+        let accountState = blockchain.accountState
+        state.balance = accountState?.balance
+        state.nonce = accountState?.nonce
         state.lastBlockHeight = blockchain.lastBlockHeight
     }
 
@@ -80,10 +81,6 @@ extension Kit {
         lastBlockHeightSubject.asObservable()
     }
 
-    public var nonceObservable: Observable<Int> {
-        nonceSubject.asObservable()
-    }
-
     public var lastBlockBloomFilterObservable: Observable<BloomFilter> {
         lastBlockBloomFilterSubject.asObservable()
     }
@@ -96,8 +93,8 @@ extension Kit {
         transactionSyncManager.stateObservable
     }
 
-    public var balanceObservable: Observable<BigUInt> {
-        balanceSubject.asObservable()
+    public var accountStateObservable: Observable<AccountState> {
+        accountStateSubject.asObservable()
     }
 
     public var etherTransactionsObservable: Observable<[FullTransaction]> {
@@ -137,7 +134,7 @@ extension Kit {
     }
 
     public func sendSingle(address: Address, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int, nonce: Int? = nil) -> Single<FullTransaction> {
-        var syncNonceSingle = blockchain.nonceSingle()
+        var syncNonceSingle = blockchain.nonceSingle(defaultBlockParameter: .pending)
 
         if let nonce = nonce {
             syncNonceSingle = Single<Int>.just(nonce)
@@ -242,26 +239,18 @@ extension Kit: IBlockchainDelegate {
         lastBlockHeightSubject.onNext(lastBlockHeight)
     }
 
-    func onUpdate(balance: BigUInt) {
-        guard state.balance != balance else {
+    func onUpdate(accountState: AccountState) {
+        guard state.balance != accountState.balance || state.nonce != accountState.nonce else {
             return
         }
 
-        state.balance = balance
-        balanceSubject.onNext(balance)
+        state.balance = accountState.balance
+        state.nonce = accountState.nonce
+        accountStateSubject.onNext(accountState)
     }
 
     func onUpdate(syncState: SyncState) {
         syncStateSubject.onNext(syncState)
-    }
-
-    func onUpdate(nonce: Int) {
-        guard state.nonce != nonce else {
-            return
-        }
-
-        state.nonce = nonce
-        nonceSubject.onNext(nonce)
     }
 
 }

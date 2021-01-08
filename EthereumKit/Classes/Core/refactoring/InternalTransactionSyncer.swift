@@ -4,6 +4,8 @@ import BigInt
 class InternalTransactionSyncer: AbstractTransactionSyncer {
     private let provider: EtherscanTransactionProvider
     private let storage: ITransactionStorage
+    private let scheduler = SerialDispatchQueueScheduler(qos: .background)
+    private var resync: Bool = false
 
     init(provider: EtherscanTransactionProvider, storage: ITransactionStorage) {
         self.provider = provider
@@ -12,21 +14,26 @@ class InternalTransactionSyncer: AbstractTransactionSyncer {
         super.init(id: "internal_transaction_syncer")
     }
 
-    private func sync() {
+    private func sync(mayContain: Bool = false, force: Bool = false) {
         print("syncing InternalTransactionProvider")
-        guard !state.syncing else {
+        if state.syncing && !force {
+            if mayContain {
+                resync = true
+            }
             return
         }
 
         print("InternalTransactionProvider syncing")
         state = .syncing(progress: nil)
 
-        let lastSyncBlockNumber = super.lastSyncBlockNumber
+        var single = provider.internalTransactionsSingle(startBlock: lastSyncBlockNumber + 1)
 
-        // gets transaction starting from last tx's block height
-        provider
-                .internalTransactionsSingle(startBlock: lastSyncBlockNumber + 1)
-                .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
+        if mayContain {
+            single = single.retryWith(options: RetryOptions(mustRetry: { $0.isEmpty }), scheduler: scheduler)
+        }
+
+        single
+                .observeOn(scheduler)
                 .subscribe(
                         onSuccess: { [weak self] transactions in
                             print("InternalTransactionProvider got \(transactions.count) transactions")
@@ -34,25 +41,28 @@ class InternalTransactionSyncer: AbstractTransactionSyncer {
                                 return
                             }
 
-                            guard !transactions.isEmpty else {
+                            if !transactions.isEmpty {
+                                syncer.storage.save(internalTransactions: transactions)
+
+                                if let blockNumber = transactions.first?.blockNumber {
+                                    syncer.update(lastSyncBlockNumber: blockNumber)
+                                }
+
+                                let notSyncedTransactions = transactions.map { etherscanTransaction in
+                                    NotSyncedTransaction(
+                                            hash: etherscanTransaction.hash
+                                    )
+                                }
+
+                                syncer.delegate.add(notSyncedTransactions: notSyncedTransactions)
+                            }
+
+                            if syncer.resync {
+                                syncer.resync = false
+                                syncer.sync(mayContain: true, force: true)
+                            } else {
                                 syncer.state = .synced
-                                return
                             }
-
-                            syncer.storage.save(internalTransactions: transactions)
-
-                            if let blockNumber = transactions.first?.blockNumber {
-                                syncer.update(lastSyncBlockNumber: blockNumber)
-                            }
-
-                            let notSyncedTransactions = transactions.map { etherscanTransaction in
-                                NotSyncedTransaction(
-                                        hash: etherscanTransaction.hash
-                                )
-                            }
-
-                            syncer.delegate.add(notSyncedTransactions: notSyncedTransactions)
-                            syncer.state = .synced
                         },
                         onError: { [weak self] error in
                             self?.state = .notSynced(error: error)
@@ -65,12 +75,8 @@ class InternalTransactionSyncer: AbstractTransactionSyncer {
         sync()
     }
 
-    override func onUpdateNonce(nonce: Int) {
-        sync()
-    }
-
-    override func onUpdateBalance(balance: BigUInt) {
-        sync()
+    override func onUpdateAccountState(accountState: AccountState) {
+        sync(mayContain: true)
     }
 
 }
