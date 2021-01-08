@@ -85,7 +85,7 @@ class WebSocketRpcSyncer {
                 rpc: BlockNumberJsonRpc(),
                 onSuccess: { [weak self] lastBlockHeight in
                     self?.delegate?.didUpdate(lastBlockHeight: lastBlockHeight)
-                    self?.fetchBalance()
+                    self?.fetchAccountState()
                 },
                 onError: { [weak self] error in
                     self?.onFailSync(error: error)
@@ -93,25 +93,29 @@ class WebSocketRpcSyncer {
         )
     }
 
-    private func fetchBalance() {
+    private func fetchAccountState() {
+        fetchBalance { [weak self] balance in
+            self?.fetchNonce { [weak self] nonce in
+                self?.delegate?.didUpdate(state: AccountState(balance: balance, nonce: nonce))
+                self?.syncState = .synced
+            }
+        }
+    }
+
+    private func fetchBalance(onSuccess: @escaping (BigUInt) -> Void) {
         send(
                 rpc: GetBalanceJsonRpc(address: address, defaultBlockParameter: .latest),
-                onSuccess: { [weak self] balance in
-                    self?.fetchNonce(balance: balance)
-                },
+                onSuccess: onSuccess,
                 onError: { [weak self] error in
                     self?.onFailSync(error: error)
                 }
         )
     }
 
-    private func fetchNonce(balance: BigUInt) {
+    private func fetchNonce(onSuccess: @escaping (Int) -> Void) {
         send(
                 rpc: GetTransactionCountJsonRpc(address: address, defaultBlockParameter: .latest),
-                onSuccess: { [weak self] nonce in
-                    self?.delegate?.didUpdate(state: AccountState(balance: balance, nonce: nonce))
-                    self?.syncState = .synced
-                },
+                onSuccess: onSuccess,
                 onError: { [weak self] error in
                     self?.onFailSync(error: error)
                 }
@@ -130,7 +134,7 @@ class WebSocketRpcSyncer {
                 successHandler: { [weak self] header in
                     self?.delegate?.didUpdate(lastBlockLogsBloom: header.logsBloom)
                     self?.delegate?.didUpdate(lastBlockHeight: header.number)
-                    self?.fetchBalance()
+                    self?.fetchAccountState()
                 },
                 errorHandler: { [weak self] error in
                     self?.logger?.error("NewHeads Handle Failed: \(error)")

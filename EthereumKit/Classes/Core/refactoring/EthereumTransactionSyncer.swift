@@ -12,21 +12,11 @@ class EthereumTransactionSyncer: AbstractTransactionSyncer {
         super.init(id: "ethereum_transaction_syncer")
     }
 
-    private func sync(mayContain: Bool = false, force: Bool = false) {
-        print("syncing EthereumTransactionProvider")
-        if state.syncing && !force {
-            if mayContain {
-                resync = true
-            }
-            return
-        }
-
+    private func doSync(retry: Bool) {
         print("EthereumTransactionProvider syncing")
-        state = .syncing(progress: nil)
-
         var single = provider.transactionsSingle(startBlock: lastSyncBlockNumber + 1)
 
-        if mayContain {
+        if retry {
             single = single.retryWith(options: RetryOptions(mustRetry: { $0.isEmpty }), scheduler: scheduler)
         }
 
@@ -69,7 +59,7 @@ class EthereumTransactionSyncer: AbstractTransactionSyncer {
 
                             if syncer.resync {
                                 syncer.resync = false
-                                syncer.sync(mayContain: true, force: true)
+                                syncer.doSync(retry: true)
                             } else {
                                 syncer.state = .synced
                             }
@@ -81,12 +71,25 @@ class EthereumTransactionSyncer: AbstractTransactionSyncer {
                 .disposed(by: disposeBag)
     }
 
+    private func sync(retry: Bool = false) {
+        print("syncing EthereumTransactionProvider")
+        if state.syncing {
+            if retry {
+                resync = true
+            }
+            return
+        }
+
+        state = .syncing(progress: nil)
+        doSync(retry: retry)
+    }
+
     override func onEthereumSynced() {
         sync()
     }
 
     override func onUpdateAccountState(accountState: AccountState) {
-        sync(mayContain: true)
+        sync(retry: true)
     }
 
 }

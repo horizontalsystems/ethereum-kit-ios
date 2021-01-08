@@ -1,7 +1,6 @@
 import BigInt
 
 class EthereumKitState {
-    var balance: BigUInt?
-    var nonce: Int?
+    var accountState: AccountState?
     var lastBlockHeight: Int?
 }

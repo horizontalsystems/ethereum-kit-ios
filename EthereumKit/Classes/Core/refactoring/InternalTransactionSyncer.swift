@@ -14,21 +14,10 @@ class InternalTransactionSyncer: AbstractTransactionSyncer {
         super.init(id: "internal_transaction_syncer")
     }
 
-    private func sync(mayContain: Bool = false, force: Bool = false) {
-        print("syncing InternalTransactionProvider")
-        if state.syncing && !force {
-            if mayContain {
-                resync = true
-            }
-            return
-        }
-
-        print("InternalTransactionProvider syncing")
-        state = .syncing(progress: nil)
-
+    private func doSync(retry: Bool) {
         var single = provider.internalTransactionsSingle(startBlock: lastSyncBlockNumber + 1)
 
-        if mayContain {
+        if retry {
             single = single.retryWith(options: RetryOptions(mustRetry: { $0.isEmpty }), scheduler: scheduler)
         }
 
@@ -59,7 +48,7 @@ class InternalTransactionSyncer: AbstractTransactionSyncer {
 
                             if syncer.resync {
                                 syncer.resync = false
-                                syncer.sync(mayContain: true, force: true)
+                                syncer.doSync(retry: true)
                             } else {
                                 syncer.state = .synced
                             }
@@ -71,12 +60,26 @@ class InternalTransactionSyncer: AbstractTransactionSyncer {
                 .disposed(by: disposeBag)
     }
 
+    private func sync(retry: Bool = false) {
+        print("syncing InternalTransactionProvider")
+        if state.syncing {
+            if retry {
+                resync = true
+            }
+            return
+        }
+
+        print("InternalTransactionProvider syncing")
+        state = .syncing(progress: nil)
+        doSync(retry: retry)
+    }
+
     override func onEthereumSynced() {
         sync()
     }
 
     override func onUpdateAccountState(accountState: AccountState) {
-        sync(mayContain: true)
+        sync(retry: true)
     }
 
 }
