@@ -192,7 +192,6 @@ extension TransactionStorage: ITransactionStorage {
     }
 
     func add(notSyncedTransactions: [NotSyncedTransaction]) {
-        print("\(notSyncedTransactions.count) notSyncedTransactions inserting")
         try! dbPool.write { db in
             for transaction in notSyncedTransactions {
                 try transaction.insert(db)

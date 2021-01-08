@@ -25,7 +25,6 @@ class InternalTransactionSyncer: AbstractTransactionSyncer {
                 .observeOn(scheduler)
                 .subscribe(
                         onSuccess: { [weak self] transactions in
-                            print("InternalTransactionProvider got \(transactions.count) transactions")
                             guard let syncer = self else {
                                 return
                             }
@@ -61,7 +60,6 @@ class InternalTransactionSyncer: AbstractTransactionSyncer {
     }
 
     private func sync(retry: Bool = false) {
-        print("syncing InternalTransactionProvider")
         if state.syncing {
             if retry {
                 resync = true
@@ -69,7 +67,6 @@ class InternalTransactionSyncer: AbstractTransactionSyncer {
             return
         }
 
-        print("InternalTransactionProvider syncing")
         state = .syncing(progress: nil)
         doSync(retry: retry)
     }

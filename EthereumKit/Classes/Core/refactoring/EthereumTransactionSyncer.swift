@@ -13,7 +13,6 @@ class EthereumTransactionSyncer: AbstractTransactionSyncer {
     }
 
     private func doSync(retry: Bool) {
-        print("EthereumTransactionProvider syncing")
         var single = provider.transactionsSingle(startBlock: lastSyncBlockNumber + 1)
 
         if retry {
@@ -24,7 +23,6 @@ class EthereumTransactionSyncer: AbstractTransactionSyncer {
                 .observeOn(scheduler)
                 .subscribe(
                         onSuccess: { [weak self] transactions in
-                            print("EthereumTransactionProvider got \(transactions.count) transactions")
                             guard let syncer = self else {
                                 return
                             }
@@ -72,7 +70,6 @@ class EthereumTransactionSyncer: AbstractTransactionSyncer {
     }
 
     private func sync(retry: Bool = false) {
-        print("syncing EthereumTransactionProvider")
         if state.syncing {
             if retry {
                 resync = true

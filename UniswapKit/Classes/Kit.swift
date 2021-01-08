@@ -56,8 +56,6 @@ extension Kit {
                 tokenOut: swapData.tokenOut
         ).sorted()
 
-        print("Trades: \(sortedTrades)")
-
         guard let bestTrade = sortedTrades.first else {
             throw TradeError.tradeNotFound
         }

@@ -11,7 +11,6 @@ class NotSyncedTransactionPool {
     func add(notSyncedTransactions: [NotSyncedTransaction]) {
         let syncedTransactionHashes = storage.getHashesFromTransactions()
         let newTransactions = notSyncedTransactions.filter { !syncedTransactionHashes.contains($0.hash) }
-        print("NotSyncedTransactionPool adding \(notSyncedTransactions.count) transactions")
 
         storage.add(notSyncedTransactions: newTransactions)
         notSyncedTransactionsSignal.onNext(())

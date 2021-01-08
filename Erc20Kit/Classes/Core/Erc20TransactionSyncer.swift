@@ -27,8 +27,6 @@ class Erc20TransactionSyncer: AbstractTransactionSyncer {
                 .observeOn(scheduler)
                 .subscribe(
                         onSuccess: { [weak self] transactions in
-                            print("Erc20TransactionSyncer got \(transactions.count) transactions")
-
                             guard let syncer = self else {
                                 return
                             }
@@ -70,7 +68,6 @@ class Erc20TransactionSyncer: AbstractTransactionSyncer {
     }
 
     private func sync(retry: Bool = false) {
-        print("syncing Erc20TransactionSyncer")
         if state.syncing {
             if retry {
                 resync = true
@@ -78,7 +75,6 @@ class Erc20TransactionSyncer: AbstractTransactionSyncer {
             return
         }
 
-        print("Erc20TransactionSyncer syncing")
         state = .syncing(progress: nil)
         doSync(retry: retry)
     }
