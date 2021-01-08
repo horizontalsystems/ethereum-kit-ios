@@ -45,10 +45,7 @@ open class AbstractTransactionSyncer: ITransactionSyncer {
     open func onLastBlockBloomFilter(bloomFilter: BloomFilter) {
     }
 
-    open func onUpdateNonce(nonce: Int) {
-    }
-
-    open func onUpdateBalance(balance: BigUInt) {
+    open func onUpdateAccountState(accountState: AccountState) {
     }
 
 }

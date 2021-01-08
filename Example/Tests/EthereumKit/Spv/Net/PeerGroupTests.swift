@@ -330,7 +330,7 @@ class PeerGroupTests: QuickSpec {
         }
 
         describe("#didReceiveAccountState") {
-            let accountState = AccountState()
+            let accountState = AccountStateSpv()
 
             beforeEach {
                 stub(mockDelegate) { mock in

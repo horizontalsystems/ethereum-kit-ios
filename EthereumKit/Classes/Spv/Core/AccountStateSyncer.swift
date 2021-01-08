@@ -1,5 +1,5 @@
 protocol IAccountStateSyncerDelegate: AnyObject {
-    func onUpdate(accountState: AccountState)
+    func onUpdate(accountState: AccountStateSpv)
 }
 
 class AccountStateSyncer {
@@ -21,7 +21,7 @@ class AccountStateSyncer {
 
 extension AccountStateSyncer: IAccountStateTaskHandlerDelegate {
 
-    func didReceive(accountState: AccountState, address: Address, blockHeader: BlockHeader) {
+    func didReceive(accountState: AccountStateSpv, address: Address, blockHeader: BlockHeader) {
         storage.save(accountState: accountState)
         delegate?.onUpdate(accountState: accountState)
     }

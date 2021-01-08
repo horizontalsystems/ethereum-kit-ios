@@ -1,5 +1,5 @@
 protocol IAccountStateTaskHandlerDelegate: AnyObject {
-    func didReceive(accountState: AccountState, address: Address, blockHeader: BlockHeader)
+    func didReceive(accountState: AccountStateSpv, address: Address, blockHeader: BlockHeader)
 }
 
 class AccountStateTaskHandler {
@@ -11,7 +11,7 @@ class AccountStateTaskHandler {
 
     private var tasks = [Int: AccountStateTask]()
 
-    private func parse(proofsMessage: ProofsMessage, task: AccountStateTask) throws -> AccountState {
+    private func parse(proofsMessage: ProofsMessage, task: AccountStateTask) throws -> AccountStateSpv {
         guard var lastNode = proofsMessage.nodes.last else {
             throw ProofError.noNodes
         }
@@ -53,7 +53,7 @@ class AccountStateTaskHandler {
             throw ProofError.rootHashDoesNotMatchStateRoot
         }
 
-        return AccountState(address: task.address, nonce: nonce, balance: balance, storageHash: storageRoot, codeHash: codeHash)
+        return AccountStateSpv(address: task.address, nonce: nonce, balance: balance, storageHash: storageRoot, codeHash: codeHash)
     }
 
 }

@@ -98,3 +98,54 @@ extension PrimitiveSequence where Trait == SingleTrait {
     }
 
 }
+
+public struct RetryOptions<T> {
+    let initialDelayTime: Int = 5
+    let delayIncreaseFactor: Int = 3
+    let maxRetry: Int = 3
+    let mustRetry: (T) -> Bool
+
+    public init(mustRetry: @escaping (T) -> Bool) {
+        self.mustRetry = mustRetry
+    }
+}
+
+public extension PrimitiveSequence where Trait == SingleTrait {
+
+    enum RetryError: Error {
+        case mustRetry
+    }
+
+    public func retryWith(options: RetryOptions<Element>, scheduler: SchedulerType) -> PrimitiveSequence<SingleTrait, Element> {
+        var delayTime = options.initialDelayTime
+        var retryCount = 1
+
+        return self
+                .flatMap { Single.just($0) }
+                .delaySubscription(DispatchTimeInterval.seconds(options.initialDelayTime), scheduler: scheduler)
+                .map { element -> Element in
+                    if options.mustRetry(element) && retryCount < options.maxRetry {
+                        throw RetryError.mustRetry
+                    }
+
+                    return element
+                }
+                .retryWhen { errorObservable in
+                    errorObservable
+                            .filter { error in
+                                if let error = error as? RetryError {
+                                    delayTime = delayTime * options.delayIncreaseFactor
+                                    retryCount += 1
+
+                                    return error == .mustRetry
+                                }
+
+                                return false
+                            }
+                            .flatMap { _ in
+                                Observable<Int>.timer(DispatchTimeInterval.seconds(delayTime), scheduler: scheduler)
+                            }
+                }
+    }
+
+}

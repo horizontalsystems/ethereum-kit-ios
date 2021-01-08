@@ -7,8 +7,8 @@ protocol ISpvStorage {
     func reversedLastBlockHeaders(from height: Int, limit: Int) -> [BlockHeader]
     func save(blockHeaders: [BlockHeader])
 
-    var accountState: AccountState? { get }
-    func save(accountState: AccountState)
+    var accountState: AccountStateSpv? { get }
+    func save(accountState: AccountStateSpv)
 }
 
 protocol IRandomHelper: class {

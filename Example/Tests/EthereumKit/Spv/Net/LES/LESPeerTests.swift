@@ -351,7 +351,7 @@ class LESPeerTests: QuickSpec {
                 context("when request exists in holder") {
                     let address = Data(repeating: 1, count: 10)
                     let blockHeader = BlockHeader()
-                    let accountState = AccountState()
+                    let accountState = AccountStateSpv()
 
                     beforeEach {
                         let mockRequest = MockAccountStateRequest(address: address, blockHeader: blockHeader)

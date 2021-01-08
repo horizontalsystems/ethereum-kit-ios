@@ -10,8 +10,8 @@ protocol IApiStorage {
     var lastBlockHeight: Int? { get }
     func save(lastBlockHeight: Int)
 
-    var balance: BigUInt? { get }
-    func save(balance: BigUInt)
+    var accountState: AccountState? { get }
+    func save(accountState: AccountState)
 }
 
 protocol IRpcSyncer: AnyObject {
@@ -31,8 +31,7 @@ protocol IRpcSyncerDelegate: AnyObject {
     func didUpdate(syncState: SyncState)
     func didUpdate(lastBlockLogsBloom: String)
     func didUpdate(lastBlockHeight: Int)
-    func didUpdate(balance: BigUInt)
-    func didUpdate(nonce: Int)
+    func didUpdate(state: AccountState)
 }
 
 protocol IWebSocket: AnyObject {

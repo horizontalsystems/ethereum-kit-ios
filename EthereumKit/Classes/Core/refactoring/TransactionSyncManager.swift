@@ -32,17 +32,10 @@ class TransactionSyncManager {
     }
 
     func set(ethereumKit: EthereumKit.Kit) {
-        ethereumKit.balanceObservable
+        ethereumKit.accountStateObservable
                 .observeOn(scheduler)
                 .subscribe(onNext: { [weak self] in
-                    self?.onUpdateBalance(balance: $0)
-                })
-                .disposed(by: disposeBag)
-
-        ethereumKit.nonceObservable
-                .observeOn(scheduler)
-                .subscribe(onNext: { [weak self] in
-                    self?.onUpdateNonce(nonce: $0)
+                    self?.onUpdateAccountState(accountState: $0)
                 })
                 .disposed(by: disposeBag)
 
@@ -82,12 +75,8 @@ class TransactionSyncManager {
         syncers.forEach { $0.onLastBlockBloomFilter(bloomFilter: bloomFilter) }
     }
 
-    private func onUpdateNonce(nonce: Int) {
-        syncers.forEach { $0.onUpdateNonce(nonce: nonce)}
-    }
-
-    private func onUpdateBalance(balance: BigUInt) {
-        syncers.forEach { $0.onUpdateBalance(balance: balance)}
+    private func onUpdateAccountState(accountState: AccountState) {
+        syncers.forEach { $0.onUpdateAccountState(accountState: accountState)}
     }
 
     private func syncState() {

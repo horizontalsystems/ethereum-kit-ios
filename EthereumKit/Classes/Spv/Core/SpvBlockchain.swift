@@ -61,11 +61,15 @@ extension SpvBlockchain: IBlockchain {
         storage.lastBlockHeader?.height
     }
 
-    var balance: BigUInt? {
-        storage.accountState?.balance
+    var accountState: AccountState? {
+        storage.accountState.map { AccountState(balance: $0.balance, nonce: $0.nonce) }
     }
 
-    func nonceSingle() -> Single<Int> {
+    var nonce: Int? {
+        storage.accountState?.nonce
+    }
+
+    func nonceSingle(defaultBlockParameter: DefaultBlockParameter) -> Single<Int> {
         guard let nonce = storage.accountState?.nonce else {
             return Single.error(Kit.SendError.noAccountState)
         }
@@ -153,8 +157,8 @@ extension SpvBlockchain: IBlockSyncerDelegate {
 
 extension SpvBlockchain: IAccountStateSyncerDelegate {
 
-    func onUpdate(accountState: AccountState) {
-        delegate?.onUpdate(balance: accountState.balance)
+    func onUpdate(accountState: AccountStateSpv) {
+        delegate?.onUpdate(accountState: AccountState(balance: accountState.balance, nonce: accountState.nonce))
     }
 
 }

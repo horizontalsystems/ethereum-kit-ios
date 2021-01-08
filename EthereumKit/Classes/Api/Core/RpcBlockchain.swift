@@ -23,33 +23,6 @@ class RpcBlockchain {
         self.logger = logger
     }
 
-//    private func pullTransactionTimestamps(ethereumLogs: [EthereumLog]) -> Single<[EthereumLog]> {
-//        let logsByBlockNumber = Dictionary(grouping: ethereumLogs, by: { $0.blockNumber })
-//
-//        var requestSingles = [Single<Block>]()
-//        for blockNumber in logsByBlockNumber.keys {
-//            requestSingles.append(syncer.single(rpc: GetBlockByNumberJsonRpc(number: blockNumber)))
-//        }
-//
-//        return Single.zip(requestSingles)
-//                .map { (blocks: [Block]) in
-//                    var resultLogs = [EthereumLog]()
-//
-//                    for block in blocks {
-//                        guard let logsOfBlock = logsByBlockNumber[block.number] else {
-//                            continue
-//                        }
-//
-//                        for log in logsOfBlock {
-//                            log.timestamp = Double(block.timestamp)
-//                            resultLogs.append(log)
-//                        }
-//                    }
-//
-//                    return resultLogs
-//                }
-//    }
-
 }
 
 extension RpcBlockchain: IRpcSyncerDelegate {
@@ -73,15 +46,10 @@ extension RpcBlockchain: IRpcSyncerDelegate {
         delegate?.onUpdate(lastBlockHeight: lastBlockHeight)
     }
 
-    func didUpdate(balance: BigUInt) {
-        storage.save(balance: balance)
-        delegate?.onUpdate(balance: balance)
+    func didUpdate(state: AccountState) {
+        storage.save(accountState: state)
+        delegate?.onUpdate(accountState: state)
     }
-
-    func didUpdate(nonce: Int) {
-        delegate?.onUpdate(nonce: nonce)
-    }
-
 }
 
 extension RpcBlockchain: IBlockchain {
@@ -110,12 +78,12 @@ extension RpcBlockchain: IBlockchain {
         storage.lastBlockHeight
     }
 
-    var balance: BigUInt? {
-        storage.balance
+    var accountState: AccountState? {
+        storage.accountState
     }
 
-    func nonceSingle() -> Single<Int> {
-        syncer.single(rpc: GetTransactionCountJsonRpc(address: address, defaultBlockParameter: .pending))
+    func nonceSingle(defaultBlockParameter: DefaultBlockParameter) -> Single<Int> {
+        syncer.single(rpc: GetTransactionCountJsonRpc(address: address, defaultBlockParameter: defaultBlockParameter))
     }
 
     func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction> {

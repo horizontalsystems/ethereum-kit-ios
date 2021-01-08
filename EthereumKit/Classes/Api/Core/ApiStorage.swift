@@ -16,21 +16,22 @@ class ApiStorage {
     var migrator: DatabaseMigrator {
         var migrator = DatabaseMigrator()
 
-        migrator.registerMigration("createEthereumBalance") { db in
-            try db.create(table: EthereumBalance.databaseTableName) { t in
-                t.column(EthereumBalance.Columns.primaryKey.name, .text).notNull()
-                t.column(EthereumBalance.Columns.value.name, .text).notNull()
-
-                t.primaryKey([EthereumBalance.Columns.primaryKey.name], onConflict: .replace)
-            }
-        }
-
         migrator.registerMigration("createBlockchainStates") { db in
             try db.create(table: BlockchainState.databaseTableName) { t in
                 t.column(BlockchainState.Columns.primaryKey.name, .text).notNull()
                 t.column(BlockchainState.Columns.lastBlockHeight.name, .integer)
 
                 t.primaryKey([BlockchainState.Columns.primaryKey.name], onConflict: .replace)
+            }
+        }
+
+        migrator.registerMigration("createAccountStates") { db in
+            try db.create(table: AccountState.databaseTableName) { t in
+                t.column(AccountState.Columns.primaryKey.name, .text).notNull()
+                t.column(AccountState.Columns.balance.name, .text).notNull()
+                t.column(AccountState.Columns.nonce.name, .integer).notNull()
+
+                t.primaryKey([AccountState.Columns.primaryKey.name], onConflict: .replace)
             }
         }
 
@@ -42,7 +43,7 @@ class ApiStorage {
 extension ApiStorage: IApiStorage {
 
     var lastBlockHeight: Int? {
-        return try! dbPool.read { db in
+        try! dbPool.read { db in
             try BlockchainState.fetchOne(db)?.lastBlockHeight
         }
     }
@@ -55,16 +56,15 @@ extension ApiStorage: IApiStorage {
         }
     }
 
-    var balance: BigUInt? {
-        return try! dbPool.read { db in
-            try EthereumBalance.fetchOne(db)?.value
+    var accountState: AccountState? {
+        try! dbPool.read { db in
+            try AccountState.fetchOne(db)
         }
     }
 
-    func save(balance: BigUInt) {
+    func save(accountState: AccountState) {
         _ = try? dbPool.write { db in
-            let balanceObject = EthereumBalance(value: balance)
-            try balanceObject.insert(db)
+            try accountState.save(db)
         }
     }
 

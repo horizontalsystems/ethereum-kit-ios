@@ -7,7 +7,7 @@ class AccountStateRequest {
         self.blockHeader = blockHeader
     }
 
-    func accountState(proofsMessage: ProofsMessage) throws -> AccountState {
+    func accountState(proofsMessage: ProofsMessage) throws -> AccountStateSpv {
         guard var lastNode = proofsMessage.nodes.last else {
             throw ProofError.noNodes
         }
@@ -50,7 +50,7 @@ class AccountStateRequest {
             throw ProofError.rootHashDoesNotMatchStateRoot
         }
 
-        return AccountState(address: address, nonce: nonce, balance: balance, storageHash: storageRoot, codeHash: codeHash)
+        return AccountStateSpv(address: address, nonce: nonce, balance: balance, storageHash: storageRoot, codeHash: codeHash)
     }
 }
 
