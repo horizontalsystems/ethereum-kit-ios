@@ -123,7 +123,7 @@ class TransactionSyncer: AbstractTransactionSyncer {
             return Single.just((transaction: transaction, receipt: nil))
         }
 
-        if let transactionReceipt = storage.getTransactionReceipt(hash: transaction.hash) {
+        if let transactionReceipt = storage.transactionReceipt(hash: transaction.hash) {
             return Single.just((transaction: transaction, receipt: RpcTransactionReceipt(record: transactionReceipt, logs: [])))
         }
 

@@ -185,7 +185,7 @@ class TransactionStorage {
 
 extension TransactionStorage: ITransactionStorage {
 
-    func getNotSyncedTransactions(limit: Int) -> [NotSyncedTransaction] {
+    func notSyncedTransactions(limit: Int) -> [NotSyncedTransaction] {
         try! dbPool.read { db in
             try NotSyncedTransaction.limit(limit).fetchAll(db)
         }
@@ -225,7 +225,7 @@ extension TransactionStorage: ITransactionStorage {
         }
     }
 
-    func getFirstPendingTransaction() -> Transaction? {
+    func firstPendingTransaction() -> Transaction? {
         try? dbPool.read { db in
             try Transaction
                     .joining(optional: Transaction.receipt)
@@ -241,7 +241,7 @@ extension TransactionStorage: ITransactionStorage {
         }
     }
 
-    func getTransactionReceipt(hash: Data) -> TransactionReceipt? {
+    func transactionReceipt(hash: Data) -> TransactionReceipt? {
         try! dbPool.read { db in
             try TransactionReceipt.filter(TransactionReceipt.Columns.transactionHash == hash).fetchOne(db)
         }
@@ -263,7 +263,7 @@ extension TransactionStorage: ITransactionStorage {
         }
     }
 
-    func getHashesFromTransactions() -> [Data] {
+    func hashesFromTransactions() -> [Data] {
         try! dbPool.read { db in
             let rows = try Row.fetchAll(db, sql: "SELECT \(Transaction.Columns.hash.name) FROM \(Transaction.databaseTableName)")
             return rows.compactMap {

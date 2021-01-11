@@ -3,7 +3,7 @@ import BigInt
 
 class EthereumTransactionSyncer: AbstractTransactionSyncer {
     private let provider: EtherscanTransactionProvider
-    private let scheduler = SerialDispatchQueueScheduler(qos: .background)
+    private let scheduler = ConcurrentDispatchQueueScheduler(qos: .background)
     private var resync: Bool = false
 
     init(provider: EtherscanTransactionProvider) {

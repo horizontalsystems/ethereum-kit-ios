@@ -29,7 +29,7 @@ class OutgoingPendingTransactionSyncer: AbstractTransactionSyncer {
     }
 
     private func doSync() -> Single<Void> {
-        guard let pendingTransaction = storage.getFirstPendingTransaction() else {
+        guard let pendingTransaction = storage.firstPendingTransaction() else {
             return Single.just(())
         }
 

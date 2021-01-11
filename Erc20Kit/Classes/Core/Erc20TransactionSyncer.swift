@@ -5,7 +5,7 @@ import EthereumKit
 class Erc20TransactionSyncer: AbstractTransactionSyncer {
     private let provider: EtherscanApiProvider
     private let contractAddress: Address
-    private let scheduler = SerialDispatchQueueScheduler(qos: .background)
+    private let scheduler = ConcurrentDispatchQueueScheduler(qos: .background)
     private var resync: Bool = false
 
     init(provider: EtherscanApiProvider, contractAddress: Address, id: String) {
