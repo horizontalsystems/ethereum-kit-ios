@@ -3,29 +3,42 @@ import RxSwift
 class NotSyncedTransactionPool {
     private let storage: ITransactionStorage
     let notSyncedTransactionsSignal = Signal()
+    let queue = DispatchQueue(label: "not_synced_tx_pool_queue", qos: .background)
 
     init(storage: ITransactionStorage) {
         self.storage = storage
     }
 
     func add(notSyncedTransactions: [NotSyncedTransaction]) {
-        let syncedTransactionHashes = storage.getHashesFromTransactions()
-        let newTransactions = notSyncedTransactions.filter { !syncedTransactionHashes.contains($0.hash) }
+        queue.async { [weak self] in
+            guard let pool = self else {
+                return
+            }
 
-        storage.add(notSyncedTransactions: newTransactions)
-        notSyncedTransactionsSignal.onNext(())
+            let syncedTransactionHashes = pool.storage.hashesFromTransactions()
+            let newTransactions = notSyncedTransactions.filter {
+                !syncedTransactionHashes.contains($0.hash)
+            }
+
+            pool.storage.add(notSyncedTransactions: newTransactions)
+            pool.notSyncedTransactionsSignal.onNext(())
+        }
     }
 
     func remove(notSyncedTransaction: NotSyncedTransaction) {
-        storage.remove(notSyncedTransaction: notSyncedTransaction)
+        queue.sync {
+            storage.remove(notSyncedTransaction: notSyncedTransaction)
+        }
     }
 
     func update(notSyncedTransaction: NotSyncedTransaction) {
-        storage.update(notSyncedTransaction: notSyncedTransaction)
+        queue.sync {
+            storage.update(notSyncedTransaction: notSyncedTransaction)
+        }
     }
 
     func notSyncedTransactions(limit: Int) -> [NotSyncedTransaction] {
-        storage.getNotSyncedTransactions(limit: limit)
+        storage.notSyncedTransactions(limit: limit)
     }
 
 }

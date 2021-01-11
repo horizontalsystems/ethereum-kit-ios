@@ -4,7 +4,7 @@ import BigInt
 class InternalTransactionSyncer: AbstractTransactionSyncer {
     private let provider: EtherscanTransactionProvider
     private let storage: ITransactionStorage
-    private let scheduler = SerialDispatchQueueScheduler(qos: .background)
+    private let scheduler = ConcurrentDispatchQueueScheduler(qos: .background)
     private var resync: Bool = false
 
     init(provider: EtherscanTransactionProvider, storage: ITransactionStorage) {

@@ -32,22 +32,22 @@ protocol IBlockchainDelegate: class {
 }
 
 protocol ITransactionStorage {
-    func getNotSyncedTransactions(limit: Int) -> [NotSyncedTransaction]
+    func notSyncedTransactions(limit: Int) -> [NotSyncedTransaction]
     func add(notSyncedTransactions: [NotSyncedTransaction])
     func update(notSyncedTransaction: NotSyncedTransaction)
     func remove(notSyncedTransaction: NotSyncedTransaction)
 
     func save(transaction: Transaction)
     func save(transactions: [Transaction])
-    func getFirstPendingTransaction() -> Transaction?
+    func firstPendingTransaction() -> Transaction?
 
     func save(transactionReceipt: TransactionReceipt)
-    func getTransactionReceipt(hash: Data) -> TransactionReceipt?
+    func transactionReceipt(hash: Data) -> TransactionReceipt?
 
     func save(logs: [TransactionLog])
     func save(internalTransactions: [InternalTransaction])
 
-    func getHashesFromTransactions() -> [Data]
+    func hashesFromTransactions() -> [Data]
     func etherTransactionsBeforeSingle(address: Address, hash: Data?, limit: Int?) -> Single<[FullTransaction]>
     func transaction(hash: Data) -> FullTransaction?
     func fullTransactions(byHashes: [Data]) -> [FullTransaction]
