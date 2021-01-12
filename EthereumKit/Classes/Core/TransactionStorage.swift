@@ -149,6 +149,12 @@ class TransactionStorage {
             }
         }
 
+        migrator.registerMigration("addSyncOrderToTransactions") { db in
+            try db.alter(table: Transaction.databaseTableName) { t in
+                t.add(column: Transaction.Columns.syncOrder.name, .integer).notNull().indexed().defaults(to: 0)
+            }
+        }
+
         return migrator
     }
 
@@ -213,15 +219,10 @@ extension TransactionStorage: ITransactionStorage {
 
     func save(transaction: Transaction) {
         try! dbPool.write { db in
-            try transaction.save(db)
-        }
-    }
+            let lastSyncOrder = try Transaction.order(Transaction.Columns.syncOrder.desc).fetchOne(db)?.syncOrder ?? 0
+            transaction.syncOrder = lastSyncOrder + 1
 
-    func save(transactions: [Transaction]) {
-        _ = try? dbPool.write { db in
-            for transaction in transactions {
-                try transaction.insert(db)
-            }
+            try transaction.save(db)
         }
     }
 
@@ -349,35 +350,20 @@ extension TransactionStorage: ITransactionStorage {
         return fullTransactions(from: transactions)
     }
 
-    func fullTransactionsAfter(hash: Data?) -> [FullTransaction] {
+    func fullTransactionsAfter(syncOrder: Int?) -> [FullTransaction] {
         let transactions: [Transaction] = try! dbPool.read { db in
             var whereClause = ""
 
-            if let fromHash = hash,
-               let fromTransaction = try Transaction.filter(Transaction.Columns.hash == fromHash).fetchOne(db) {
-                let transactionIndex = (try fromTransaction.receipt.fetchOne(db))?.transactionIndex ?? 0
-
-                whereClause += """
-                               WHERE
-                                \(Transaction.Columns.timestamp.name) > \(fromTransaction.timestamp) OR 
-                                (
-                                    \(Transaction.databaseTableName).\(Transaction.Columns.timestamp.name) = \(fromTransaction.timestamp) AND 
-                                    \(TransactionReceipt.databaseTableName).\(TransactionReceipt.Columns.transactionIndex.name) > \(transactionIndex)
-                                )
-                               """
+            if let syncOrder = syncOrder {
+                whereClause += "WHERE \(Transaction.Columns.syncOrder.name) > \(syncOrder)"
             }
-
-            let orderClause = """
-                              ORDER BY \(Transaction.databaseTableName).\(Transaction.Columns.timestamp.name) ASC, 
-                              \(TransactionReceipt.databaseTableName).\(TransactionReceipt.Columns.transactionIndex.name) ASC
-                              """
 
             let sql = """
                       SELECT transactions.*
                       FROM transactions
                       LEFT JOIN transaction_receipts ON transactions.hash = transaction_receipts.transactionHash
                       \(whereClause)
-                      \(orderClause)
+                      ORDER BY \(Transaction.Columns.syncOrder.name) ASC
                       """
 
             let rows = try Row.fetchAll(db.makeSelectStatement(sql: sql))

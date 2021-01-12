@@ -15,9 +15,39 @@ class Erc20TransactionSyncer: AbstractTransactionSyncer {
         super.init(id: id)
     }
 
+    private func handle(transactions: [[String: String]]) {
+        if !transactions.isEmpty {
+            var lastBlockNumber = lastSyncBlockNumber
+
+            let hashes = transactions.compactMap { data -> Data? in
+                if let blockNumber = data["blockNumber"].flatMap { Int($0) }, blockNumber > lastBlockNumber {
+                    lastBlockNumber = blockNumber
+                }
+
+                return data["hash"].flatMap { Data(hex: $0) }
+            }
+
+            if lastBlockNumber > lastSyncBlockNumber {
+                update(lastSyncBlockNumber: lastBlockNumber)
+            }
+
+            let notSyncedTransactions = hashes.map { hash in
+                NotSyncedTransaction(hash: hash)
+            }
+
+            delegate.add(notSyncedTransactions: notSyncedTransactions)
+        }
+
+        if resync {
+            resync = false
+            doSync(retry: true)
+        } else {
+            state = .synced
+        }
+    }
+
     private func doSync(retry: Bool) {
-        let lastSyncBlockNumber = super.lastSyncBlockNumber
-        var single = provider.tokenTransactionsSingle(contractAddress: contractAddress, startBlock: lastSyncBlockNumber + 1)
+        var single = provider.tokenTransactionsSingle(contractAddress: contractAddress, startBlock: super.lastSyncBlockNumber + 1)
 
         if retry {
             single = single.retryWith(options: RetryOptions(mustRetry: { $0.isEmpty }), scheduler: scheduler)
@@ -27,38 +57,7 @@ class Erc20TransactionSyncer: AbstractTransactionSyncer {
                 .observeOn(scheduler)
                 .subscribe(
                         onSuccess: { [weak self] transactions in
-                            guard let syncer = self else {
-                                return
-                            }
-
-                            if !transactions.isEmpty {
-                                var lastBlockNumber = lastSyncBlockNumber
-
-                                let hashes = transactions.compactMap { data -> Data? in
-                                    if let blockNumber = data["blockNumber"].flatMap { Int($0) }, blockNumber > lastBlockNumber {
-                                        lastBlockNumber = blockNumber
-                                    }
-
-                                    return data["hash"].flatMap { Data(hex: $0) }
-                                }
-
-                                if lastBlockNumber > lastSyncBlockNumber {
-                                    syncer.update(lastSyncBlockNumber: lastBlockNumber)
-                                }
-
-                                let notSyncedTransactions = hashes.map { hash in
-                                    NotSyncedTransaction(hash: hash)
-                                }
-
-                                syncer.delegate.add(notSyncedTransactions: notSyncedTransactions)
-                            }
-
-                            if syncer.resync {
-                                syncer.resync = false
-                                syncer.doSync(retry: true)
-                            } else {
-                                syncer.state = .synced
-                            }
+                            self?.handle(transactions: transactions)
                         },
                         onError: { [weak self] error in
                             self?.state = .notSynced(error: error)
@@ -77,6 +76,10 @@ class Erc20TransactionSyncer: AbstractTransactionSyncer {
 
         state = .syncing(progress: nil)
         doSync(retry: retry)
+    }
+
+    override func start() {
+        sync()
     }
 
     override func onEthereumSynced() {

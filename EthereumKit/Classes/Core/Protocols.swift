@@ -38,7 +38,6 @@ protocol ITransactionStorage {
     func remove(notSyncedTransaction: NotSyncedTransaction)
 
     func save(transaction: Transaction)
-    func save(transactions: [Transaction])
     func firstPendingTransaction() -> Transaction?
 
     func save(transactionReceipt: TransactionReceipt)
@@ -51,7 +50,7 @@ protocol ITransactionStorage {
     func etherTransactionsBeforeSingle(address: Address, hash: Data?, limit: Int?) -> Single<[FullTransaction]>
     func transaction(hash: Data) -> FullTransaction?
     func fullTransactions(byHashes: [Data]) -> [FullTransaction]
-    func fullTransactionsAfter(hash: Data?) -> [FullTransaction]
+    func fullTransactionsAfter(syncOrder: Int?) -> [FullTransaction]
 }
 
 public protocol ITransactionSyncerStateStorage {
@@ -69,6 +68,7 @@ public protocol ITransactionSyncer {
     var stateObservable: Observable<SyncState> { get }
 
     func set(delegate: ITransactionSyncerDelegate)
+    func start()
     func onEthereumSynced()
     func onLastBlockNumber(blockNumber: Int)
     func onLastBlockBloomFilter(bloomFilter: BloomFilter)

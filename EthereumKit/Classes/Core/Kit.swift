@@ -123,8 +123,8 @@ extension Kit {
         transactionManager.transaction(hash: hash)
     }
 
-    public func fullTransactions(fromHash: Data?) -> [FullTransaction] {
-        transactionManager.transactions(fromHash: fromHash)
+    public func fullTransactions(fromSyncOrder: Int?) -> [FullTransaction] {
+        transactionManager.transactions(fromSyncOrder: fromSyncOrder)
     }
 
     public func fullTransactions(byHashes hashes: [Data]) -> [FullTransaction] {

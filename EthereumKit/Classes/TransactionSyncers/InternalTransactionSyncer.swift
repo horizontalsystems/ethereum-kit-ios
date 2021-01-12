@@ -16,6 +16,42 @@ class InternalTransactionSyncer: AbstractTransactionSyncer {
         super.init(id: "internal_transaction_syncer")
     }
 
+    private func handle(transactions: [InternalTransaction]) {
+        if !transactions.isEmpty {
+            storage.save(internalTransactions: transactions)
+
+            if let blockNumber = transactions.first?.blockNumber {
+                update(lastSyncBlockNumber: blockNumber)
+            }
+
+            var notSyncedTransactions = [NotSyncedTransaction]()
+            var syncedTransactions = [FullTransaction]()
+
+            for etherscanTransaction in transactions {
+                if let transaction = storage.transaction(hash: etherscanTransaction.hash) {
+                    syncedTransactions.append(transaction)
+                } else {
+                    notSyncedTransactions.append(NotSyncedTransaction(hash: etherscanTransaction.hash))
+                }
+            }
+
+            if !notSyncedTransactions.isEmpty {
+                delegate.add(notSyncedTransactions: notSyncedTransactions)
+            }
+
+            if !syncedTransactions.isEmpty {
+                listener?.onTransactionsSynced(fullTransactions: syncedTransactions)
+            }
+        }
+
+        if resync {
+            resync = false
+            doSync(retry: true)
+        } else {
+            state = .synced
+        }
+    }
+
     private func doSync(retry: Bool) {
         var single = provider.internalTransactionsSingle(startBlock: lastSyncBlockNumber + 1)
 
@@ -27,43 +63,7 @@ class InternalTransactionSyncer: AbstractTransactionSyncer {
                 .observeOn(scheduler)
                 .subscribe(
                         onSuccess: { [weak self] transactions in
-                            guard let syncer = self else {
-                                return
-                            }
-
-                            if !transactions.isEmpty {
-                                syncer.storage.save(internalTransactions: transactions)
-
-                                if let blockNumber = transactions.first?.blockNumber {
-                                    syncer.update(lastSyncBlockNumber: blockNumber)
-                                }
-
-                                var notSyncedTransactions = [NotSyncedTransaction]()
-                                var syncedTransactions = [FullTransaction]()
-
-                                for etherscanTransaction in transactions {
-                                    if let transaction = syncer.storage.transaction(hash: etherscanTransaction.hash) {
-                                        syncedTransactions.append(transaction)
-                                    } else {
-                                        notSyncedTransactions.append(NotSyncedTransaction(hash: etherscanTransaction.hash))
-                                    }
-                                }
-
-                                if !notSyncedTransactions.isEmpty {
-                                    syncer.delegate.add(notSyncedTransactions: notSyncedTransactions)
-                                }
-
-                                if !syncedTransactions.isEmpty {
-                                    syncer.listener?.onTransactionsSynced(fullTransactions: syncedTransactions)
-                                }
-                            }
-
-                            if syncer.resync {
-                                syncer.resync = false
-                                syncer.doSync(retry: true)
-                            } else {
-                                syncer.state = .synced
-                            }
+                            self?.handle(transactions: transactions)
                         },
                         onError: { [weak self] error in
                             self?.state = .notSynced(error: error)

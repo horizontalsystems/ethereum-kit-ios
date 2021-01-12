@@ -34,7 +34,7 @@ protocol IDataProvider {
 }
 
 protocol ITransactionStorage {
-    var lastTransaction: TransactionCache? { get }
+    var lastSyncOrder: Int? { get set }
     var pendingTransactions: [TransactionCache] { get }
     func save(transaction: TransactionCache)
     func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionCache]>

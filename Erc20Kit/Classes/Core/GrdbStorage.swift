@@ -74,6 +74,15 @@ class GrdbStorage {
             }
         }
 
+        migrator.registerMigration("createTransactionSyncStates") { db in
+            try db.create(table: TransactionSyncOrder.databaseTableName) { t in
+                t.column(TransactionSyncOrder.Columns.primaryKey.name, .text).notNull()
+                t.column(TransactionSyncOrder.Columns.value.name, .integer)
+
+                t.primaryKey([TransactionSyncOrder.Columns.primaryKey.name], onConflict: .replace)
+            }
+        }
+
         return migrator
     }
 }
@@ -106,9 +115,19 @@ extension GrdbStorage: ITransactionStorage {
         }
     }
 
-    var lastTransaction: TransactionCache? {
-        try? dbPool.read { db in
-            try TransactionCache.order(TransactionCache.Columns.timestamp.desc, TransactionCache.Columns.interTransactionIndex.desc).fetchOne(db)
+    var lastSyncOrder: Int? {
+        get {
+            let transactionSyncOrder = try! dbPool.read { db in
+                try TransactionSyncOrder.fetchOne(db)
+            }
+            return transactionSyncOrder?.value
+        }
+        set {
+            let transactionSyncOrder = TransactionSyncOrder(value: newValue)
+
+            _ = try! dbPool.write { db in
+                try transactionSyncOrder.insert(db)
+            }
         }
     }
 

@@ -25,24 +25,24 @@ class TransactionManager {
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(
                         onNext: { [weak self] transactions in
-                            guard let manager = self else {
-                                return
-                            }
-
-                            if !transactions.isEmpty {
-                                manager.allTransactionsSubject.onNext(transactions)
-                            }
-
-                            let etherTransactions = transactions.filter {
-                                manager.hasEtherTransferred(fullTransaction: $0)
-                            }
-
-                            if !etherTransactions.isEmpty {
-                                manager.etherTransactionsSubject.onNext(etherTransactions)
-                            }
+                            self?.handle(syncedTransactions: transactions)
                         }
                 )
                 .disposed(by: disposeBag)
+    }
+
+    private func handle(syncedTransactions: [FullTransaction]) {
+        if !syncedTransactions.isEmpty {
+            allTransactionsSubject.onNext(syncedTransactions)
+        }
+
+        let etherTransactions = syncedTransactions.filter {
+            hasEtherTransferred(fullTransaction: $0)
+        }
+
+        if !etherTransactions.isEmpty {
+            etherTransactionsSubject.onNext(etherTransactions)
+        }
     }
 
     private func hasEtherTransferred(fullTransaction: FullTransaction) -> Bool {
@@ -70,18 +70,18 @@ extension TransactionManager {
     }
 
     func handle(sentTransaction: Transaction) {
-        storage.save(transactions: [sentTransaction])
+        storage.save(transaction: sentTransaction)
 
         let fullTransaction = FullTransaction(transaction: sentTransaction)
         allTransactionsSubject.onNext([fullTransaction])
 
-        if !hasEtherTransferred(fullTransaction: fullTransaction) {
+        if hasEtherTransferred(fullTransaction: fullTransaction) {
             etherTransactionsSubject.onNext([fullTransaction])
         }
     }
 
-    func transactions(fromHash: Data?) -> [FullTransaction] {
-        storage.fullTransactionsAfter(hash: fromHash)
+    func transactions(fromSyncOrder: Int?) -> [FullTransaction] {
+        storage.fullTransactionsAfter(syncOrder: fromSyncOrder)
     }
 
 }
