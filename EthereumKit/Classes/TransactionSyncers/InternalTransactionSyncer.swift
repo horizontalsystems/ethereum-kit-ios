@@ -7,6 +7,8 @@ class InternalTransactionSyncer: AbstractTransactionSyncer {
     private let scheduler = ConcurrentDispatchQueueScheduler(qos: .background)
     private var resync: Bool = false
 
+    weak var listener: ITransactionSyncerListener?
+
     init(provider: EtherscanTransactionProvider, storage: ITransactionStorage) {
         self.provider = provider
         self.storage = storage
@@ -36,13 +38,24 @@ class InternalTransactionSyncer: AbstractTransactionSyncer {
                                     syncer.update(lastSyncBlockNumber: blockNumber)
                                 }
 
-                                let notSyncedTransactions = transactions.map { etherscanTransaction in
-                                    NotSyncedTransaction(
-                                            hash: etherscanTransaction.hash
-                                    )
+                                var notSyncedTransactions = [NotSyncedTransaction]()
+                                var syncedTransactions = [FullTransaction]()
+
+                                for etherscanTransaction in transactions {
+                                    if let transaction = syncer.storage.transaction(hash: etherscanTransaction.hash) {
+                                        syncedTransactions.append(transaction)
+                                    } else {
+                                        notSyncedTransactions.append(NotSyncedTransaction(hash: etherscanTransaction.hash))
+                                    }
                                 }
 
-                                syncer.delegate.add(notSyncedTransactions: notSyncedTransactions)
+                                if !notSyncedTransactions.isEmpty {
+                                    syncer.delegate.add(notSyncedTransactions: notSyncedTransactions)
+                                }
+
+                                if !syncedTransactions.isEmpty {
+                                    syncer.listener?.onTransactionsSynced(fullTransactions: syncedTransactions)
+                                }
                             }
 
                             if syncer.resync {

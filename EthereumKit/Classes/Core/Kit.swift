@@ -340,21 +340,22 @@ extension Kit {
         let internalTransactionSyncer = InternalTransactionSyncer(provider: transactionsProvider, storage: transactionStorage)
         let ethereumTransactionSyncer = EthereumTransactionSyncer(provider: transactionsProvider)
         let transactionSyncer = TransactionSyncer(blockchain: blockchain, storage: transactionStorage)
-        let outgoingPendingTransactionSyncer = OutgoingPendingTransactionSyncer(blockchain: blockchain, storage: transactionStorage)
+        let pendingTransactionSyncer = PendingTransactionSyncer(blockchain: blockchain, storage: transactionStorage)
         let transactionSyncManager = TransactionSyncManager(notSyncedTransactionManager: notSyncedTransactionManager)
         let transactionManager = TransactionManager(address: address, storage: transactionStorage, transactionSyncManager: transactionSyncManager)
 
         transactionSyncManager.add(syncer: ethereumTransactionSyncer)
         transactionSyncManager.add(syncer: internalTransactionSyncer)
         transactionSyncManager.add(syncer: transactionSyncer)
-        transactionSyncManager.add(syncer: outgoingPendingTransactionSyncer)
+        transactionSyncManager.add(syncer: pendingTransactionSyncer)
 
         let ethereumKit = Kit(blockchain: blockchain, transactionManager: transactionManager, transactionSyncManager: transactionSyncManager, transactionBuilder: transactionBuilder, transactionSigner: transactionSigner, address: address, networkType: networkType, uniqueId: uniqueId, etherscanApiProvider: etherscanApiProvider, logger: logger)
 
         blockchain.delegate = ethereumKit
         transactionSyncManager.set(ethereumKit: ethereumKit)
         transactionSyncer.listener = transactionSyncManager
-        outgoingPendingTransactionSyncer.listener = transactionSyncManager
+        pendingTransactionSyncer.listener = transactionSyncManager
+        internalTransactionSyncer.listener = transactionSyncManager
 
         return ethereumKit
     }
