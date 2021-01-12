@@ -104,7 +104,7 @@ class TransactionSyncManager {
                     self?.syncState()
                 })
 
-        syncState()
+        syncer.start()
     }
 
     func removeSyncer(byId id: String) {

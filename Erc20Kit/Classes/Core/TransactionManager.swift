@@ -8,7 +8,7 @@ class TransactionManager {
     private let contractAddress: Address
     private let ethereumKit: EthereumKit.Kit
     private let contractMethodFactories: ContractMethodFactories
-    private let storage: ITransactionStorage
+    private var storage: ITransactionStorage
     private let address: Address
 
     private let transactionsSubject = PublishSubject<[Transaction]>()
@@ -38,24 +38,26 @@ class TransactionManager {
                 .map { extractErc20Transactions(from: $0) }
                 .reduce([]) { $0 + $1 }
 
-        guard !transactions.isEmpty else {
-            return
-        }
+        if !transactions.isEmpty {
+            var pendingTransactions = storage.pendingTransactions
 
-        var pendingTransactions = storage.pendingTransactions
+            for transaction in transactions {
+                if let pendingTransaction = pendingTransactions.first(where: { $0.hash == transaction.hash }) {
+                    transaction.interTransactionIndex = pendingTransaction.interTransactionIndex
 
-        for transaction in transactions {
-            if let pendingTransaction = pendingTransactions.first(where: { $0.hash == transaction.hash }) {
-                transaction.interTransactionIndex = pendingTransaction.interTransactionIndex
+                    pendingTransactions.removeAll { $0 === pendingTransaction }
+                }
 
-                pendingTransactions.removeAll { $0 === pendingTransaction }
+                storage.save(transaction: transaction)
             }
 
-            storage.save(transaction: transaction)
+            let erc20Transactions = makeTransactions(transactions: transactions, fullTransactions: fullTransactions)
+            transactionsSubject.onNext(erc20Transactions)
         }
 
-        let erc20Transactions = makeTransactions(transactions: transactions, fullTransactions: fullTransactions)
-        transactionsSubject.onNext(erc20Transactions)
+        if let lastSyncOrder = fullTransactions.sorted(by: { a, b in a.transaction.syncOrder > b.transaction.syncOrder }).first {
+            storage.lastSyncOrder = lastSyncOrder.transaction.syncOrder
+        }
     }
 
     private func makeTransactions(transactions: [TransactionCache], fullTransactions: [FullTransaction]) -> [Transaction] {
@@ -170,13 +172,13 @@ extension TransactionManager: ITransactionManager {
 
     func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[Transaction]> {
         storage.transactionsSingle(from: from, limit: limit)
-                .map { [weak self] trransactions in
+                .map { [weak self] transactions in
                     guard let manager = self else {
                         return []
                     }
 
-                    let fullTransactions = manager.ethereumKit.fullTransactions(byHashes: trransactions.map { $0.hash })
-                    return manager.makeTransactions(transactions: trransactions, fullTransactions: fullTransactions)
+                    let fullTransactions = manager.ethereumKit.fullTransactions(byHashes: transactions.map { $0.hash })
+                    return manager.makeTransactions(transactions: transactions, fullTransactions: fullTransactions)
                 }
     }
 
@@ -196,8 +198,7 @@ extension TransactionManager: ITransactionManager {
     }
 
     func sync() {
-        let lastTransaction = storage.lastTransaction
-        let fullTransactions = ethereumKit.fullTransactions(fromHash: lastTransaction?.hash)
+        let fullTransactions = ethereumKit.fullTransactions(fromSyncOrder: storage.lastSyncOrder)
 
         processTransactions(fullTransactions: fullTransactions)
     }

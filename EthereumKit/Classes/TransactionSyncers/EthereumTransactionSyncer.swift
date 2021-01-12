@@ -12,6 +12,43 @@ class EthereumTransactionSyncer: AbstractTransactionSyncer {
         super.init(id: "ethereum_transaction_syncer")
     }
 
+    private func handle(transactions: [EtherscanTransaction]) {
+        if !transactions.isEmpty {
+            if let blockNumber = transactions.first?.blockNumber {
+                update(lastSyncBlockNumber: blockNumber)
+            }
+
+            let notSyncedTransactions = transactions.map { etherscanTransaction in
+                NotSyncedTransaction(
+                        hash: etherscanTransaction.hash,
+                        transaction: RpcTransaction(
+                                hash: etherscanTransaction.hash,
+                                nonce: etherscanTransaction.nonce,
+                                from: etherscanTransaction.from,
+                                to: etherscanTransaction.to,
+                                value: etherscanTransaction.value,
+                                gasPrice: etherscanTransaction.gasPrice,
+                                gasLimit: etherscanTransaction.gasLimit,
+                                input: etherscanTransaction.input,
+                                blockHash: etherscanTransaction.blockHash,
+                                blockNumber: etherscanTransaction.blockNumber,
+                                transactionIndex: etherscanTransaction.transactionIndex
+                        ),
+                        timestamp: etherscanTransaction.timestamp
+                )
+            }
+
+            delegate.add(notSyncedTransactions: notSyncedTransactions)
+        }
+
+        if resync {
+            resync = false
+            doSync(retry: true)
+        } else {
+            state = .synced
+        }
+    }
+
     private func doSync(retry: Bool) {
         var single = provider.transactionsSingle(startBlock: lastSyncBlockNumber + 1)
 
@@ -23,44 +60,7 @@ class EthereumTransactionSyncer: AbstractTransactionSyncer {
                 .observeOn(scheduler)
                 .subscribe(
                         onSuccess: { [weak self] transactions in
-                            guard let syncer = self else {
-                                return
-                            }
-
-                            if !transactions.isEmpty {
-                                if let blockNumber = transactions.first?.blockNumber {
-                                    syncer.update(lastSyncBlockNumber: blockNumber)
-                                }
-
-                                let notSyncedTransactions = transactions.map { etherscanTransaction in
-                                    NotSyncedTransaction(
-                                            hash: etherscanTransaction.hash,
-                                            transaction: RpcTransaction(
-                                                    hash: etherscanTransaction.hash,
-                                                    nonce: etherscanTransaction.nonce,
-                                                    from: etherscanTransaction.from,
-                                                    to: etherscanTransaction.to,
-                                                    value: etherscanTransaction.value,
-                                                    gasPrice: etherscanTransaction.gasPrice,
-                                                    gasLimit: etherscanTransaction.gasLimit,
-                                                    input: etherscanTransaction.input,
-                                                    blockHash: etherscanTransaction.blockHash,
-                                                    blockNumber: etherscanTransaction.blockNumber,
-                                                    transactionIndex: etherscanTransaction.transactionIndex
-                                            ),
-                                            timestamp: etherscanTransaction.timestamp
-                                    )
-                                }
-
-                                syncer.delegate.add(notSyncedTransactions: notSyncedTransactions)
-                            }
-
-                            if syncer.resync {
-                                syncer.resync = false
-                                syncer.doSync(retry: true)
-                            } else {
-                                syncer.state = .synced
-                            }
+                            self?.handle(transactions: transactions)
                         },
                         onError: { [weak self] error in
                             self?.state = .notSynced(error: error)

@@ -35,17 +35,36 @@ class PendingTransactionSyncer: AbstractTransactionSyncer {
 
         return blockchain.transactionReceiptSingle(transactionHash: pendingTransaction.hash)
                 .flatMap { [weak self] receipt in
-                    guard let syncer = self, let receipt = receipt else {
-                        return Single.just(())
-                    }
-
-                    syncer.storage.save(transactionReceipt: TransactionReceipt(rpcReceipt: receipt))
-                    syncer.storage.save(logs: receipt.logs)
-
-                    syncer.listener?.onTransactionsSynced(fullTransactions: syncer.storage.fullTransactions(byHashes: [receipt.transactionHash]))
-
-                    return syncer.doSync()
+                    self?.syncTimestamp(transaction: pendingTransaction, receipt: receipt) ?? Single.just(())
                 }
+    }
+
+
+    private func syncTimestamp(transaction: Transaction, receipt: RpcTransactionReceipt?) -> Single<Void> {
+        guard let receipt = receipt else {
+            return Single.just(())
+        }
+
+        return blockchain.getBlock(blockNumber: receipt.blockNumber)
+                .flatMap { [weak self] block in
+                    self?.handle(pendingTransaction: transaction, receipt: receipt, timestamp: block?.timestamp) ?? Single.just(())
+                }
+    }
+
+    private func handle (pendingTransaction: Transaction, receipt: RpcTransactionReceipt, timestamp: Int?) -> Single<Void> {
+        guard let timestamp = timestamp else {
+            return Single.just(())
+        }
+
+        pendingTransaction.timestamp = timestamp
+
+        storage.save(transaction: pendingTransaction)
+        storage.save(transactionReceipt: TransactionReceipt(rpcReceipt: receipt))
+        storage.save(logs: receipt.logs)
+
+        listener?.onTransactionsSynced(fullTransactions: storage.fullTransactions(byHashes: [receipt.transactionHash]))
+
+        return doSync()
     }
 
     override func onEthereumSynced() {

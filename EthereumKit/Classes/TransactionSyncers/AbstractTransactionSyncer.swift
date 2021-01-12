@@ -36,6 +36,9 @@ open class AbstractTransactionSyncer: ITransactionSyncer {
         delegate.update(transactionSyncerState: TransactionSyncerState(id: id, lastBlockNumber: lastSyncBlockNumber))
     }
 
+    open func start() {
+    }
+
     open func onEthereumSynced() {
     }
 

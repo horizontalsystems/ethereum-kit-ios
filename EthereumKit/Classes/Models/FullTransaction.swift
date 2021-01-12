@@ -1,5 +1,3 @@
-import GRDB
-
 public struct FullTransaction {
     public let transaction: Transaction
     public let receiptWithLogs: ReceiptWithLogs?
@@ -21,17 +19,6 @@ public struct FullTransaction {
         } else {
             return false
         }
-    }
-
-}
-
-public struct ReceiptWithLogs: FetchableRecord {
-    public let receipt: TransactionReceipt
-    public let logs: [TransactionLog]
-
-    public init(row: Row) {
-        receipt = TransactionReceipt(row: row)
-        logs = row[TransactionLog.databaseTableName]
     }
 
 }
