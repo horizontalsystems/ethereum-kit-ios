@@ -9,7 +9,7 @@ class TransactionStorage {
 
         dbPool = try! DatabasePool(path: databaseURL.path)
 
-        try? migrator.migrate(dbPool)
+        try! migrator.migrate(dbPool)
     }
 
     var migrator: DatabaseMigrator {
@@ -48,6 +48,7 @@ class TransactionStorage {
         }
 
         migrator.registerMigration("recreateTransactions") { db in
+            try InternalTransaction.deleteAll(db)
             try db.drop(table: Transaction.databaseTableName)
 
             try db.create(table: Transaction.databaseTableName) { t in
