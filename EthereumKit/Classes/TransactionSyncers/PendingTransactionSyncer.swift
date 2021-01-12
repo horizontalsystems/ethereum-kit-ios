@@ -1,6 +1,6 @@
 import RxSwift
 
-class OutgoingPendingTransactionSyncer: AbstractTransactionSyncer {
+class PendingTransactionSyncer: AbstractTransactionSyncer {
     private let blockchain: IBlockchain
     private let storage: ITransactionStorage
 
@@ -52,7 +52,7 @@ class OutgoingPendingTransactionSyncer: AbstractTransactionSyncer {
         sync()
     }
 
-    override func onLastBlockNumber(blockNumber: Int) {
+    override func onUpdateAccountState(accountState: AccountState) {
         sync()
     }
 
