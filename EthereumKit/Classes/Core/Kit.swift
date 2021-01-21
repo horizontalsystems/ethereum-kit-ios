@@ -377,6 +377,17 @@ extension Kit {
         return try instance(privateKey: privateKey, syncMode: syncMode, networkType: networkType, syncSource: rpcApi, etherscanApiKey: etherscanApiKey, walletId: walletId, minLogLevel: minLogLevel)
     }
 
+    public static func address(words: [String], networkType: NetworkType = .mainNet) throws -> Address {
+        let coinType: UInt32 = networkType == .mainNet ? 60 : 1
+
+        let hdWallet = HDWallet(seed: Mnemonic.seed(mnemonic: words), coinType: coinType, xPrivKey: 0, xPubKey: 0)
+        let privateKey = try hdWallet.privateKey(account: 0, index: 0, chain: .external).raw
+        let publicKey = Data(Secp256k1Kit.Kit.createPublicKey(fromPrivateKeyData: privateKey, compressed: false).dropFirst())
+        let address = Address(raw: Data(CryptoUtils.shared.sha3(publicKey).suffix(20)))
+
+        return address
+    }
+
     public static func clear(exceptFor excludedFiles: [String]) throws {
         let fileManager = FileManager.default
         let fileUrls = try fileManager.contentsOfDirectory(at: dataDirectoryUrl(), includingPropertiesForKeys: nil)
