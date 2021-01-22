@@ -254,16 +254,16 @@ extension Kit: IBlockchainDelegate {
 
 extension Kit {
 
-    public static func instance(privateKey: Data, syncMode: SyncMode, networkType: NetworkType = .mainNet, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
+    public static func instance(hdWallet: HDWallet, syncMode: SyncMode, networkType: NetworkType = .mainNet, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
         let logger = Logger(minLogLevel: minLogLevel)
 
         let uniqueId = "\(walletId)-\(networkType)"
 
-        let publicKey = Data(Secp256k1Kit.Kit.createPublicKey(fromPrivateKeyData: privateKey, compressed: false).dropFirst())
-        let address = Address(raw: Data(CryptoUtils.shared.sha3(publicKey).suffix(20)))
+        let privateKey = try hdWallet.privateKey(account: 0, index: 0, chain: .external)
+        let address = ethereumAddress(privateKey: privateKey)
 
         let network: INetwork = networkType.network
-        let transactionSigner = TransactionSigner(network: network, privateKey: privateKey)
+        let transactionSigner = TransactionSigner(network: network, privateKey: privateKey.raw)
         let transactionBuilder = TransactionBuilder(address: address)
         let networkManager = NetworkManager(logger: logger)
 
@@ -361,31 +361,24 @@ extension Kit {
     }
 
     public static func instance(words: [String], syncMode wordsSyncMode: WordsSyncMode, networkType: NetworkType = .mainNet, rpcApi: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
-        let coinType: UInt32 = networkType == .mainNet ? 60 : 1
-
-        let hdWallet = HDWallet(seed: Mnemonic.seed(mnemonic: words), coinType: coinType, xPrivKey: 0, xPubKey: 0)
-        let privateKey = try hdWallet.privateKey(account: 0, index: 0, chain: .external).raw
+        let wallet = hdWallet(words: words, networkType: networkType)
 
         let syncMode: SyncMode
 
         switch wordsSyncMode {
         case .api: syncMode = .api
-        case .spv: syncMode = .spv(nodePrivateKey: try hdWallet.privateKey(account: 100, index: 100, chain: .external).raw)
+        case .spv: syncMode = .spv(nodePrivateKey: try wallet.privateKey(account: 100, index: 100, chain: .external).raw)
         case .geth: syncMode = .geth
         }
 
-        return try instance(privateKey: privateKey, syncMode: syncMode, networkType: networkType, syncSource: rpcApi, etherscanApiKey: etherscanApiKey, walletId: walletId, minLogLevel: minLogLevel)
+        return try instance(hdWallet: wallet, syncMode: syncMode, networkType: networkType, syncSource: rpcApi, etherscanApiKey: etherscanApiKey, walletId: walletId, minLogLevel: minLogLevel)
     }
 
     public static func address(words: [String], networkType: NetworkType = .mainNet) throws -> Address {
-        let coinType: UInt32 = networkType == .mainNet ? 60 : 1
+        let wallet = hdWallet(words: words, networkType: networkType)
+        let privateKey = try wallet.privateKey(account: 0, index: 0, chain: .external)
 
-        let hdWallet = HDWallet(seed: Mnemonic.seed(mnemonic: words), coinType: coinType, xPrivKey: 0, xPubKey: 0)
-        let privateKey = try hdWallet.privateKey(account: 0, index: 0, chain: .external).raw
-        let publicKey = Data(Secp256k1Kit.Kit.createPublicKey(fromPrivateKeyData: privateKey, compressed: false).dropFirst())
-        let address = Address(raw: Data(CryptoUtils.shared.sha3(publicKey).suffix(20)))
-
-        return address
+        return ethereumAddress(privateKey: privateKey)
     }
 
     public static func clear(exceptFor excludedFiles: [String]) throws {
@@ -409,6 +402,18 @@ extension Kit {
         try fileManager.createDirectory(at: url, withIntermediateDirectories: true)
 
         return url
+    }
+
+    private static func hdWallet(words: [String], networkType: NetworkType) -> HDWallet {
+        let coinType: UInt32 = networkType == .mainNet ? 60 : 1
+
+        return HDWallet(seed: Mnemonic.seed(mnemonic: words), coinType: coinType, xPrivKey: 0, xPubKey: 0)
+    }
+
+    private static func ethereumAddress(privateKey: HDPrivateKey) -> Address {
+        let publicKey = Data(Secp256k1Kit.Kit.createPublicKey(fromPrivateKeyData: privateKey.raw, compressed: false).dropFirst())
+
+        return Address(raw: Data(CryptoUtils.shared.sha3(publicKey).suffix(20)))
     }
 
 }
