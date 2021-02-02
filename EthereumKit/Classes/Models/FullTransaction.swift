@@ -14,7 +14,7 @@ public struct FullTransaction {
             if let status = receipt.status {
                 return status == 0
             } else {
-                return transaction.gasLimit == receipt.cumulativeGasUsed
+                return transaction.gasLimit == receipt.gasUsed
             }
         } else {
             return false

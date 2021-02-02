@@ -192,7 +192,7 @@ extension EtherscanApiProvider: IApiMapper {
                 return []
             }
 
-            if message == "NOTOK", result == "Max rate limit reached" {
+            if message == "NOTOK", let result = result, result.contains("Max rate limit reached") {
                 throw RequestError.rateLimitExceeded
             }
 

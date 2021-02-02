@@ -7,6 +7,7 @@ class TransactionSyncManager {
     private let stateSubject = PublishSubject<SyncState>()
     private let transactionsSubject = PublishSubject<[FullTransaction]>()
     private let notSyncedTransactionManager: NotSyncedTransactionManager
+    private let syncStateQueue = DispatchQueue(label: "transaction_sync_manager_state_queue", qos: .background)
 
     private var syncers = [ITransactionSyncer]()
     private var syncerDisposables = [String: Disposable]()
@@ -101,7 +102,9 @@ class TransactionSyncManager {
         syncerDisposables[syncer.id] = syncer.stateObservable
                 .observeOn(scheduler)
                 .subscribe(onNext: { [weak self] _ in
-                    self?.syncState()
+                    self?.syncStateQueue.async { [weak self] in
+                        self?.syncState()
+                    }
                 })
 
         syncer.start()
