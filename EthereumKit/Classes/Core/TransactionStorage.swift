@@ -156,6 +156,13 @@ class TransactionStorage {
             }
         }
 
+        migrator.registerMigration("createDroppedTransactions") { db in
+            try db.create(table: DroppedTransaction.databaseTableName) { t in
+                t.column(DroppedTransaction.Columns.hash.name, .text).notNull().primaryKey()
+                t.column(DroppedTransaction.Columns.replacedWith.name, .text).notNull()
+            }
+        }
+
         return migrator
     }
 
@@ -176,14 +183,22 @@ class TransactionStorage {
                     .fetchAll(db)
         }
 
+        let droppedTransactions = try! dbPool.read { db in
+            try DroppedTransaction
+                    .filter(hashes.contains(DroppedTransaction.Columns.hash))
+                    .fetchAll(db)
+        }
+
         let groupedReceipts = Dictionary(grouping: receipts, by: { $0.receipt.transactionHash })
         let groupedInternals = Dictionary(grouping: internals, by: { $0.hash })
+        let groupedDroppedTransactions = Dictionary(grouping: droppedTransactions, by: { $0.hash })
 
         return transactions.map { transaction -> FullTransaction in
             FullTransaction(
                     transaction: transaction,
                     receiptWithLogs: groupedReceipts[transaction.hash]?.first,
-                    internalTransactions: groupedInternals[transaction.hash] ?? []
+                    internalTransactions: groupedInternals[transaction.hash] ?? [],
+                    replacedWith: groupedDroppedTransactions[transaction.hash]?.first?.replacedWith
             )
         }
     }
@@ -213,7 +228,7 @@ extension TransactionStorage: ITransactionStorage {
     }
 
     func remove(notSyncedTransaction: NotSyncedTransaction) {
-        try! dbPool.write { db in
+        _ = try! dbPool.write { db in
             try notSyncedTransaction.delete(db)
         }
     }
@@ -227,11 +242,11 @@ extension TransactionStorage: ITransactionStorage {
         }
     }
 
-    func pendingTransactions(fromTransaction: Transaction?) -> [Transaction]? {
-        try? dbPool.read { db in
+    func pendingTransactions(fromTransaction: Transaction?) -> [Transaction] {
+        (try? dbPool.read { db in
             var whereClause = "transaction_receipts.transactionHash IS NULL"
             if let transaction = fromTransaction {
-                whereClause += " AND (transaction.nonce > \(transaction.nonce) OR (transaction.nonce = \(transaction.nonce) AND transaction.timestamp > \(transaction.timestamp)))"
+                whereClause += " AND (transactions.nonce > \(transaction.nonce) OR (transactions.nonce = \(transaction.nonce) AND transactions.timestamp > \(transaction.timestamp)))"
             }
 
             return try Transaction
@@ -239,6 +254,16 @@ extension TransactionStorage: ITransactionStorage {
                     .filter(sql: whereClause)
                     .order(Transaction.Columns.nonce.asc, Transaction.Columns.timestamp.asc)
                     .fetchAll(db)
+        }) ?? [Transaction]()
+    }
+
+    func pendingTransaction(nonce: Int) -> Transaction? {
+        try? dbPool.read { db in
+            try Transaction
+                    .joining(optional: Transaction.receipt)
+                    .filter(sql: "transaction_receipts.transactionHash IS NULL AND transactions.nonce = \(nonce)")
+                    .order(Transaction.Columns.nonce.asc, Transaction.Columns.timestamp.asc)
+                    .fetchOne(db)
         }
     }
 
@@ -381,6 +406,11 @@ extension TransactionStorage: ITransactionStorage {
         return fullTransactions(from: transactions)
     }
 
+    func add(droppedTransaction: DroppedTransaction) {
+        _ = try? dbPool.write { db in
+            try droppedTransaction.insert(db)
+        }
+    }
 }
 
 extension TransactionStorage: ITransactionSyncerStateStorage {
