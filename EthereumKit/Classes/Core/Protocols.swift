@@ -38,7 +38,7 @@ protocol ITransactionStorage {
     func remove(notSyncedTransaction: NotSyncedTransaction)
 
     func save(transaction: Transaction)
-    func firstPendingTransaction() -> Transaction?
+    func pendingTransactions(fromTransaction: Transaction?) -> [Transaction]?
 
     func save(transactionReceipt: TransactionReceipt)
     func transactionReceipt(hash: Data) -> TransactionReceipt?
