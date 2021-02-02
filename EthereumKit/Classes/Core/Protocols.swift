@@ -38,7 +38,8 @@ protocol ITransactionStorage {
     func remove(notSyncedTransaction: NotSyncedTransaction)
 
     func save(transaction: Transaction)
-    func pendingTransactions(fromTransaction: Transaction?) -> [Transaction]?
+    func pendingTransactions(fromTransaction: Transaction?) -> [Transaction]
+    func pendingTransaction(nonce: Int) -> Transaction?
 
     func save(transactionReceipt: TransactionReceipt)
     func transactionReceipt(hash: Data) -> TransactionReceipt?
@@ -51,6 +52,7 @@ protocol ITransactionStorage {
     func transaction(hash: Data) -> FullTransaction?
     func fullTransactions(byHashes: [Data]) -> [FullTransaction]
     func fullTransactionsAfter(syncOrder: Int?) -> [FullTransaction]
+    func add(droppedTransaction: DroppedTransaction)
 }
 
 public protocol ITransactionSyncerStateStorage {

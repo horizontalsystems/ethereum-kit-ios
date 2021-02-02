@@ -98,6 +98,9 @@ class TransactionSyncer: AbstractTransactionSyncer {
                 timestamp: timestamp
         )
 
+        if let duplicatedTransaction = storage.pendingTransaction(nonce: transaction.nonce) {
+            storage.add(droppedTransaction: DroppedTransaction(hash: duplicatedTransaction.hash, replacedWith: transaction.hash))
+        }
         storage.save(transaction: transaction)
         delegate.remove(notSyncedTransaction: notSyncedTransaction)
     }

@@ -45,7 +45,6 @@ class PendingTransactionSyncer: AbstractTransactionSyncer {
                 .flatMap { [weak self] _ in
                     self?.doSync(fromTransaction: pendingTransactions.last) ?? Single.just(())
                 }
-                .map { (_: Void) in }
     }
 
     private func syncTimestamp(transaction: Transaction, receipt: RpcTransactionReceipt?) -> Single<Void> {
