@@ -5,6 +5,7 @@ import BigInt
 public class Transaction: Record {
     static let receipt = hasOne(TransactionReceipt.self, using: TransactionReceipt.transactionForeignKey)
     static let internalTransactions = hasMany(InternalTransaction.self)
+    static let droppedTransaction = hasOne(DroppedTransaction.self, using: DroppedTransaction.transactionForeignKey)
 
     var receipt: QueryInterfaceRequest<TransactionReceipt> {
         request(for: Transaction.receipt)

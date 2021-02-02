@@ -1,8 +1,11 @@
 import GRDB
 
 public class DroppedTransaction: Record {
+    static let transactionForeignKey = ForeignKey([Columns.hash])
+    static let transaction = belongsTo(Transaction.self, using: transactionForeignKey)
+
     let hash: Data
-    var replacedWith: Data
+    let replacedWith: Data
 
     public init(hash: Data, replacedWith: Data) {
         self.hash = hash

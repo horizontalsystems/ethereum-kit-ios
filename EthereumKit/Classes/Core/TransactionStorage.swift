@@ -244,13 +244,14 @@ extension TransactionStorage: ITransactionStorage {
 
     func pendingTransactions(fromTransaction: Transaction?) -> [Transaction] {
         (try? dbPool.read { db in
-            var whereClause = "transaction_receipts.transactionHash IS NULL"
+            var whereClause = "transaction_receipts.transactionHash IS NULL AND dropped_transactions.hash IS NULL"
             if let transaction = fromTransaction {
                 whereClause += " AND (transactions.nonce > \(transaction.nonce) OR (transactions.nonce = \(transaction.nonce) AND transactions.timestamp > \(transaction.timestamp)))"
             }
 
             return try Transaction
                     .joining(optional: Transaction.receipt)
+                    .joining(optional: Transaction.droppedTransaction)
                     .filter(sql: whereClause)
                     .order(Transaction.Columns.nonce.asc, Transaction.Columns.timestamp.asc)
                     .fetchAll(db)
