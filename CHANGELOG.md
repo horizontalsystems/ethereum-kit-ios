@@ -2,6 +2,9 @@
 All notable changes to this project will be documented in this file.
 
 ## Current Version
+
+
+## 0.12.0
   
 * `EthereumKit`
   * make `WebSocketState` errors public
