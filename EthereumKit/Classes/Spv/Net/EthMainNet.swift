@@ -1,4 +1,4 @@
-class MainNet: INetwork {
+class EthMainNet: INetwork {
     let chainId = 1
 
     // todo: the following data is invalid and was copied from Ropsten

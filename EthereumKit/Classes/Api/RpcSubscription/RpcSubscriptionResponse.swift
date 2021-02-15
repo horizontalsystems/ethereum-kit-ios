@@ -13,11 +13,11 @@ struct RpcSubscriptionResponse: ImmutableMappable {
 extension RpcSubscriptionResponse {
 
     struct Params: ImmutableMappable {
-        let subscriptionId: Int
+        let subscriptionId: String
         let result: Any
 
         init(map: Map) throws {
-            subscriptionId = try map.value("subscription", using: HexIntTransform())
+            subscriptionId = try map.value("subscription", using: HexStringTransform())
             result = try map.value("result")
         }
     }

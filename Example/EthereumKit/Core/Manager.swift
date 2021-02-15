@@ -9,8 +9,8 @@ class Manager {
 
     private let keyWords = "mnemonic_words"
 
-    var ethereumKit: EthereumKit.Kit!
-    var uniswapKit: UniswapKit.Kit!
+    var evmKit: EthereumKit.Kit!
+    var uniswapKit: UniswapKit.Kit?
 
     var ethereumAdapter: EthereumAdapter!
     var erc20Adapters = [Erc20Adapter]()
@@ -32,7 +32,7 @@ class Manager {
     func logout() {
         clearWords()
 
-        ethereumKit = nil
+        evmKit = nil
         uniswapKit = nil
         ethereumAdapter = nil
         erc20Adapters = []
@@ -49,30 +49,38 @@ class Manager {
         case .geth: syncMode = .geth
         }
 
-        let ethereumKit = try! Kit.instance(
-                words: words,
-                syncMode: syncMode,
-                networkType: configuration.networkType,
-                rpcApi: .infuraWebSocket(id: configuration.infuraCredentials.id, secret: configuration.infuraCredentials.secret),
-//                rpcApi: .infura(id: configuration.infuraCredentials.id, secret: configuration.infuraCredentials.secret),
-//                rpcApi: .incubed,
-                etherscanApiKey: configuration.etherscanApiKey,
-                walletId: "walletId",
-                minLogLevel: configuration.minLogLevel
-        )
+        let evmKit: EthereumKit.Kit
 
-        uniswapKit = UniswapKit.Kit.instance(ethereumKit: ethereumKit)
+        if case .bscMainNet = configuration.networkType {
+            evmKit = try! Kit.bscInstance(
+                    words: words,
+                    syncSource: .infuraWebSocket(id: configuration.infuraCredentials.id, secret: configuration.infuraCredentials.secret),
+                    bscscanApiKey: configuration.etherscanApiKey,
+                    walletId: "walletId"
+            )
+        } else {
+            evmKit = try! Kit.ethInstance(
+                    words: words,
+                    networkType: configuration.networkType,
+                    syncSource: .infuraWebSocket(id: configuration.infuraCredentials.id, secret: configuration.infuraCredentials.secret),
+                    etherscanApiKey: configuration.etherscanApiKey,
+                    walletId: "walletId"
+            )
+        }
 
-        ethereumAdapter = EthereumAdapter(ethereumKit: ethereumKit)
+
+        uniswapKit = try? UniswapKit.Kit.instance(ethereumKit: evmKit)
+
+        ethereumAdapter = EthereumAdapter(ethereumKit: evmKit)
 
         for token in configuration.erc20Tokens {
-            let adapter = Erc20Adapter(ethereumKit: ethereumKit, token: token)
+            let adapter = Erc20Adapter(ethereumKit: evmKit, token: token)
             erc20Adapters.append(adapter)
         }
 
-        self.ethereumKit = ethereumKit
+        self.evmKit = evmKit
 
-        ethereumKit.start()
+        evmKit.start()
 
         for adapter in erc20Adapters {
             adapter.start()

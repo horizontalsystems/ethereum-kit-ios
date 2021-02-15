@@ -4,7 +4,7 @@ import EthereumKit
 import OpenSslKit
 
 class TradeManager {
-    static let routerAddress = try! Address(hex: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D")
+    static let routerAddress = try! Address(hex: "0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F")
 
     private let disposeBag = DisposeBag()
 

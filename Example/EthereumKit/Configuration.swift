@@ -5,7 +5,7 @@ class Configuration {
     static let shared = Configuration()
 
     let syncMode: SyncMode = .api
-    let networkType: NetworkType = .ropsten
+    let networkType: NetworkType = .ethMainNet
     let minLogLevel: Logger.Level = .error
     let defaultsWords = "apart approve black  comfort steel spin real renew tone primary key cherry"
 
@@ -14,9 +14,13 @@ class Configuration {
 
     var erc20Tokens: [Erc20Token] {
         switch networkType {
-        case .mainNet: return [
+        case .ethMainNet: return [
             Erc20Token(name: "DAI",       coin: "DAI",  contractAddress: try! Address(hex: "0x6b175474e89094c44da98b954eedeac495271d0f"), decimal: 18),
             Erc20Token(name: "USD Coin",  coin: "USDC", contractAddress: try! Address(hex: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"), decimal: 6),
+        ]
+        case .bscMainNet: return [
+            Erc20Token(name: "PancakeSwap", coin: "CAKE",  contractAddress: try! Address(hex: "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82"), decimal: 18),
+            Erc20Token(name: "BUSD",        coin: "BUSD",  contractAddress: try! Address(hex: "0xe9e7cea3dedca5984780bafc599bd69add087d56"), decimal: 18),
         ]
         case .ropsten: return [
             Erc20Token(name: "GMO coins", coin: "GMOLW", contractAddress: try! Address(hex: "0xbb74a24d83470f64d5f0c01688fbb49a5a251b32"), decimal: 18),

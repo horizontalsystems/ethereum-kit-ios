@@ -1,4 +1,4 @@
-class SubscribeJsonRpc: IntJsonRpc {
+class SubscribeJsonRpc: StringJsonRpc {
 
     init(params: [Any]) {
         super.init(

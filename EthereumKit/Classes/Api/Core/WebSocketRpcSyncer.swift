@@ -18,7 +18,7 @@ class WebSocketRpcSyncer {
 
     private var currentRpcId = 0
     private var rpcHandlers = [Int: RpcHandler]()
-    private var subscriptionHandlers = [Int: SubscriptionHandler]()
+    private var subscriptionHandlers = [String: SubscriptionHandler]()
 
     private var isSubscribedToNewHeads = false
 

@@ -27,12 +27,12 @@ public class Kit {
 
     public let networkType: NetworkType
     public let uniqueId: String
-    public let etherscanApiProvider: EtherscanApiProvider
+    public let etherscanService: EtherscanService
 
     public let logger: Logger
 
 
-    init(blockchain: IBlockchain, transactionManager: TransactionManager, transactionSyncManager: TransactionSyncManager, transactionBuilder: TransactionBuilder, transactionSigner: TransactionSigner, state: EthereumKitState = EthereumKitState(), address: Address, networkType: NetworkType, uniqueId: String, etherscanApiProvider: EtherscanApiProvider, logger: Logger) {
+    init(blockchain: IBlockchain, transactionManager: TransactionManager, transactionSyncManager: TransactionSyncManager, transactionBuilder: TransactionBuilder, transactionSigner: TransactionSigner, state: EthereumKitState = EthereumKitState(), address: Address, networkType: NetworkType, uniqueId: String, etherscanService: EtherscanService, logger: Logger) {
         self.blockchain = blockchain
         self.transactionManager = transactionManager
         self.transactionSyncManager = transactionSyncManager
@@ -42,7 +42,7 @@ public class Kit {
         self.address = address
         self.networkType = networkType
         self.uniqueId = uniqueId
-        self.etherscanApiProvider = etherscanApiProvider
+        self.etherscanService = etherscanService
         self.logger = logger
 
         state.accountState = blockchain.accountState
@@ -254,127 +254,23 @@ extension Kit: IBlockchainDelegate {
 
 extension Kit {
 
-    public static func instance(hdWallet: HDWallet, syncMode: SyncMode, networkType: NetworkType = .mainNet, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
-        let logger = Logger(minLogLevel: minLogLevel)
-
-        let uniqueId = "\(walletId)-\(networkType)"
-
-        let privateKey = try hdWallet.privateKey(account: 0, index: 0, chain: .external)
-        let address = ethereumAddress(privateKey: privateKey)
-
-        let network: INetwork = networkType.network
-        let transactionSigner = TransactionSigner(network: network, privateKey: privateKey.raw)
-        let transactionBuilder = TransactionBuilder(address: address)
-        let networkManager = NetworkManager(logger: logger)
-
-        let etherscanApiProvider = EtherscanApiProvider(networkManager: networkManager, network: network, etherscanApiKey: etherscanApiKey, address: address)
-        let transactionsProvider = EtherscanTransactionProvider(provider: etherscanApiProvider)
-
-        let infuraDomain: String
-        switch networkType {
-        case .ropsten: infuraDomain = "ropsten.infura.io"
-        case .kovan: infuraDomain = "kovan.infura.io"
-        case .mainNet: infuraDomain = "mainnet.infura.io"
-        }
-
-        let syncer: IRpcSyncer
-        let reachabilityManager = ReachabilityManager()
-
-        switch syncSource {
-        case let .infuraWebSocket(id, secret):
-            let socket = InfuraWebSocket(domain: infuraDomain, projectId: id, projectSecret: secret, reachabilityManager: reachabilityManager, logger: logger)
-            syncer = WebSocketRpcSyncer.instance(address: address, socket: socket, logger: logger)
-        case let .infura(id, secret):
-            syncer = ApiRpcSyncer(address: address, rpcApiProvider: InfuraApiProvider(networkManager: networkManager, domain: infuraDomain, id: id, secret: secret), reachabilityManager: reachabilityManager)
-//        case .incubed:
-//            syncer = ApiRpcSyncer(address: address, rpcApiProvider: IncubedRpcApiProvider(logger: logger), reachabilityManager: ReachabilityManager())
-        }
-
-        var blockchain: IBlockchain
-
-        switch syncMode {
-        case .api:
-            let storage: IApiStorage = try ApiStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "api-\(uniqueId)")
-            blockchain = RpcBlockchain.instance(address: address, storage: storage, syncer: syncer, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, logger: logger)
-
-        case .spv(let nodePrivateKey):
-            let storage: ISpvStorage = try SpvStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "spv-\(uniqueId)")
-
-            let nodePublicKey = Data(Secp256k1Kit.Kit.createPublicKey(fromPrivateKeyData: nodePrivateKey, compressed: false).dropFirst())
-            let nodeKey = ECKey(privateKey: nodePrivateKey, publicKeyPoint: ECPoint(nodeId: nodePublicKey))
-
-            let discoveryStorage = try DiscoveryStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "dcvr-\(uniqueId)")
-
-            let packetSerializer = PacketSerializer(serializers: [
-                PingPackageSerializer(),
-                PongPackageSerializer(),
-                FindNodePackageSerializer(),
-            ], privateKey: nodeKey.privateKey)
-
-            let packetParser = PacketParser(parsers: [
-                0x01: PingPackageParser(),
-                0x02: PongPackageParser(),
-                0x04: NeighborsPackageParser(),
-            ])
-
-            let udpFactory = UdpFactory(packetSerializer: packetSerializer)
-            let nodeFactory = NodeFactory()
-
-            let nodeDiscovery = NodeDiscovery(ecKey: nodeKey, factory: udpFactory, discoveryStorage: discoveryStorage, nodeParser: NodeParser(), packetParser: packetParser)
-            let nodeManager = NodeManager(storage: discoveryStorage, nodeDiscovery: nodeDiscovery, nodeFactory: nodeFactory, logger: logger)
-            nodeDiscovery.nodeManager = nodeManager
-
-            blockchain = SpvBlockchain.instance(storage: storage, nodeManager: nodeManager, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, network: network, address: address, nodeKey: nodeKey, logger: logger)
-        case .geth:
-            fatalError("Geth is not supported")
-//            let directoryUrl = try dataDirectoryUrl()
-//            let storage: IApiStorage = ApiStorage(databaseDirectoryUrl: directoryUrl, databaseFileName: "geth-\(uniqueId)")
-//            let nodeDirectory = directoryUrl.appendingPathComponent("node-\(uniqueId)", isDirectory: true)
-//            blockchain = try GethBlockchain.instance(nodeDirectory: nodeDirectory, network: network, storage: storage, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, address: address, logger: logger)
-        }
-
-        let transactionStorage: ITransactionStorage & ITransactionSyncerStateStorage = TransactionStorage(databaseDirectoryUrl: try dataDirectoryUrl(), databaseFileName: "transactions-\(uniqueId)")
-        let notSyncedTransactionPool = NotSyncedTransactionPool(storage: transactionStorage)
-        let notSyncedTransactionManager = NotSyncedTransactionManager(pool: notSyncedTransactionPool, storage: transactionStorage)
-
-        let internalTransactionSyncer = InternalTransactionSyncer(provider: transactionsProvider, storage: transactionStorage)
-        let ethereumTransactionSyncer = EthereumTransactionSyncer(provider: transactionsProvider)
-        let transactionSyncer = TransactionSyncer(blockchain: blockchain, storage: transactionStorage)
-        let pendingTransactionSyncer = PendingTransactionSyncer(blockchain: blockchain, storage: transactionStorage)
-        let transactionSyncManager = TransactionSyncManager(notSyncedTransactionManager: notSyncedTransactionManager)
-        let transactionManager = TransactionManager(address: address, storage: transactionStorage, transactionSyncManager: transactionSyncManager)
-
-        transactionSyncManager.add(syncer: ethereumTransactionSyncer)
-        transactionSyncManager.add(syncer: internalTransactionSyncer)
-        transactionSyncManager.add(syncer: transactionSyncer)
-        transactionSyncManager.add(syncer: pendingTransactionSyncer)
-
-        let ethereumKit = Kit(blockchain: blockchain, transactionManager: transactionManager, transactionSyncManager: transactionSyncManager, transactionBuilder: transactionBuilder, transactionSigner: transactionSigner, address: address, networkType: networkType, uniqueId: uniqueId, etherscanApiProvider: etherscanApiProvider, logger: logger)
-
-        blockchain.delegate = ethereumKit
-        transactionSyncManager.set(ethereumKit: ethereumKit)
-        transactionSyncer.listener = transactionSyncManager
-        pendingTransactionSyncer.listener = transactionSyncManager
-        internalTransactionSyncer.listener = transactionSyncManager
-
-        return ethereumKit
+    public static func bscInstance(words: [String], syncSource: SyncSource, bscscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
+        try instance(
+                words: words,
+                networkType: NetworkType.bscMainNet,
+                syncSource: syncSource, etherscanApiKey: bscscanApiKey, walletId: walletId,minLogLevel: minLogLevel
+        )
     }
 
-    public static func instance(words: [String], syncMode wordsSyncMode: WordsSyncMode, networkType: NetworkType = .mainNet, rpcApi: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
-        let wallet = hdWallet(words: words, networkType: networkType)
-
-        let syncMode: SyncMode
-
-        switch wordsSyncMode {
-        case .api: syncMode = .api
-        case .spv: syncMode = .spv(nodePrivateKey: try wallet.privateKey(account: 100, index: 100, chain: .external).raw)
-        case .geth: syncMode = .geth
-        }
-
-        return try instance(hdWallet: wallet, syncMode: syncMode, networkType: networkType, syncSource: rpcApi, etherscanApiKey: etherscanApiKey, walletId: walletId, minLogLevel: minLogLevel)
+    public static func ethInstance(words: [String], networkType: NetworkType = .ethMainNet, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
+        try instance(
+                words: words,
+                networkType: networkType,
+                syncSource: syncSource, etherscanApiKey: etherscanApiKey, walletId: walletId, minLogLevel: minLogLevel
+        )
     }
 
-    public static func address(words: [String], networkType: NetworkType = .mainNet) throws -> Address {
+    public static func address(words: [String], networkType: NetworkType = .ethMainNet) throws -> Address {
         let wallet = hdWallet(words: words, networkType: networkType)
         let privateKey = try wallet.privateKey(account: 0, index: 0, chain: .external)
 
@@ -392,6 +288,86 @@ extension Kit {
         }
     }
 
+    private static func infuraDomain(networkType: NetworkType) -> String {
+        switch networkType {
+        case .ropsten: return "ropsten.infura.io"
+        case .kovan: return "kovan.infura.io"
+        case .ethMainNet: return "mainnet.infura.io"
+        case .bscMainNet: return "bsc-dataseed.binance.org"
+        }
+    }
+
+    private static func rpcSyncer(syncSource: SyncSource, networkType: NetworkType, networkManager: NetworkManager, address: Address, logger: Logger) -> IRpcSyncer {
+        let syncer: IRpcSyncer
+        let reachabilityManager = ReachabilityManager()
+
+        switch syncSource {
+        case let .infuraWebSocket(id, secret):
+            if case .bscMainNet = networkType {
+                let socket = InfuraWebSocket(url: URL(string: "wss://bsc-ws-node.nariox.org:443")!, projectSecret: secret, reachabilityManager: reachabilityManager, logger: logger)
+                syncer = WebSocketRpcSyncer.instance(address: address, socket: socket, logger: logger)
+            } else {
+                let url = URL(string: "wss://\(infuraDomain(networkType: networkType))/ws/v3/\(id)")!
+                let socket = InfuraWebSocket(url: url, projectSecret: secret, reachabilityManager: reachabilityManager, logger: logger)
+                syncer = WebSocketRpcSyncer.instance(address: address, socket: socket, logger: logger)
+            }
+
+        case let .infura(id, secret):
+            let apiProvider = InfuraApiProvider(networkManager: networkManager, domain: infuraDomain(networkType: networkType), id: id, secret: secret)
+            syncer = ApiRpcSyncer(address: address, rpcApiProvider: apiProvider, reachabilityManager: reachabilityManager)
+        }
+
+        return syncer
+    }
+
+    private static func instance(words: [String], networkType: NetworkType, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
+        let logger = Logger(minLogLevel: minLogLevel)
+        let uniqueId = "\(walletId)-\(networkType)"
+
+        let wallet = hdWallet(words: words, networkType: networkType)
+        let privateKey = try wallet.privateKey(account: 0, index: 0, chain: .external)
+        let address = ethereumAddress(privateKey: privateKey)
+
+        let network = networkType.network
+        let networkManager = NetworkManager(logger: logger)
+        let syncer = rpcSyncer(syncSource: syncSource, networkType: networkType, networkManager: networkManager, address: address, logger: logger)
+
+
+        let transactionSigner = TransactionSigner(network: network, privateKey: privateKey.raw)
+        let transactionBuilder = TransactionBuilder(address: address)
+        let etherscanService = EtherscanService(networkManager: networkManager, network: network, etherscanApiKey: etherscanApiKey, address: address)
+
+        let storage: IApiStorage = try ApiStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "api-\(uniqueId)")
+        let blockchain = RpcBlockchain.instance(address: address, storage: storage, syncer: syncer, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, logger: logger)
+
+        let transactionsProvider = EtherscanTransactionProvider(service: etherscanService)
+        let transactionStorage: ITransactionStorage & ITransactionSyncerStateStorage = TransactionStorage(databaseDirectoryUrl: try dataDirectoryUrl(), databaseFileName: "transactions-\(uniqueId)")
+        let notSyncedTransactionPool = NotSyncedTransactionPool(storage: transactionStorage)
+        let notSyncedTransactionManager = NotSyncedTransactionManager(pool: notSyncedTransactionPool, storage: transactionStorage)
+
+        let internalTransactionSyncer = InternalTransactionSyncer(provider: transactionsProvider, storage: transactionStorage)
+        let ethereumTransactionSyncer = EthereumTransactionSyncer(provider: transactionsProvider)
+        let transactionSyncer = TransactionSyncer(blockchain: blockchain, storage: transactionStorage)
+        let pendingTransactionSyncer = PendingTransactionSyncer(blockchain: blockchain, storage: transactionStorage)
+        let transactionSyncManager = TransactionSyncManager(notSyncedTransactionManager: notSyncedTransactionManager)
+        let transactionManager = TransactionManager(address: address, storage: transactionStorage, transactionSyncManager: transactionSyncManager)
+
+        transactionSyncManager.add(syncer: ethereumTransactionSyncer)
+        transactionSyncManager.add(syncer: internalTransactionSyncer)
+        transactionSyncManager.add(syncer: transactionSyncer)
+        transactionSyncManager.add(syncer: pendingTransactionSyncer)
+
+        let kit = Kit(blockchain: blockchain, transactionManager: transactionManager, transactionSyncManager: transactionSyncManager, transactionBuilder: transactionBuilder, transactionSigner: transactionSigner, address: address, networkType: networkType, uniqueId: uniqueId, etherscanService: etherscanService, logger: logger)
+
+        blockchain.delegate = kit
+        transactionSyncManager.set(ethereumKit: kit)
+        transactionSyncer.listener = transactionSyncManager
+        pendingTransactionSyncer.listener = transactionSyncManager
+        internalTransactionSyncer.listener = transactionSyncManager
+
+        return kit
+    }
+
     private static func dataDirectoryUrl() throws -> URL {
         let fileManager = FileManager.default
 
@@ -405,7 +381,12 @@ extension Kit {
     }
 
     private static func hdWallet(words: [String], networkType: NetworkType) -> HDWallet {
-        let coinType: UInt32 = networkType == .mainNet ? 60 : 1
+        let coinType: UInt32
+
+        switch networkType {
+        case .ethMainNet, .bscMainNet: coinType = 60
+        default: coinType = 1
+        }
 
         return HDWallet(seed: Mnemonic.seed(mnemonic: words), coinType: coinType, xPrivKey: 0, xPubKey: 0)
     }

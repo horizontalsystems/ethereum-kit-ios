@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 
 ## Current Version
 
+* `EthereumKit`
+  * Add support to BSC. Kit initialization method changed [ **non-back-compatible api change** ]
 
 ## 0.12.0
   

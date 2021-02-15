@@ -22,11 +22,16 @@ class MainController: UITabBarController {
         receiveNavigation.tabBarItem.title = "Receive"
         receiveNavigation.tabBarItem.image = UIImage(named: "Receive Tab Bar Icon")
 
-        let swapNavigation = UINavigationController(rootViewController: SwapController())
-        swapNavigation.tabBarItem.title = "Swap"
-        swapNavigation.tabBarItem.image = UIImage(named: "Transactions Tab Bar Icon")
+        var controllers = [balanceNavigation, transactionsNavigation, sendNavigation, receiveNavigation]
 
-        viewControllers = [balanceNavigation, transactionsNavigation, sendNavigation, receiveNavigation, swapNavigation]
+        if let _ = Manager.shared.uniswapKit {
+            let swapNavigation = UINavigationController(rootViewController: SwapController())
+            swapNavigation.tabBarItem.title = "Swap"
+            swapNavigation.tabBarItem.image = UIImage(named: "Transactions Tab Bar Icon")
+            controllers.append(swapNavigation)
+        }
+
+        viewControllers = controllers
     }
 
 }

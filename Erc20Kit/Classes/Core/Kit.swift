@@ -150,7 +150,7 @@ extension Kit {
         let storage: ITransactionStorage & ITokenBalanceStorage = try GrdbStorage(databaseDirectoryUrl: databaseDirectoryUrl(), databaseFileName: databaseFileName)
 
         let dataProvider: IDataProvider = DataProvider(ethereumKit: ethereumKit)
-        let transactionSyncer = Erc20TransactionSyncer(provider: ethereumKit.etherscanApiProvider, contractAddress: contractAddress, id: syncerId(contractAddress: contractAddress))
+        let transactionSyncer = Erc20TransactionSyncer(provider: ethereumKit.etherscanService, contractAddress: contractAddress, id: syncerId(contractAddress: contractAddress))
         let transactionManager = TransactionManager(contractAddress: contractAddress, ethereumKit: ethereumKit, contractMethodFactories: ContractMethodFactories.shared, storage: storage)
         let balanceManager = BalanceManager(contractAddress: contractAddress, address: address, storage: storage, dataProvider: dataProvider)
         let allowanceManager = AllowanceManager(ethereumKit: ethereumKit, contractAddress: contractAddress, address: address)

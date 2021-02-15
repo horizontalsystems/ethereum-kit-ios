@@ -48,7 +48,7 @@ class BalanceController: UITableViewController {
     }
 
     @IBAction func showDebugInfo() {
-        print(Manager.shared.ethereumKit.debugInfo)
+        print(Manager.shared.evmKit.debugInfo)
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
