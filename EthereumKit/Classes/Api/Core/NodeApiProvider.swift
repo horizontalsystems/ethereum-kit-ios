@@ -3,21 +3,20 @@ import BigInt
 import Alamofire
 import HsToolKit
 
-class InfuraApiProvider {
+class NodeApiProvider {
     private let networkManager: NetworkManager
+    private let url: URL
 
-    private let urlString: String
     private let headers: HTTPHeaders
 
-    init(networkManager: NetworkManager, domain: String, id: String, secret: String?) {
+    init(networkManager: NetworkManager, url: URL, auth: String?) {
         self.networkManager = networkManager
-
-        urlString = "https://\(domain)/v3/\(id)"
+        self.url = url
 
         var headers = HTTPHeaders()
 
-        if let secret = secret {
-            headers.add(.authorization(username: "", password: secret))
+        if let auth = auth {
+            headers.add(.authorization(username: "", password: auth))
         }
 
         self.headers = headers
@@ -25,7 +24,7 @@ class InfuraApiProvider {
 
     private func rpcResultSingle(parameters: [String: Any]) -> Single<Any> {
         let request = networkManager.session
-                .request(urlString, method: .post, parameters: parameters, encoding: JSONEncoding.default, headers: headers, interceptor: self)
+                .request(url, method: .post, parameters: parameters, encoding: JSONEncoding.default, headers: headers, interceptor: self)
                 .cacheResponse(using: ResponseCacher(behavior: .doNotCache))
 
         return networkManager.single(request: request, mapper: self)
@@ -33,7 +32,7 @@ class InfuraApiProvider {
 
 }
 
-extension InfuraApiProvider {
+extension NodeApiProvider {
 
     public enum RequestError: Error {
         case invalidResponse(jsonObject: Any)
@@ -41,7 +40,7 @@ extension InfuraApiProvider {
 
 }
 
-extension InfuraApiProvider: RequestInterceptor {
+extension NodeApiProvider: RequestInterceptor {
 
     public func retry(_ request: Request, for session: Session, dueTo error: Error, completion: @escaping (RetryResult) -> ()) {
         let error = NetworkManager.unwrap(error: error)
@@ -61,7 +60,7 @@ extension InfuraApiProvider: RequestInterceptor {
 
 }
 
-extension InfuraApiProvider: IApiMapper {
+extension NodeApiProvider: IApiMapper {
 
     func map(statusCode: Int, data: Any?) throws -> Any {
         guard let response = data else {
@@ -73,10 +72,10 @@ extension InfuraApiProvider: IApiMapper {
 
 }
 
-extension InfuraApiProvider: IRpcApiProvider {
+extension NodeApiProvider: IRpcApiProvider {
 
     var source: String {
-        "Infura"
+        url.host ?? ""
     }
 
     func single<T>(rpc: JsonRpc<T>) -> Single<T> {

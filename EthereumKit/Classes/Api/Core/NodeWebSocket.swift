@@ -2,7 +2,7 @@ import RxSwift
 import Starscream
 import HsToolKit
 
-class InfuraWebSocket {
+class NodeWebSocket {
     static let unexpectedDisconnectErrorDomain = "NSPOSIXErrorDomain"
     static let unexpectedDisconnectErrorCode = 57
 
@@ -12,7 +12,8 @@ class InfuraWebSocket {
 
     private var logger: Logger?
 
-    private let queue = DispatchQueue(label: "io.horizontal-systems.ethereum-kit.infura-web-socket", qos: .userInitiated)
+    private let queue = DispatchQueue(label: "io.horizontal-systems.ethereum-kit.node-web-socket", qos: .userInitiated)
+    private let url: URL
     private let reachabilityManager: IReachabilityManager
     private var isStarted = false
 
@@ -24,16 +25,17 @@ class InfuraWebSocket {
     }
     private var mustReconnect = false
 
-    init(url: URL, projectSecret: String?, reachabilityManager: IReachabilityManager, logger: Logger? = nil) {
+    init(url: URL, auth: String?, reachabilityManager: IReachabilityManager, logger: Logger? = nil) {
+        self.url = url
         self.reachabilityManager = reachabilityManager
         self.logger = logger
 
         var request = URLRequest(url: url)
         request.timeoutInterval = 5
 
-        if let projectSecret = projectSecret {
-            let auth = Data(":\(projectSecret)".utf8).base64EncodedString()
-            request.setValue("Basic \(auth)", forHTTPHeaderField: "Authorization")
+        if let auth = auth {
+            let basicAuth = Data(":\(auth)".utf8).base64EncodedString()
+            request.setValue("Basic \(basicAuth)", forHTTPHeaderField: "Authorization")
         }
 
         socket = WebSocket(request: request)
@@ -81,7 +83,7 @@ class InfuraWebSocket {
 
 }
 
-extension InfuraWebSocket: WebSocketDelegate {
+extension NodeWebSocket: WebSocketDelegate {
 
     public func websocketDidConnect(socket: WebSocketClient) {
         logger?.debug("WebSocket is connected: \(socket)")
@@ -97,7 +99,7 @@ extension InfuraWebSocket: WebSocketDelegate {
         // This error occurs when network connection is changed (ex. from WiFi to LTE)
         // ReachabilityManager doesn't signal when this happens, so this is added as exception
         if let nsError = error as NSError?,
-           nsError.domain == InfuraWebSocket.unexpectedDisconnectErrorDomain && nsError.code == InfuraWebSocket.unexpectedDisconnectErrorCode {
+           nsError.domain == NodeWebSocket.unexpectedDisconnectErrorDomain && nsError.code == NodeWebSocket.unexpectedDisconnectErrorCode {
             mustReconnect = true
         }
 
@@ -122,10 +124,10 @@ extension InfuraWebSocket: WebSocketDelegate {
 
 }
 
-extension InfuraWebSocket: IWebSocket {
+extension NodeWebSocket: IWebSocket {
 
     var source: String {
-        "Infura"
+        url.host ?? ""
     }
 
     func start() {
