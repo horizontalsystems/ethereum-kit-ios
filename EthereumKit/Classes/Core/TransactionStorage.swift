@@ -163,6 +163,26 @@ class TransactionStorage {
             }
         }
 
+        migrator.registerMigration("changeTraceIdInInternalTransactions") { db in
+            let internalTransactions = try InternalTransaction.fetchAll(db)
+            try db.drop(table: InternalTransaction.databaseTableName)
+            try db.create(table: InternalTransaction.databaseTableName) { t in
+                t.column(InternalTransaction.Columns.hash.name, .text).notNull().indexed()
+                t.column(InternalTransaction.Columns.blockNumber.name, .integer).notNull()
+                t.column(InternalTransaction.Columns.from.name, .text).notNull()
+                t.column(InternalTransaction.Columns.to.name, .text).notNull()
+                t.column(InternalTransaction.Columns.value.name, .text).notNull()
+                t.column(InternalTransaction.Columns.traceId.name, .text).notNull()
+
+                t.primaryKey([InternalTransaction.Columns.hash.name, InternalTransaction.Columns.traceId.name], onConflict: .replace)
+            }
+
+            for tx in internalTransactions {
+                try tx.insert(db)
+            }
+
+        }
+
         return migrator
     }
 
