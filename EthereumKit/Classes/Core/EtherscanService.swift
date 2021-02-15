@@ -22,7 +22,7 @@ public class EtherscanService {
         case is EthMainNet: return "https://api.etherscan.io"
         case is Ropsten: return "https://ropsten.etherscan.io"
         case is Kovan: return "https://kovan.etherscan.io"
-        case is BscMainNet: return "https://api.BscScan.com"
+        case is BscMainNet: return "https://api.bscscan.com"
         default: return "https://ropsten.etherscan.io"
         }
     }
@@ -132,7 +132,7 @@ class EtherscanTransactionProvider {
                 guard let from = data["from"].flatMap({ Data(hex: $0) }).map({ Address(raw: $0) }) else { return nil }
                 guard let to = data["to"].flatMap({ Data(hex: $0) }).map({ Address(raw: $0) }) else { return nil }
                 guard let value = data["value"].flatMap({ BigUInt($0) }) else { return nil }
-//                guard let traceId = data["traceId"].flatMap({ Int($0) }) else { return nil }
+                guard let traceId = data["traceId"] else { return nil }
 
                 return InternalTransaction(
                         hash: hash,
@@ -140,7 +140,7 @@ class EtherscanTransactionProvider {
                         from: from,
                         to: to,
                         value: value,
-                        traceId: 0
+                        traceId: traceId
                 )
             }
         }
