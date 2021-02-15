@@ -4,7 +4,7 @@ import RxSwift
 import BigInt
 
 class Erc20Adapter {
-    let gasPrice = 1_000_000_000
+    let gasPrice = 20_000_000_000
     private let ethereumKit: EthereumKit.Kit
     let erc20Kit: Erc20Kit.Kit
 

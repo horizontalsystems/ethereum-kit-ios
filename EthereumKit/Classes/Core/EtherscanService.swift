@@ -3,7 +3,7 @@ import BigInt
 import Alamofire
 import HsToolKit
 
-public class EtherscanApiProvider {
+public class EtherscanService {
     private let networkManager: NetworkManager
     private let network: INetwork
 
@@ -19,9 +19,11 @@ public class EtherscanApiProvider {
 
     private var baseUrl: String {
         switch network {
+        case is EthMainNet: return "https://api.etherscan.io"
         case is Ropsten: return "https://ropsten.etherscan.io"
         case is Kovan: return "https://kovan.etherscan.io"
-        default: return "https://api.etherscan.io"
+        case is BscMainNet: return "https://api.BscScan.com"
+        default: return "https://ropsten.etherscan.io"
         }
     }
 
@@ -39,7 +41,7 @@ public class EtherscanApiProvider {
 
 }
 
-extension EtherscanApiProvider {
+extension EtherscanService {
 
     public func transactionsSingle(startBlock: Int) -> Single<[[String: String]]> {
         let params: [String: Any] = [
@@ -84,10 +86,10 @@ extension EtherscanApiProvider {
 }
 
 class EtherscanTransactionProvider {
-    private let provider: EtherscanApiProvider
+    private let etherscanService: EtherscanService
 
-    init(provider: EtherscanApiProvider) {
-        self.provider = provider
+    init(service: EtherscanService) {
+        etherscanService = service
     }
 
     var source: String {
@@ -95,7 +97,7 @@ class EtherscanTransactionProvider {
     }
 
     func transactionsSingle(startBlock: Int) -> Single<[EtherscanTransaction]> {
-        provider.transactionsSingle(startBlock: startBlock).map { array -> [EtherscanTransaction] in
+        etherscanService.transactionsSingle(startBlock: startBlock).map { array -> [EtherscanTransaction] in
             array.compactMap { data -> EtherscanTransaction? in
                 guard let hash = data["hash"].flatMap({ Data(hex: $0) }) else { return nil }
                 guard let nonce = data["nonce"].flatMap({ Int($0) }) else { return nil }
@@ -123,14 +125,14 @@ class EtherscanTransactionProvider {
     }
 
     func internalTransactionsSingle(startBlock: Int) -> Single<[InternalTransaction]> {
-        provider.internalTransactionsSingle(startBlock: startBlock).map { array -> [InternalTransaction] in
+        etherscanService.internalTransactionsSingle(startBlock: startBlock).map { array -> [InternalTransaction] in
             array.compactMap { data -> InternalTransaction? in
                 guard let hash = data["hash"].flatMap({ Data(hex: $0) }) else { return nil }
                 guard let blockNumber = data["blockNumber"].flatMap({ Int($0) }) else { return nil }
                 guard let from = data["from"].flatMap({ Data(hex: $0) }).map({ Address(raw: $0) }) else { return nil }
                 guard let to = data["to"].flatMap({ Data(hex: $0) }).map({ Address(raw: $0) }) else { return nil }
                 guard let value = data["value"].flatMap({ BigUInt($0) }) else { return nil }
-                guard let traceId = data["traceId"].flatMap({ Int($0) }) else { return nil }
+//                guard let traceId = data["traceId"].flatMap({ Int($0) }) else { return nil }
 
                 return InternalTransaction(
                         hash: hash,
@@ -138,7 +140,7 @@ class EtherscanTransactionProvider {
                         from: from,
                         to: to,
                         value: value,
-                        traceId: traceId
+                        traceId: 0
                 )
             }
         }
@@ -146,7 +148,7 @@ class EtherscanTransactionProvider {
 
 }
 
-extension EtherscanApiProvider {
+extension EtherscanService {
 
     public enum RequestError: Error {
         case invalidStatus
@@ -157,7 +159,7 @@ extension EtherscanApiProvider {
 
 }
 
-extension EtherscanApiProvider: RequestInterceptor {
+extension EtherscanService: RequestInterceptor {
 
     public func retry(_ request: Request, for session: Session, dueTo error: Error, completion: @escaping (RetryResult) -> ()) {
         let error = NetworkManager.unwrap(error: error)
@@ -171,7 +173,7 @@ extension EtherscanApiProvider: RequestInterceptor {
 
 }
 
-extension EtherscanApiProvider: IApiMapper {
+extension EtherscanService: IApiMapper {
 
     public func map(statusCode: Int, data: Any?) throws -> [[String: String]] {
         guard let map = data as? [String: Any] else {

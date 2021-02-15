@@ -1,12 +1,15 @@
 public enum NetworkType {
-    case mainNet
+    case ethMainNet
+    case bscMainNet
     case ropsten
     case kovan
 
     var network: INetwork {
         switch self {
-        case .mainNet:
-            return MainNet()
+        case .ethMainNet:
+            return EthMainNet()
+        case .bscMainNet:
+            return BscMainNet()
         case .ropsten:
             return Ropsten()
         case .kovan:

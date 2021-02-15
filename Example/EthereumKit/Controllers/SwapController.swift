@@ -26,7 +26,7 @@ class SwapController: UIViewController {
     private let approveButton = UIButton(type: .system)
     private let swapButton = UIButton(type: .system)
 
-    private let uniswapKit: UniswapKit.Kit = Manager.shared.uniswapKit
+    private let uniswapKit: UniswapKit.Kit = Manager.shared.uniswapKit!
 
     private var swapData: SwapData?
     private var tradeData: TradeData?
@@ -34,7 +34,7 @@ class SwapController: UIViewController {
 
     private let gasPrice = 200_000_000_000
 
-    private let ethereumKit = Manager.shared.ethereumKit!
+    private let ethereumKit = Manager.shared.evmKit!
     private let fromAdapter: IAdapter = Manager.shared.erc20Adapters[0]
     private let toAdapter: IAdapter = Manager.shared.ethereumAdapter
 

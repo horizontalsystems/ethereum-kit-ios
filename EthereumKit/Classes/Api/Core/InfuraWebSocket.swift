@@ -24,11 +24,11 @@ class InfuraWebSocket {
     }
     private var mustReconnect = false
 
-    init(domain: String, projectId: String, projectSecret: String?, reachabilityManager: IReachabilityManager, logger: Logger? = nil) {
+    init(url: URL, projectSecret: String?, reachabilityManager: IReachabilityManager, logger: Logger? = nil) {
         self.reachabilityManager = reachabilityManager
         self.logger = logger
 
-        var request = URLRequest(url: URL(string: "wss://\(domain)/ws/v3/\(projectId)")!)
+        var request = URLRequest(url: url)
         request.timeoutInterval = 5
 
         if let projectSecret = projectSecret {
@@ -39,6 +39,7 @@ class InfuraWebSocket {
         socket = WebSocket(request: request)
         socket.delegate = self
         socket.callbackQueue = queue
+        socket.request.setValue(nil, forHTTPHeaderField: "Origin")
 
         reachabilityManager.reachabilityObservable
                 .observeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))

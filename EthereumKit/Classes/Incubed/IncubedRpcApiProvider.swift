@@ -7,13 +7,11 @@ public class IncubedRpcApiProvider {
     private let serialQueueScheduler = SerialDispatchQueueScheduler(qos: .utility)
     private var disposeBag = DisposeBag()
 
-    private let network: INetwork
     private let logger: Logger?
 
     private let in3: In3Private
 
     init(logger: Logger? = nil) {
-        self.network = NetworkType.mainNet.network
         self.logger = logger
 
         in3 = In3Private(chainId: 1)
