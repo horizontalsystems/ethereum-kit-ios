@@ -49,25 +49,21 @@ class Manager {
         case .geth: syncMode = .geth
         }
 
-        let evmKit: EthereumKit.Kit
+        let syncSource: SyncSource
 
         if case .bscMainNet = configuration.networkType {
-            evmKit = try! Kit.bscInstance(
-                    words: words,
-                    syncSource: .infuraWebSocket(id: configuration.infuraCredentials.id, secret: configuration.infuraCredentials.secret),
-                    bscscanApiKey: configuration.etherscanApiKey,
-                    walletId: "walletId"
-            )
+            syncSource = Kit.defaultBscWebsocketSyncSource()!
         } else {
-            evmKit = try! Kit.ethInstance(
-                    words: words,
-                    networkType: configuration.networkType,
-                    syncSource: .infuraWebSocket(id: configuration.infuraCredentials.id, secret: configuration.infuraCredentials.secret),
-                    etherscanApiKey: configuration.etherscanApiKey,
-                    walletId: "walletId"
-            )
+            syncSource = Kit.infuraWebsocketSyncSource(networkType: configuration.networkType, projectId: configuration.infuraCredentials.id, projectSecret: configuration.infuraCredentials.secret)!
         }
 
+        let evmKit = try! Kit.instance(
+                    words: words,
+                    networkType: configuration.networkType,
+                    syncSource: syncSource,
+                    etherscanApiKey: configuration.etherscanApiKey,
+                    walletId: "walletId"
+        )
 
         uniswapKit = try? UniswapKit.Kit.instance(ethereumKit: evmKit)
 

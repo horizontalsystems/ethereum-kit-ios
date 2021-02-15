@@ -1,5 +1,4 @@
 public enum SyncSource {
-    case infuraWebSocket(id: String, secret: String?)
-    case infura(id: String, secret: String?)
-//    case incubed
+    case webSocket(url: URL, auth: String?)
+    case http(url: URL, auth: String?)
 }

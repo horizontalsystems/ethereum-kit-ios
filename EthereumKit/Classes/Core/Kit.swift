@@ -254,22 +254,6 @@ extension Kit: IBlockchainDelegate {
 
 extension Kit {
 
-    public static func bscInstance(words: [String], syncSource: SyncSource, bscscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
-        try instance(
-                words: words,
-                networkType: NetworkType.bscMainNet,
-                syncSource: syncSource, etherscanApiKey: bscscanApiKey, walletId: walletId,minLogLevel: minLogLevel
-        )
-    }
-
-    public static func ethInstance(words: [String], networkType: NetworkType = .ethMainNet, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
-        try instance(
-                words: words,
-                networkType: networkType,
-                syncSource: syncSource, etherscanApiKey: etherscanApiKey, walletId: walletId, minLogLevel: minLogLevel
-        )
-    }
-
     public static func address(words: [String], networkType: NetworkType = .ethMainNet) throws -> Address {
         let wallet = hdWallet(words: words, networkType: networkType)
         let privateKey = try wallet.privateKey(account: 0, index: 0, chain: .external)
@@ -288,52 +272,39 @@ extension Kit {
         }
     }
 
-    private static func infuraDomain(networkType: NetworkType) -> String {
-        switch networkType {
-        case .ropsten: return "ropsten.infura.io"
-        case .kovan: return "kovan.infura.io"
-        case .ethMainNet: return "mainnet.infura.io"
-        case .bscMainNet: return "bsc-dataseed.binance.org"
-        }
+    public static func instance(words: [String], networkType: NetworkType, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
+        let wallet = hdWallet(words: words, networkType: networkType)
+
+        return try instance(
+                hdWallet: wallet, networkType: networkType, syncSource: syncSource,
+                etherscanApiKey: etherscanApiKey, walletId: walletId, minLogLevel: minLogLevel
+        )
     }
 
-    private static func rpcSyncer(syncSource: SyncSource, networkType: NetworkType, networkManager: NetworkManager, address: Address, logger: Logger) -> IRpcSyncer {
-        let syncer: IRpcSyncer
-        let reachabilityManager = ReachabilityManager()
-
-        switch syncSource {
-        case let .infuraWebSocket(id, secret):
-            if case .bscMainNet = networkType {
-                let socket = InfuraWebSocket(url: URL(string: "wss://bsc-ws-node.nariox.org:443")!, projectSecret: secret, reachabilityManager: reachabilityManager, logger: logger)
-                syncer = WebSocketRpcSyncer.instance(address: address, socket: socket, logger: logger)
-            } else {
-                let url = URL(string: "wss://\(infuraDomain(networkType: networkType))/ws/v3/\(id)")!
-                let socket = InfuraWebSocket(url: url, projectSecret: secret, reachabilityManager: reachabilityManager, logger: logger)
-                syncer = WebSocketRpcSyncer.instance(address: address, socket: socket, logger: logger)
-            }
-
-        case let .infura(id, secret):
-            let apiProvider = InfuraApiProvider(networkManager: networkManager, domain: infuraDomain(networkType: networkType), id: id, secret: secret)
-            syncer = ApiRpcSyncer(address: address, rpcApiProvider: apiProvider, reachabilityManager: reachabilityManager)
-        }
-
-        return syncer
-    }
-
-    private static func instance(words: [String], networkType: NetworkType, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
+    public static func instance(hdWallet: HDWallet, networkType: NetworkType, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
         let logger = Logger(minLogLevel: minLogLevel)
         let uniqueId = "\(walletId)-\(networkType)"
 
-        let wallet = hdWallet(words: words, networkType: networkType)
-        let privateKey = try wallet.privateKey(account: 0, index: 0, chain: .external)
+        let privateKey = try hdWallet.privateKey(account: 0, index: 0, chain: .external)
         let address = ethereumAddress(privateKey: privateKey)
 
         let network = networkType.network
         let networkManager = NetworkManager(logger: logger)
-        let syncer = rpcSyncer(syncSource: syncSource, networkType: networkType, networkManager: networkManager, address: address, logger: logger)
 
+        let syncer: IRpcSyncer
+        let reachabilityManager = ReachabilityManager()
 
-        let transactionSigner = TransactionSigner(network: network, privateKey: privateKey.raw)
+        switch syncSource {
+        case let .webSocket(url, auth):
+            let socket = NodeWebSocket(url: url, auth: auth, reachabilityManager: reachabilityManager, logger: logger)
+            syncer = WebSocketRpcSyncer.instance(address: address, socket: socket, logger: logger)
+
+        case let .http(url, auth):
+            let apiProvider = NodeApiProvider(networkManager: networkManager, url: url, auth: auth)
+            syncer = ApiRpcSyncer(address: address, rpcApiProvider: apiProvider, reachabilityManager: reachabilityManager)
+        }
+
+        let transactionSigner = TransactionSigner(chainId: network.chainId, privateKey: privateKey.raw)
         let transactionBuilder = TransactionBuilder(address: address)
         let etherscanService = EtherscanService(networkManager: networkManager, network: network, etherscanApiKey: etherscanApiKey, address: address)
 
@@ -366,6 +337,47 @@ extension Kit {
         internalTransactionSyncer.listener = transactionSyncManager
 
         return kit
+    }
+
+    private static func infuraDomain(networkType: NetworkType) -> String? {
+        switch networkType {
+        case .ropsten: return "ropsten.infura.io"
+        case .kovan: return "kovan.infura.io"
+        case .ethMainNet: return "mainnet.infura.io"
+        default: return nil
+        }
+    }
+
+    public static func infuraWebsocketSyncSource(networkType: NetworkType, projectId: String, projectSecret: String?) -> SyncSource? {
+        guard let domain = infuraDomain(networkType: networkType), let url = URL(string: "wss://\(domain)/ws/v3/\(projectId)") else {
+            return nil
+        }
+
+        return .webSocket(url: url, auth: projectSecret)
+    }
+
+    public static func infuraHttpSyncSource(networkType: NetworkType, projectId: String, projectSecret: String?) -> SyncSource? {
+        guard let domain = infuraDomain(networkType: networkType), let url = URL(string: "https://\(domain)/v3/\(projectId)") else {
+            return nil
+        }
+
+        return .http(url: url, auth: projectSecret)
+    }
+
+    public static func defaultBscWebsocketSyncSource() -> SyncSource? {
+        guard let url = URL(string: "wss://bsc-ws-node.nariox.org:443") else {
+            return nil
+        }
+
+        return .webSocket(url: url, auth: nil)
+    }
+
+    public static func defaultBscHttpSyncSource() -> SyncSource? {
+        guard let url = URL(string: "https://bsc-dataseed.binance.org/v3/") else {
+            return nil
+        }
+
+        return .http(url: url, auth: nil)
     }
 
     private static func dataDirectoryUrl() throws -> URL {
