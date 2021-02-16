@@ -4,15 +4,16 @@ import EthereumKit
 import OpenSslKit
 
 class TradeManager {
-    static let routerAddress = try! Address(hex: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D")
+    public let routerAddress: Address
 
     private let disposeBag = DisposeBag()
-
-    private let ethereumKit: EthereumKit.Kit
+    private let evmKit: EthereumKit.Kit
     private let address: Address
 
-    init(ethereumKit: EthereumKit.Kit, address: Address) {
-        self.ethereumKit = ethereumKit
+    init(evmKit: EthereumKit.Kit, address: Address) {
+        routerAddress = TradeManager.routerAddress(networkType: evmKit.networkType)
+
+        self.evmKit = evmKit
         self.address = address
     }
 
@@ -88,11 +89,11 @@ extension TradeManager {
     func pairSingle(tokenA: Token, tokenB: Token) -> Single<Pair> {
         let (token0, token1) = tokenA.sortsBefore(token: tokenB) ? (tokenA, tokenB) : (tokenB, tokenA)
 
-        let pairAddress = Pair.address(token0: token0, token1: token1)
+        let pairAddress = Pair.address(token0: token0, token1: token1, networkType: evmKit.networkType)
 
 //        print("PAIR ADDRESS: \(pairAddress.toHexString())")
 
-        return self.ethereumKit.call(contractAddress: pairAddress, data: GetReservesMethod().encodedABI())
+        return evmKit.call(contractAddress: pairAddress, data: GetReservesMethod().encodedABI())
                 .map { data in
 //                    print("DATA: \(data.toHexString())")
 
@@ -117,7 +118,7 @@ extension TradeManager {
         let swapData = try buildSwapData(tradeData: tradeData)
 
         return TransactionData(
-                to: TradeManager.routerAddress,
+                to: routerAddress,
                 value: swapData.amount,
                 input: swapData.input
         )
@@ -221,5 +222,13 @@ extension TradeManager {
 
         return trades
     }
+
+    static func routerAddress(networkType: EthereumKit.NetworkType) -> Address {
+        switch networkType {
+        case .ethMainNet, .ropsten, .kovan: return try! Address(hex: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D")
+        case .bscMainNet: return try! Address(hex: "0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F")
+        }
+    }
+
 
 }

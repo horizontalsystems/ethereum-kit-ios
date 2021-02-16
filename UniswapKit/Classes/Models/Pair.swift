@@ -82,11 +82,27 @@ public struct Pair {
         return TokenAmount(token: tokenIn, rawAmount: amountIn)
     }
 
-    static func address(token0: Token, token1: Token) -> Address {
+}
+
+extension Pair {
+
+    static func address(token0: Token, token1: Token, networkType: EthereumKit.NetworkType) -> Address {
+        let factoryAddressString: String
+        switch networkType {
+        case .ethMainNet, .ropsten, .kovan: factoryAddressString = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
+        case .bscMainNet: factoryAddressString = "0xBCfCcbde45cE874adCB698cC183deBcF17952812"
+        }
+
+        let initCodeHashString: String
+        switch networkType {
+        case .ethMainNet, .ropsten, .kovan: initCodeHashString = "0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f"
+        case .bscMainNet: initCodeHashString = "0xd0d4c4cd0848c93cb4fd1f498d7013ee6bfb25783ea21593d5834f5d250ece66"
+        }
+
         let data = Data(hex: "ff")! +
-                Data(hex: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f")! +
+                Data(hex: factoryAddressString)! +
                 OpenSslKit.Kit.sha3(token0.address.raw + token1.address.raw) +
-                Data(hex: "0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f")!
+                Data(hex: initCodeHashString)!
 
         return Address(raw: OpenSslKit.Kit.sha3(data).suffix(20))
     }

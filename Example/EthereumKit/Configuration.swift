@@ -19,6 +19,7 @@ class Configuration {
             Erc20Token(name: "USD Coin",  coin: "USDC", contractAddress: try! Address(hex: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"), decimal: 6),
         ]
         case .bscMainNet: return [
+            Erc20Token(name: "Beefy.Finance", coin: "BIFI",  contractAddress: try! Address(hex: "0xCa3F508B8e4Dd382eE878A314789373D80A5190A"), decimal: 18),
             Erc20Token(name: "PancakeSwap", coin: "CAKE",  contractAddress: try! Address(hex: "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82"), decimal: 18),
             Erc20Token(name: "BUSD",        coin: "BUSD",  contractAddress: try! Address(hex: "0xe9e7cea3dedca5984780bafc599bd69add087d56"), decimal: 18),
         ]

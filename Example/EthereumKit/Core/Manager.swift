@@ -58,14 +58,15 @@ class Manager {
         }
 
         let evmKit = try! Kit.instance(
-                    words: words,
-                    networkType: configuration.networkType,
-                    syncSource: syncSource,
-                    etherscanApiKey: configuration.etherscanApiKey,
-                    walletId: "walletId"
+                words: words,
+                networkType: configuration.networkType,
+                syncSource: syncSource,
+                etherscanApiKey: configuration.etherscanApiKey,
+                walletId: "walletId",
+                minLogLevel: configuration.minLogLevel
         )
 
-        uniswapKit = try? UniswapKit.Kit.instance(ethereumKit: evmKit)
+        uniswapKit = try? UniswapKit.Kit.instance(evmKit: evmKit)
 
         ethereumAdapter = EthereumAdapter(ethereumKit: evmKit)
 

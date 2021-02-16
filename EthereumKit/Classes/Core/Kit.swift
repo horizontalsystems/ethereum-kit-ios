@@ -8,7 +8,7 @@ import HsToolKit
 public class Kit {
     public static let defaultGasLimit = 21_000
 
-    private let maxGasLimit = 1_000_000
+    private let maxGasLimit = 2_000_000
     private let defaultMinAmount: BigUInt = 1
 
     private let lastBlockBloomFilterSubject = PublishSubject<BloomFilter>()
