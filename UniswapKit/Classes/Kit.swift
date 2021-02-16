@@ -20,7 +20,7 @@ public class Kit {
 extension Kit {
 
     public var routerAddress: Address {
-        TradeManager.routerAddress
+        tradeManager.routerAddress
     }
 
     public var etherToken: Token {
@@ -93,11 +93,11 @@ extension Kit {
 
 extension Kit {
 
-    public static func instance(ethereumKit: EthereumKit.Kit) throws -> Kit {
-        let address = ethereumKit.address
+    public static func instance(evmKit: EthereumKit.Kit) -> Kit {
+        let address = evmKit.address
 
-        let tradeManager = TradeManager(ethereumKit: ethereumKit, address: address)
-        let tokenFactory = try TokenFactory(networkType: ethereumKit.networkType)
+        let tradeManager = TradeManager(evmKit: evmKit, address: address)
+        let tokenFactory = TokenFactory(networkType: evmKit.networkType)
         let pairSelector = PairSelector(tokenFactory: tokenFactory)
 
         let uniswapKit = Kit(tradeManager: tradeManager, pairSelector: pairSelector, tokenFactory: tokenFactory)
@@ -108,10 +108,6 @@ extension Kit {
 }
 
 extension Kit {
-
-    public enum InitializationError: Error {
-        case nonEthereumNetwork
-    }
 
     public enum FractionError: Error {
         case negativeDecimal

@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 * `EthereumKit`
   * Add support to BSC. Kit initialization method changed [ **non-back-compatible api change** ]
 
+* `UniswapKit`
+  * Add support to PancakeSwap
+  
+
 ## 0.12.0
   
 * `EthereumKit`
