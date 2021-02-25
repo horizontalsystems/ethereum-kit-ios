@@ -423,16 +423,4 @@ extension Kit {
         case noAccountState
     }
 
-    public enum EstimatedLimitError: Error {
-        case insufficientBalance
-
-        var causes: [String] {
-            [
-                "execution reverted",
-                "insufficient funds for transfer",
-                "gas required exceeds"
-            ]
-        }
-    }
-
 }

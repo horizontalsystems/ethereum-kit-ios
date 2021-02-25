@@ -27,14 +27,6 @@ class JsonRpc<T> {
         case .success(let successResponse):
             return try parse(result: successResponse.result)
         case .error(let errorResponse):
-            let insufficientError = EthereumKit.Kit.EstimatedLimitError.insufficientBalance
-
-            if !insufficientError.causes.filter({ cause in
-                errorResponse.error.message.contains(cause)
-            }).isEmpty {
-                throw insufficientError
-            }
-
             throw JsonRpcResponse.ResponseError.rpcError(errorResponse.error)
         }
     }
