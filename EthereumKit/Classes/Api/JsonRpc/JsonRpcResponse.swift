@@ -1,6 +1,6 @@
 import ObjectMapper
 
-enum JsonRpcResponse {
+public enum JsonRpcResponse {
     case success(SuccessResponse)
     case error(ErrorResponse)
 
@@ -29,12 +29,12 @@ enum JsonRpcResponse {
 
 extension JsonRpcResponse {
 
-    struct SuccessResponse: ImmutableMappable {
+    public struct SuccessResponse: ImmutableMappable {
         let version: String
         let id: Int
         var result: Any?
 
-        init(map: Map) throws {
+        public init(map: Map) throws {
             version = try map.value("jsonrpc")
             id = try map.value("id")
 
@@ -46,31 +46,31 @@ extension JsonRpcResponse {
         }
     }
 
-    struct ErrorResponse: ImmutableMappable {
+    public struct ErrorResponse: ImmutableMappable {
         let version: String
         let id: Int
         let error: RpcError
 
-        init(map: Map) throws {
+        public init(map: Map) throws {
             version = try map.value("jsonrpc")
             id = try map.value("id")
             error = try map.value("error")
         }
     }
 
-    struct RpcError: ImmutableMappable {
-        let code: Int
-        let message: String
-        let data: Any?
+    public struct RpcError: ImmutableMappable {
+        public let code: Int
+        public let message: String
+        public let data: Any?
 
-        init(map: Map) throws {
+        public init(map: Map) throws {
             code = try map.value("code")
             message = try map.value("message")
             data = try? map.value("data")
         }
     }
 
-    enum ResponseError: Error {
+    public enum ResponseError: Error {
         case rpcError(JsonRpcResponse.RpcError)
         case invalidResult(value: Any?)
     }
