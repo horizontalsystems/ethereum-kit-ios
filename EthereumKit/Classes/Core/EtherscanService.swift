@@ -20,10 +20,10 @@ public class EtherscanService {
     private var baseUrl: String {
         switch network {
         case is EthMainNet: return "https://api.etherscan.io"
-        case is Ropsten: return "https://ropsten.etherscan.io"
-        case is Kovan: return "https://kovan.etherscan.io"
+        case is Ropsten: return "https://api-ropsten.etherscan.io"
+        case is Kovan: return "https://api-kovan.etherscan.io"
         case is BscMainNet: return "https://api.bscscan.com"
-        default: return "https://ropsten.etherscan.io"
+        default: return "https://api-ropsten.etherscan.io"
         }
     }
 
