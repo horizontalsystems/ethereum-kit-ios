@@ -1,4 +1,5 @@
 import RxSwift
+import BigInt
 
 class TransactionManager {
     private let address: Address
@@ -51,6 +52,14 @@ class TransactionManager {
                 fullTransaction.internalTransactions.contains {
                     $0.to == address
                 }
+    }
+
+    func etherTransferTransactionData(to: Address, value: BigUInt) -> TransactionData {
+        TransactionData(
+                to: to,
+                value: value,
+                input: Data()
+        )
     }
 
 }

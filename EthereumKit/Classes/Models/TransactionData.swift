@@ -11,3 +11,11 @@ public struct TransactionData {
         self.input = input
     }
 }
+
+extension TransactionData: Equatable {
+
+    public static func ==(lhs: TransactionData, rhs: TransactionData) -> Bool {
+        lhs.to == rhs.to && lhs.value == rhs.value && lhs.input == rhs.input
+    }
+
+}

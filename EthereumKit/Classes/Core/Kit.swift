@@ -219,6 +219,10 @@ extension Kit {
         decorationManager.decorate(transactionData: transactionData)
     }
 
+    public func transferTransactionData(to: Address, value: BigUInt) -> TransactionData {
+        transactionManager.etherTransferTransactionData(to: to, value: value)
+    }
+
     public func statusInfo() -> [(String, Any)] {
         [
             ("Last Block Height", "\(state.lastBlockHeight.map { "\($0)" } ?? "N/A")"),
