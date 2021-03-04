@@ -4,11 +4,11 @@ import RxSwift
 import BigInt
 
 class EthereumAdapter {
-    let ethereumKit: Kit
+    let evmKit: Kit
     private let decimal = 18
 
     init(ethereumKit: Kit) {
-        self.ethereumKit = ethereumKit
+        evmKit = ethereumKit
     }
 
     private func transactionRecord(fullTransaction: FullTransaction) -> TransactionRecord {
@@ -40,8 +40,6 @@ class EthereumAdapter {
             }
         }
 
-        let isError = (fullTransaction.receiptWithLogs?.receipt.status ?? 0) != 0
-
         return TransactionRecord(
                 transactionHash: transaction.hash.toHexString(),
                 transactionHashData: transaction.hash,
@@ -52,7 +50,7 @@ class EthereumAdapter {
                 from: from,
                 to: to,
                 blockHeight: fullTransaction.receiptWithLogs?.receipt.blockNumber,
-                isError: isError,
+                isError: fullTransaction.failed,
                 type: ""
         )
     }
@@ -62,15 +60,15 @@ class EthereumAdapter {
 extension EthereumAdapter: IAdapter {
 
     func start() {
-        ethereumKit.start()
+        evmKit.start()
     }
 
     func stop() {
-        ethereumKit.stop()
+        evmKit.stop()
     }
 
     func refresh() {
-        ethereumKit.refresh()
+        evmKit.refresh()
     }
 
     var name: String {
@@ -82,19 +80,19 @@ extension EthereumAdapter: IAdapter {
     }
 
     var lastBlockHeight: Int? {
-        ethereumKit.lastBlockHeight
+        evmKit.lastBlockHeight
     }
 
     var syncState: SyncState {
-        ethereumKit.syncState
+        evmKit.syncState
     }
 
     var transactionsSyncState: SyncState {
-        ethereumKit.transactionsSyncState
+        evmKit.transactionsSyncState
     }
 
     var balance: Decimal {
-        if let balance = ethereumKit.accountState?.balance, let significand = Decimal(string: balance.description) {
+        if let balance = evmKit.accountState?.balance, let significand = Decimal(string: balance.description) {
             return Decimal(sign: .plus, exponent: -decimal, significand: significand)
         }
 
@@ -102,37 +100,38 @@ extension EthereumAdapter: IAdapter {
     }
 
     var receiveAddress: Address {
-        ethereumKit.receiveAddress
+        evmKit.receiveAddress
     }
 
     var lastBlockHeightObservable: Observable<Void> {
-        ethereumKit.lastBlockHeightObservable.map { _ in () }
+        evmKit.lastBlockHeightObservable.map { _ in () }
     }
 
     var syncStateObservable: Observable<Void> {
-        ethereumKit.syncStateObservable.map { _ in () }
+        evmKit.syncStateObservable.map { _ in () }
     }
 
     var transactionsSyncStateObservable: Observable<Void> {
-        ethereumKit.transactionsSyncStateObservable.map { _ in () }
+        evmKit.transactionsSyncStateObservable.map { _ in () }
     }
 
     var balanceObservable: Observable<Void> {
-        ethereumKit.accountStateObservable.map { _ in () }
+        evmKit.accountStateObservable.map { _ in () }
     }
 
     var transactionsObservable: Observable<Void> {
-        ethereumKit.etherTransactionsObservable.map { _ in () }
+        evmKit.etherTransactionsObservable.map { _ in () }
     }
 
     func sendSingle(to: Address, amount: Decimal, gasLimit: Int) -> Single<Void> {
         let amount = BigUInt(amount.roundedString(decimal: decimal))!
+        let transactionData = evmKit.transferTransactionData(to: to, value: amount)
 
-        return ethereumKit.sendSingle(address: to, value: amount, gasPrice: 50_000_000_000, gasLimit: gasLimit).map { _ in ()}
+        return evmKit.sendSingle(transactionData: transactionData, gasPrice: 50_000_000_000, gasLimit: gasLimit).map { _ in ()}
     }
 
     func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionRecord]> {
-        ethereumKit.etherTransactionsSingle(fromHash: from?.hash, limit: limit)
+        evmKit.etherTransactionsSingle(fromHash: from?.hash, limit: limit)
                 .map { [weak self] in
                     $0.compactMap {
                         self?.transactionRecord(fullTransaction: $0)
@@ -141,13 +140,13 @@ extension EthereumAdapter: IAdapter {
     }
 
     func transaction(hash: Data, interTransactionIndex: Int) -> TransactionRecord? {
-        ethereumKit.transaction(hash: hash).map { transactionRecord(fullTransaction: $0) }
+        evmKit.transaction(hash: hash).map { transactionRecord(fullTransaction: $0) }
     }
 
     func estimatedGasLimit(to address: Address, value: Decimal) -> Single<Int> {
         let value = BigUInt(value.roundedString(decimal: decimal))!
 
-        return ethereumKit.estimateGas(to: address, amount: value, gasPrice: 50_000_000_000)
+        return evmKit.estimateGas(to: address, amount: value, gasPrice: 50_000_000_000)
     }
 
 }

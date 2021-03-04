@@ -26,7 +26,6 @@ class TransactionManager {
         address = ethereumKit.receiveAddress
 
         ethereumKit.allTransactionsObservable
-                .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe { [weak self] in
                     self?.processTransactions(fullTransactions: $0)
                 }
