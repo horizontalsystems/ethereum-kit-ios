@@ -7,7 +7,7 @@ class TransactionManager {
 
     private let contractAddress: Address
     private let ethereumKit: EthereumKit.Kit
-    private let contractMethodFactories: ContractMethodFactories
+    private let contractMethodFactories: Eip20ContractMethodFactories
     private var storage: ITransactionStorage
     private let address: Address
 
@@ -17,7 +17,7 @@ class TransactionManager {
         transactionsSubject.asObservable()
     }
 
-    init(contractAddress: Address, ethereumKit: EthereumKit.Kit, contractMethodFactories: ContractMethodFactories, storage: ITransactionStorage) {
+    init(contractAddress: Address, ethereumKit: EthereumKit.Kit, contractMethodFactories: Eip20ContractMethodFactories, storage: ITransactionStorage) {
         self.contractAddress = contractAddress
         self.ethereumKit = ethereumKit
         self.contractMethodFactories = contractMethodFactories

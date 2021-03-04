@@ -2,11 +2,13 @@ import EthereumKit
 import BigInt
 
 class SwapTokensForExactTokensMethod: ContractMethod {
-    private let amountOut: BigUInt
-    private let amountInMax: BigUInt
-    private let path: [Address]
-    private let to: Address
-    private let deadline: BigUInt
+    static let methodSignature = "swapTokensForExactTokens(uint256,uint256,address[],address,uint256)"
+
+    let amountOut: BigUInt
+    let amountInMax: BigUInt
+    let path: [Address]
+    let to: Address
+    let deadline: BigUInt
 
     init(amountOut: BigUInt, amountInMax: BigUInt, path: [Address], to: Address, deadline: BigUInt) {
         self.amountOut = amountOut
@@ -18,7 +20,7 @@ class SwapTokensForExactTokensMethod: ContractMethod {
         super.init()
     }
 
-    override var methodSignature: String { "swapTokensForExactTokens(uint256,uint256,address[],address,uint256)" }
+    override var methodSignature: String { SwapTokensForExactTokensMethod.methodSignature }
 
     override var arguments: [Any] {
         [amountOut, amountInMax, path, to, deadline]

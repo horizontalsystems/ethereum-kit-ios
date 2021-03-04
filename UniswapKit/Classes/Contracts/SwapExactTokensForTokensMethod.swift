@@ -2,11 +2,16 @@ import EthereumKit
 import BigInt
 
 class SwapExactTokensForTokensMethod: ContractMethod {
-    private let amountIn: BigUInt
-    private let amountOutMin: BigUInt
-    private let path: [Address]
-    private let to: Address
-    private let deadline: BigUInt
+    static func methodSignature(supportingFeeOnTransfer: Bool) -> String {
+        let supporting = supportingFeeOnTransfer ? "SupportingFeeOnTransferTokens" : ""
+        return "swapExactTokensForTokens\(supporting)(uint256,uint256,address[],address,uint256)"
+    }
+
+    let amountIn: BigUInt
+    let amountOutMin: BigUInt
+    let path: [Address]
+    let to: Address
+    let deadline: BigUInt
 
     private let supportingFeeOnTransfer: Bool
 
@@ -22,8 +27,7 @@ class SwapExactTokensForTokensMethod: ContractMethod {
     }
 
     override var methodSignature: String {
-        let supporting = supportingFeeOnTransfer ? "SupportingFeeOnTransferTokens" : ""
-        return "swapExactTokensForTokens\(supporting)(uint256,uint256,address[],address,uint256)"
+        SwapExactTokensForTokensMethod.methodSignature(supportingFeeOnTransfer: supportingFeeOnTransfer)
     }
 
     override var arguments: [Any] {

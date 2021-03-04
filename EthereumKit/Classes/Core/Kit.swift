@@ -21,6 +21,7 @@ public class Kit {
     private let transactionSyncManager: TransactionSyncManager
     private let transactionBuilder: TransactionBuilder
     private let transactionSigner: TransactionSigner
+    private let decorationManager: DecorationManager
     private let state: EthereumKitState
 
     public let address: Address
@@ -32,7 +33,7 @@ public class Kit {
     public let logger: Logger
 
 
-    init(blockchain: IBlockchain, transactionManager: TransactionManager, transactionSyncManager: TransactionSyncManager, transactionBuilder: TransactionBuilder, transactionSigner: TransactionSigner, state: EthereumKitState = EthereumKitState(), address: Address, networkType: NetworkType, uniqueId: String, etherscanService: EtherscanService, logger: Logger) {
+    init(blockchain: IBlockchain, transactionManager: TransactionManager, transactionSyncManager: TransactionSyncManager, transactionBuilder: TransactionBuilder, transactionSigner: TransactionSigner, state: EthereumKitState = EthereumKitState(), address: Address, networkType: NetworkType, uniqueId: String, etherscanService: EtherscanService, decorationManager: DecorationManager, logger: Logger) {
         self.blockchain = blockchain
         self.transactionManager = transactionManager
         self.transactionSyncManager = transactionSyncManager
@@ -43,6 +44,7 @@ public class Kit {
         self.networkType = networkType
         self.uniqueId = uniqueId
         self.etherscanService = etherscanService
+        self.decorationManager = decorationManager
         self.logger = logger
 
         state.accountState = blockchain.accountState
@@ -209,6 +211,14 @@ extension Kit {
         transactionSyncManager.removeSyncer(byId: id)
     }
 
+    public func add(decorator: IDecorator) {
+        decorationManager.add(decorator: decorator)
+    }
+
+    public func decorate(transactionData: TransactionData) -> TransactionDecoration? {
+        decorationManager.decorate(transactionData: transactionData)
+    }
+
     public func statusInfo() -> [(String, Any)] {
         [
             ("Last Block Height", "\(state.lastBlockHeight.map { "\($0)" } ?? "N/A")"),
@@ -322,13 +332,18 @@ extension Kit {
         let pendingTransactionSyncer = PendingTransactionSyncer(blockchain: blockchain, storage: transactionStorage)
         let transactionSyncManager = TransactionSyncManager(notSyncedTransactionManager: notSyncedTransactionManager)
         let transactionManager = TransactionManager(address: address, storage: transactionStorage, transactionSyncManager: transactionSyncManager)
+        let decorationManager = DecorationManager(address: address)
 
         transactionSyncManager.add(syncer: ethereumTransactionSyncer)
         transactionSyncManager.add(syncer: internalTransactionSyncer)
         transactionSyncManager.add(syncer: transactionSyncer)
         transactionSyncManager.add(syncer: pendingTransactionSyncer)
 
-        let kit = Kit(blockchain: blockchain, transactionManager: transactionManager, transactionSyncManager: transactionSyncManager, transactionBuilder: transactionBuilder, transactionSigner: transactionSigner, address: address, networkType: networkType, uniqueId: uniqueId, etherscanService: etherscanService, logger: logger)
+        let kit = Kit(
+                blockchain: blockchain, transactionManager: transactionManager, transactionSyncManager: transactionSyncManager,
+                transactionBuilder: transactionBuilder, transactionSigner: transactionSigner, address: address, networkType: networkType,
+                uniqueId: uniqueId, etherscanService: etherscanService, decorationManager: decorationManager, logger: logger
+        )
 
         blockchain.delegate = kit
         transactionSyncManager.set(ethereumKit: kit)

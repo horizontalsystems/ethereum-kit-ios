@@ -32,7 +32,7 @@ class SwapController: UIViewController {
     private var tradeData: TradeData?
     private var allowance: Decimal?
 
-    private let gasPrice = 200_000_000_000
+    private let gasPrice = 20_000_000_000
 
     private let ethereumKit = Manager.shared.evmKit!
     private let fromAdapter: IAdapter = Manager.shared.erc20Adapters[0]

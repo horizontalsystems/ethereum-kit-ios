@@ -91,3 +91,7 @@ protocol ITransactionManagerDelegate: AnyObject {
     func onUpdate(transactionsSyncState: SyncState)
     func onUpdate(transactionsWithInternal: [FullTransaction])
 }
+
+public protocol IDecorator {
+    func decorate(transactionData: TransactionData) -> TransactionDecoration?
+}
