@@ -76,6 +76,8 @@ class Manager {
         }
 
         self.evmKit = evmKit
+        evmKit.add(decorator: Erc20Kit.Kit.getDecorator(address: evmKit.address))
+        evmKit.add(decorator: UniswapKit.Kit.getDecorator(address: evmKit.address))
 
         evmKit.start()
 

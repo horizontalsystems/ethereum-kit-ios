@@ -142,16 +142,12 @@ extension Kit {
 
     public static func instance(ethereumKit: EthereumKit.Kit, contractAddress: Address) throws -> Kit {
         let databaseFileName = "\(ethereumKit.uniqueId)-\(contractAddress)"
-
-        ContractMethodFactories.shared.register(factory: ApproveMethodFactory())
-        ContractMethodFactories.shared.register(factory: TransferMethodFactory())
-
         let address = ethereumKit.address
         let storage: ITransactionStorage & ITokenBalanceStorage = try GrdbStorage(databaseDirectoryUrl: databaseDirectoryUrl(), databaseFileName: databaseFileName)
 
         let dataProvider: IDataProvider = DataProvider(ethereumKit: ethereumKit)
         let transactionSyncer = Erc20TransactionSyncer(provider: ethereumKit.etherscanService, contractAddress: contractAddress, id: syncerId(contractAddress: contractAddress))
-        let transactionManager = TransactionManager(contractAddress: contractAddress, ethereumKit: ethereumKit, contractMethodFactories: ContractMethodFactories.shared, storage: storage)
+        let transactionManager = TransactionManager(contractAddress: contractAddress, ethereumKit: ethereumKit, contractMethodFactories: Eip20ContractMethodFactories.shared, storage: storage)
         let balanceManager = BalanceManager(contractAddress: contractAddress, address: address, storage: storage, dataProvider: dataProvider)
         let allowanceManager = AllowanceManager(ethereumKit: ethereumKit, contractAddress: contractAddress, address: address)
 
@@ -188,6 +184,10 @@ extension Kit {
 
     private static func syncerId(contractAddress: Address) -> String {
         "erc20_transaction_syncer_\(contractAddress.hex)"
+    }
+
+    public static func getDecorator(address: Address) -> IDecorator {
+        Eip20TransactionDecorator(contractMethodFactories: Eip20ContractMethodFactories.shared)
     }
 
 }
