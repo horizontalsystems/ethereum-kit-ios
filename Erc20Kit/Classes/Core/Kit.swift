@@ -186,7 +186,7 @@ extension Kit {
         "erc20_transaction_syncer_\(contractAddress.hex)"
     }
 
-    public static func getDecorator(address: Address) -> IDecorator {
+    public static func getDecorator() -> IDecorator {
         Eip20TransactionDecorator(contractMethodFactories: Eip20ContractMethodFactories.shared)
     }
 

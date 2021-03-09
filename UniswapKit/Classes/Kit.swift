@@ -105,7 +105,7 @@ extension Kit {
         return uniswapKit
     }
 
-    public static func getDecorator(address: Address) -> IDecorator {
+    public static func getDecorator() -> IDecorator {
         SwapTransactionDecorator(contractMethodFactories: SwapContractMethodFactories.shared)
     }
 
