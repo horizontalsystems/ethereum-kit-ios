@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name             = 'UniswapKit.swift'
   s.module_name      = 'UniswapKit'
-  s.version          = '0.9.2'
+  s.version          = '0.9.3'
   s.summary          = 'Uniswap exchange integration for Swift.'
 
   s.homepage         = 'https://github.com/horizontalsystems/ethereum-kit-ios'
@@ -17,7 +17,7 @@ Pod::Spec.new do |s|
 
   s.requires_arc = true
 
-  s.dependency 'EthereumKit.swift', '~> 0.12'
+  s.dependency 'EthereumKit.swift', '~> 0.13'
   s.dependency 'OpenSslKit.swift', '~> 1.0'
   s.dependency 'Secp256k1Kit.swift', '~> 1.0'
 

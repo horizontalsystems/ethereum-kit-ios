@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 
 ## Current Version
 
+## 0.13.0
+
 * `EthereumKit`
   * Add support to BSC. Kit initialization method changed [ **non-back-compatible api change** ]
   * Update `Etherscan` testnet urls
