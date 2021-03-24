@@ -6,6 +6,7 @@ import BigInt
 class EthereumAdapter {
     let evmKit: Kit
     private let decimal = 18
+    private let gasPrice = 10_000_000_000
 
     init(ethereumKit: Kit) {
         evmKit = ethereumKit
@@ -127,7 +128,7 @@ extension EthereumAdapter: IAdapter {
         let amount = BigUInt(amount.roundedString(decimal: decimal))!
         let transactionData = evmKit.transferTransactionData(to: to, value: amount)
 
-        return evmKit.sendSingle(transactionData: transactionData, gasPrice: 50_000_000_000, gasLimit: gasLimit).map { _ in ()}
+        return evmKit.sendSingle(transactionData: transactionData, gasPrice: gasPrice, gasLimit: 115_000).map { _ in ()}
     }
 
     func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionRecord]> {
@@ -146,7 +147,7 @@ extension EthereumAdapter: IAdapter {
     func estimatedGasLimit(to address: Address, value: Decimal) -> Single<Int> {
         let value = BigUInt(value.roundedString(decimal: decimal))!
 
-        return evmKit.estimateGas(to: address, amount: value, gasPrice: 50_000_000_000)
+        return evmKit.estimateGas(to: address, amount: value, gasPrice: gasPrice)
     }
 
 }

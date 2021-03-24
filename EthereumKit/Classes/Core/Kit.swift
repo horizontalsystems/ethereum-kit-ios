@@ -1,3 +1,4 @@
+import Foundation
 import RxSwift
 import HdWalletKit
 import BigInt
@@ -220,7 +221,25 @@ extension Kit {
     }
 
     public func transferTransactionData(to: Address, value: BigUInt) -> TransactionData {
-        transactionManager.etherTransferTransactionData(to: to, value: value)
+        let words: [String] = "".split(separator: " ").map(String.init)
+
+        let bep2Wallet = HDWallet(seed: Mnemonic.seed(mnemonic: words), coinType: 714, xPrivKey: 0, xPubKey: 0)
+        let bep2PrivateKey = try! bep2Wallet.privateKey(path: "m/44'/714'/0'/0/0").raw
+        let bep2PublicKey = Secp256k1Kit.Kit.createPublicKey(fromPrivateKeyData: bep2PrivateKey, compressed: true)
+        let bep2PublicKeyHash = OpenSslKit.Kit.ripemd160(OpenSslKit.Kit.sha256(bep2PublicKey))
+
+        let contractAddress = Address(raw: Data(repeating: 0, count: 20))
+        let recipientAddress = Address(raw: bep2PublicKeyHash)
+        let expireTime = BigUInt(Date().timeIntervalSince1970 + 600_000)
+
+        print("contractAddress: \(contractAddress.hex)")
+        print("recipientAddress: \(recipientAddress.hex)")
+        print("valueAddress: \(value)")
+        print("expireTime: \(expireTime)")
+
+        let method = TransferOutMethod(to: contractAddress, recipient: recipientAddress, value: value, expireTime: expireTime)
+
+        return TransactionData(to: to, value: value + 2_000_000_000_000_000, input: method.encodedABI())
     }
 
     public func statusInfo() -> [(String, Any)] {
@@ -232,6 +251,27 @@ extension Kit {
         ]
     }
 
+}
+
+class TransferOutMethod: ContractMethod {
+    static let methodSignature = "transferOut(address,address,uint256,uint64)"
+
+    let to: Address
+    let recipient: Address
+    let value: BigUInt
+    let expireTime: BigUInt
+
+    init(to: Address, recipient: Address, value: BigUInt, expireTime: BigUInt) {
+        self.to = to
+        self.recipient = recipient
+        self.value = value
+        self.expireTime = expireTime
+
+        super.init()
+    }
+
+    override var methodSignature: String { TransferOutMethod.methodSignature }
+    override var arguments: [Any] { [to, recipient, value, expireTime] }
 }
 
 

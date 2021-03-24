@@ -34,6 +34,8 @@ class SendController: UIViewController {
         segmentedControl.selectedSegmentIndex = 0
         segmentedControl.sendActions(for: .valueChanged)
 
+        addressTextField?.text = "0x0000000000000000000000000000000000001004"
+
         addressTextField?.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         amountTextField?.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
     }
