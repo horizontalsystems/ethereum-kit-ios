@@ -1,5 +1,6 @@
 import RxSwift
 import BigInt
+import HsToolKit
 
 protocol IRpcApiProvider {
     var source: String { get }
@@ -34,21 +35,6 @@ protocol IRpcSyncerDelegate: AnyObject {
     func didUpdate(state: AccountState)
 }
 
-protocol IWebSocket: AnyObject {
-    var delegate: IWebSocketDelegate? { get set }
-    var source: String { get }
-
-    func start()
-    func stop()
-
-    func send(data: Data) throws
-}
-
-protocol IWebSocketDelegate: AnyObject {
-    func didUpdate(state: WebSocketState)
-    func didReceive(data: Data)
-}
-
 protocol IRpcWebSocket: AnyObject {
     var delegate: IRpcWebSocketDelegate? { get set }
     var source: String { get }
@@ -63,20 +49,4 @@ protocol IRpcWebSocketDelegate: AnyObject {
     func didUpdate(state: WebSocketState)
     func didReceive(rpcResponse: JsonRpcResponse)
     func didReceive(subscriptionResponse: RpcSubscriptionResponse)
-}
-
-public enum WebSocketState {
-    case connecting
-    case connected
-    case disconnected(error: Error)
-
-    public enum DisconnectError: Error {
-        case notStarted
-        case socketDisconnected(reason: String)
-    }
-
-    public enum StateError: Error {
-        case notConnected
-    }
-
 }

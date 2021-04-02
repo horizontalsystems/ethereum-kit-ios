@@ -32,7 +32,7 @@ extension RpcWebSocket: IRpcWebSocket {
         let parameters = rpc.parameters(id: rpcId)
         let data = try JSONSerialization.data(withJSONObject: parameters)
 
-        try socket.send(data: data)
+        try socket.send(data: data, completionHandler: nil)
 
         logger?.debug("Send RPC: \(String(data: data, encoding: .utf8) ?? "nil")")
     }
@@ -50,14 +50,20 @@ extension RpcWebSocket: IWebSocketDelegate {
             let jsonObject = try JSONSerialization.jsonObject(with: data)
 
             if let rpcResponse = JsonRpcResponse.response(jsonObject: jsonObject) {
-                self.delegate?.didReceive(rpcResponse: rpcResponse)
+                delegate?.didReceive(rpcResponse: rpcResponse)
             } else if let subscriptionResponse = try? RpcSubscriptionResponse(JSONObject: jsonObject) {
-                self.delegate?.didReceive(subscriptionResponse: subscriptionResponse)
+                delegate?.didReceive(subscriptionResponse: subscriptionResponse)
             } else {
                 throw ParseError.invalidResponse(jsonObject: jsonObject)
             }
         } catch {
             logger?.error("Handle Failed: \(error)")
+        }
+    }
+
+    public func didReceive(text: String) {
+        if let data = text.data(using: .utf8) {
+            didReceive(data: data)
         }
     }
 
