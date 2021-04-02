@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 ## Current Version
 
+* Use iOS native URLSessionWebSocketTask instead of Starscream
+* Increase minimum iOS version to 13.0 [ **non-back-compatible api change** ]
+
 ## 0.13.0
 
 * `EthereumKit`

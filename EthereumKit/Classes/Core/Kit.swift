@@ -310,7 +310,7 @@ extension Kit {
 
         switch syncSource {
         case let .webSocket(url, auth):
-            let socket = NodeWebSocket(url: url, auth: auth, reachabilityManager: reachabilityManager, logger: logger)
+            let socket = WebSocket(url: url, reachabilityManager: reachabilityManager, auth: auth, logger: logger)
             syncer = WebSocketRpcSyncer.instance(address: address, socket: socket, logger: logger)
 
         case let .http(url, auth):
