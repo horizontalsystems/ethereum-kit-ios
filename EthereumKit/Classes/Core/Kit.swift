@@ -269,10 +269,14 @@ extension Kit: IBlockchainDelegate {
 extension Kit {
 
     public static func address(words: [String], networkType: NetworkType = .ethMainNet) throws -> Address {
-        let wallet = hdWallet(words: words, networkType: networkType)
-        let privateKey = try wallet.privateKey(account: 0, index: 0, chain: .external)
+        let privKey = try privateKey(words: words, networkType: networkType)
 
-        return ethereumAddress(privateKey: privateKey)
+        return ethereumAddress(privateKey: privKey)
+    }
+
+    public static func privateKey(words: [String], networkType: NetworkType = .ethMainNet) throws -> HDPrivateKey {
+        let wallet = hdWallet(words: words, networkType: networkType)
+        return try wallet.privateKey(account: 0, index: 0, chain: .external)
     }
 
     public static func clear(exceptFor excludedFiles: [String]) throws {
@@ -287,20 +291,11 @@ extension Kit {
     }
 
     public static func instance(words: [String], networkType: NetworkType, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
-        let wallet = hdWallet(words: words, networkType: networkType)
-
-        return try instance(
-                hdWallet: wallet, networkType: networkType, syncSource: syncSource,
-                etherscanApiKey: etherscanApiKey, walletId: walletId, minLogLevel: minLogLevel
-        )
-    }
-
-    public static func instance(hdWallet: HDWallet, networkType: NetworkType, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
         let logger = Logger(minLogLevel: minLogLevel)
         let uniqueId = "\(walletId)-\(networkType)"
 
-        let privateKey = try hdWallet.privateKey(account: 0, index: 0, chain: .external)
-        let address = ethereumAddress(privateKey: privateKey)
+        let privKey = try privateKey(words: words, networkType: networkType)
+        let address = ethereumAddress(privateKey: privKey)
 
         let network = networkType.network
         let networkManager = NetworkManager(logger: logger)
@@ -318,7 +313,7 @@ extension Kit {
             syncer = ApiRpcSyncer(address: address, rpcApiProvider: apiProvider, reachabilityManager: reachabilityManager)
         }
 
-        let transactionSigner = TransactionSigner(chainId: network.chainId, privateKey: privateKey.raw)
+        let transactionSigner = TransactionSigner(chainId: network.chainId, privateKey: privKey.raw)
         let transactionBuilder = TransactionBuilder(address: address)
         let etherscanService = EtherscanService(networkManager: networkManager, network: network, etherscanApiKey: etherscanApiKey, address: address)
 
