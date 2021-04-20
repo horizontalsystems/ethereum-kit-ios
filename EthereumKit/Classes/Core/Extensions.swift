@@ -86,16 +86,16 @@ extension PrimitiveSequence where Trait == SingleTrait {
         }
     }
 
-    static func fromIncubed(callable: @escaping () throws -> Element) -> Single<Element> {
-        Single.from(callable: callable)
-        .catchError { error -> PrimitiveSequence<SingleTrait, Element> in
-            if error is IncubedRpcApiProvider.IncubedError {
-                return .error(error)
-            }
-
-            return .error(IncubedRpcApiProvider.IncubedError.notReachable)
-        }
-    }
+//    static func fromIncubed(callable: @escaping () throws -> Element) -> Single<Element> {
+//        Single.from(callable: callable)
+//        .catchError { error -> PrimitiveSequence<SingleTrait, Element> in
+//            if error is IncubedRpcApiProvider.IncubedError {
+//                return .error(error)
+//            }
+//
+//            return .error(IncubedRpcApiProvider.IncubedError.notReachable)
+//        }
+//    }
 
 }
 
