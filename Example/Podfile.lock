@@ -161,7 +161,7 @@ SPEC CHECKSUMS:
   CNIOWindows: f2baa102255e986467578337ffa2f777cb6bdf7f
   Cuckoo: 4625f7f54d9bb880123270e8969898d6c1d036b5
   Erc20Kit.swift: d634b67c615613bec10e5a7b1198ebf42dbd9666
-  EthereumKit.swift: 44f2dfe878376eba5fa9f659eb0df6c21ff14d12
+  EthereumKit.swift: fefa1d324480c87f7fe2d4f3eb6c44ebaca757e0
   GRDB.swift: 8cc3ab7c8b8b4ac1761deb8dca4b51c1c9d429f8
   HdWalletKit.swift: 30b1ab08c736422eeefe346369ced89574e2ec00
   HsToolKit.swift: a72793d6b052cfbe36198353d57f99dac2bba948
