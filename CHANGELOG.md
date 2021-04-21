@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 * Use iOS native URLSessionWebSocketTask instead of Starscream
 * Increase minimum iOS version to 13.0 [ **non-back-compatible api change** ]
+* Accept seed data instead of words array when getting instance of `EthereumKit`, address or private key [ **non-back-compatible api change** ]
 
 ## 0.13.0
 
