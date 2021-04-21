@@ -268,14 +268,14 @@ extension Kit: IBlockchainDelegate {
 
 extension Kit {
 
-    public static func address(words: [String], networkType: NetworkType = .ethMainNet) throws -> Address {
-        let privKey = try privateKey(words: words, networkType: networkType)
+    public static func address(seed: Data, networkType: NetworkType = .ethMainNet) throws -> Address {
+        let privKey = try privateKey(seed: seed, networkType: networkType)
 
         return ethereumAddress(privateKey: privKey)
     }
 
-    public static func privateKey(words: [String], networkType: NetworkType = .ethMainNet) throws -> HDPrivateKey {
-        let wallet = hdWallet(words: words, networkType: networkType)
+    public static func privateKey(seed: Data, networkType: NetworkType = .ethMainNet) throws -> HDPrivateKey {
+        let wallet = hdWallet(seed: seed, networkType: networkType)
         return try wallet.privateKey(account: 0, index: 0, chain: .external)
     }
 
@@ -290,11 +290,11 @@ extension Kit {
         }
     }
 
-    public static func instance(words: [String], networkType: NetworkType, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
+    public static func instance(seed: Data, networkType: NetworkType, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
         let logger = Logger(minLogLevel: minLogLevel)
         let uniqueId = "\(walletId)-\(networkType)"
 
-        let privKey = try privateKey(words: words, networkType: networkType)
+        let privKey = try privateKey(seed: seed, networkType: networkType)
         let address = ethereumAddress(privateKey: privKey)
 
         let network = networkType.network
@@ -406,7 +406,7 @@ extension Kit {
         return url
     }
 
-    private static func hdWallet(words: [String], networkType: NetworkType) -> HDWallet {
+    private static func hdWallet(seed: Data, networkType: NetworkType) -> HDWallet {
         let coinType: UInt32
 
         switch networkType {
@@ -414,7 +414,7 @@ extension Kit {
         default: coinType = 1
         }
 
-        return HDWallet(seed: Mnemonic.seed(mnemonic: words), coinType: coinType, xPrivKey: 0, xPubKey: 0)
+        return HDWallet(seed: seed, coinType: coinType, xPrivKey: 0, xPubKey: 0)
     }
 
     private static func ethereumAddress(privateKey: HDPrivateKey) -> Address {

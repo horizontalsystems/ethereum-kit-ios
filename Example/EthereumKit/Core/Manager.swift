@@ -57,8 +57,10 @@ class Manager {
             syncSource = Kit.infuraWebsocketSyncSource(networkType: configuration.networkType, projectId: configuration.infuraCredentials.id, projectSecret: configuration.infuraCredentials.secret)!
         }
 
+        let seed = Mnemonic.seed(mnemonic: words)
+
         let evmKit = try! Kit.instance(
-                words: words,
+                seed: seed,
                 networkType: configuration.networkType,
                 syncSource: syncSource,
                 etherscanApiKey: configuration.etherscanApiKey,
