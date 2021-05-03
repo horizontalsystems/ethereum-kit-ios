@@ -54,7 +54,8 @@ class Manager {
         if case .bscMainNet = configuration.networkType {
             syncSource = Kit.defaultBscWebsocketSyncSource()!
         } else {
-            syncSource = Kit.infuraWebsocketSyncSource(networkType: configuration.networkType, projectId: configuration.infuraCredentials.id, projectSecret: configuration.infuraCredentials.secret)!
+//            syncSource = Kit.infuraWebsocketSyncSource(networkType: configuration.networkType, projectId: configuration.infuraCredentials.id, projectSecret: configuration.infuraCredentials.secret)!
+            syncSource = Kit.infuraHttpSyncSource(networkType: configuration.networkType, projectId: configuration.infuraCredentials.id, projectSecret: configuration.infuraCredentials.secret)!
         }
 
         let seed = Mnemonic.seed(mnemonic: words)

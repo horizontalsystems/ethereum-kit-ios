@@ -237,9 +237,9 @@ extension Kit {
 
 extension Kit: IBlockchainDelegate {
 
-    func onUpdate(lastBlockBloomFilter: BloomFilter) {
-        lastBlockBloomFilterSubject.onNext(lastBlockBloomFilter)
-    }
+//    func onUpdate(lastBlockBloomFilter: BloomFilter) {
+//        lastBlockBloomFilterSubject.onNext(lastBlockBloomFilter)
+//    }
 
     func onUpdate(lastBlockHeight: Int) {
         guard state.lastBlockHeight != lastBlockHeight else {
@@ -306,11 +306,11 @@ extension Kit {
         switch syncSource {
         case let .webSocket(url, auth):
             let socket = WebSocket(url: url, reachabilityManager: reachabilityManager, auth: auth, logger: logger)
-            syncer = WebSocketRpcSyncer.instance(address: address, socket: socket, logger: logger)
+            syncer = WebSocketRpcSyncer.instance(socket: socket, logger: logger)
 
-        case let .http(url, auth):
-            let apiProvider = NodeApiProvider(networkManager: networkManager, url: url, auth: auth)
-            syncer = ApiRpcSyncer(address: address, rpcApiProvider: apiProvider, reachabilityManager: reachabilityManager)
+        case let .http(url, blockTime, auth):
+            let apiProvider = NodeApiProvider(networkManager: networkManager, url: url, blockTime: blockTime, auth: auth)
+            syncer = ApiRpcSyncer(rpcApiProvider: apiProvider, reachabilityManager: reachabilityManager)
         }
 
         let transactionSigner = TransactionSigner(chainId: network.chainId, privateKey: privKey.raw)
@@ -375,7 +375,7 @@ extension Kit {
             return nil
         }
 
-        return .http(url: url, auth: projectSecret)
+        return .http(url: url, blockTime: networkType.blockTime, auth: projectSecret)
     }
 
     public static func defaultBscWebsocketSyncSource() -> SyncSource? {
@@ -391,7 +391,7 @@ extension Kit {
             return nil
         }
 
-        return .http(url: url, auth: nil)
+        return .http(url: url, blockTime: NetworkType.bscMainNet.blockTime, auth: nil)
     }
 
     private static func dataDirectoryUrl() throws -> URL {

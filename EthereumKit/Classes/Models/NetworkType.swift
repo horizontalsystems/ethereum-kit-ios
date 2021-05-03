@@ -20,4 +20,9 @@ public enum NetworkType {
     public var chainId: Int {
         network.chainId
     }
+
+    var blockTime: TimeInterval {
+        network.blockTime
+    }
+
 }

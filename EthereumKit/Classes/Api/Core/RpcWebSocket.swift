@@ -42,7 +42,7 @@ extension RpcWebSocket: IRpcWebSocket {
 extension RpcWebSocket: IWebSocketDelegate {
 
     func didUpdate(state: WebSocketState) {
-        delegate?.didUpdate(state: state)
+        delegate?.didUpdate(socketState: state)
     }
 
     func didReceive(data: Data) {

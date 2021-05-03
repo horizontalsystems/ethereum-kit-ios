@@ -136,6 +136,7 @@ protocol INetwork {
     var genesisBlockHash: Data { get }
     var checkpointBlock: BlockHeader { get }
     var bootnodes: [String] { get }
+    var blockTime: TimeInterval { get }
 }
 
 protocol IDevP2PPeer {

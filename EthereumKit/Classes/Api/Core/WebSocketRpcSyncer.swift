@@ -12,7 +12,6 @@ class WebSocketRpcSyncer {
 
     weak var delegate: IRpcSyncerDelegate?
 
-    private let address: Address
     private let rpcSocket: IRpcWebSocket
     private var logger: Logger?
 
@@ -20,20 +19,17 @@ class WebSocketRpcSyncer {
     private var rpcHandlers = [Int: RpcHandler]()
     private var subscriptionHandlers = [String: SubscriptionHandler]()
 
-    private var isSubscribedToNewHeads = false
+    private let queue = DispatchQueue(label: "io.horizontal-systems.ethereum-kit.web-socket-rpc-syncer", qos: .utility)
 
-    private let queue = DispatchQueue(label: "io.horizontal-systems.ethereum-kit.web-socket-rpc-syncer", qos: .userInitiated)
-
-    private(set) var syncState: SyncState = .notSynced(error: Kit.SyncError.notStarted) {
+    private(set) var state: SyncerState = .notReady(error: Kit.SyncError.notStarted) {
         didSet {
-            if syncState != oldValue {
-                delegate?.didUpdate(syncState: syncState)
+            if state != oldValue {
+                delegate?.didUpdate(state: state)
             }
         }
     }
 
-    private init(address: Address, rpcSocket: IRpcWebSocket, logger: Logger? = nil) {
-        self.address = address
+    private init(rpcSocket: IRpcWebSocket, logger: Logger? = nil) {
         self.rpcSocket = rpcSocket
         self.logger = logger
     }
@@ -90,61 +86,17 @@ class WebSocketRpcSyncer {
         )
     }
 
-    private func fetchLastBlockHeight() {
-        send(
-                rpc: BlockNumberJsonRpc(),
-                onSuccess: { [weak self] lastBlockHeight in
-                    self?.delegate?.didUpdate(lastBlockHeight: lastBlockHeight)
-                    self?.fetchAccountState()
-                },
-                onError: { [weak self] error in
-                    self?.onFailSync(error: error)
-                }
-        )
-    }
-
-    private func fetchAccountState() {
-        fetchBalance { [weak self] balance in
-            self?.fetchNonce { [weak self] nonce in
-                self?.delegate?.didUpdate(state: AccountState(balance: balance, nonce: nonce))
-                self?.syncState = .synced
-            }
-        }
-    }
-
-    private func fetchBalance(onSuccess: @escaping (BigUInt) -> Void) {
-        send(
-                rpc: GetBalanceJsonRpc(address: address, defaultBlockParameter: .latest),
-                onSuccess: onSuccess,
-                onError: { [weak self] error in
-                    self?.onFailSync(error: error)
-                }
-        )
-    }
-
-    private func fetchNonce(onSuccess: @escaping (Int) -> Void) {
-        send(
-                rpc: GetTransactionCountJsonRpc(address: address, defaultBlockParameter: .latest),
-                onSuccess: onSuccess,
-                onError: { [weak self] error in
-                    self?.onFailSync(error: error)
-                }
-        )
-    }
-
     private func subscribeToNewHeads() {
         subscribe(
                 subscription: NewHeadsRpcSubscription(),
                 onSuccess: { [weak self] in
-                    self?.isSubscribedToNewHeads = true
+
                 },
                 onError: { [weak self] error in
-                    self?.onFailSync(error: error)
+//                    self?.onFailSync(error: error)
                 },
                 successHandler: { [weak self] header in
-                    self?.delegate?.didUpdate(lastBlockLogsBloom: header.logsBloom)
                     self?.delegate?.didUpdate(lastBlockHeight: header.number)
-                    self?.fetchAccountState()
                 },
                 errorHandler: { [weak self] error in
                     self?.logger?.error("NewHeads Handle Failed: \(error)")
@@ -152,27 +104,21 @@ class WebSocketRpcSyncer {
         )
     }
 
-    private func onFailSync(error: Error) {
-        syncState = .notSynced(error: error)
-//        socket.disconnect()
-    }
-
 }
 
 extension WebSocketRpcSyncer: IRpcWebSocketDelegate {
 
-    func didUpdate(state: WebSocketState) {
-        if case .notSynced(let error) = syncState, let syncError = error as? Kit.SyncError, syncError == .notStarted {
+    func didUpdate(socketState: WebSocketState) {
+        if case .notReady(let error) = state, let syncError = error as? Kit.SyncError, syncError == .notStarted {
             // do not react to web socket state if syncer was stopped
             return
         }
 
-        switch state {
+        switch socketState {
         case .connecting:
-            syncState = .syncing(progress: nil)
+            state = .preparing
         case .connected:
-            // TODO: fetch last block instead of block height
-            fetchLastBlockHeight()
+            state = .ready
             subscribeToNewHeads()
         case .disconnected(let error):
             queue.async { [weak self] in
@@ -183,8 +129,7 @@ extension WebSocketRpcSyncer: IRpcWebSocketDelegate {
                 self?.subscriptionHandlers = [:]
             }
 
-            isSubscribedToNewHeads = false
-            syncState = .notSynced(error: error)
+            state = .notReady(error: error)
         }
     }
 
@@ -210,19 +155,15 @@ extension WebSocketRpcSyncer: IRpcSyncer {
     }
 
     func start() {
-        syncState = .syncing(progress: nil)
+        state = .preparing
 
         rpcSocket.start()
     }
 
     func stop() {
-        syncState = .notSynced(error: Kit.SyncError.notStarted)
+        state = .notReady(error: Kit.SyncError.notStarted)
 
         rpcSocket.stop()
-    }
-
-    func refresh() {
-        // no need to refresh socket
     }
 
     func single<T>(rpc: JsonRpc<T>) -> Single<T> {
@@ -245,11 +186,11 @@ extension WebSocketRpcSyncer: IRpcSyncer {
 
 extension WebSocketRpcSyncer {
 
-    static func instance(address: Address, socket: IWebSocket, logger: Logger? = nil) -> WebSocketRpcSyncer {
+    static func instance(socket: IWebSocket, logger: Logger? = nil) -> WebSocketRpcSyncer {
         let rpcSocket = RpcWebSocket(socket: socket, logger: logger)
         socket.delegate = rpcSocket
 
-        let syncer = WebSocketRpcSyncer(address: address, rpcSocket: rpcSocket, logger: logger)
+        let syncer = WebSocketRpcSyncer(rpcSocket: rpcSocket, logger: logger)
         rpcSocket.delegate = syncer
 
         return syncer

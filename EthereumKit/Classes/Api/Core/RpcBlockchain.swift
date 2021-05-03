@@ -14,6 +14,16 @@ class RpcBlockchain {
     private let transactionBuilder: TransactionBuilder
     private var logger: Logger?
 
+    private(set) var syncState: SyncState = .notSynced(error: Kit.SyncError.notStarted) {
+        didSet {
+            if syncState != oldValue {
+                delegate?.onUpdate(syncState: syncState)
+            }
+        }
+    }
+
+    private var synced = false
+
     init(address: Address, storage: IApiStorage, syncer: IRpcSyncer, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, logger: Logger? = nil) {
         self.address = address
         self.storage = storage
@@ -23,33 +33,67 @@ class RpcBlockchain {
         self.logger = logger
     }
 
-}
-
-extension RpcBlockchain: IRpcSyncerDelegate {
-
-    func didUpdate(syncState: SyncState) {
-        delegate?.onUpdate(syncState: syncState)
+    func syncAccountState() {
+        Single.zip(
+                        syncer.single(rpc: GetBalanceJsonRpc(address: address, defaultBlockParameter: .latest)),
+                        syncer.single(rpc: GetTransactionCountJsonRpc(address: address, defaultBlockParameter: .latest))
+                )
+                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .utility))
+                .observeOn(ConcurrentDispatchQueueScheduler(qos: .utility))
+                .subscribe(onSuccess: { [weak self] balance, nonce in
+                    self?.onUpdate(accountState: AccountState(balance: balance, nonce: nonce))
+                    self?.syncState = .synced
+                }, onError: { [weak self] error in
+                    self?.syncState = .notSynced(error: error)
+                })
+                .disposed(by: disposeBag)
     }
 
-    func didUpdate(lastBlockLogsBloom: String) {
-        let bloomFilter = BloomFilter(filter: lastBlockLogsBloom)
-
-        guard bloomFilter.mayContain(userAddress: address) else {
-            return
-        }
-
-        delegate?.onUpdate(lastBlockBloomFilter: bloomFilter)
+    private func syncLastBlockHeight() {
+        syncer.single(rpc: BlockNumberJsonRpc())
+                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .utility))
+                .observeOn(ConcurrentDispatchQueueScheduler(qos: .utility))
+                .subscribe(onSuccess: { [weak self] lastBlockHeight in
+                    self?.onUpdate(lastBlockHeight: lastBlockHeight)
+                }, onError: { [weak self] error in
+                    // todo
+                })
+                .disposed(by: disposeBag)
     }
 
-    func didUpdate(lastBlockHeight: Int) {
+    private func onUpdate(lastBlockHeight: Int) {
         storage.save(lastBlockHeight: lastBlockHeight)
         delegate?.onUpdate(lastBlockHeight: lastBlockHeight)
     }
 
-    func didUpdate(state: AccountState) {
-        storage.save(accountState: state)
-        delegate?.onUpdate(accountState: state)
+    func onUpdate(accountState: AccountState) {
+        storage.save(accountState: accountState)
+        delegate?.onUpdate(accountState: accountState)
     }
+
+}
+
+extension RpcBlockchain: IRpcSyncerDelegate {
+
+    func didUpdate(state: SyncerState) {
+        switch state {
+        case .preparing:
+            syncState = .syncing(progress: nil)
+        case .ready:
+            syncState = .syncing(progress: nil)
+            syncAccountState()
+            syncLastBlockHeight()
+        case .notReady(let error):
+            disposeBag = DisposeBag()
+            syncState = .notSynced(error: error)
+        }
+    }
+
+    func didUpdate(lastBlockHeight: Int) {
+        onUpdate(lastBlockHeight: lastBlockHeight)
+        // report to whom???
+    }
+
 }
 
 extension RpcBlockchain: IBlockchain {
@@ -58,11 +102,8 @@ extension RpcBlockchain: IBlockchain {
         "RPC \(syncer.source)"
     }
 
-    var syncState: SyncState {
-        syncer.syncState
-    }
-
     func start() {
+        syncState = .syncing(progress: nil)
         syncer.start()
     }
 
@@ -71,7 +112,15 @@ extension RpcBlockchain: IBlockchain {
     }
 
     func refresh() {
-        syncer.refresh()
+        switch syncer.state {
+        case .preparing:
+            ()
+        case .ready:
+            syncAccountState()
+            syncLastBlockHeight()
+        case .notReady:
+            syncer.start()
+        }
     }
 
     var lastBlockHeight: Int? {

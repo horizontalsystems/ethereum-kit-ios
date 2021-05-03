@@ -26,5 +26,5 @@ class BscMainNet: INetwork {
     )
 
     let bootnodes = [String]()
-
+    let blockTime: TimeInterval = 5.0
 }

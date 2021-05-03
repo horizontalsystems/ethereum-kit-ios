@@ -27,4 +27,5 @@ class Kovan: INetwork {
 // Kovan test network.
     let bootnodes: [String] = []
 
+    let blockTime: TimeInterval = 4.0
 }

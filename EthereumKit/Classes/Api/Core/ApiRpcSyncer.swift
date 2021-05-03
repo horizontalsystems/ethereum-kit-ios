@@ -5,67 +5,64 @@ import HsToolKit
 class ApiRpcSyncer {
     weak var delegate: IRpcSyncerDelegate?
 
-    private let address: Address
     private let rpcApiProvider: IRpcApiProvider
     private let reachabilityManager: IReachabilityManager
-
-    private var isStarted = false
-
     private var disposeBag = DisposeBag()
 
-    private(set) var syncState: SyncState = .notSynced(error: Kit.SyncError.notStarted) {
+    private var isStarted = false
+    private var timer: Timer?
+
+    private(set) var state: SyncerState = .notReady(error: Kit.SyncError.notStarted) {
         didSet {
-            if syncState != oldValue {
-                delegate?.didUpdate(syncState: syncState)
+            if state != oldValue {
+                delegate?.didUpdate(state: state)
             }
         }
     }
 
-    init(address: Address, rpcApiProvider: IRpcApiProvider, reachabilityManager: IReachabilityManager) {
-        self.address = address
+    init(rpcApiProvider: IRpcApiProvider, reachabilityManager: IReachabilityManager) {
         self.rpcApiProvider = rpcApiProvider
         self.reachabilityManager = reachabilityManager
 
         reachabilityManager.reachabilityObservable
-                .observeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
-                .subscribe(onNext: { [weak self] _ in
-                    self?.sync()
+                .observeOn(ConcurrentDispatchQueueScheduler(qos: .utility))
+                .subscribe(onNext: { [weak self] reachable in
+                    self?.handleUpdate(reachable: reachable)
                 })
                 .disposed(by: disposeBag)
     }
 
-    private func sync() {
+    @objc func onFireTimer() {
+        rpcApiProvider.single(rpc: BlockNumberJsonRpc())
+                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .utility))
+                .subscribe(onSuccess: { [weak self] lastBlockHeight in
+                    self?.delegate?.didUpdate(lastBlockHeight: lastBlockHeight)
+                }, onError: { [weak self] error in
+//                    self?.state = .notReady(error: error)
+                })
+                .disposed(by: disposeBag)
+    }
+
+    private func startTimer() {
+        timer = Timer.scheduledTimer(timeInterval: rpcApiProvider.blockTime, target: self, selector: #selector(onFireTimer), userInfo: nil, repeats: true)
+        timer?.tolerance = 0.5
+    }
+
+    private func handleUpdate(reachable: Bool) {
         guard isStarted else {
             return
         }
 
-        guard reachabilityManager.isReachable else {
-            syncState = .notSynced(error: Kit.SyncError.noNetworkConnection)
-            return
+        if reachable {
+            state = .ready
+
+            DispatchQueue.main.async { [weak self] in
+                self?.startTimer()
+            }
+        } else {
+            state = .notReady(error: Kit.SyncError.noNetworkConnection)
+            timer?.invalidate()
         }
-
-        if case .syncing = syncState {
-            return
-        }
-
-        syncState = .syncing(progress: nil)
-
-        Single.zip(
-                        rpcApiProvider.single(rpc: BlockNumberJsonRpc()),
-                        rpcApiProvider.single(rpc: GetBalanceJsonRpc(address: address, defaultBlockParameter: .latest)),
-                        rpcApiProvider.single(rpc: GetTransactionCountJsonRpc(address: address, defaultBlockParameter: .latest))
-                )
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                .subscribe(onSuccess: { [weak self] lastBlockHeight, balance, nonce in
-                    self?.delegate?.didUpdate(lastBlockHeight: lastBlockHeight)
-                    self?.delegate?.didUpdate(state: AccountState(balance: balance, nonce: nonce))
-
-                    self?.syncState = .synced
-                }, onError: { [weak self] error in
-                    self?.syncState = .notSynced(error: error)
-                })
-                .disposed(by: disposeBag)
-
     }
 
 }
@@ -79,18 +76,14 @@ extension ApiRpcSyncer: IRpcSyncer {
     func start() {
         isStarted = true
 
-        sync()
+        handleUpdate(reachable: reachabilityManager.isReachable)
     }
 
     func stop() {
         isStarted = false
 
         disposeBag = DisposeBag()
-        syncState = .notSynced(error: Kit.SyncError.notStarted)
-    }
-
-    func refresh() {
-        sync()
+        state = .notReady(error: Kit.SyncError.notStarted)
     }
 
     func single<T>(rpc: JsonRpc<T>) -> Single<T> {

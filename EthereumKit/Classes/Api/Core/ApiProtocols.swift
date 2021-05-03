@@ -4,6 +4,7 @@ import HsToolKit
 
 protocol IRpcApiProvider {
     var source: String { get }
+    var blockTime: TimeInterval { get }
     func single<T>(rpc: JsonRpc<T>) -> Single<T>
 }
 
@@ -19,20 +20,17 @@ protocol IRpcSyncer: AnyObject {
     var delegate: IRpcSyncerDelegate? { get set }
 
     var source: String { get }
-    var syncState: SyncState { get }
+    var state: SyncerState { get }
 
     func start()
     func stop()
-    func refresh()
 
     func single<T>(rpc: JsonRpc<T>) -> Single<T>
 }
 
 protocol IRpcSyncerDelegate: AnyObject {
-    func didUpdate(syncState: SyncState)
-    func didUpdate(lastBlockLogsBloom: String)
+    func didUpdate(state: SyncerState)
     func didUpdate(lastBlockHeight: Int)
-    func didUpdate(state: AccountState)
 }
 
 protocol IRpcWebSocket: AnyObject {
@@ -46,7 +44,26 @@ protocol IRpcWebSocket: AnyObject {
 }
 
 protocol IRpcWebSocketDelegate: AnyObject {
-    func didUpdate(state: WebSocketState)
+    func didUpdate(socketState: WebSocketState)
     func didReceive(rpcResponse: JsonRpcResponse)
     func didReceive(subscriptionResponse: RpcSubscriptionResponse)
+}
+
+enum SyncerState {
+    case preparing
+    case ready
+    case notReady(error: Error)
+}
+
+extension SyncerState: Equatable {
+
+    public static func ==(lhs: SyncerState, rhs: SyncerState) -> Bool {
+        switch (lhs, rhs) {
+        case (.preparing, .preparing): return true
+        case (.ready, .ready): return true
+        case (.notReady(let lhsError), .notReady(let rhsError)): return "\(lhsError)" == "\(rhsError)"
+        default: return false
+        }
+    }
+
 }

@@ -31,4 +31,5 @@ class Ropsten: INetwork {
         "enode://94c15d1b9e2fe7ce56e458b9a3b672ef11894ddedd0c6f247e0f1d3487f52b66208fb4aeb8179fce6e3a749ea93ed147c37976d67af557508d199d9594c35f09@192.81.208.223:30303?discport=30303", // @gpip
     ]
 
+    let blockTime: TimeInterval = 10.0
 }

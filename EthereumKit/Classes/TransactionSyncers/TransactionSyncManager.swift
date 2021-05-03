@@ -96,18 +96,18 @@ class TransactionSyncManager {
     }
 
     func add(syncer: ITransactionSyncer) {
-        syncer.set(delegate: notSyncedTransactionManager)
-
-        syncers.append(syncer)
-        syncerDisposables[syncer.id] = syncer.stateObservable
-                .observeOn(scheduler)
-                .subscribe(onNext: { [weak self] _ in
-                    self?.syncStateQueue.async { [weak self] in
-                        self?.syncState()
-                    }
-                })
-
-        syncer.start()
+//        syncer.set(delegate: notSyncedTransactionManager)
+//
+//        syncers.append(syncer)
+//        syncerDisposables[syncer.id] = syncer.stateObservable
+//                .observeOn(scheduler)
+//                .subscribe(onNext: { [weak self] _ in
+//                    self?.syncStateQueue.async { [weak self] in
+//                        self?.syncState()
+//                    }
+//                })
+//
+//        syncer.start()
     }
 
     func removeSyncer(byId id: String) {

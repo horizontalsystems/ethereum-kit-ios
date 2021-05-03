@@ -6,12 +6,15 @@ import HsToolKit
 class NodeApiProvider {
     private let networkManager: NetworkManager
     private let url: URL
+    let blockTime: TimeInterval
 
     private let headers: HTTPHeaders
+    private var currentRpcId = 0
 
-    init(networkManager: NetworkManager, url: URL, auth: String?) {
+    init(networkManager: NetworkManager, url: URL, blockTime: TimeInterval, auth: String?) {
         self.networkManager = networkManager
         self.url = url
+        self.blockTime = blockTime
 
         var headers = HTTPHeaders()
 
@@ -23,11 +26,16 @@ class NodeApiProvider {
     }
 
     private func rpcResultSingle(parameters: [String: Any]) -> Single<Any> {
-        let request = networkManager.session
-                .request(url, method: .post, parameters: parameters, encoding: JSONEncoding.default, headers: headers, interceptor: self)
-                .cacheResponse(using: ResponseCacher(behavior: .doNotCache))
-
-        return networkManager.single(request: request, mapper: self)
+        networkManager.single(
+                url: url,
+                method: .post,
+                parameters: parameters,
+                mapper: self,
+                encoding: JSONEncoding.default,
+                headers: headers,
+                interceptor: self,
+                responseCacherBehavior: .doNotCache
+        )
     }
 
 }
@@ -79,7 +87,9 @@ extension NodeApiProvider: IRpcApiProvider {
     }
 
     func single<T>(rpc: JsonRpc<T>) -> Single<T> {
-        rpcResultSingle(parameters: rpc.parameters())
+        currentRpcId += 1
+
+        return rpcResultSingle(parameters: rpc.parameters(id: currentRpcId))
                 .flatMap { jsonObject in
                     do {
                         guard let rpcResponse = JsonRpcResponse.response(jsonObject: jsonObject) else {
