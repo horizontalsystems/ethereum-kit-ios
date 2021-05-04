@@ -33,10 +33,7 @@ public class EtherscanService {
         var parameters = params
         parameters["apikey"] = etherscanApiKey
 
-        return networkManager.single(
-                urlString: urlString, method: .get, parameters: parameters,
-                interceptor: self, mapper: self, responseCacherBehavior: .doNotCache
-        )
+        return networkManager.single(url: urlString, method: .get, parameters: parameters, mapper: self, interceptor: self, responseCacherBehavior: .doNotCache)
     }
 
 }
