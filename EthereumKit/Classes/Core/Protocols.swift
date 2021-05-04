@@ -8,6 +8,7 @@ protocol IBlockchain {
     func start()
     func stop()
     func refresh()
+    func syncAccountState()
 
     var syncState: SyncState { get }
     var lastBlockHeight: Int? { get }

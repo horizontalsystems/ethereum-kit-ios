@@ -66,11 +66,10 @@ extension EtherscanService {
         return apiSingle(params: params)
     }
 
-    public func tokenTransactionsSingle(contractAddress: Address, startBlock: Int) -> Single<[[String: String]]> {
+    public func tokenTransactionsSingle(startBlock: Int) -> Single<[[String: String]]> {
         let params: [String: Any] = [
             "module": "account",
             "action": "tokentx",
-            "contractaddress": contractAddress.hex,
             "address": address.hex,
             "startblock": startBlock,
             "endblock": 99999999,

@@ -73,11 +73,7 @@ class PendingTransactionSyncer: AbstractTransactionSyncer {
         listener?.onTransactionsSynced(fullTransactions: storage.fullTransactions(byHashes: [receipt.transactionHash]))
     }
 
-    override func onEthereumSynced() {
-        sync()
-    }
-
-    override func onUpdateAccountState(accountState: AccountState) {
+    override func onLastBlockNumber(blockNumber: Int) {
         sync()
     }
 

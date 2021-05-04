@@ -4,7 +4,6 @@ import BigInt
 class EthereumTransactionSyncer: AbstractTransactionSyncer {
     private let provider: EtherscanTransactionProvider
     private let scheduler = ConcurrentDispatchQueueScheduler(qos: .background)
-    private var resync: Bool = false
 
     init(provider: EtherscanTransactionProvider) {
         self.provider = provider
@@ -41,20 +40,13 @@ class EthereumTransactionSyncer: AbstractTransactionSyncer {
             delegate.add(notSyncedTransactions: notSyncedTransactions)
         }
 
-        if resync {
-            resync = false
-            doSync(retry: true)
-        } else {
-            state = .synced
-        }
+        state = .synced
     }
 
-    private func doSync(retry: Bool) {
+    private func sync() {
         var single = provider.transactionsSingle(startBlock: lastSyncBlockNumber + 1)
 
-        if retry {
-            single = single.retryWith(options: RetryOptions(mustRetry: { $0.isEmpty }), scheduler: scheduler)
-        }
+        state = .syncing(progress: nil)
 
         single
                 .observeOn(scheduler)
@@ -69,24 +61,8 @@ class EthereumTransactionSyncer: AbstractTransactionSyncer {
                 .disposed(by: disposeBag)
     }
 
-    private func sync(retry: Bool = false) {
-        if state.syncing {
-            if retry {
-                resync = true
-            }
-            return
-        }
-
-        state = .syncing(progress: nil)
-        doSync(retry: retry)
-    }
-
-    override func onEthereumSynced() {
+    override func onLastBlockNumber(blockNumber: Int) {
         sync()
-    }
-
-    override func onUpdateAccountState(accountState: AccountState) {
-        sync(retry: true)
     }
 
 }

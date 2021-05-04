@@ -8,6 +8,7 @@ import HsToolKit
 public class Kit {
     public static let defaultGasLimit = 21_000
 
+    private let disposeBag = DisposeBag()
     private let maxGasLimit = 2_000_000
     private let defaultMinAmount: BigUInt = 1
 
@@ -49,6 +50,13 @@ public class Kit {
 
         state.accountState = blockchain.accountState
         state.lastBlockHeight = blockchain.lastBlockHeight
+
+        transactionManager.etherTransactionsObservable
+                .observeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+                .subscribe(onNext: { [weak self] _ in
+                    self?.blockchain.syncAccountState()
+                })
+                .disposed(by: disposeBag)
     }
 
 }
@@ -203,8 +211,8 @@ extension Kit {
         estimateGas(to: transactionData.to, amount: transactionData.value, gasPrice: gasPrice, data: transactionData.input)
     }
 
-    public func add(syncer: ITransactionSyncer) {
-        transactionSyncManager.add(syncer: syncer)
+    public func add(transactionSyncer: ITransactionSyncer) {
+        transactionSyncManager.add(syncer: transactionSyncer)
     }
     
     public func removeSyncer(byId id: String) {

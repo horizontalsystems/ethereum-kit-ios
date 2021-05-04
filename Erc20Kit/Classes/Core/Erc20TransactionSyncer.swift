@@ -4,15 +4,12 @@ import EthereumKit
 
 class Erc20TransactionSyncer: AbstractTransactionSyncer {
     private let provider: EtherscanService
-    private let contractAddress: Address
     private let scheduler = ConcurrentDispatchQueueScheduler(qos: .background)
-    private var resync: Bool = false
 
-    init(provider: EtherscanService, contractAddress: Address, id: String) {
+    init(provider: EtherscanService) {
         self.provider = provider
-        self.contractAddress = contractAddress
 
-        super.init(id: id)
+        super.init(id: "erc20_transaction_syncer")
     }
 
     private func handle(transactions: [[String: String]]) {
@@ -38,20 +35,13 @@ class Erc20TransactionSyncer: AbstractTransactionSyncer {
             delegate.add(notSyncedTransactions: notSyncedTransactions)
         }
 
-        if resync {
-            resync = false
-            doSync(retry: true)
-        } else {
-            state = .synced
-        }
+        state = .synced
     }
 
-    private func doSync(retry: Bool) {
-        var single = provider.tokenTransactionsSingle(contractAddress: contractAddress, startBlock: super.lastSyncBlockNumber + 1)
+    private func sync() {
+        var single = provider.tokenTransactionsSingle(startBlock: super.lastSyncBlockNumber + 1)
 
-        if retry {
-            single = single.retryWith(options: RetryOptions(mustRetry: { $0.isEmpty }), scheduler: scheduler)
-        }
+        state = .syncing(progress: nil)
 
         single
                 .observeOn(scheduler)
@@ -66,30 +56,12 @@ class Erc20TransactionSyncer: AbstractTransactionSyncer {
                 .disposed(by: disposeBag)
     }
 
-    private func sync(retry: Bool = false) {
-        if state.syncing {
-            if retry {
-                resync = true
-            }
-            return
-        }
-
-        state = .syncing(progress: nil)
-        doSync(retry: retry)
-    }
-
     override func start() {
         sync()
     }
 
-    override func onEthereumSynced() {
+    override func onLastBlockNumber(blockNumber: Int) {
         sync()
-    }
-
-    override func onLastBlockBloomFilter(bloomFilter: BloomFilter) {
-        if bloomFilter.mayContain(contractAddress: contractAddress) {
-            sync(retry: true)
-        }
     }
 
 }

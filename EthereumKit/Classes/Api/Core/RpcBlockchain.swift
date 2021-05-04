@@ -33,22 +33,6 @@ class RpcBlockchain {
         self.logger = logger
     }
 
-    func syncAccountState() {
-        Single.zip(
-                        syncer.single(rpc: GetBalanceJsonRpc(address: address, defaultBlockParameter: .latest)),
-                        syncer.single(rpc: GetTransactionCountJsonRpc(address: address, defaultBlockParameter: .latest))
-                )
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .utility))
-                .observeOn(ConcurrentDispatchQueueScheduler(qos: .utility))
-                .subscribe(onSuccess: { [weak self] balance, nonce in
-                    self?.onUpdate(accountState: AccountState(balance: balance, nonce: nonce))
-                    self?.syncState = .synced
-                }, onError: { [weak self] error in
-                    self?.syncState = .notSynced(error: error)
-                })
-                .disposed(by: disposeBag)
-    }
-
     private func syncLastBlockHeight() {
         syncer.single(rpc: BlockNumberJsonRpc())
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .utility))
@@ -121,6 +105,22 @@ extension RpcBlockchain: IBlockchain {
         case .notReady:
             syncer.start()
         }
+    }
+
+    func syncAccountState() {
+        Single.zip(
+                        syncer.single(rpc: GetBalanceJsonRpc(address: address, defaultBlockParameter: .latest)),
+                        syncer.single(rpc: GetTransactionCountJsonRpc(address: address, defaultBlockParameter: .latest))
+                )
+                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .utility))
+                .observeOn(ConcurrentDispatchQueueScheduler(qos: .utility))
+                .subscribe(onSuccess: { [weak self] balance, nonce in
+                    self?.onUpdate(accountState: AccountState(balance: balance, nonce: nonce))
+                    self?.syncState = .synced
+                }, onError: { [weak self] error in
+                    self?.syncState = .notSynced(error: error)
+                })
+                .disposed(by: disposeBag)
     }
 
     var lastBlockHeight: Int? {

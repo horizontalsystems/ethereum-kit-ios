@@ -31,18 +31,12 @@ public class Kit {
                 })
                 .disposed(by: disposeBag)
 
-        ethereumKit.lastBlockBloomFilterObservable
+        transactionManager.transactionsObservable
                 .observeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
-                .subscribe(onNext: { [weak self] in
-                    self?.onUpdate(bloomFilter: $0)
+                .subscribe(onNext: { [weak self] _ in
+                    self?.balanceManager.sync()
                 })
                 .disposed(by: disposeBag)
-    }
-
-    private func onUpdate(bloomFilter: BloomFilter) {
-        if bloomFilter.mayContain(contractAddress: contractAddress) {
-            balanceManager.sync()
-        }
     }
 
     private func onUpdateSyncState(syncState: EthereumKit.SyncState) {
@@ -66,7 +60,6 @@ extension Kit {
     }
 
     public func stop() {
-        ethereumKit.removeSyncer(byId: Kit.syncerId(contractAddress: contractAddress))
     }
 
     public func refresh() {
@@ -146,7 +139,6 @@ extension Kit {
         let storage: ITransactionStorage & ITokenBalanceStorage = try GrdbStorage(databaseDirectoryUrl: databaseDirectoryUrl(), databaseFileName: databaseFileName)
 
         let dataProvider: IDataProvider = DataProvider(ethereumKit: ethereumKit)
-        let transactionSyncer = Erc20TransactionSyncer(provider: ethereumKit.etherscanService, contractAddress: contractAddress, id: syncerId(contractAddress: contractAddress))
         let transactionManager = TransactionManager(contractAddress: contractAddress, ethereumKit: ethereumKit, contractMethodFactories: Eip20ContractMethodFactories.shared, storage: storage)
         let balanceManager = BalanceManager(contractAddress: contractAddress, address: address, storage: storage, dataProvider: dataProvider)
         let allowanceManager = AllowanceManager(ethereumKit: ethereumKit, contractAddress: contractAddress, address: address)
@@ -154,7 +146,6 @@ extension Kit {
         let erc20Kit = Kit(contractAddress: contractAddress, ethereumKit: ethereumKit, transactionManager: transactionManager, balanceManager: balanceManager, allowanceManager: allowanceManager)
 
         balanceManager.delegate = erc20Kit
-        ethereumKit.add(syncer: transactionSyncer)
 
         return erc20Kit
     }
@@ -182,12 +173,12 @@ extension Kit {
         return url
     }
 
-    private static func syncerId(contractAddress: Address) -> String {
-        "erc20_transaction_syncer_\(contractAddress.hex)"
-    }
-
     public static func getDecorator() -> IDecorator {
         Eip20TransactionDecorator(contractMethodFactories: Eip20ContractMethodFactories.shared)
+    }
+
+    public static func getTransactionSyncer(evmKit: EthereumKit.Kit) -> ITransactionSyncer {
+        Erc20TransactionSyncer(provider: evmKit.etherscanService)
     }
 
 }

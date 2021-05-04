@@ -53,6 +53,9 @@ extension SpvBlockchain: IBlockchain {
         // todo
     }
 
+    func syncAccountState() {
+    }
+
     var syncState: SyncState {
         .notSynced(error: SyncError.stubError)
     }
