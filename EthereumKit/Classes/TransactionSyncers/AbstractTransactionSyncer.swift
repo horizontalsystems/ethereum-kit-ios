@@ -45,9 +45,6 @@ open class AbstractTransactionSyncer: ITransactionSyncer {
     open func onLastBlockNumber(blockNumber: Int) {
     }
 
-    open func onLastBlockBloomFilter(bloomFilter: BloomFilter) {
-    }
-
     open func onUpdateAccountState(accountState: AccountState) {
     }
 
