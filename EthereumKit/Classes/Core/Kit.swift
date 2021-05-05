@@ -12,7 +12,6 @@ public class Kit {
     private let maxGasLimit = 2_000_000
     private let defaultMinAmount: BigUInt = 1
 
-    private let lastBlockBloomFilterSubject = PublishSubject<BloomFilter>()
     private let lastBlockHeightSubject = PublishSubject<Int>()
     private let syncStateSubject = PublishSubject<SyncState>()
     private let accountStateSubject = PublishSubject<AccountState>()
@@ -87,10 +86,6 @@ extension Kit {
 
     public var lastBlockHeightObservable: Observable<Int> {
         lastBlockHeightSubject.asObservable()
-    }
-
-    public var lastBlockBloomFilterObservable: Observable<BloomFilter> {
-        lastBlockBloomFilterSubject.asObservable()
     }
 
     public var syncStateObservable: Observable<SyncState> {
@@ -245,10 +240,6 @@ extension Kit {
 
 extension Kit: IBlockchainDelegate {
 
-//    func onUpdate(lastBlockBloomFilter: BloomFilter) {
-//        lastBlockBloomFilterSubject.onNext(lastBlockBloomFilter)
-//    }
-
     func onUpdate(lastBlockHeight: Int) {
         guard state.lastBlockHeight != lastBlockHeight else {
             return
@@ -323,7 +314,7 @@ extension Kit {
 
         let transactionSigner = TransactionSigner(chainId: network.chainId, privateKey: privKey.raw)
         let transactionBuilder = TransactionBuilder(address: address)
-        let etherscanService = EtherscanService(networkManager: networkManager, network: network, etherscanApiKey: etherscanApiKey, address: address)
+        let etherscanService = EtherscanService(network: network, etherscanApiKey: etherscanApiKey, address: address, logger: logger)
 
         let storage: IApiStorage = try ApiStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "api-\(uniqueId)")
         let blockchain = RpcBlockchain.instance(address: address, storage: storage, syncer: syncer, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, logger: logger)

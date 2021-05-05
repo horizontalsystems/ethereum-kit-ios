@@ -39,6 +39,10 @@ class Erc20TransactionSyncer: AbstractTransactionSyncer {
     }
 
     private func sync() {
+        guard !state.syncing else {
+            return
+        }
+
         var single = provider.tokenTransactionsSingle(startBlock: super.lastSyncBlockNumber + 1)
 
         state = .syncing(progress: nil)

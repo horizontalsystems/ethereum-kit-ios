@@ -47,6 +47,10 @@ class InternalTransactionSyncer: AbstractTransactionSyncer {
     }
 
     private func sync() {
+        guard !state.syncing else {
+            return
+        }
+
         var single = provider.internalTransactionsSingle(startBlock: lastSyncBlockNumber + 1)
 
         state = .syncing(progress: nil)

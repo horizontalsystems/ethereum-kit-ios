@@ -4,14 +4,14 @@ import Alamofire
 import HsToolKit
 
 public class EtherscanService {
-    private let networkManager: NetworkManager
+    private let networkManager: SerialNetworkManager
     private let network: INetwork
 
     private let etherscanApiKey: String
     private let address: Address
 
-    init(networkManager: NetworkManager, network: INetwork, etherscanApiKey: String, address: Address) {
-        self.networkManager = networkManager
+    init(network: INetwork, etherscanApiKey: String, address: Address, logger: Logger) {
+        self.networkManager = SerialNetworkManager(requestInterval: 1, logger: logger)
         self.network = network
         self.etherscanApiKey = etherscanApiKey
         self.address = address
@@ -33,7 +33,7 @@ public class EtherscanService {
         var parameters = params
         parameters["apikey"] = etherscanApiKey
 
-        return networkManager.single(url: urlString, method: .get, parameters: parameters, mapper: self, interceptor: self, responseCacherBehavior: .doNotCache)
+        return networkManager.single(url: urlString, method: .get, parameters: parameters, mapper: self, responseCacherBehavior: .doNotCache)
     }
 
 }
@@ -151,20 +151,6 @@ extension EtherscanService {
         case responseError(message: String?, result: String?)
         case invalidResult
         case rateLimitExceeded
-    }
-
-}
-
-extension EtherscanService: RequestInterceptor {
-
-    public func retry(_ request: Request, for session: Session, dueTo error: Error, completion: @escaping (RetryResult) -> ()) {
-        let error = NetworkManager.unwrap(error: error)
-
-        if case RequestError.rateLimitExceeded = error {
-            completion(.retryWithDelay(1))
-        } else {
-            completion(.doNotRetry)
-        }
     }
 
 }

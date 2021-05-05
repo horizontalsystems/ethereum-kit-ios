@@ -73,7 +73,6 @@ public protocol ITransactionSyncer {
     func start()
     func onEthereumSynced()
     func onLastBlockNumber(blockNumber: Int)
-    func onLastBlockBloomFilter(bloomFilter: BloomFilter)
     func onUpdateAccountState(accountState: AccountState)
 }
 

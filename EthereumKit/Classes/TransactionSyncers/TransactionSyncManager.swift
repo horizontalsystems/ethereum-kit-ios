@@ -50,13 +50,6 @@ class TransactionSyncManager {
                 })
                 .disposed(by: disposeBag)
 
-        ethereumKit.lastBlockBloomFilterObservable
-                .observeOn(scheduler)
-                .subscribe(onNext: { [weak self] in
-                    self?.onLastBlockBloomFilter(bloomFilter: $0)
-                })
-                .disposed(by: disposeBag)
-
         ethereumKit.syncStateObservable
                 .observeOn(scheduler)
                 .subscribe(onNext: { [weak self] in
@@ -73,10 +66,6 @@ class TransactionSyncManager {
 
     private func onLastBlockNumber(blockNumber: Int) {
         syncers.forEach { $0.onLastBlockNumber(blockNumber: blockNumber) }
-    }
-
-    private func onLastBlockBloomFilter(bloomFilter: BloomFilter) {
-        syncers.forEach { $0.onLastBlockBloomFilter(bloomFilter: bloomFilter) }
     }
 
     private func onUpdateAccountState(accountState: AccountState) {
