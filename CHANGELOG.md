@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 
 ## Current Version
 
+## 0.14.0
+
 * Synchronization refactoring [ **non-back-compatible api change** ]
 * Use iOS native URLSessionWebSocketTask instead of Starscream
 * Increase minimum iOS version to 13.0 [ **non-back-compatible api change** ]
