@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name             = 'Erc20Kit.swift'
   s.module_name      = 'Erc20Kit'
-  s.version          = '0.13'
+  s.version          = '0.14.0'
   s.summary          = 'Erc20 token library for Swift.'
 
   s.homepage         = 'https://github.com/horizontalsystems/ethereum-kit-ios'
