@@ -7,11 +7,14 @@ open class AbstractTransactionSyncer: ITransactionSyncer {
     public let disposeBag = DisposeBag()
     public let id: String
     public var delegate: ITransactionSyncerDelegate!
+    private let stateQueue = DispatchQueue(label: "transaction_syncer_state_queue", qos: .background)
 
     public var state: SyncState = .notSynced(error: Kit.SyncError.notStarted) {
         didSet {
             if state != oldValue {
-                stateSubject.onNext(state)
+                stateQueue.async { [weak self] in
+                    self.map { $0.stateSubject.onNext($0.state) }
+                }
             }
         }
     }
