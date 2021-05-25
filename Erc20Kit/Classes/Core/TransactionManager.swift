@@ -91,10 +91,14 @@ class TransactionManager {
                     return nil
                 }
 
-                let event = log.getErc20Event(address: address)
+                let event = log.erc20Event()
 
                 switch event {
                 case .transfer(let from, let to, let value):
+                    guard from == address || to == address else {
+                        return nil
+                    }
+
                     return TransactionCache(
                             hash: transaction.hash,
                             interTransactionIndex: log.logIndex,
@@ -107,6 +111,10 @@ class TransactionManager {
                     )
 
                 case .approve(let owner, let spender, let amount):
+                    guard owner == address else {
+                        return nil
+                    }
+
                     return TransactionCache(
                             hash: transaction.hash,
                             interTransactionIndex: log.logIndex,

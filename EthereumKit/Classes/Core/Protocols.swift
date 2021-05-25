@@ -92,5 +92,5 @@ protocol ITransactionManagerDelegate: AnyObject {
 }
 
 public protocol IDecorator {
-    func decorate(transactionData: TransactionData) -> TransactionDecoration?
+    func decorate(transactionData: TransactionData, fullTransaction: FullTransaction?) -> TransactionDecoration?
 }

@@ -222,6 +222,10 @@ extension Kit {
         decorationManager.decorate(transactionData: transactionData)
     }
 
+    public func decorate(transaction: FullTransaction) -> TransactionDecoration? {
+        decorationManager.decorate(fullTransaction: transaction)
+    }
+
     public func transferTransactionData(to: Address, value: BigUInt) -> TransactionData {
         transactionManager.etherTransferTransactionData(to: to, value: value)
     }

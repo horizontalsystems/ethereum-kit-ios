@@ -1,5 +1,7 @@
 import Foundation
 import UIKit
+import EthereumKit
+import BigInt
 
 class TransactionCell: UITableViewCell {
     static let dateFormatter: DateFormatter = {
@@ -29,7 +31,7 @@ class TransactionCell: UITableViewCell {
                     Block:
                     Confirmations:
                     Failed:
-                    Type:
+                    Decoration:
                     """, alignment: .left, label: titleLabel)
 
         let fromAddress = transaction.from.address.map { format(hash: $0.eip55) } ?? "n/a"
@@ -45,8 +47,50 @@ class TransactionCell: UITableViewCell {
                     \(transaction.blockHeight.map { "# \($0)" } ?? "n/a")
                     \(confirmations)
                     \(transaction.isError)
-                    \(transaction.type)
+                    \(transaction.decoration.flatMap { stringify(decoration: $0) } ?? "n/a")
                     """, alignment: .right, label: valueLabel)
+    }
+
+    private func stringify(decoration: TransactionDecoration) -> String {
+        switch decoration {
+        case .swap(let trade, let tokenIn, let tokenOut, _, _):
+            return "\(amountIn(trade: trade)) \(stringify(token: tokenIn)) <-> \(amountOut(trade: trade)) \(stringify(token: tokenOut))"
+        default: return "n/a"
+        }
+    }
+
+    private func stringify(token: TransactionDecoration.Token) -> String {
+        switch token {
+        case .evmCoin: return "ETH"
+        case .eip20Coin(let address): return "ERC(\(address.eip55.prefix(6)))"
+        }
+    }
+
+    private func amountIn(trade: TransactionDecoration.Trade) -> String {
+        let amount: BigUInt
+        switch trade {
+        case .exactIn(let amountIn, _, _): amount = amountIn
+        case .exactOut(_, let amountInMax, let amountIn): amount = amountIn ?? amountInMax
+        }
+
+
+        return Decimal(string: amount.description).flatMap {
+            let decimalAmount = Decimal(sign: .plus, exponent: -18, significand: $0)
+            return decimalAmount.description
+        } ?? ""
+    }
+
+    private func amountOut(trade: TransactionDecoration.Trade) -> String {
+        let amount: BigUInt
+        switch trade {
+        case .exactIn(_, let amountOutMin, let amountOut): amount = amountOut ?? amountOutMin
+        case .exactOut(let amountOut, _, _): amount = amountOut
+        }
+
+        return Decimal(string: amount.description).flatMap {
+            let decimalAmount = Decimal(sign: .plus, exponent: -18, significand: $0)
+            return decimalAmount.description
+        } ?? ""
     }
 
     private func set(string: String, alignment: NSTextAlignment, label: UILabel?) {

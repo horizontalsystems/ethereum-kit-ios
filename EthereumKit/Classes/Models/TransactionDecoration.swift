@@ -7,8 +7,8 @@ public enum TransactionDecoration {
     case swap(trade: Trade, tokenIn: Token, tokenOut: Token, to: Address, deadline: BigUInt)
 
     public enum Trade {
-        case exactIn(amountIn: BigUInt, amountOutMin: BigUInt)
-        case exactOut(amountOut: BigUInt, amountInMax: BigUInt)
+        case exactIn(amountIn: BigUInt, amountOutMin: BigUInt, amountOut: BigUInt? = nil)
+        case exactOut(amountOut: BigUInt, amountInMax: BigUInt, amountIn: BigUInt? = nil)
     }
 
     public enum Token {

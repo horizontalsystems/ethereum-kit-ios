@@ -80,6 +80,7 @@ PODS:
   - UIExtensions.swift (1.1.1)
   - UniswapKit.swift (0.10.0):
     - BigInt (~> 5.0)
+    - Erc20Kit.swift (~> 0.13)
     - EthereumKit.swift (~> 0.13)
     - OpenSslKit.swift (~> 1.0)
     - RxSwift (~> 5.0)
@@ -180,7 +181,7 @@ SPEC CHECKSUMS:
   SwiftNIOTLS: 4f8df225f03393f08e0b47b4d876ae38167f8a27
   SwiftNIOWebSocket: 375808226f357aaaac832ee02132ce29ec2ff5b4
   UIExtensions.swift: 3ed084c0343ddd0f86c7c558d37759e1fd7d5778
-  UniswapKit.swift: e0a9a8c6df7f695305c74f800a45fec9e3b177da
+  UniswapKit.swift: 66f62bf8f07375c7e11ee0786f31d81a6093eec8
 
 PODFILE CHECKSUM: a1ec00a9bba4333d11769972fa9f29a11e1e03d1
 

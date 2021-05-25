@@ -11,7 +11,7 @@ class Eip20TransactionDecorator {
 
 extension Eip20TransactionDecorator: IDecorator {
 
-    public func decorate(transactionData: TransactionData) -> TransactionDecoration? {
+    public func decorate(transactionData: TransactionData, fullTransaction: FullTransaction?) -> TransactionDecoration? {
         guard let contractMethod = contractMethodFactories.createMethod(input: transactionData.input) else {
             return nil
         }
