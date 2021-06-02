@@ -5,7 +5,7 @@ class Configuration {
     static let shared = Configuration()
 
     let syncMode: SyncMode = .api
-    let networkType: NetworkType = .ropsten
+    let networkType: NetworkType = .kovan
     let minLogLevel: Logger.Level = .debug
     let defaultsWords = "apart approve black  comfort steel spin real renew tone primary key cherry"
 
@@ -29,7 +29,11 @@ class Configuration {
 //            Erc20Token(name: "MMM",       coin: "MMM",   contractAddress: try! Address(hex: "0x3e500c5f4de2738f65c90c6cc93b173792127481"), decimal: 8),
 //            Erc20Token(name: "WEENUS",    coin: "WEENUS", contractAddress: try! Address(hex: "0x101848d5c5bbca18e6b4431eedf6b95e9adf82fa"), decimal: 18),
         ]
-        case .kovan: return []
+        case .rinkeby: return []
+        case .kovan: return [
+            Erc20Token(name: "DAI",       coin: "DAI",   contractAddress: try! Address(hex: "0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa"), decimal: 18),
+        ]
+        case .goerli: return []
         }
     }
 

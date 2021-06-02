@@ -11,9 +11,9 @@ PODS:
   - CNIOLinux (2.27.0)
   - CNIOSHA1 (2.27.0)
   - CNIOWindows (2.27.0)
-  - Cuckoo (1.5.0):
-    - Cuckoo/Swift (= 1.5.0)
-  - Cuckoo/Swift (1.5.0)
+  - Cuckoo (1.5.1):
+    - Cuckoo/Swift (= 1.5.1)
+  - Cuckoo/Swift (1.5.1)
   - Erc20Kit.swift (0.14.0):
     - BigInt (~> 5.0)
     - EthereumKit.swift (~> 0.13)
@@ -38,17 +38,17 @@ PODS:
   - HdWalletKit.swift (1.5.1):
     - OpenSslKit.swift (~> 1.0)
     - Secp256k1Kit.swift (~> 1.0)
-  - HsToolKit.swift (1.2.0):
+  - HsToolKit.swift (1.3.0):
     - Alamofire (~> 5.0)
     - ObjectMapper (~> 4.0)
     - RxSwift (~> 5.0)
     - SwiftNIOFoundationCompat
     - SwiftNIOSSL
     - SwiftNIOWebSocket
-  - Nimble (9.0.1)
+  - Nimble (9.2.0)
   - ObjectMapper (4.2.0)
   - OpenSslKit.swift (1.2.2)
-  - Quick (3.1.2)
+  - Quick (4.0.0)
   - RxSwift (5.1.2)
   - Secp256k1Kit.swift (1.1)
   - SnapKit (5.0.1)
@@ -141,7 +141,7 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   HsToolKit.swift:
-    :commit: 90838c36a4923cd8fe23907892228b8b1aabf78c
+    :commit: ff75e00d0812e30a64d5eb74c73262273e96dc5f
     :git: https://github.com/horizontalsystems/hs-tool-kit-ios
   UIExtensions.swift:
     :commit: 901c8efb58e92e7665419a4e8f627d83f2293cf3
@@ -159,16 +159,16 @@ SPEC CHECKSUMS:
   CNIOLinux: 79227941d64216792c3c59238b0106b9e0df25bc
   CNIOSHA1: f9ce281bdb9a1ed0792da24358ed8004761258d0
   CNIOWindows: f2baa102255e986467578337ffa2f777cb6bdf7f
-  Cuckoo: 09ff1b7c6613b9c27dafea90702ca32208fe59d3
+  Cuckoo: 9124fe138270854903483c270370e6e7658fbc9b
   Erc20Kit.swift: 1394bf418380cb273a51b3464072b5f04f426a07
   EthereumKit.swift: c3a0495c2602a6681ce79d21b951840a601d6ea4
   GRDB.swift: 8cc3ab7c8b8b4ac1761deb8dca4b51c1c9d429f8
   HdWalletKit.swift: 30b1ab08c736422eeefe346369ced89574e2ec00
-  HsToolKit.swift: 747ea05847a5ad8da55dab016204f9af3a925eaf
-  Nimble: 7bed62ffabd6dbfe05f5925cbc43722533248990
+  HsToolKit.swift: 88f5c25dcf2b6fde2370f0125a8864782fbb3d90
+  Nimble: 4f4a345c80b503b3ea13606a4f98405974ee4d0b
   ObjectMapper: 1eb41f610210777375fa806bf161dc39fb832b81
   OpenSslKit.swift: 0e2194853fd9ce42006cf18c89743331406a10a9
-  Quick: 60f0ea3b8e0cfc0df3259a5c06a238ad8b3c46e0
+  Quick: 6473349e43b9271a8d43839d9ba1c442ed1b7ac4
   RxSwift: 1e2e1f9570186967f617e49128ed26ccf1bafc8e
   Secp256k1Kit.swift: 322a66c4b3e95e96a397d73d45ad4d79af991bab
   SnapKit: 97b92857e3df3a0c71833cce143274bf6ef8e5eb

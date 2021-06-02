@@ -296,7 +296,6 @@ extension Kit {
         let privKey = try privateKey(seed: seed, networkType: networkType)
         let address = ethereumAddress(privateKey: privKey)
 
-        let network = networkType.network
         let networkManager = NetworkManager(logger: logger)
 
         let syncer: IRpcSyncer
@@ -312,9 +311,9 @@ extension Kit {
             syncer = ApiRpcSyncer(rpcApiProvider: apiProvider, reachabilityManager: reachabilityManager)
         }
 
-        let transactionSigner = TransactionSigner(chainId: network.chainId, privateKey: privKey.raw)
+        let transactionSigner = TransactionSigner(chainId: networkType.chainId, privateKey: privKey.raw)
         let transactionBuilder = TransactionBuilder(address: address)
-        let etherscanService = EtherscanService(network: network, etherscanApiKey: etherscanApiKey, address: address, logger: logger)
+        let etherscanService = EtherscanService(networkType: networkType, etherscanApiKey: etherscanApiKey, address: address, logger: logger)
 
         let storage: IApiStorage = try ApiStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "api-\(uniqueId)")
         let blockchain = RpcBlockchain.instance(address: address, storage: storage, syncer: syncer, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, logger: logger)
@@ -354,9 +353,11 @@ extension Kit {
 
     private static func infuraDomain(networkType: NetworkType) -> String? {
         switch networkType {
-        case .ropsten: return "ropsten.infura.io"
-        case .kovan: return "kovan.infura.io"
         case .ethMainNet: return "mainnet.infura.io"
+        case .ropsten: return "ropsten.infura.io"
+        case .rinkeby: return "rinkeby.infura.io"
+        case .kovan: return "kovan.infura.io"
+        case .goerli: return "goerli.infura.io"
         default: return nil
         }
     }
@@ -409,8 +410,8 @@ extension Kit {
         let coinType: UInt32
 
         switch networkType {
-        case .ethMainNet, .bscMainNet: coinType = 60
-        default: coinType = 1
+        case .ropsten, .rinkeby, .kovan, .goerli: coinType = 1
+        default: coinType = 60
         }
 
         return HDWallet(seed: seed, coinType: coinType, xPrivKey: 0, xPubKey: 0)
