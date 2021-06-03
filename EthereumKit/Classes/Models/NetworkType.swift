@@ -19,12 +19,16 @@ public enum NetworkType {
 
     var blockTime: TimeInterval {
         switch self {
-        case .ethMainNet: return 15
+        case .ethMainNet, .ropsten, .rinkeby, .goerli: return 15
         case .bscMainNet: return 5
-        case .ropsten: return 15
-        case .rinkeby: return 15
         case .kovan: return 4
-        case .goerli: return 15
+        }
+    }
+
+    public var isMainNet: Bool {
+        switch self {
+        case .ethMainNet, .bscMainNet: return true
+        case .ropsten, .rinkeby, .kovan, .goerli: return false
         }
     }
 
