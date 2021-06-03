@@ -10,9 +10,9 @@ class DecorationManager {
         decorators.append(decorator)
     }
 
-    func decorate(transactionData: TransactionData) -> TransactionDecoration? {
+    func decorateTransaction(transactionData: TransactionData) -> TransactionDecoration? {
         guard !transactionData.input.isEmpty else {
-            return .transfer(from: address, to: transactionData.to, value: transactionData.value)
+            return nil
         }
 
         for decorator in decorators {
@@ -24,21 +24,27 @@ class DecorationManager {
         return nil
     }
 
-    func decorate(fullTransaction: FullTransaction) -> TransactionDecoration? {
+    func decorateFullTransaction(fullTransaction: FullTransaction) -> FullTransaction {
         let transaction = fullTransaction.transaction
         let transactionData = TransactionData(to: transaction.to!, value: transaction.value, input: transaction.input)
 
         guard !transactionData.input.isEmpty else {
-            return .transfer(from: address, to: transactionData.to, value: transactionData.value)
+            return fullTransaction
         }
+
+        var fullTransaction = fullTransaction
 
         for decorator in decorators {
             if let decoration = decorator.decorate(transactionData: transactionData, fullTransaction: fullTransaction) {
-                return decoration
+                fullTransaction.mainDecoration = decoration
+            }
+
+            if let logs = fullTransaction.receiptWithLogs?.logs {
+                fullTransaction.eventDecorations.append(contentsOf: decorator.decorate(logs: logs))
             }
         }
 
-        return nil
+        return fullTransaction
     }
 
 }

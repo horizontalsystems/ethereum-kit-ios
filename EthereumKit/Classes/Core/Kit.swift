@@ -219,11 +219,11 @@ extension Kit {
     }
 
     public func decorate(transactionData: TransactionData) -> TransactionDecoration? {
-        decorationManager.decorate(transactionData: transactionData)
+        decorationManager.decorateTransaction(transactionData: transactionData)
     }
 
-    public func decorate(transaction: FullTransaction) -> TransactionDecoration? {
-        decorationManager.decorate(fullTransaction: transaction)
+    public func decorate(transaction: FullTransaction) -> FullTransaction? {
+        decorationManager.decorateFullTransaction(fullTransaction: transaction)
     }
 
     public func transferTransactionData(to: Address, value: BigUInt) -> TransactionData {
@@ -333,8 +333,8 @@ extension Kit {
         let transactionSyncer = TransactionSyncer(blockchain: blockchain, storage: transactionStorage)
         let pendingTransactionSyncer = PendingTransactionSyncer(blockchain: blockchain, storage: transactionStorage)
         let transactionSyncManager = TransactionSyncManager(notSyncedTransactionManager: notSyncedTransactionManager)
-        let transactionManager = TransactionManager(address: address, storage: transactionStorage, transactionSyncManager: transactionSyncManager)
         let decorationManager = DecorationManager(address: address)
+        let transactionManager = TransactionManager(address: address, storage: transactionStorage, transactionSyncManager: transactionSyncManager, decorationManager: decorationManager)
 
         transactionSyncManager.add(syncer: ethereumTransactionSyncer)
         transactionSyncManager.add(syncer: internalTransactionSyncer)
@@ -352,6 +352,8 @@ extension Kit {
         transactionSyncer.listener = transactionSyncManager
         pendingTransactionSyncer.listener = transactionSyncManager
         internalTransactionSyncer.listener = transactionSyncManager
+
+        decorationManager.add(decorator: TransactionDecorator())
 
         return kit
     }

@@ -11,7 +11,7 @@ extension Array {
 
 extension TransactionLog {
 
-    public func erc20Event() -> Erc20LogEvent? {
+    public func erc20Event() -> EventDecoration? {
         guard topics.count == 3 else {
             return nil
         }
@@ -20,12 +20,12 @@ extension TransactionLog {
         let firstParam = Address(raw: topics[1])
         let secondParam = Address(raw: topics[2])
 
-        if signature == Erc20LogEvent.transferSignature {
-            return .transfer(from: firstParam, to: secondParam, value: BigUInt(data))
+        if signature == TransferEventDecoration.signature {
+            return TransferEventDecoration(contractAddress: address, from: firstParam, to: secondParam, value: BigUInt(data))
         }
 
-        if signature == Erc20LogEvent.approvalSignature {
-            return .approve(owner: firstParam, spender: secondParam, value: BigUInt(data))
+        if signature == ApproveEventDecoration.signature {
+            return ApproveEventDecoration(contractAddress: address, owner: firstParam, spender: secondParam, value: BigUInt(data))
         }
 
         return nil

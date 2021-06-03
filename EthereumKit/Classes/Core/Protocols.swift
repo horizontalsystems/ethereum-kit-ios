@@ -46,6 +46,7 @@ protocol ITransactionStorage {
 
     func save(logs: [TransactionLog])
     func save(internalTransactions: [InternalTransaction])
+    func set(tags: [TransactionTag], to: Transaction)
 
     func hashesFromTransactions() -> [Data]
     func etherTransactionsBeforeSingle(address: Address, hash: Data?, limit: Int?) -> Single<[FullTransaction]>
@@ -92,5 +93,6 @@ protocol ITransactionManagerDelegate: AnyObject {
 }
 
 public protocol IDecorator {
+    func decorate(logs: [TransactionLog]) -> [EventDecoration]
     func decorate(transactionData: TransactionData, fullTransaction: FullTransaction?) -> TransactionDecoration?
 }

@@ -1,9 +1,9 @@
 import BigInt
 
 public enum TransactionDecoration {
-    case transfer(from: Address, to: Address?, value: BigUInt)
-    case eip20Transfer(to: Address, value: BigUInt, contractAddress: Address)
-    case eip20Approve(spender: Address, value: BigUInt, contractAddress: Address)
+    case recognized(method: String, arguments: [Any])
+    case eip20Transfer(to: Address, value: BigUInt)
+    case eip20Approve(spender: Address, value: BigUInt)
     case swap(trade: Trade, tokenIn: Token, tokenOut: Token, to: Address, deadline: BigUInt)
 
     public enum Trade {
@@ -14,6 +14,15 @@ public enum TransactionDecoration {
     public enum Token {
         case evmCoin
         case eip20Coin(address: Address)
+    }
+
+    var name: String {
+        switch self {
+        case .recognized(let method, _): return method
+        case .eip20Transfer: return "eip20Transfer"
+        case .eip20Approve: return "eip20Approve"
+        case .swap: return "swap"
+        }
     }
 
 }

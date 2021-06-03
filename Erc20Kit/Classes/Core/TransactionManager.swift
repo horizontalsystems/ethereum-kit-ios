@@ -83,94 +83,95 @@ class TransactionManager {
     }
 
     private func extractErc20Transactions(from fullTransaction: FullTransaction) -> [TransactionCache] {
-        let transaction = fullTransaction.transaction
-
-        if let receiptWithLogs = fullTransaction.receiptWithLogs {
-            return receiptWithLogs.logs.compactMap { log -> TransactionCache? in
-                guard log.address == contractAddress else {
-                    return nil
-                }
-
-                let event = log.erc20Event()
-
-                switch event {
-                case .transfer(let from, let to, let value):
-                    guard from == address || to == address else {
-                        return nil
-                    }
-
-                    return TransactionCache(
-                            hash: transaction.hash,
-                            interTransactionIndex: log.logIndex,
-                            logIndex: log.logIndex,
-                            from: from,
-                            to: to,
-                            value: value,
-                            timestamp: transaction.timestamp,
-                            type: .transfer
-                    )
-
-                case .approve(let owner, let spender, let amount):
-                    guard owner == address else {
-                        return nil
-                    }
-
-                    return TransactionCache(
-                            hash: transaction.hash,
-                            interTransactionIndex: log.logIndex,
-                            logIndex: log.logIndex,
-                            from: owner,
-                            to: spender,
-                            value: amount,
-                            timestamp: transaction.timestamp,
-                            type: .approve
-                    )
-                default: ()
-                }
-
-                return nil
-            }
-        } else {
-            guard transaction.to == contractAddress else {
-                return []
-            }
-
-            let contractMethod = contractMethodFactories.createMethod(input: fullTransaction.transaction.input)
-
-            switch contractMethod {
-            case let method as TransferMethod:
-                if transaction.from == address || method.to == address {
-                    return [TransactionCache(
-                            hash: transaction.hash,
-                            interTransactionIndex: 0,
-                            logIndex: nil,
-                            from: transaction.from,
-                            to: method.to,
-                            value: method.value,
-                            timestamp: transaction.timestamp,
-                            type: .transfer
-                    )]
-                }
-
-            case let method as ApproveMethod:
-                if transaction.from == address {
-                    return [TransactionCache(
-                            hash: transaction.hash,
-                            interTransactionIndex: 0,
-                            logIndex: nil,
-                            from: transaction.from,
-                            to: method.spender,
-                            value: method.value,
-                            timestamp: transaction.timestamp,
-                            type: .approve
-                    )]
-                }
-
-            default: ()
-            }
-
-            return []
-        }
+        return []
+//        let transaction = fullTransaction.transaction
+//
+//        if let receiptWithLogs = fullTransaction.receiptWithLogs {
+//            return receiptWithLogs.logs.compactMap { log -> TransactionCache? in
+//                guard log.address == contractAddress else {
+//                    return nil
+//                }
+//
+//                let event = log.erc20Event()
+//
+//                switch event {
+//                case .transfer(let from, let to, let value):
+//                    guard from == address || to == address else {
+//                        return nil
+//                    }
+//
+//                    return TransactionCache(
+//                            hash: transaction.hash,
+//                            interTransactionIndex: log.logIndex,
+//                            logIndex: log.logIndex,
+//                            from: from,
+//                            to: to,
+//                            value: value,
+//                            timestamp: transaction.timestamp,
+//                            type: .transfer
+//                    )
+//
+//                case .approve(let owner, let spender, let amount):
+//                    guard owner == address else {
+//                        return nil
+//                    }
+//
+//                    return TransactionCache(
+//                            hash: transaction.hash,
+//                            interTransactionIndex: log.logIndex,
+//                            logIndex: log.logIndex,
+//                            from: owner,
+//                            to: spender,
+//                            value: amount,
+//                            timestamp: transaction.timestamp,
+//                            type: .approve
+//                    )
+//                default: ()
+//                }
+//
+//                return nil
+//            }
+//        } else {
+//            guard transaction.to == contractAddress else {
+//                return []
+//            }
+//
+//            let contractMethod = contractMethodFactories.createMethod(input: fullTransaction.transaction.input)
+//
+//            switch contractMethod {
+//            case let method as TransferMethod:
+//                if transaction.from == address || method.to == address {
+//                    return [TransactionCache(
+//                            hash: transaction.hash,
+//                            interTransactionIndex: 0,
+//                            logIndex: nil,
+//                            from: transaction.from,
+//                            to: method.to,
+//                            value: method.value,
+//                            timestamp: transaction.timestamp,
+//                            type: .transfer
+//                    )]
+//                }
+//
+//            case let method as ApproveMethod:
+//                if transaction.from == address {
+//                    return [TransactionCache(
+//                            hash: transaction.hash,
+//                            interTransactionIndex: 0,
+//                            logIndex: nil,
+//                            from: transaction.from,
+//                            to: method.spender,
+//                            value: method.value,
+//                            timestamp: transaction.timestamp,
+//                            type: .approve
+//                    )]
+//                }
+//
+//            default: ()
+//            }
+//
+//            return []
+//        }
     }
 
 }

@@ -51,7 +51,8 @@ class Erc20Adapter {
                 blockHeight: transaction.fullTransaction.receiptWithLogs?.receipt.blockNumber,
                 isError: transaction.isError,
                 type: transaction.type.rawValue,
-                decoration: ethereumKit.decorate(transaction: transaction.fullTransaction)
+                mainDecoration: transaction.fullTransaction.mainDecoration,
+                secondaryDecorations: transaction.fullTransaction.eventDecorations
         )
     }
 

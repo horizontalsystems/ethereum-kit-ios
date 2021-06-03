@@ -180,7 +180,15 @@ class TransactionStorage {
             for tx in internalTransactions {
                 try tx.insert(db)
             }
+        }
 
+        migrator.registerMigration("createTransactionTags") { db in
+            try db.create(table: TransactionTag.databaseTableName) { t in
+                t.column(TransactionTag.Columns.name.name, .text).notNull().indexed()
+                t.column(TransactionTag.Columns.transactionHash.name, .text).notNull()
+
+                t.uniqueKey([TransactionTag.Columns.name.name, TransactionTag.Columns.transactionHash.name])
+            }
         }
 
         return migrator
@@ -312,6 +320,14 @@ extension TransactionStorage: ITransactionStorage {
         _ = try? dbPool.write { db in
             for internalTransaction in internalTransactions {
                 try internalTransaction.insert(db)
+            }
+        }
+    }
+
+    func set(tags: [TransactionTag], to: Transaction) {
+        _ = try? dbPool.write { db in
+            for tag in tags {
+                try tag.save(db)
             }
         }
     }

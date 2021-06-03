@@ -3,10 +3,47 @@ import Erc20Kit
 import BigInt
 
 class SwapTransactionDecorator {
+    private let userAddress: Address
+    private let contractAddress: Address
     private let contractMethodFactories: SwapContractMethodFactories
 
-    init(contractMethodFactories: SwapContractMethodFactories) {
+    init(userAddress: Address, contractAddress: Address, contractMethodFactories: SwapContractMethodFactories) {
+        self.userAddress = userAddress
+        self.contractAddress = contractAddress
         self.contractMethodFactories = contractMethodFactories
+    }
+
+    private func totalTokenAmount(userAddress: Address, tokenAddress: Address, logs: [TransactionLog], collectIncomingAmounts: Bool) -> BigUInt {
+        var amountIn: BigUInt = 0
+        var amountOut: BigUInt = 0
+
+        for log in logs {
+            if log.address == tokenAddress,
+               let erc20Event = log.erc20Event(),
+               let transferEventDecoration = erc20Event as? TransferEventDecoration {
+                if transferEventDecoration.from == userAddress {
+                    amountIn += transferEventDecoration.value
+                }
+
+                if transferEventDecoration.to == userAddress {
+                    amountOut += transferEventDecoration.value
+                }
+            }
+        }
+
+        return collectIncomingAmounts ? amountIn : amountOut
+    }
+
+    private func totalETHIncoming(userAddress: Address, transactions: [InternalTransaction]) -> BigUInt {
+        var amountOut: BigUInt = 0
+
+        for transaction in transactions {
+            if transaction.to == userAddress {
+                amountOut += transaction.value
+            }
+        }
+
+        return amountOut
     }
 
 }
@@ -144,37 +181,30 @@ extension SwapTransactionDecorator: IDecorator {
         }
     }
 
-    private func totalTokenAmount(userAddress: Address, tokenAddress: Address, logs: [TransactionLog], collectIncomingAmounts: Bool) -> BigUInt {
-        var amountIn: BigUInt = 0
-        var amountOut: BigUInt = 0
-
-        for log in logs {
-            if log.address == tokenAddress,
-               let erc20Log = log.erc20Event(),
-               case .transfer(let from, let to, let amount) = erc20Log {
-                if from == userAddress {
-                    amountIn += amount
-                }
-
-                if to == userAddress {
-                    amountOut += amount
-                }
+    public func decorate(logs: [TransactionLog]) -> [EventDecoration] {
+        logs.compactMap { log -> EventDecoration? in
+            guard log.address == contractAddress, log.topics.count == 3, log.data.count == 128 else {
+                return nil
             }
-        }
 
-        return collectIncomingAmounts ? amountIn : amountOut
-    }
+            let signature = log.topics[0]
+            let firstParam = Address(raw: log.topics[1])
+            let secondParam = Address(raw: log.topics[2])
 
-    private func totalETHIncoming(userAddress: Address, transactions: [InternalTransaction]) -> BigUInt {
-        var amountOut: BigUInt = 0
-
-        for transaction in transactions {
-            if transaction.to == userAddress {
-                amountOut += transaction.value
+            guard (firstParam == userAddress || secondParam == userAddress) && signature == SwapEventDecoration.signature else {
+                return nil
             }
-        }
 
-        return amountOut
+            let amount0In = BigUInt(Data(log.data[0..<32]))
+            let amount1In = BigUInt(Data(log.data[32..<64]))
+            let amount0Out = BigUInt(Data(log.data[64..<96]))
+            let amount1Out = BigUInt(Data(log.data[96..<128]))
+
+            return SwapEventDecoration(
+                    contractAddress: contractAddress, sender: firstParam, amount0In: amount0In, amount1In: amount1In,
+                    amount0Out: amount0Out, amount1Out: amount1Out, to: secondParam
+            )
+        }
     }
 
 }

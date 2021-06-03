@@ -102,11 +102,9 @@ extension Kit {
 
         let uniswapKit = Kit(tradeManager: tradeManager, pairSelector: pairSelector, tokenFactory: tokenFactory)
 
-        return uniswapKit
-    }
+        evmKit.add(decorator: SwapTransactionDecorator(userAddress: address, contractAddress: tradeManager.routerAddress, contractMethodFactories: SwapContractMethodFactories.shared))
 
-    public static func getDecorator() -> IDecorator {
-        SwapTransactionDecorator(contractMethodFactories: SwapContractMethodFactories.shared)
+        return uniswapKit
     }
 
 }

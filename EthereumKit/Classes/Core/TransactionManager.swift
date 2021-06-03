@@ -4,6 +4,7 @@ import BigInt
 class TransactionManager {
     private let address: Address
     private let storage: ITransactionStorage
+    private let decorationManager: DecorationManager
 
     private let etherTransactionsSubject = PublishSubject<[FullTransaction]>()
     private let allTransactionsSubject = PublishSubject<[FullTransaction]>()
@@ -17,9 +18,10 @@ class TransactionManager {
         allTransactionsSubject.asObservable()
     }
 
-    init(address: Address, storage: ITransactionStorage, transactionSyncManager: TransactionSyncManager) {
+    init(address: Address, storage: ITransactionStorage, transactionSyncManager: TransactionSyncManager, decorationManager: DecorationManager) {
         self.address = address
         self.storage = storage
+        self.decorationManager = decorationManager
 
         transactionSyncManager
                 .transactionsObservable
@@ -32,12 +34,32 @@ class TransactionManager {
                 .disposed(by: disposeBag)
     }
 
-    private func handle(syncedTransactions: [FullTransaction]) {
-        if !syncedTransactions.isEmpty {
-            allTransactionsSubject.onNext(syncedTransactions)
+    private func updateTags(transaction: FullTransaction) {
+        var tags = [TransactionTag]()
+
+        if let contractMethodName = transaction.mainDecoration?.name, let toAddress = transaction.transaction.to {
+            tags.append(TransactionTag(name: contractMethodName, transactionHash: transaction.transaction.hash))
+            tags.append(TransactionTag(name: toAddress.hex, transactionHash: transaction.transaction.hash))
         }
 
-        let etherTransactions = syncedTransactions.filter {
+        for event in transaction.eventDecorations {
+            tags.append(contentsOf: event.tags.map { TransactionTag(name: $0, transactionHash: transaction.transaction.hash) })
+        }
+
+        storage.set(tags: tags, to: transaction.transaction)
+    }
+
+    private func handle(syncedTransactions: [FullTransaction]) {
+        let decoratedTransactions = syncedTransactions.map { decorationManager.decorateFullTransaction(fullTransaction: $0) }
+        for transaction in decoratedTransactions {
+            updateTags(transaction: transaction)
+        }
+
+        if !decoratedTransactions.isEmpty {
+            allTransactionsSubject.onNext(decoratedTransactions)
+        }
+
+        let etherTransactions = decoratedTransactions.filter {
             hasEtherTransferred(fullTransaction: $0)
         }
 

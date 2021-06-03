@@ -52,7 +52,8 @@ class EthereumAdapter {
                 blockHeight: fullTransaction.receiptWithLogs?.receipt.blockNumber,
                 isError: fullTransaction.failed,
                 type: "",
-                decoration: evmKit.decorate(transaction: fullTransaction)
+                mainDecoration: fullTransaction.mainDecoration,
+                secondaryDecorations: fullTransaction.eventDecorations
         )
     }
 

@@ -47,7 +47,7 @@ class TransactionCell: UITableViewCell {
                     \(transaction.blockHeight.map { "# \($0)" } ?? "n/a")
                     \(confirmations)
                     \(transaction.isError)
-                    \(transaction.decoration.flatMap { stringify(decoration: $0) } ?? "n/a")
+                    \(transaction.mainDecoration.flatMap { stringify(decoration: $0) } ?? "n/a")
                     """, alignment: .right, label: valueLabel)
     }
 
