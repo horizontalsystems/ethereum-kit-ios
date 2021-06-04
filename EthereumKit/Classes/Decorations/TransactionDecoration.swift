@@ -1,6 +1,7 @@
 import BigInt
 
 public enum TransactionDecoration {
+    case unknown(methodId: Data, inputArguments: Data)
     case recognized(method: String, arguments: [Any])
     case eip20Transfer(to: Address, value: BigUInt)
     case eip20Approve(spender: Address, value: BigUInt)
@@ -16,8 +17,9 @@ public enum TransactionDecoration {
         case eip20Coin(address: Address)
     }
 
-    var name: String {
+    var name: String? {
         switch self {
+        case .unknown: return nil
         case .recognized(let method, _): return method
         case .eip20Transfer: return "eip20Transfer"
         case .eip20Approve: return "eip20Approve"

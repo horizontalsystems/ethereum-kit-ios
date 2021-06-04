@@ -1,5 +1,6 @@
 import OpenSslKit
 import BigInt
+import Foundation
 
 public class ContractMethodHelper {
 
@@ -16,6 +17,9 @@ public class ContractMethodHelper {
             case let argument as [Address]:
                 data += pad(data: BigUInt(arguments.count * 32 + arraysData.count).serialize())
                 arraysData += encode(array: argument.map { $0.raw })
+            case let argument as Data:
+                data += pad(data: BigUInt(arguments.count * 32 + arraysData.count).serialize())
+                arraysData += pad(data: BigUInt(data.count).serialize()) + data
             default:
                 ()
             }
@@ -45,6 +49,12 @@ public class ContractMethodHelper {
                 let array: [Address] = parseAddresses(startPosition: arrayPosition, inputArguments: inputArguments)
                 parsedArguments.append(array)
                 position += 32
+
+            case is Data.Type:
+                let dataPosition = parseInt(data: inputArguments[position..<position + 32])
+                let data: Data = parseData(startPosition: dataPosition, inputArguments: inputArguments)
+                parsedArguments.append(data)
+                position += 32
             default: ()
             }
         }
@@ -71,6 +81,12 @@ public class ContractMethodHelper {
         }
 
         return addresses
+    }
+
+    private class func parseData(startPosition: Int, inputArguments: Data) -> Data {
+        let dataStartPosition = startPosition + 32
+        let size = parseInt(data: inputArguments[startPosition..<dataStartPosition])
+        return Data(inputArguments[dataStartPosition..<(dataStartPosition + size)])
     }
 
     private static func encode(array: [Data]) -> Data {

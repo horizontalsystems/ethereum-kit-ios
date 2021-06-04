@@ -44,6 +44,13 @@ class DecorationManager {
             }
         }
 
+        if fullTransaction.mainDecoration == nil {
+            let methodId = Data(fullTransaction.transaction.input.prefix(4))
+            let inputArguments = Data(fullTransaction.transaction.input.suffix(from: 4))
+
+            fullTransaction.mainDecoration = .unknown(methodId: methodId, inputArguments: inputArguments)
+        }
+
         return fullTransaction
     }
 

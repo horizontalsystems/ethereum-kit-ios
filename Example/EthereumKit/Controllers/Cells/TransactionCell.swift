@@ -99,7 +99,7 @@ class TransactionCell: UITableViewCell {
         case .recognized(let method, let arguments):
             return "\(method)(\(arguments.count) arguments)"
 
-        default: return "contract call"
+        case .unknown: return "contract call"
         }
     }
 

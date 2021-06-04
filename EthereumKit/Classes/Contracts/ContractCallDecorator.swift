@@ -1,27 +1,32 @@
 import BigInt
+import Foundation
 
 class ContractCallDecorator: IDecorator {
 
     private class RecognizedContractMethod {
-        let methodSignature: String
+        let name: String
+        let signature: String
         let arguments: [Any]
         let methodId: Data
 
-        init(methodSignature: String, arguments: [Any]) {
-            self.methodSignature = methodSignature
+        init(name: String, signature: String, arguments: [Any]) {
+            self.name = name
+            self.signature = signature
             self.arguments = arguments
-            methodId = ContractMethodHelper.methodId(signature: methodSignature)
+            methodId = ContractMethodHelper.methodId(signature: signature)
         }
     }
 
     private var methods = [Data: RecognizedContractMethod]()
 
     init() {
-        addMethod(methodSignature: "deposit(uint256)", arguments: [BigUInt.self])
+        addMethod(name: "deposit", signature: "deposit(uint256)", arguments: [BigUInt.self])
+        addMethod(name: "tradeWithHintAndFee", signature: "tradeWithHintAndFee(address,uint256,address,address,uint256,uint256,address,uint256,bytes)",
+                arguments: [Address.self, BigUInt.self, Address.self, Address.self, BigUInt.self, BigUInt.self, Address.self, BigUInt.self, Data.self])
     }
 
-    private func addMethod(methodSignature: String, arguments: [Any]) {
-        let method = RecognizedContractMethod(methodSignature: methodSignature, arguments: arguments)
+    private func addMethod(name: String, signature: String, arguments: [Any]) {
+        let method = RecognizedContractMethod(name: name, signature: signature, arguments: arguments)
         methods[method.methodId] = method
     }
 
@@ -35,7 +40,7 @@ class ContractCallDecorator: IDecorator {
 
         let arguments = ContractMethodHelper.decodeABI(inputArguments: inputArguments, argumentTypes: method.arguments)
 
-        return .recognized(method: method.methodSignature, arguments: arguments)
+        return .recognized(method: method.name, arguments: arguments)
     }
 
     func decorate(logs: [TransactionLog]) -> [EventDecoration] {
