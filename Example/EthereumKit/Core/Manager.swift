@@ -14,6 +14,7 @@ class Manager {
 
     var ethereumAdapter: EthereumAdapter!
     var erc20Adapters = [Erc20Adapter]()
+    var erc20Tokens = [String: String]()
 
     init() {
         if let words = savedWords {
@@ -76,6 +77,7 @@ class Manager {
         for token in configuration.erc20Tokens {
             let adapter = Erc20Adapter(ethereumKit: evmKit, token: token)
             erc20Adapters.append(adapter)
+            erc20Tokens[token.contractAddress.eip55] = token.coin
         }
 
         self.evmKit = evmKit

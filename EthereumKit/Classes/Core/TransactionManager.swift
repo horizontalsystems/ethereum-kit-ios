@@ -46,7 +46,7 @@ class TransactionManager {
             tags.append(contentsOf: event.tags.map { TransactionTag(name: $0, transactionHash: transaction.transaction.hash) })
         }
 
-        storage.set(tags: tags, to: transaction.transaction)
+        storage.set(tags: Array(Set(tags)), to: transaction.transaction)
     }
 
     private func handle(syncedTransactions: [FullTransaction]) {
@@ -90,6 +90,20 @@ extension TransactionManager {
 
     func etherTransactionsSingle(fromHash: Data?, limit: Int?) -> Single<[FullTransaction]> {
         storage.etherTransactionsBeforeSingle(address: address, hash: fromHash, limit: limit)
+    }
+
+    func transactionsSingle(tags: [[String]], fromHash: Data?, limit: Int?) -> Single<[FullTransaction]> {
+        storage
+                .transactionsBeforeSingle(tags: tags, address: address, hash: fromHash, limit: limit)
+                .map { [weak self] transactions in
+                    if let manager = self {
+                        return transactions.map {
+                            manager.decorationManager.decorateFullTransaction(fullTransaction: $0)
+                        }
+                    }
+
+                    return []
+                }
     }
 
     func transactions(byHashes hashes: [Data]) -> [FullTransaction] {

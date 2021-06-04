@@ -4,12 +4,10 @@ import BigInt
 
 class SwapTransactionDecorator {
     private let userAddress: Address
-    private let contractAddress: Address
     private let contractMethodFactories: SwapContractMethodFactories
 
-    init(userAddress: Address, contractAddress: Address, contractMethodFactories: SwapContractMethodFactories) {
+    init(userAddress: Address, contractMethodFactories: SwapContractMethodFactories) {
         self.userAddress = userAddress
-        self.contractAddress = contractAddress
         self.contractMethodFactories = contractMethodFactories
     }
 
@@ -183,15 +181,15 @@ extension SwapTransactionDecorator: IDecorator {
 
     public func decorate(logs: [TransactionLog]) -> [EventDecoration] {
         logs.compactMap { log -> EventDecoration? in
-            guard log.address == contractAddress, log.topics.count == 3, log.data.count == 128 else {
+            let signature = log.topics[0]
+            guard SwapEventDecoration.signature == signature, log.topics.count == 3, log.data.count == 128 else {
                 return nil
             }
 
-            let signature = log.topics[0]
             let firstParam = Address(raw: log.topics[1])
             let secondParam = Address(raw: log.topics[2])
 
-            guard (firstParam == userAddress || secondParam == userAddress) && signature == SwapEventDecoration.signature else {
+            guard firstParam == userAddress || secondParam == userAddress else {
                 return nil
             }
 
@@ -201,7 +199,7 @@ extension SwapTransactionDecorator: IDecorator {
             let amount1Out = BigUInt(Data(log.data[96..<128]))
 
             return SwapEventDecoration(
-                    contractAddress: contractAddress, sender: firstParam, amount0In: amount0In, amount1In: amount1In,
+                    contractAddress: log.address, sender: firstParam, amount0In: amount0In, amount1In: amount1In,
                     amount0Out: amount0Out, amount1Out: amount1Out, to: secondParam
             )
         }

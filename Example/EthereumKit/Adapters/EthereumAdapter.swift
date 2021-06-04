@@ -53,7 +53,7 @@ class EthereumAdapter {
                 isError: fullTransaction.failed,
                 type: "",
                 mainDecoration: fullTransaction.mainDecoration,
-                secondaryDecorations: fullTransaction.eventDecorations
+                eventsDecorations: fullTransaction.eventDecorations
         )
     }
 
@@ -132,8 +132,8 @@ extension EthereumAdapter: IAdapter {
         return evmKit.sendSingle(transactionData: transactionData, gasPrice: 50_000_000_000, gasLimit: gasLimit).map { _ in ()}
     }
 
-    func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionRecord]> {
-        evmKit.etherTransactionsSingle(fromHash: from?.hash, limit: limit)
+    func transactionsSingle(from hash: Data?, limit: Int?) -> Single<[TransactionRecord]> {
+        evmKit.etherTransactionsSingle(fromHash: hash, limit: limit)
                 .map { [weak self] in
                     $0.compactMap {
                         self?.transactionRecord(fullTransaction: $0)

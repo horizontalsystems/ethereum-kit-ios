@@ -33,3 +33,15 @@ class TransactionTag: Record {
     }
 
 }
+
+extension TransactionTag: Hashable {
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine("\(name)\(transactionHash.hex)")
+    }
+
+    public static func ==(lhs: TransactionTag, rhs: TransactionTag) -> Bool {
+        lhs.name == rhs.name && lhs.transactionHash == rhs.transactionHash
+    }
+
+}

@@ -17,7 +17,7 @@ struct TransactionRecord {
     let type: String
 
     let mainDecoration: TransactionDecoration?
-    let secondaryDecorations: [EventDecoration]
+    let eventsDecorations: [EventDecoration]
 }
 
 struct TransactionAddress {

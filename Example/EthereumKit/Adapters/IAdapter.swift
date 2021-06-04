@@ -23,7 +23,7 @@ protocol IAdapter {
     var transactionsObservable: Observable<Void> { get }
 
     func sendSingle(to address: Address, amount: Decimal, gasLimit: Int) -> Single<Void>
-    func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionRecord]>
+    func transactionsSingle(from hash: Data?, limit: Int?) -> Single<[TransactionRecord]>
     func transaction(hash: Data, interTransactionIndex: Int) -> TransactionRecord?
 
     func estimatedGasLimit(to address: Address, value: Decimal) -> Single<Int>

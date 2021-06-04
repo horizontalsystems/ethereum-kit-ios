@@ -19,22 +19,22 @@ class Erc20Adapter {
         self.token = token
     }
 
-    private func transactionRecord(fromTransaction transaction: Erc20Kit.Transaction) -> TransactionRecord? {
-        let mineAddress = ethereumKit.receiveAddress
+    private func transactionRecord(fromTransaction fullTransaction: FullTransaction) -> TransactionRecord? {
+        let transaction = fullTransaction.transaction
 
         let from = TransactionAddress(
                 address: transaction.from,
-                mine: transaction.from == mineAddress
+                mine: transaction.from == receiveAddress
         )
 
         let to = TransactionAddress(
                 address: transaction.to,
-                mine: transaction.to == mineAddress
+                mine: transaction.to == receiveAddress
         )
 
         var amount: Decimal = 0
 
-        if let significand = Decimal(string: transaction.value.description) {
+        if let significand = Decimal(string: transaction.value.description), significand != 0 {
             let sign: FloatingPointSign = from.mine ? .minus : .plus
             amount = Decimal(sign: sign, exponent: -token.decimal, significand: significand)
         }
@@ -42,17 +42,17 @@ class Erc20Adapter {
         return TransactionRecord(
                 transactionHash: transaction.hash.toHexString(),
                 transactionHashData: transaction.hash,
-                transactionIndex: transaction.transactionIndex ?? 0,
-                interTransactionIndex: transaction.interTransactionIndex,
+                transactionIndex: fullTransaction.receiptWithLogs?.receipt.transactionIndex ?? 0,
+                interTransactionIndex: 0,
                 amount: amount,
                 timestamp: transaction.timestamp,
                 from: from,
                 to: to,
-                blockHeight: transaction.fullTransaction.receiptWithLogs?.receipt.blockNumber,
-                isError: transaction.isError,
-                type: transaction.type.rawValue,
-                mainDecoration: transaction.fullTransaction.mainDecoration,
-                secondaryDecorations: transaction.fullTransaction.eventDecorations
+                blockHeight: fullTransaction.receiptWithLogs?.receipt.blockNumber,
+                isError: fullTransaction.failed,
+                type: "",
+                mainDecoration: fullTransaction.mainDecoration,
+                eventsDecorations: fullTransaction.eventDecorations
         )
     }
 
@@ -60,7 +60,7 @@ class Erc20Adapter {
         erc20Kit.allowanceSingle(spenderAddress: spenderAddress)
                 .map { [unowned self] allowanceString in
                     if let significand = Decimal(string: allowanceString) {
-                        return Decimal(sign: .plus, exponent: -self.token.decimal, significand: significand)
+                        return Decimal(sign: .plus, exponent: -token.decimal, significand: significand)
                     }
 
                     return 0
@@ -150,8 +150,8 @@ extension Erc20Adapter: IAdapter {
         return ethereumKit.sendSingle(transactionData: transactionData, gasPrice: gasPrice, gasLimit: gasLimit).map { _ in ()}
     }
 
-    func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionRecord]> {
-        try! erc20Kit.transactionsSingle(from: from, limit: limit)
+    func transactionsSingle(from hash: Data?, limit: Int?) -> Single<[TransactionRecord]> {
+        try! erc20Kit.transactionsSingle(from: hash, limit: limit)
                 .map { [weak self] in
                     $0.compactMap {
                         self?.transactionRecord(fromTransaction: $0)

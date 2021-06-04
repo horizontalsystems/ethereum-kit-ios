@@ -124,6 +124,10 @@ extension Kit {
         transactionManager.etherTransactionsSingle(fromHash: fromHash, limit: limit)
     }
 
+    public func transactionsSingle(tags: [[String]], fromHash: Data? = nil, limit: Int? = nil) -> Single<[FullTransaction]> {
+        transactionManager.transactionsSingle(tags: tags, fromHash: fromHash, limit: limit)
+    }
+
     public func transaction(hash: Data) -> FullTransaction? {
         transactionManager.transaction(hash: hash)
     }

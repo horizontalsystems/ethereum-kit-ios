@@ -57,15 +57,15 @@ class TransactionsController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return transactions.count
+        transactions.count
     }
 
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 230
+        250
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        return tableView.dequeueReusableCell(withIdentifier: String(describing: TransactionCell.self), for: indexPath)
+        tableView.dequeueReusableCell(withIdentifier: String(describing: TransactionCell.self), for: indexPath)
     }
 
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
@@ -93,7 +93,7 @@ class TransactionsController: UITableViewController {
     }
 
     private var currentAdapter: IAdapter {
-        return adapters[segmentedControl.selectedSegmentIndex]
+        adapters[segmentedControl.selectedSegmentIndex]
     }
 
     private func loadNext() {
@@ -103,9 +103,7 @@ class TransactionsController: UITableViewController {
 
         loading = true
 
-        let from = transactions.last.map { (hash: $0.transactionHashData, interTransactionIndex: $0.interTransactionIndex) }
-
-        currentAdapter.transactionsSingle(from: from, limit: limit)
+        currentAdapter.transactionsSingle(from: transactions.last?.transactionHashData, limit: limit)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { [weak self] transactions in

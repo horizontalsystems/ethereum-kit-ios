@@ -2,6 +2,8 @@ import Foundation
 import UIKit
 import EthereumKit
 import BigInt
+import Erc20Kit
+import UniswapKit
 
 class TransactionCell: UITableViewCell {
     static let dateFormatter: DateFormatter = {
@@ -32,6 +34,7 @@ class TransactionCell: UITableViewCell {
                     Confirmations:
                     Failed:
                     Decoration:
+                    Events:
                     """, alignment: .left, label: titleLabel)
 
         let fromAddress = transaction.from.address.map { format(hash: $0.eip55) } ?? "n/a"
@@ -42,27 +45,68 @@ class TransactionCell: UITableViewCell {
                     \(transaction.transactionIndex)
                     \(transaction.interTransactionIndex)
                     \(TransactionCell.dateFormatter.string(from: Date(timeIntervalSince1970: Double(transaction.timestamp))))
-                    \(transaction.amount) \(coin)
+                    \(transaction.amount) ETH
                     \(transaction.from.mine ? toAddress : fromAddress)
                     \(transaction.blockHeight.map { "# \($0)" } ?? "n/a")
                     \(confirmations)
                     \(transaction.isError)
-                    \(transaction.mainDecoration.flatMap { stringify(decoration: $0) } ?? "n/a")
+                    \(transaction.mainDecoration.flatMap { stringify(decoration: $0, transaction: transaction) } ?? "n/a")
+                    \(stringify(events: transaction.eventsDecorations, transaction: transaction))
                     """, alignment: .right, label: valueLabel)
     }
 
-    private func stringify(decoration: TransactionDecoration) -> String {
+    private func stringify(events: [EventDecoration], transaction: TransactionRecord) -> String {
+        events
+                .map { event -> String in
+                    switch event {
+                    case let transfer as TransferEventDecoration:
+                        let coin = Manager.shared.erc20Tokens[transfer.contractAddress.eip55] ?? "n/a"
+                        let fromAddress = transfer.from.eip55.prefix(6)
+                        let toAddress = transfer.to.eip55.prefix(6)
+                        return "\(bigUIntToString(amount: transfer.value)) \(coin) (\(fromAddress) -> \(toAddress))"
+
+                    case let approve as ApproveEventDecoration:
+                        let coin = Manager.shared.erc20Tokens[approve.contractAddress.eip55] ?? "n/a"
+                        let owner = approve.owner.eip55.prefix(6)
+                        let spender = approve.spender.eip55.prefix(6)
+                        return "\(bigUIntToString(amount: approve.value)) \(coin) (\(owner) -approved-> \(spender))"
+
+                    case let swap as SwapEventDecoration:
+                        let sender = swap.sender.eip55.prefix(6)
+                        let to = swap.to.eip55.prefix(6)
+                        return "(\(sender) <-> \(to))"
+
+                    default: return "unknown event"
+                    }
+                }
+                .joined(separator: "\n")
+    }
+
+    private func stringify(decoration: TransactionDecoration, transaction: TransactionRecord) -> String {
+        let coinName = Manager.shared.erc20Tokens[transaction.to.address!.eip55] ?? "n/a"
+        let fromAddress = transaction.from.address!.eip55.prefix(6)
+
         switch decoration {
         case .swap(let trade, let tokenIn, let tokenOut, _, _):
             return "\(amountIn(trade: trade)) \(stringify(token: tokenIn)) <-> \(amountOut(trade: trade)) \(stringify(token: tokenOut))"
-        default: return "n/a"
+
+        case .eip20Transfer(let to, let value):
+            return "\(bigUIntToString(amount: value)) \(coinName) (\(fromAddress) -> \(to.eip55.prefix(6)))"
+
+        case .eip20Approve(let spender, let value):
+            return "\(bigUIntToString(amount: value)) \(coinName) approved"
+
+        case .recognized(let method, let arguments):
+            return "\(method)(\(arguments.count) arguments)"
+
+        default: return "contract call"
         }
     }
 
     private func stringify(token: TransactionDecoration.Token) -> String {
         switch token {
         case .evmCoin: return "ETH"
-        case .eip20Coin(let address): return "ERC(\(address.eip55.prefix(6)))"
+        case .eip20Coin(let address): return Manager.shared.erc20Tokens[address.eip55] ?? "n/a"
         }
     }
 
@@ -73,11 +117,7 @@ class TransactionCell: UITableViewCell {
         case .exactOut(_, let amountInMax, let amountIn): amount = amountIn ?? amountInMax
         }
 
-
-        return Decimal(string: amount.description).flatMap {
-            let decimalAmount = Decimal(sign: .plus, exponent: -18, significand: $0)
-            return decimalAmount.description
-        } ?? ""
+        return bigUIntToString(amount: amount)
     }
 
     private func amountOut(trade: TransactionDecoration.Trade) -> String {
@@ -87,7 +127,11 @@ class TransactionCell: UITableViewCell {
         case .exactOut(let amountOut, _, _): amount = amountOut
         }
 
-        return Decimal(string: amount.description).flatMap {
+        return bigUIntToString(amount: amount)
+    }
+
+    private func bigUIntToString(amount: BigUInt) -> String {
+        Decimal(string: amount.description).flatMap {
             let decimalAmount = Decimal(sign: .plus, exponent: -18, significand: $0)
             return decimalAmount.description
         } ?? ""

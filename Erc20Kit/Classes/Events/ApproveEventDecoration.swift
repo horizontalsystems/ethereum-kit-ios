@@ -16,7 +16,7 @@ public class ApproveEventDecoration: EventDecoration {
         super.init(contractAddress: contractAddress)
     }
 
-    override var tags: [String] {
+    override open var tags: [String] {
         [contractAddress.hex, "eip20Approve"]
     }
 

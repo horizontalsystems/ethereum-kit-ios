@@ -77,8 +77,9 @@ extension Kit {
         state.balance
     }
 
-    public func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) throws -> Single<[Transaction]> {
-        transactionManager.transactionsSingle(from: from, limit: limit)
+    public func transactionsSingle(from hash: Data?, limit: Int?) throws -> Single<[FullTransaction]> {
+        let tags: [[String]] = [[contractAddress.hex], ["eip20Transfer", "eip20Approve"]]
+        return ethereumKit.transactionsSingle(tags: tags, fromHash: hash, limit: limit)
     }
 
     public func pendingTransactions() -> [Transaction] {
