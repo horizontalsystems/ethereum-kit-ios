@@ -7,17 +7,11 @@ protocol IBalanceManagerDelegate: class {
     func onSyncBalanceFailed(error: Error)
 }
 
-protocol ITransactionManagerDelegate: class {
-    func onSyncStarted()
-    func onSyncSuccess(transactions: [Transaction])
-    func onSyncTransactionsFailed(error: Error)
-}
-
 protocol ITransactionManager {
-    var transactionsObservable: Observable<[Transaction]> { get }
+    var transactionsObservable: Observable<[FullTransaction]> { get }
 
-    func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[Transaction]>
-    func pendingTransactions() -> [Transaction]
+    func transactionsSingle(from: Data?, limit: Int?) -> Single<[FullTransaction]>
+    func pendingTransactions() -> [FullTransaction]
     func transferTransactionData(to: Address, value: BigUInt) -> TransactionData
     func sync()
 }
@@ -35,9 +29,6 @@ protocol IDataProvider {
 
 protocol ITransactionStorage {
     var lastSyncOrder: Int? { get set }
-    var pendingTransactions: [TransactionCache] { get }
-    func save(transaction: TransactionCache)
-    func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[TransactionCache]>
 }
 
 protocol ITokenBalanceStorage {

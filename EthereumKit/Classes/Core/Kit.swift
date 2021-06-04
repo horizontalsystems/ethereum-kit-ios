@@ -128,6 +128,10 @@ extension Kit {
         transactionManager.transactionsSingle(tags: tags, fromHash: fromHash, limit: limit)
     }
 
+    public func pendingTransactions(tags: [[String]]) -> [FullTransaction] {
+        transactionManager.pendingTransactions(tags: tags)
+    }
+
     public func transaction(hash: Data) -> FullTransaction? {
         transactionManager.transaction(hash: hash)
     }
@@ -357,7 +361,7 @@ extension Kit {
         pendingTransactionSyncer.listener = transactionSyncManager
         internalTransactionSyncer.listener = transactionSyncManager
 
-        decorationManager.add(decorator: TransactionDecorator())
+        decorationManager.add(decorator: ContractCallDecorator())
 
         return kit
     }

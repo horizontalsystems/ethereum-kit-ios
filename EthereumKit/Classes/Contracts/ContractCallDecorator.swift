@@ -1,6 +1,6 @@
 import BigInt
 
-class TransactionDecorator: IDecorator {
+class ContractCallDecorator: IDecorator {
 
     private class RecognizedContractMethod {
         let methodSignature: String
@@ -32,7 +32,6 @@ class TransactionDecorator: IDecorator {
         guard let method = methods[methodId] else {
             return nil
         }
-
 
         let arguments = ContractMethodHelper.decodeABI(inputArguments: inputArguments, argumentTypes: method.arguments)
 

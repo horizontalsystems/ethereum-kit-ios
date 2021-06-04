@@ -10,10 +10,11 @@ class TransactionManager {
     private let contractMethodFactories: Eip20ContractMethodFactories
     private var storage: ITransactionStorage
     private let address: Address
+    private let tags: [[String]]
 
-    private let transactionsSubject = PublishSubject<[Transaction]>()
+    private let transactionsSubject = PublishSubject<[FullTransaction]>()
 
-    var transactionsObservable: Observable<[Transaction]> {
+    var transactionsObservable: Observable<[FullTransaction]> {
         transactionsSubject.asObservable()
     }
 
@@ -24,6 +25,7 @@ class TransactionManager {
         self.storage = storage
 
         address = ethereumKit.receiveAddress
+        tags = [[contractAddress.hex], ["eip20Transfer", "eip20Approve"]]
 
         ethereumKit.allTransactionsObservable
                 .subscribe { [weak self] in
@@ -33,24 +35,36 @@ class TransactionManager {
     }
 
     private func processTransactions(fullTransactions: [FullTransaction]) {
-        let transactions: [TransactionCache] = fullTransactions
-                .map { extractErc20Transactions(from: $0) }
-                .reduce([]) { $0 + $1 }
+        let erc20Transactions = fullTransactions.filter { fullTransaction in
+            let transaction = fullTransaction.transaction
 
-        if !transactions.isEmpty {
-            var pendingTransactions = storage.pendingTransactions
+            if let decoration = fullTransaction.mainDecoration {
+                switch decoration {
+                case .eip20Transfer(let to, _):
+                    return to == address || transaction.from == address
 
-            for transaction in transactions {
-                if let pendingTransaction = pendingTransactions.first(where: { $0.hash == transaction.hash }) {
-                    transaction.interTransactionIndex = pendingTransaction.interTransactionIndex
+                case .eip20Approve: return transaction.from == address
 
-                    pendingTransactions.removeAll { $0 === pendingTransaction }
+                default: return false
                 }
-
-                storage.save(transaction: transaction)
             }
 
-            let erc20Transactions = makeTransactions(transactions: transactions, fullTransactions: fullTransactions)
+            for decoration in fullTransaction.eventDecorations {
+                switch decoration {
+                case let transfer as TransferEventDecoration:
+                    return transfer.from == address || transfer.to == address
+
+                case let approve as ApproveEventDecoration:
+                    return approve.owner == address
+
+                default: return false
+                }
+            }
+
+            return false
+        }
+
+        if !erc20Transactions.isEmpty {
             transactionsSubject.onNext(erc20Transactions)
         }
 
@@ -59,142 +73,16 @@ class TransactionManager {
         }
     }
 
-    private func makeTransactions(transactions: [TransactionCache], fullTransactions: [FullTransaction]) -> [Transaction] {
-        transactions.compactMap({ transaction in
-            let fullTransaction = fullTransactions.first {
-                $0.transaction.hash == transaction.hash
-            }
-
-            return fullTransaction.flatMap({
-                Transaction(
-                        hash: transaction.hash,
-                        interTransactionIndex: transaction.interTransactionIndex,
-                        transactionIndex: $0.receiptWithLogs?.receipt.transactionIndex,
-                        from: transaction.from,
-                        to: transaction.to,
-                        value: transaction.value,
-                        timestamp: transaction.timestamp,
-                        isError: $0.failed,
-                        type: transaction.type,
-                        fullTransaction: $0
-                )
-            })
-        })
-    }
-
-    private func extractErc20Transactions(from fullTransaction: FullTransaction) -> [TransactionCache] {
-        return []
-//        let transaction = fullTransaction.transaction
-//
-//        if let receiptWithLogs = fullTransaction.receiptWithLogs {
-//            return receiptWithLogs.logs.compactMap { log -> TransactionCache? in
-//                guard log.address == contractAddress else {
-//                    return nil
-//                }
-//
-//                let event = log.erc20Event()
-//
-//                switch event {
-//                case .transfer(let from, let to, let value):
-//                    guard from == address || to == address else {
-//                        return nil
-//                    }
-//
-//                    return TransactionCache(
-//                            hash: transaction.hash,
-//                            interTransactionIndex: log.logIndex,
-//                            logIndex: log.logIndex,
-//                            from: from,
-//                            to: to,
-//                            value: value,
-//                            timestamp: transaction.timestamp,
-//                            type: .transfer
-//                    )
-//
-//                case .approve(let owner, let spender, let amount):
-//                    guard owner == address else {
-//                        return nil
-//                    }
-//
-//                    return TransactionCache(
-//                            hash: transaction.hash,
-//                            interTransactionIndex: log.logIndex,
-//                            logIndex: log.logIndex,
-//                            from: owner,
-//                            to: spender,
-//                            value: amount,
-//                            timestamp: transaction.timestamp,
-//                            type: .approve
-//                    )
-//                default: ()
-//                }
-//
-//                return nil
-//            }
-//        } else {
-//            guard transaction.to == contractAddress else {
-//                return []
-//            }
-//
-//            let contractMethod = contractMethodFactories.createMethod(input: fullTransaction.transaction.input)
-//
-//            switch contractMethod {
-//            case let method as TransferMethod:
-//                if transaction.from == address || method.to == address {
-//                    return [TransactionCache(
-//                            hash: transaction.hash,
-//                            interTransactionIndex: 0,
-//                            logIndex: nil,
-//                            from: transaction.from,
-//                            to: method.to,
-//                            value: method.value,
-//                            timestamp: transaction.timestamp,
-//                            type: .transfer
-//                    )]
-//                }
-//
-//            case let method as ApproveMethod:
-//                if transaction.from == address {
-//                    return [TransactionCache(
-//                            hash: transaction.hash,
-//                            interTransactionIndex: 0,
-//                            logIndex: nil,
-//                            from: transaction.from,
-//                            to: method.spender,
-//                            value: method.value,
-//                            timestamp: transaction.timestamp,
-//                            type: .approve
-//                    )]
-//                }
-//
-//            default: ()
-//            }
-//
-//            return []
-//        }
-    }
-
 }
 
 extension TransactionManager: ITransactionManager {
 
-    func transactionsSingle(from: (hash: Data, interTransactionIndex: Int)?, limit: Int?) -> Single<[Transaction]> {
-        storage.transactionsSingle(from: from, limit: limit)
-                .map { [weak self] transactions in
-                    guard let manager = self else {
-                        return []
-                    }
-
-                    let fullTransactions = manager.ethereumKit.fullTransactions(byHashes: transactions.map { $0.hash })
-                    return manager.makeTransactions(transactions: transactions, fullTransactions: fullTransactions)
-                }
+    func transactionsSingle(from hash: Data?, limit: Int?) -> Single<[FullTransaction]> {
+        ethereumKit.transactionsSingle(tags: tags, fromHash: hash, limit: limit)
     }
 
-    func pendingTransactions() -> [Transaction] {
-        let transactions = storage.pendingTransactions
-        let fullTransactions = ethereumKit.fullTransactions(byHashes: transactions.map { $0.hash })
-
-        return makeTransactions(transactions: transactions, fullTransactions: fullTransactions)
+    func pendingTransactions() -> [FullTransaction] {
+        ethereumKit.pendingTransactions(tags: tags)
     }
 
     func transferTransactionData(to: Address, value: BigUInt) -> TransactionData {

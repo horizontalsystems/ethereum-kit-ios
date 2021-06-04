@@ -50,7 +50,8 @@ protocol ITransactionStorage {
 
     func hashesFromTransactions() -> [Data]
     func etherTransactionsBeforeSingle(address: Address, hash: Data?, limit: Int?) -> Single<[FullTransaction]>
-    func transactionsBeforeSingle(tags: [[String]], address: Address, hash: Data?, limit: Int?) -> Single<[FullTransaction]>
+    func transactionsBeforeSingle(tags: [[String]], hash: Data?, limit: Int?) -> Single<[FullTransaction]>
+    func pendingTransactions(tags: [[String]]) -> [FullTransaction]
     func transaction(hash: Data) -> FullTransaction?
     func fullTransactions(byHashes: [Data]) -> [FullTransaction]
     func fullTransactionsAfter(syncOrder: Int?) -> [FullTransaction]

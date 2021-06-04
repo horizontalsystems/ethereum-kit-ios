@@ -406,7 +406,7 @@ extension TransactionStorage: ITransactionStorage {
         }
     }
 
-    func transactionsBeforeSingle(tags: [[String]], address: Address, hash: Data?, limit: Int?) -> Single<[FullTransaction]> {
+    func transactionsBeforeSingle(tags: [[String]], hash: Data?, limit: Int?) -> Single<[FullTransaction]> {
         Single.create { [weak self] observer in
             guard let storage = self else {
                 observer(.success([]))
@@ -474,6 +474,44 @@ extension TransactionStorage: ITransactionStorage {
 
             return Disposables.create()
         }
+    }
+
+    func pendingTransactions(tags: [[String]]) -> [FullTransaction] {
+        let transactions: [Transaction] = try! dbPool.read { db in
+            var whereClause = "WHERE " + tags
+                    .enumerated()
+                    .map { (index, andTags) -> String in
+                        "\(TransactionTag.databaseTableName)_\(index).'\(TransactionTag.Columns.name)' IN (\(andTags.map({ "'\($0)'" }).joined(separator: ", ")))"
+                    }
+                    .joined(separator: " AND ")
+
+            whereClause += """
+                           AND \(TransactionReceipt.databaseTableName).\(TransactionReceipt.Columns.status.name) == NULL
+                           """
+
+            let transactionTagJoinStatements = tags
+                    .enumerated()
+                    .map { (index, _) -> String in
+                        "INNER JOIN transaction_tags AS transaction_tags_\(index) ON transactions.hash = transaction_tags_\(index).transactionHash"
+                    }
+                    .joined(separator: "\n")
+
+            let sql = """
+                      SELECT transactions.*
+                      FROM transactions
+                      \(transactionTagJoinStatements)
+                      LEFT JOIN transaction_receipts ON transactions.hash = transaction_receipts.transactionHash
+                      \(whereClause)
+                      GROUP BY transactions.hash
+                      """
+
+            let rows = try Row.fetchAll(db.makeSelectStatement(sql: sql))
+            return rows.map { row -> Transaction in
+                Transaction(row: row)
+            }
+        }
+
+        return fullTransactions(from: transactions)
     }
 
     func transaction(hash: Data) -> FullTransaction? {

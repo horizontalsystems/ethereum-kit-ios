@@ -78,11 +78,10 @@ extension Kit {
     }
 
     public func transactionsSingle(from hash: Data?, limit: Int?) throws -> Single<[FullTransaction]> {
-        let tags: [[String]] = [[contractAddress.hex], ["eip20Transfer", "eip20Approve"]]
-        return ethereumKit.transactionsSingle(tags: tags, fromHash: hash, limit: limit)
+        transactionManager.transactionsSingle(from: hash, limit: limit)
     }
 
-    public func pendingTransactions() -> [Transaction] {
+    public func pendingTransactions() -> [FullTransaction] {
         transactionManager.pendingTransactions()
     }
 
@@ -98,7 +97,7 @@ extension Kit {
         state.balanceSubject.asObservable()
     }
 
-    public var transactionsObservable: Observable<[Transaction]> {
+    public var transactionsObservable: Observable<[FullTransaction]> {
         transactionManager.transactionsObservable
     }
 
