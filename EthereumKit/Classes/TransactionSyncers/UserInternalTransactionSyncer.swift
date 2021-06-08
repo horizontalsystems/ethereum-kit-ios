@@ -1,7 +1,7 @@
 import RxSwift
 import BigInt
 
-class InternalTransactionSyncer: AbstractTransactionSyncer {
+class UserInternalTransactionSyncer: AbstractTransactionSyncer {
     private let provider: EtherscanTransactionProvider
     private let storage: ITransactionStorage
     private let scheduler = ConcurrentDispatchQueueScheduler(qos: .background)
@@ -12,7 +12,7 @@ class InternalTransactionSyncer: AbstractTransactionSyncer {
         self.provider = provider
         self.storage = storage
 
-        super.init(id: "internal_transaction_syncer")
+        super.init(id: "user_internal_transaction_syncer")
     }
 
     private func handle(transactions: [InternalTransaction]) {

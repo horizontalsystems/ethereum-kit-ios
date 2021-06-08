@@ -33,9 +33,13 @@ protocol IBlockchainDelegate: class {
 
 protocol ITransactionStorage {
     func notSyncedTransactions(limit: Int) -> [NotSyncedTransaction]
+    func notSyncedInternalTransaction() -> NotSyncedInternalTransaction?
+
     func add(notSyncedTransactions: [NotSyncedTransaction])
+    func add(notSyncedInternalTransaction: NotSyncedInternalTransaction)
     func update(notSyncedTransaction: NotSyncedTransaction)
     func remove(notSyncedTransaction: NotSyncedTransaction)
+    func remove(notSyncedInternalTransaction: NotSyncedInternalTransaction)
 
     func save(transaction: Transaction)
     func pendingTransactions(fromTransaction: Transaction?) -> [Transaction]

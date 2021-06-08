@@ -79,6 +79,17 @@ extension EtherscanService {
         return apiSingle(params: params)
     }
 
+    func internalTransactionsSingle(transactionHash: Data) -> Single<[[String: String]]> {
+        let params: [String: Any] = [
+            "module": "account",
+            "action": "txlistinternal",
+            "txhash": transactionHash.toHexString(),
+            "sort": "desc"
+        ]
+
+        return apiSingle(params: params)
+    }
+
 }
 
 class EtherscanTransactionProvider {
@@ -137,6 +148,26 @@ class EtherscanTransactionProvider {
                         to: to,
                         value: value,
                         traceId: traceId
+                )
+            }
+        }
+    }
+
+    func internalTransactionsSingle(transactionHash: NotSyncedInternalTransaction) -> Single<[InternalTransaction]> {
+        etherscanService.internalTransactionsSingle(transactionHash: transactionHash.hash).map { array -> [InternalTransaction] in
+            array.compactMap { data -> InternalTransaction? in
+                guard let blockNumber = data["blockNumber"].flatMap({ Int($0) }) else { return nil }
+                guard let from = data["from"].flatMap({ Data(hex: $0) }).map({ Address(raw: $0) }) else { return nil }
+                guard let to = data["to"].flatMap({ Data(hex: $0) }).map({ Address(raw: $0) }) else { return nil }
+                guard let value = data["value"].flatMap({ BigUInt($0) }) else { return nil }
+
+                return InternalTransaction(
+                        hash: transactionHash.hash,
+                        blockNumber: blockNumber,
+                        from: from,
+                        to: to,
+                        value: value,
+                        traceId: ""
                 )
             }
         }

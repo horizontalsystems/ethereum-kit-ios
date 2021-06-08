@@ -19,6 +19,7 @@ public class Kit {
     private let blockchain: IBlockchain
     private let transactionManager: TransactionManager
     private let transactionSyncManager: TransactionSyncManager
+    private let internalTransactionSyncer: TransactionInternalTransactionSyncer
     private let transactionBuilder: TransactionBuilder
     private let transactionSigner: TransactionSigner
     private let decorationManager: DecorationManager
@@ -33,10 +34,13 @@ public class Kit {
     public let logger: Logger
 
 
-    init(blockchain: IBlockchain, transactionManager: TransactionManager, transactionSyncManager: TransactionSyncManager, transactionBuilder: TransactionBuilder, transactionSigner: TransactionSigner, state: EthereumKitState = EthereumKitState(), address: Address, networkType: NetworkType, uniqueId: String, etherscanService: EtherscanService, decorationManager: DecorationManager, logger: Logger) {
+    init(blockchain: IBlockchain, transactionManager: TransactionManager, transactionSyncManager: TransactionSyncManager, internalTransactionSyncer: TransactionInternalTransactionSyncer,
+         transactionBuilder: TransactionBuilder, transactionSigner: TransactionSigner, state: EthereumKitState = EthereumKitState(),
+         address: Address, networkType: NetworkType, uniqueId: String, etherscanService: EtherscanService, decorationManager: DecorationManager, logger: Logger) {
         self.blockchain = blockchain
         self.transactionManager = transactionManager
         self.transactionSyncManager = transactionSyncManager
+        self.internalTransactionSyncer = internalTransactionSyncer
         self.transactionBuilder = transactionBuilder
         self.transactionSigner = transactionSigner
         self.state = state
@@ -238,6 +242,10 @@ extension Kit {
         transactionManager.etherTransferTransactionData(to: to, value: value)
     }
 
+    public func syncInternalTransactions(for transaction: Transaction) {
+        internalTransactionSyncer.add(transactionHash: transaction.hash)
+    }
+
     public func statusInfo() -> [(String, Any)] {
         [
             ("Last Block Height", "\(state.lastBlockHeight.map { "\($0)" } ?? "N/A")"),
@@ -336,7 +344,8 @@ extension Kit {
         let notSyncedTransactionPool = NotSyncedTransactionPool(storage: transactionStorage)
         let notSyncedTransactionManager = NotSyncedTransactionManager(pool: notSyncedTransactionPool, storage: transactionStorage)
 
-        let internalTransactionSyncer = InternalTransactionSyncer(provider: transactionsProvider, storage: transactionStorage)
+        let userInternalTransactionSyncer = UserInternalTransactionSyncer(provider: transactionsProvider, storage: transactionStorage)
+        let transactionInternalTransactionSyncer = TransactionInternalTransactionSyncer(provider: transactionsProvider, storage: transactionStorage)
         let ethereumTransactionSyncer = EthereumTransactionSyncer(provider: transactionsProvider)
         let transactionSyncer = TransactionSyncer(blockchain: blockchain, storage: transactionStorage)
         let pendingTransactionSyncer = PendingTransactionSyncer(blockchain: blockchain, storage: transactionStorage)
@@ -345,12 +354,13 @@ extension Kit {
         let transactionManager = TransactionManager(address: address, storage: transactionStorage, transactionSyncManager: transactionSyncManager, decorationManager: decorationManager)
 
         transactionSyncManager.add(syncer: ethereumTransactionSyncer)
-        transactionSyncManager.add(syncer: internalTransactionSyncer)
+        transactionSyncManager.add(syncer: userInternalTransactionSyncer)
+        transactionSyncManager.add(syncer: transactionInternalTransactionSyncer)
         transactionSyncManager.add(syncer: transactionSyncer)
         transactionSyncManager.add(syncer: pendingTransactionSyncer)
 
         let kit = Kit(
-                blockchain: blockchain, transactionManager: transactionManager, transactionSyncManager: transactionSyncManager,
+                blockchain: blockchain, transactionManager: transactionManager, transactionSyncManager: transactionSyncManager, internalTransactionSyncer: transactionInternalTransactionSyncer,
                 transactionBuilder: transactionBuilder, transactionSigner: transactionSigner, address: address, networkType: networkType,
                 uniqueId: uniqueId, etherscanService: etherscanService, decorationManager: decorationManager, logger: logger
         )
@@ -359,7 +369,8 @@ extension Kit {
         transactionSyncManager.set(ethereumKit: kit)
         transactionSyncer.listener = transactionSyncManager
         pendingTransactionSyncer.listener = transactionSyncManager
-        internalTransactionSyncer.listener = transactionSyncManager
+        userInternalTransactionSyncer.listener = transactionSyncManager
+        transactionInternalTransactionSyncer.listener = transactionSyncManager
 
         decorationManager.add(decorator: ContractCallDecorator())
 

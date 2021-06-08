@@ -8,11 +8,13 @@ public class Kit {
     private let tradeManager: TradeManager
     private let pairSelector: PairSelector
     private let tokenFactory: TokenFactory
+    private let internalTransactionSyncer: UniswapInternalTransactionSyncer
 
-    init(tradeManager: TradeManager, pairSelector: PairSelector, tokenFactory: TokenFactory) {
+    init(tradeManager: TradeManager, pairSelector: PairSelector, tokenFactory: TokenFactory, internalTransactionSyncer: UniswapInternalTransactionSyncer) {
         self.tradeManager = tradeManager
         self.pairSelector = pairSelector
         self.tokenFactory = tokenFactory
+        self.internalTransactionSyncer = internalTransactionSyncer
     }
 
 }
@@ -99,8 +101,9 @@ extension Kit {
         let tradeManager = TradeManager(evmKit: evmKit, address: address)
         let tokenFactory = TokenFactory(networkType: evmKit.networkType)
         let pairSelector = PairSelector(tokenFactory: tokenFactory)
+        let internalTransactionSyncer = UniswapInternalTransactionSyncer(evmKit: evmKit)
 
-        let uniswapKit = Kit(tradeManager: tradeManager, pairSelector: pairSelector, tokenFactory: tokenFactory)
+        let uniswapKit = Kit(tradeManager: tradeManager, pairSelector: pairSelector, tokenFactory: tokenFactory, internalTransactionSyncer: internalTransactionSyncer)
 
         evmKit.add(decorator: SwapTransactionDecorator(userAddress: address, contractMethodFactories: SwapContractMethodFactories.shared))
 

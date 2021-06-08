@@ -191,6 +191,14 @@ class TransactionStorage {
             }
         }
 
+        migrator.registerMigration("createNotSyncedInternalTransactions") { db in
+            try db.create(table: NotSyncedInternalTransaction.databaseTableName) { t in
+                t.column(NotSyncedInternalTransaction.Columns.hash.name, .text).notNull()
+
+                t.primaryKey([NotSyncedInternalTransaction.Columns.hash.name], onConflict: .ignore)
+            }
+        }
+
         return migrator
     }
 
@@ -241,11 +249,23 @@ extension TransactionStorage: ITransactionStorage {
         }
     }
 
+    func notSyncedInternalTransaction() -> NotSyncedInternalTransaction? {
+        try! dbPool.read { db in
+            try NotSyncedInternalTransaction.fetchOne(db)
+        }
+    }
+
     func add(notSyncedTransactions: [NotSyncedTransaction]) {
         try! dbPool.write { db in
             for transaction in notSyncedTransactions {
                 try transaction.insert(db)
             }
+        }
+    }
+
+    func add(notSyncedInternalTransaction: NotSyncedInternalTransaction) {
+        try! dbPool.write { db in
+            try notSyncedInternalTransaction.insert(db)
         }
     }
 
@@ -258,6 +278,12 @@ extension TransactionStorage: ITransactionStorage {
     func remove(notSyncedTransaction: NotSyncedTransaction) {
         _ = try! dbPool.write { db in
             try notSyncedTransaction.delete(db)
+        }
+    }
+
+    func remove(notSyncedInternalTransaction: NotSyncedInternalTransaction) {
+        _ = try! dbPool.write { db in
+            try notSyncedInternalTransaction.delete(db)
         }
     }
 
