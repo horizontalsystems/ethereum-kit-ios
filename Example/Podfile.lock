@@ -47,8 +47,19 @@ PODS:
     - SwiftNIOWebSocket
   - Nimble (9.2.0)
   - ObjectMapper (4.2.0)
+  - OneInchKit.swift (0.1.0):
+    - BigInt (~> 5.0)
+    - EthereumKit.swift (~> 0.13)
+    - OpenSslKit.swift (~> 1.0)
+    - RxSwift (~> 5.0)
+    - Secp256k1Kit.swift (~> 1.0)
   - OpenSslKit.swift (1.2.2)
-  - Quick (4.0.0)
+  - Quick (3.1.2)
+  - RxCocoa (5.1.1):
+    - RxRelay (~> 5)
+    - RxSwift (~> 5)
+  - RxRelay (5.1.1):
+    - RxSwift (~> 5)
   - RxSwift (5.1.2)
   - Secp256k1Kit.swift (1.1)
   - SnapKit (5.0.1)
@@ -91,7 +102,10 @@ DEPENDENCIES:
   - EthereumKit.swift (from `../`)
   - HsToolKit.swift (from `https://github.com/horizontalsystems/hs-tool-kit-ios`)
   - Nimble
+  - OneInchKit.swift (from `../`)
   - Quick
+  - RxCocoa
+  - RxSwift
   - SnapKit
   - UIExtensions.swift (from `https://github.com/horizontalsystems/gui-kit/`)
   - UniswapKit.swift (from `../`)
@@ -116,6 +130,8 @@ SPEC REPOS:
     - ObjectMapper
     - OpenSslKit.swift
     - Quick
+    - RxCocoa
+    - RxRelay
     - RxSwift
     - Secp256k1Kit.swift
     - SnapKit
@@ -134,6 +150,8 @@ EXTERNAL SOURCES:
     :path: "../"
   HsToolKit.swift:
     :git: https://github.com/horizontalsystems/hs-tool-kit-ios
+  OneInchKit.swift:
+    :path: "../"
   UIExtensions.swift:
     :git: https://github.com/horizontalsystems/gui-kit/
   UniswapKit.swift:
@@ -167,8 +185,11 @@ SPEC CHECKSUMS:
   HsToolKit.swift: 88f5c25dcf2b6fde2370f0125a8864782fbb3d90
   Nimble: 4f4a345c80b503b3ea13606a4f98405974ee4d0b
   ObjectMapper: 1eb41f610210777375fa806bf161dc39fb832b81
+  OneInchKit.swift: a4995aaea38d202a5f4bd08278771b013e1e0cae
   OpenSslKit.swift: 0e2194853fd9ce42006cf18c89743331406a10a9
-  Quick: 6473349e43b9271a8d43839d9ba1c442ed1b7ac4
+  Quick: 60f0ea3b8e0cfc0df3259a5c06a238ad8b3c46e0
+  RxCocoa: 32065309a38d29b5b0db858819b5bf9ef038b601
+  RxRelay: d77f7d771495f43c556cbc43eebd1bb54d01e8e9
   RxSwift: 1e2e1f9570186967f617e49128ed26ccf1bafc8e
   Secp256k1Kit.swift: 322a66c4b3e95e96a397d73d45ad4d79af991bab
   SnapKit: 97b92857e3df3a0c71833cce143274bf6ef8e5eb
@@ -182,6 +203,6 @@ SPEC CHECKSUMS:
   UIExtensions.swift: 3ed084c0343ddd0f86c7c558d37759e1fd7d5778
   UniswapKit.swift: e0a9a8c6df7f695305c74f800a45fec9e3b177da
 
-PODFILE CHECKSUM: a1ec00a9bba4333d11769972fa9f29a11e1e03d1
+PODFILE CHECKSUM: 65b88ae6a329cae8d6464af23b1e10b5d8a8de69
 
 COCOAPODS: 1.10.1

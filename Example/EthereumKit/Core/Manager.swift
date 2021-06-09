@@ -2,6 +2,7 @@ import RxSwift
 import EthereumKit
 import Erc20Kit
 import UniswapKit
+import OneInchKit
 import HdWalletKit
 
 class Manager {
@@ -11,6 +12,7 @@ class Manager {
 
     var evmKit: EthereumKit.Kit!
     var uniswapKit: UniswapKit.Kit?
+    var oneInchKit: OneInchKit.Kit?
 
     var ethereumAdapter: EthereumAdapter!
     var erc20Adapters = [Erc20Adapter]()
@@ -34,6 +36,7 @@ class Manager {
 
         evmKit = nil
         uniswapKit = nil
+        oneInchKit = nil
         ethereumAdapter = nil
         erc20Adapters = []
     }
@@ -70,6 +73,7 @@ class Manager {
         )
 
         uniswapKit = try? UniswapKit.Kit.instance(evmKit: evmKit)
+        oneInchKit = OneInchKit.Kit.instance(evmKit: evmKit)
 
         ethereumAdapter = EthereumAdapter(ethereumKit: evmKit)
 

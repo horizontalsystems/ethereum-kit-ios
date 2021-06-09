@@ -5,8 +5,12 @@ target 'EthereumKitExample' do
   pod 'EthereumKit.swift', :path => '../'
   pod 'Erc20Kit.swift', :path => '../'
   pod 'UniswapKit.swift', :path => '../'
+  pod 'OneInchKit.swift', :path => '../'
 
   pod 'SnapKit'
+  pod 'RxSwift'
+  pod 'RxCocoa'
+
   pod 'UIExtensions.swift', git: 'https://github.com/horizontalsystems/gui-kit/'
   pod 'HsToolKit.swift', git: 'https://github.com/horizontalsystems/hs-tool-kit-ios'
 end
