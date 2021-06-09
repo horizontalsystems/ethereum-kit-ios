@@ -39,7 +39,7 @@ class Configuration {
 
 }
 
-struct Erc20Token {
+public struct Erc20Token {
     let name: String
     let coin: String
     let contractAddress: Address
