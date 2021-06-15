@@ -87,30 +87,30 @@ class TransactionCell: UITableViewCell {
         let fromAddress = transaction.from.address!.eip55.prefix(6)
 
         switch decoration {
-        case .swap(let trade, let tokenIn, let tokenOut, _, _):
-            return "\(amountIn(trade: trade)) \(stringify(token: tokenIn)) <-> \(amountOut(trade: trade)) \(stringify(token: tokenOut))"
+        case let swap as SwapTransactionDecoration:
+            return "\(amountIn(trade: swap.trade)) \(stringify(token: swap.tokenIn)) <-> \(amountOut(trade: swap.trade)) \(stringify(token: swap.tokenOut))"
 
-        case .eip20Transfer(let to, let value):
-            return "\(bigUIntToString(amount: value)) \(coinName) (\(fromAddress) -> \(to.eip55.prefix(6)))"
+        case let transfer as TransferTransactionDecoration:
+            return "\(bigUIntToString(amount: transfer.value)) \(coinName) (\(fromAddress) -> \(transfer.to.eip55.prefix(6)))"
 
-        case .eip20Approve(_, let value):
-            return "\(bigUIntToString(amount: value)) \(coinName) approved"
+        case let approve as ApproveTransactionDecoration:
+            return "\(bigUIntToString(amount: approve.value)) \(coinName) approved"
 
-        case .recognized(let method, let arguments):
-            return "\(method)(\(arguments.count) arguments)"
+        case let recognized as RecognizedTransactionDecoration:
+            return "\(recognized.method)(\(recognized.arguments.count) arguments)"
 
-        case .unknown: return "contract call"
+        default: return "contract call"
         }
     }
 
-    private func stringify(token: TransactionDecoration.Token) -> String {
+    private func stringify(token: SwapTransactionDecoration.Token) -> String {
         switch token {
         case .evmCoin: return "ETH"
         case .eip20Coin(let address): return Manager.shared.erc20Tokens[address.eip55] ?? "n/a"
         }
     }
 
-    private func amountIn(trade: TransactionDecoration.Trade) -> String {
+    private func amountIn(trade: SwapTransactionDecoration.Trade) -> String {
         let amount: BigUInt
         switch trade {
         case .exactIn(let amountIn, _, _): amount = amountIn
@@ -120,7 +120,7 @@ class TransactionCell: UITableViewCell {
         return bigUIntToString(amount: amount)
     }
 
-    private func amountOut(trade: TransactionDecoration.Trade) -> String {
+    private func amountOut(trade: SwapTransactionDecoration.Trade) -> String {
         let amount: BigUInt
         switch trade {
         case .exactIn(_, let amountOutMin, let amountOut): amount = amountOut ?? amountOutMin

@@ -65,7 +65,7 @@ extension SwapTransactionDecorator: IDecorator {
                 amountIn = fullTransaction.transaction.value - change
             }
 
-            return .swap(
+            return SwapTransactionDecoration(
                     trade: .exactOut(amountOut: method.amountOut, amountInMax: transactionData.value, amountIn: amountIn),
                     tokenIn: .evmCoin,
                     tokenOut: .eip20Coin(address: lastCoinInPath),
@@ -85,7 +85,7 @@ extension SwapTransactionDecorator: IDecorator {
                 amountOut = totalTokenAmount(userAddress: method.to, tokenAddress: lastCoinInPath, logs: logs, collectIncomingAmounts: false)
             }
 
-            return .swap(
+            return SwapTransactionDecoration(
                     trade: .exactIn(amountIn: transactionData.value, amountOutMin: method.amountOutMin, amountOut: amountOut),
                     tokenIn: .evmCoin,
                     tokenOut: .eip20Coin(address: lastCoinInPath),
@@ -105,7 +105,7 @@ extension SwapTransactionDecorator: IDecorator {
                 amountOut = totalETHIncoming(userAddress: method.to, transactions: internalTransactions)
             }
 
-            return .swap(
+            return SwapTransactionDecoration(
                     trade: .exactIn(amountIn: method.amountIn, amountOutMin: method.amountOutMin, amountOut: amountOut),
                     tokenIn: .eip20Coin(address: firstCoinInPath),
                     tokenOut: .evmCoin,
@@ -125,7 +125,7 @@ extension SwapTransactionDecorator: IDecorator {
                 amountOut = totalTokenAmount(userAddress: method.to, tokenAddress: lastCoinInPath, logs: logs, collectIncomingAmounts: false)
             }
 
-            return .swap(
+            return SwapTransactionDecoration(
                     trade: .exactIn(amountIn: method.amountIn, amountOutMin: method.amountOutMin, amountOut: amountOut),
                     tokenIn: .eip20Coin(address: firstCoinInPath),
                     tokenOut: .eip20Coin(address: lastCoinInPath),
@@ -145,7 +145,7 @@ extension SwapTransactionDecorator: IDecorator {
                 amountIn = totalTokenAmount(userAddress: method.to, tokenAddress: firstCoinInPath, logs: logs, collectIncomingAmounts: true)
             }
 
-            return .swap(
+            return SwapTransactionDecoration(
                     trade: .exactOut(amountOut: method.amountOut, amountInMax: method.amountInMax, amountIn: amountIn),
                     tokenIn: .eip20Coin(address: firstCoinInPath),
                     tokenOut: .evmCoin,
@@ -165,7 +165,7 @@ extension SwapTransactionDecorator: IDecorator {
                 amountIn = totalTokenAmount(userAddress: method.to, tokenAddress: firstCoinInPath, logs: logs, collectIncomingAmounts: true)
             }
 
-            return .swap(
+            return SwapTransactionDecoration(
                     trade: .exactOut(amountOut: method.amountOut, amountInMax: method.amountInMax, amountIn: amountIn),
                     tokenIn: .eip20Coin(address: firstCoinInPath),
                     tokenOut: .eip20Coin(address: lastCoinInPath),

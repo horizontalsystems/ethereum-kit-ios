@@ -40,10 +40,10 @@ class TransactionManager {
 
             if let decoration = fullTransaction.mainDecoration {
                 switch decoration {
-                case .eip20Transfer(let to, _):
-                    return to == address || transaction.from == address
+                case let transfer as TransferTransactionDecoration:
+                    return transfer.to == address || transaction.from == address
 
-                case .eip20Approve: return transaction.from == address
+                case is ApproveTransactionDecoration: return transaction.from == address
 
                 default: return false
                 }

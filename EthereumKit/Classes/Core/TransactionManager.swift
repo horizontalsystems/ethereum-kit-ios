@@ -37,8 +37,10 @@ class TransactionManager {
     private func updateTags(transaction: FullTransaction) {
         var tags = [TransactionTag]()
 
-        if let contractMethodName = transaction.mainDecoration?.name, let toAddress = transaction.transaction.to {
-            tags.append(TransactionTag(name: contractMethodName, transactionHash: transaction.transaction.hash))
+        if let mainDecoration = transaction.mainDecoration, let toAddress = transaction.transaction.to, !(mainDecoration is UnknownTransactionDecoration) {
+            for tag in mainDecoration.tags {
+                tags.append(TransactionTag(name: tag, transactionHash: transaction.transaction.hash))
+            }
             tags.append(TransactionTag(name: toAddress.hex, transactionHash: transaction.transaction.hash))
         }
 
