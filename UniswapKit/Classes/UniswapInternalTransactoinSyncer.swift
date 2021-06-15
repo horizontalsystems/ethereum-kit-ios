@@ -27,10 +27,10 @@ class UniswapInternalTransactionSyncer {
 
     private func handle(fullTransaction: FullTransaction) {
         guard fullTransaction.internalTransactions.isEmpty,
-              let mainDecoration = fullTransaction.mainDecoration,
-              case .swap(_, _, let tokenOut, let to, _) = mainDecoration,
+              let mainDecoration = fullTransaction.mainDecoration as? SwapTransactionDecoration,
               let evmKit = evmKit,
-              case .evmCoin = tokenOut, fullTransaction.transaction.from == evmKit.address && to != evmKit.address else {
+              case .evmCoin = mainDecoration.tokenOut,
+              fullTransaction.transaction.from == evmKit.address && mainDecoration.to != evmKit.address else {
             return
         }
 

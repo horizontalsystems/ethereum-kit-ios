@@ -21,8 +21,8 @@ extension Eip20TransactionDecorator: IDecorator {
         }
 
         switch contractMethod {
-        case let transferMethod as TransferMethod: return .eip20Transfer(to: transferMethod.to, value: transferMethod.value)
-        case let approveMethod as ApproveMethod: return .eip20Approve(spender: approveMethod.spender, value: approveMethod.value)
+        case let transferMethod as TransferMethod: return TransferTransactionDecoration(to: transferMethod.to, value: transferMethod.value)
+        case let approveMethod as ApproveMethod: return ApproveTransactionDecoration(spender: approveMethod.spender, value: approveMethod.value)
         default: return nil
         }
     }

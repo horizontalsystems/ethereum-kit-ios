@@ -40,7 +40,7 @@ class ContractCallDecorator: IDecorator {
 
         let arguments = ContractMethodHelper.decodeABI(inputArguments: inputArguments, argumentTypes: method.arguments)
 
-        return .recognized(method: method.name, arguments: arguments)
+        return RecognizedTransactionDecoration(method: method.name, arguments: arguments)
     }
 
     func decorate(logs: [TransactionLog]) -> [EventDecoration] {
