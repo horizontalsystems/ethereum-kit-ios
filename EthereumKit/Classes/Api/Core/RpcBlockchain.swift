@@ -39,7 +39,7 @@ class RpcBlockchain {
                 .observeOn(ConcurrentDispatchQueueScheduler(qos: .utility))
                 .subscribe(onSuccess: { [weak self] lastBlockHeight in
                     self?.onUpdate(lastBlockHeight: lastBlockHeight)
-                }, onError: { [weak self] error in
+                }, onError: { _ in
                     // todo
                 })
                 .disposed(by: disposeBag)

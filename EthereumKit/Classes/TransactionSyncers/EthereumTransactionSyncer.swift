@@ -48,7 +48,7 @@ class EthereumTransactionSyncer: AbstractTransactionSyncer {
             return
         }
 
-        var single = provider.transactionsSingle(startBlock: lastSyncBlockNumber + 1)
+        let single = provider.transactionsSingle(startBlock: lastSyncBlockNumber + 1)
 
         state = .syncing(progress: nil)
 

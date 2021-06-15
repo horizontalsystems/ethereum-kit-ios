@@ -25,7 +25,7 @@ protocol IBlockchain {
     func getBlock(blockNumber: Int) -> Single<RpcBlock?>
 }
 
-protocol IBlockchainDelegate: class {
+protocol IBlockchainDelegate: AnyObject {
     func onUpdate(lastBlockHeight: Int)
     func onUpdate(syncState: SyncState)
     func onUpdate(accountState: AccountState)
@@ -50,7 +50,7 @@ protocol ITransactionStorage {
 
     func save(logs: [TransactionLog])
     func save(internalTransactions: [InternalTransaction])
-    func set(tags: [TransactionTag], to: Transaction)
+    func set(tags: [TransactionTag])
 
     func hashesFromTransactions() -> [Data]
     func etherTransactionsBeforeSingle(address: Address, hash: Data?, limit: Int?) -> Single<[FullTransaction]>
@@ -67,7 +67,7 @@ public protocol ITransactionSyncerStateStorage {
     func save(transactionSyncerState: TransactionSyncerState)
 }
 
-protocol ITransactionSyncerListener: class {
+protocol ITransactionSyncerListener: AnyObject {
     func onTransactionsSynced(fullTransactions: [FullTransaction])
 }
 

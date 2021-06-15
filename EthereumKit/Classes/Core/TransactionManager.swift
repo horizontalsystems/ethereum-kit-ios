@@ -46,7 +46,7 @@ class TransactionManager {
             tags.append(contentsOf: event.tags.map { TransactionTag(name: $0, transactionHash: transaction.transaction.hash) })
         }
 
-        storage.set(tags: Array(Set(tags)), to: transaction.transaction)
+        storage.set(tags: Array(Set(tags)))
     }
 
     private func handle(syncedTransactions: [FullTransaction]) {
@@ -118,7 +118,7 @@ extension TransactionManager {
     func pendingTransactions(tags: [[String]]) -> [FullTransaction] {
         storage
                 .pendingTransactions(tags: tags)
-                .map { [weak self] transaction in
+                .map { transaction in
                     decorationManager.decorateFullTransaction(fullTransaction: transaction)
                 }
     }

@@ -17,7 +17,7 @@ class Erc20TransactionSyncer: AbstractTransactionSyncer {
             var lastBlockNumber = lastSyncBlockNumber
 
             let hashes = transactions.compactMap { data -> Data? in
-                if let blockNumber = data["blockNumber"].flatMap { Int($0) }, blockNumber > lastBlockNumber {
+                if let blockNumber = data["blockNumber"].flatMap({ Int($0) }), blockNumber > lastBlockNumber {
                     lastBlockNumber = blockNumber
                 }
 
@@ -43,7 +43,7 @@ class Erc20TransactionSyncer: AbstractTransactionSyncer {
             return
         }
 
-        var single = provider.tokenTransactionsSingle(startBlock: super.lastSyncBlockNumber + 1)
+        let single = provider.tokenTransactionsSingle(startBlock: super.lastSyncBlockNumber + 1)
 
         state = .syncing(progress: nil)
 

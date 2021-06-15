@@ -89,10 +89,8 @@ class WebSocketRpcSyncer {
     private func subscribeToNewHeads() {
         subscribe(
                 subscription: NewHeadsRpcSubscription(),
-                onSuccess: { [weak self] in
-
-                },
-                onError: { [weak self] error in
+                onSuccess: {},
+                onError: { _ in
 //                    self?.onFailSync(error: error)
                 },
                 successHandler: { [weak self] header in

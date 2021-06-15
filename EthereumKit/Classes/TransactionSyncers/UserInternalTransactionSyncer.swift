@@ -51,7 +51,7 @@ class UserInternalTransactionSyncer: AbstractTransactionSyncer {
             return
         }
 
-        var single = provider.internalTransactionsSingle(startBlock: lastSyncBlockNumber + 1)
+        let single = provider.internalTransactionsSingle(startBlock: lastSyncBlockNumber + 1)
 
         state = .syncing(progress: nil)
 

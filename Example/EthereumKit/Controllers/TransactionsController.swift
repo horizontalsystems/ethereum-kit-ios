@@ -83,8 +83,6 @@ class TransactionsController: UITableViewController {
 
         UIPasteboard.general.setValue(transaction.transactionHash, forPasteboardType: "public.plain-text")
 
-        print(currentAdapter.transaction(hash: transaction.transactionHashData, interTransactionIndex: transaction.interTransactionIndex))
-
         let alert = UIAlertController(title: "Success", message: "Transaction Hash copied", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .cancel))
         present(alert, animated: true)

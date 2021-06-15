@@ -2,7 +2,7 @@ import RxSwift
 import BigInt
 import EthereumKit
 
-protocol IBalanceManagerDelegate: class {
+protocol IBalanceManagerDelegate: AnyObject {
     func onSyncBalanceSuccess(balance: BigUInt)
     func onSyncBalanceFailed(error: Error)
 }

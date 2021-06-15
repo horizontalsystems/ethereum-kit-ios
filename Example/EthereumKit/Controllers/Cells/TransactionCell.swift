@@ -93,7 +93,7 @@ class TransactionCell: UITableViewCell {
         case .eip20Transfer(let to, let value):
             return "\(bigUIntToString(amount: value)) \(coinName) (\(fromAddress) -> \(to.eip55.prefix(6)))"
 
-        case .eip20Approve(let spender, let value):
+        case .eip20Approve(_, let value):
             return "\(bigUIntToString(amount: value)) \(coinName) approved"
 
         case .recognized(let method, let arguments):

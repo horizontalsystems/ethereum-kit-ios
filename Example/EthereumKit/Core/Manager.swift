@@ -42,14 +42,6 @@ class Manager {
     private func initEthereumKit(words: [String]) {
         let configuration = Configuration.shared
 
-        let syncMode: WordsSyncMode
-
-        switch configuration.syncMode {
-        case .api: syncMode = .api
-        case .spv: syncMode = .spv
-        case .geth: syncMode = .geth
-        }
-
         let syncSource: SyncSource
 
         if case .bscMainNet = configuration.networkType {
@@ -70,7 +62,7 @@ class Manager {
                 minLogLevel: configuration.minLogLevel
         )
 
-        uniswapKit = try? UniswapKit.Kit.instance(evmKit: evmKit)
+        uniswapKit = UniswapKit.Kit.instance(evmKit: evmKit)
 
         ethereumAdapter = EthereumAdapter(ethereumKit: evmKit)
 

@@ -17,7 +17,7 @@ public class ContractMethodHelper {
             case let argument as [Address]:
                 data += pad(data: BigUInt(arguments.count * 32 + arraysData.count).serialize())
                 arraysData += encode(array: argument.map { $0.raw })
-            case let argument as Data:
+            case is Data:
                 data += pad(data: BigUInt(arguments.count * 32 + arraysData.count).serialize())
                 arraysData += pad(data: BigUInt(data.count).serialize()) + data
             default:

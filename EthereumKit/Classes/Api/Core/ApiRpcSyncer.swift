@@ -37,8 +37,6 @@ class ApiRpcSyncer {
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .utility))
                 .subscribe(onSuccess: { [weak self] lastBlockHeight in
                     self?.delegate?.didUpdate(lastBlockHeight: lastBlockHeight)
-                }, onError: { [weak self] error in
-//                    self?.state = .notReady(error: error)
                 })
                 .disposed(by: disposeBag)
     }

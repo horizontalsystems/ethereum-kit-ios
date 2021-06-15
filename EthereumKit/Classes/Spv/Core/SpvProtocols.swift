@@ -11,14 +11,14 @@ protocol ISpvStorage {
     func save(accountState: AccountStateSpv)
 }
 
-protocol IRandomHelper: class {
+protocol IRandomHelper: AnyObject {
     var randomInt: Int { get }
     func randomKey() -> ECKey
     func randomBytes(length: Int) -> Data
     func randomBytes(length: Range<Int>) -> Data
 }
 
-protocol IFactory: class {
+protocol IFactory: AnyObject {
     func authMessage(signature: Data, publicKeyPoint: ECPoint, nonce: Data) -> AuthMessage
     func authAckMessage(data: Data) throws -> AuthAckMessage
     func keccakDigest() -> KeccakDigest
@@ -45,7 +45,7 @@ protocol IECIESCryptoUtils {
     func hmacSha256(_ data: Data, key: Data, iv: Data, macData: Data) -> Data
 }
 
-protocol ICryptoUtils: class {
+protocol ICryptoUtils: AnyObject {
     func ecdhAgree(myKey: ECKey, remotePublicKeyPoint: ECPoint) -> Data
     func ellipticSign(_ messageToSign: Data, key: ECKey) throws -> Data
     func eciesDecrypt(privateKey: Data, message: ECIESEncryptedMessage) throws -> Data
@@ -54,13 +54,13 @@ protocol ICryptoUtils: class {
     func aesEncrypt(_ data: Data, withKey: Data, keySize: Int) -> Data
 }
 
-protocol IDevP2PPeerDelegate: class {
+protocol IDevP2PPeerDelegate: AnyObject {
     func didConnect()
     func didDisconnect(error: Error?)
     func didReceive(message: IInMessage)
 }
 
-protocol IConnectionDelegate: class {
+protocol IConnectionDelegate: AnyObject {
     func didConnect()
     func didDisconnect(error: Error?)
     func didReceive(frame: Frame)
@@ -82,12 +82,12 @@ protocol ITaskPerformer: AnyObject {
     func add(task: ITask)
 }
 
-protocol IPeerDelegate: class {
+protocol IPeerDelegate: AnyObject {
     func didConnect(peer: IPeer)
     func didDisconnect(peer: IPeer, error: Error?)
 }
 
-protocol IConnection: class {
+protocol IConnection: AnyObject {
     var delegate: IConnectionDelegate? { get set }
 
     func connect()
@@ -97,7 +97,7 @@ protocol IConnection: class {
     var logName: String { get }
 }
 
-protocol IFrameConnection: class {
+protocol IFrameConnection: AnyObject {
     var delegate: IFrameConnectionDelegate? { get set }
 
     func connect()
@@ -107,13 +107,13 @@ protocol IFrameConnection: class {
     var logName: String { get }
 }
 
-protocol IFrameConnectionDelegate: class {
+protocol IFrameConnectionDelegate: AnyObject {
     func didConnect()
     func didDisconnect(error: Error?)
     func didReceive(packetType: Int, payload: Data)
 }
 
-protocol IDevP2PConnection: class {
+protocol IDevP2PConnection: AnyObject {
     var delegate: IDevP2PConnectionDelegate? { get set }
 
     func register(sharedCapabilities: [Capability])
@@ -125,7 +125,7 @@ protocol IDevP2PConnection: class {
     var logName: String { get }
 }
 
-protocol IDevP2PConnectionDelegate: class {
+protocol IDevP2PConnectionDelegate: AnyObject {
     func didConnect()
     func didDisconnect(error: Error?)
     func didReceive(message: IInMessage)

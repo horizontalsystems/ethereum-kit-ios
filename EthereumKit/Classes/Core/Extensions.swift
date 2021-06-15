@@ -116,7 +116,7 @@ public extension PrimitiveSequence where Trait == SingleTrait {
         case mustRetry
     }
 
-    public func retryWith(options: RetryOptions<Element>, scheduler: SchedulerType) -> PrimitiveSequence<SingleTrait, Element> {
+    func retryWith(options: RetryOptions<Element>, scheduler: SchedulerType) -> PrimitiveSequence<SingleTrait, Element> {
         var delayTime = options.initialDelayTime
         var retryCount = 1
 

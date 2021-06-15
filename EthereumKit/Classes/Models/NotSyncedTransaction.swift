@@ -37,8 +37,8 @@ public class NotSyncedTransaction: Record {
         hash = row[Columns.hash]
 
         if let nonce = Int.fromDatabaseValue(row[Columns.nonce]),
-           let from = Data.fromDatabaseValue(row[Columns.from]).map { Address(raw: $0) },
-           let to = Data.fromDatabaseValue(row[Columns.to]).map { Address(raw: $0) },
+           let from = Data.fromDatabaseValue(row[Columns.from]).map({ Address(raw: $0) }),
+           let to = Data.fromDatabaseValue(row[Columns.to]).map({ Address(raw: $0) }),
            let value = BigUInt.fromDatabaseValue(row[Columns.value]),
            let gasPrice = Int.fromDatabaseValue(row[Columns.gasPrice]),
            let gasLimit = Int.fromDatabaseValue(row[Columns.gasLimit]),

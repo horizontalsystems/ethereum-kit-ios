@@ -1,6 +1,6 @@
 import Socket
 
-protocol INodeManager: class {
+protocol INodeManager: AnyObject {
     var delegate: INodeManagerDelegate? { get set }
     var node: Node? { get }
     var hasFreshIds: Bool { get }
@@ -14,7 +14,7 @@ protocol INodeDiscovery {
     var processing: Bool { get }
 }
 
-protocol INodeManagerDelegate: class {
+protocol INodeManagerDelegate: AnyObject {
     func newIdsAdded()
 }
 
@@ -58,7 +58,7 @@ protocol IUdpFactory {
     func findNodeData(target: Data, expiration: TimeInterval) throws -> Data
 }
 
-protocol IUdpClient: class {
+protocol IUdpClient: AnyObject {
     var node: Node { get }
     var noResponse: Bool { get }
     var id: Data { get }
@@ -69,7 +69,7 @@ protocol IUdpClient: class {
     func send(_ data: Data) throws
 }
 
-protocol IUdpClientDelegate: class {
+protocol IUdpClientDelegate: AnyObject {
     func didStop(_ client: IUdpClient, by error: Error)
     func didReceive(_ client: IUdpClient, data: Data) throws
 }

@@ -350,7 +350,7 @@ extension TransactionStorage: ITransactionStorage {
         }
     }
 
-    func set(tags: [TransactionTag], to: Transaction) {
+    func set(tags: [TransactionTag]) {
         _ = try? dbPool.write { db in
             for tag in tags {
                 try tag.save(db)
