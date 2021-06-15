@@ -3,10 +3,12 @@ import EthereumKit
 import RxSwift
 import SnapKit
 import UniswapKit
+import OneInchKit
 import BigInt
 
 class SwapController: UIViewController {
     private let disposeBag = DisposeBag()
+    private var swapDisposeBag = DisposeBag()
 
     private let fromLabel = UILabel()
     private let fromTextField = UITextField()
@@ -26,13 +28,9 @@ class SwapController: UIViewController {
     private let approveButton = UIButton(type: .system)
     private let swapButton = UIButton(type: .system)
 
-    private let uniswapKit: UniswapKit.Kit = Manager.shared.uniswapKit!
-
-    private var swapData: SwapData?
-    private var tradeData: TradeData?
     private var allowance: Decimal?
 
-    private let gasPrice = 20_000_000_000
+    private let gasPrice = 40_000_000_000
 
     private let ethereumKit = Manager.shared.evmKit!
     private let fromAdapter: IAdapter = Manager.shared.erc20Adapters[0]
@@ -47,6 +45,22 @@ class SwapController: UIViewController {
         }
 
         return erc20Adapter.token
+    }
+
+    private var swapAdapter: ISwapAdapter
+    private var inputFieldSwapAdapter: IInputFieldSwapAdapter?
+
+    public init(swapAdapter: ISwapAdapter, inputFieldSwapAdapter: IInputFieldSwapAdapter?) {
+        self.swapAdapter = swapAdapter
+        self.inputFieldSwapAdapter = inputFieldSwapAdapter
+
+        super.init(nibName: nil, bundle: nil)
+
+        modalPresentationStyle = .overFullScreen
+    }
+
+    required public init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 
     override func viewDidLoad() {
@@ -227,7 +241,7 @@ class SwapController: UIViewController {
         view.endEditing(true)
     }
 
-    private func pathString(path: [Token]) -> String {
+    private func pathString(path: [SwapToken]) -> String {
         let parts = path.map { token -> String in
             if token.isEther {
                 return "ETH"
@@ -242,13 +256,13 @@ class SwapController: UIViewController {
     }
 
     private func syncControls() {
-        let tradeType: TradeType = tradeData?.type ?? .exactIn
+        let tradeType: TradeType = (inputFieldSwapAdapter?.exactIn ?? true) ? .exactIn : .exactOut
 
         fromLabel.text = "From:\(tradeType == .exactOut ? " (estimated)" : "")"
         toLabel.text = "To:\(tradeType == .exactIn ? " (estimated)" : "")"
 
-        if let tradeData = tradeData {
-            switch tradeData.type {
+        if let tradeData = swapAdapter.tradeData {
+            switch tradeType {
             case .exactIn:
                 minMaxLabel.text = tradeData.amountOutMin.map { "Minimum Received: \($0.description) \(tokenCoin(token: toToken))" }
             case .exactOut:
@@ -271,7 +285,7 @@ class SwapController: UIViewController {
             pathLabel.text = nil
         }
 
-        let amountIn = tradeData?.amountIn ?? 0
+        let amountIn = swapAdapter.tradeData?.amountIn ?? 0
 
         let allowanceRequired: Bool
         if fromAdapter is EthereumAdapter {
@@ -287,23 +301,15 @@ class SwapController: UIViewController {
             }
         }
 
-        approveButton.isHidden = tradeData == nil || !allowanceRequired
+        approveButton.isHidden = swapAdapter.tradeData == nil || !allowanceRequired
 
         let balanceSufficient = amountIn <= fromAdapter.balance
 
-        swapButton.isHidden = tradeData == nil || allowanceRequired || !balanceSufficient
+        swapButton.isHidden = swapAdapter.tradeData == nil || allowanceRequired || !balanceSufficient
     }
 
     private func tokenCoin(token: Erc20Token?) -> String {
         token?.coin ?? "ETH"
-    }
-
-    private func uniswapToken(token: Erc20Token?) -> Token {
-        guard let token = token else {
-            return uniswapKit.etherToken
-        }
-
-        return uniswapKit.token(contractAddress: token.contractAddress, decimals: token.decimal)
     }
 
     private func amount(textField: UITextField) -> Decimal? {
@@ -319,7 +325,7 @@ class SwapController: UIViewController {
             return
         }
 
-        fromAdapter.allowanceSingle(spenderAddress: uniswapKit.routerAddress)
+        fromAdapter.allowanceSingle(spenderAddress: swapAdapter.routerAddress)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { [weak self] allowance in
@@ -336,76 +342,44 @@ class SwapController: UIViewController {
     }
 
     private func syncSwapData() {
-        let tokenIn = uniswapToken(token: fromToken)
-        let tokenOut = uniswapToken(token: toToken)
+        swapAdapter.tokenIn = swapAdapter.swapToken(token: fromToken)
+        swapAdapter.tokenOut = swapAdapter.swapToken(token: toToken)
 
-        uniswapKit.swapDataSingle(tokenIn: tokenIn, tokenOut: tokenOut)
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+        swapAdapter.tradeDataObservable
+                .subscribeOn(MainScheduler.instance)
                 .observeOn(MainScheduler.instance)
-                .subscribe(onSuccess: { [weak self] swapData in
-//                    print("SwapData:\n\(swapData)")
-
-                    self?.swapData = swapData
-                }, onError: { error in
-                    print("SWAP DATA ERROR: \(error)")
+                .subscribe(onNext: { [weak self] tradeData in
+                    self?.toTextField.text = tradeData?.amountOut?.description
+                    self?.syncControls()
                 })
                 .disposed(by: disposeBag)
     }
 
     @objc private func onChangeAmountIn() {
-        tradeData = nil
-
+        inputFieldSwapAdapter?.exactIn = true
         guard let amountIn = amount(textField: fromTextField) else {
             toTextField.text = nil
+            swapAdapter.amount = nil
             syncControls()
             return
         }
 
-        guard let swapData = swapData else {
-            syncControls()
-            return
-        }
-
-        do {
-            tradeData = try uniswapKit.bestTradeExactIn(
-                    swapData: swapData,
-                    amountIn: amountIn
-            )
-        } catch {
-            print("ERROR: \(error)")
-        }
-
+        swapAdapter.amount = amountIn
         syncControls()
-
-        toTextField.text = tradeData?.amountOut?.description
     }
 
     @objc private func onChangeAmountOut() {
-        tradeData = nil
+        inputFieldSwapAdapter?.exactIn = false
 
         guard let amountOut = amount(textField: toTextField) else {
             fromTextField.text = nil
+            swapAdapter.amount = nil
             syncControls()
             return
         }
 
-        guard let swapData = swapData else {
-            syncControls()
-            return
-        }
-
-        do {
-            tradeData = try uniswapKit.bestTradeExactOut(
-                    swapData: swapData,
-                    amountOut: amountOut
-            )
-        } catch {
-            print("ERROR: \(error)")
-        }
-
+        swapAdapter.amount = amountOut
         syncControls()
-
-        fromTextField.text = tradeData?.amountIn?.description
     }
 
     @objc private func onTapApprove() {
@@ -418,7 +392,7 @@ class SwapController: UIViewController {
         }
 
         let gasPrice = self.gasPrice
-        let spenderAddress = uniswapKit.routerAddress
+        let spenderAddress = swapAdapter.routerAddress
         
         let transactionData = adapter.erc20Kit.approveTransactionData(spenderAddress: spenderAddress, amount: amount)
 
@@ -437,34 +411,39 @@ class SwapController: UIViewController {
                 .disposed(by: disposeBag)
     }
 
-    @objc private func onTapSwap() {
-        guard let tradeData = tradeData else {
-            return
-        }
-
-        do {
-            let transactionData = try uniswapKit.transactionData(tradeData: tradeData)
-            return ethereumKit.estimateGas(
+    private func swap(transactionData: TransactionData) {
+        return ethereumKit.estimateGas(
+                        transactionData: transactionData,
+                        gasPrice: gasPrice
+                ).flatMap { [unowned self] gasLimit -> Single<FullTransaction> in
+                    print("GAS LIMIT SUCCESS: \(gasLimit)")
+                    return ethereumKit.sendSingle(
                             transactionData: transactionData,
-                            gasPrice: gasPrice
-                    ).flatMap { [unowned self] gasLimit -> Single<FullTransaction> in
-                        print("GAS LIMIT SUCCESS: \(gasLimit)")
-                        return ethereumKit.sendSingle(
-                                transactionData: transactionData,
-                                gasPrice: gasPrice,
-                                gasLimit: gasLimit)
-                    }
-                    .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
-                    .observeOn(MainScheduler.instance)
-                    .subscribe(onSuccess: { FullTransaction in
-                        print("SUCCESS: \(FullTransaction.transaction.hash.toHexString())")
-                    }, onError: { error in
-                        print("ERROR: \(error)")
-                    })
-                    .disposed(by: disposeBag)
-        } catch {
-            print("ERROR: \(error)")
-        }
+                            gasPrice: gasPrice,
+                            gasLimit: gasLimit)
+                }
+                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+                .observeOn(MainScheduler.instance)
+                .subscribe(onSuccess: { FullTransaction in
+                    print("SUCCESS: \(FullTransaction.transaction.hash.toHexString())")
+                }, onError: { error in
+                    print("ERROR: \(error)")
+                })
+                .disposed(by: disposeBag)
+    }
+
+    @objc private func onTapSwap() {
+        swapDisposeBag = DisposeBag()
+
+        swapAdapter.transactionData()
+                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
+                .observeOn(MainScheduler.instance)
+                .subscribe(onSuccess: { [weak self] transactionData in
+                    self?.swap(transactionData: transactionData)
+                }, onError: { error in
+                    print("ERROR: \(error)")
+                })
+                .disposed(by: swapDisposeBag)
     }
 
 }

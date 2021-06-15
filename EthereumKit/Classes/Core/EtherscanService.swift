@@ -5,25 +5,26 @@ import HsToolKit
 
 public class EtherscanService {
     private let networkManager: SerialNetworkManager
-    private let network: INetwork
+    private let networkType: NetworkType
 
     private let etherscanApiKey: String
     private let address: Address
 
-    init(network: INetwork, etherscanApiKey: String, address: Address, logger: Logger) {
+    init(networkType: NetworkType, etherscanApiKey: String, address: Address, logger: Logger) {
         self.networkManager = SerialNetworkManager(requestInterval: 1, logger: logger)
-        self.network = network
+        self.networkType = networkType
         self.etherscanApiKey = etherscanApiKey
         self.address = address
     }
 
     private var baseUrl: String {
-        switch network {
-        case is EthMainNet: return "https://api.etherscan.io"
-        case is Ropsten: return "https://api-ropsten.etherscan.io"
-        case is Kovan: return "https://api-kovan.etherscan.io"
-        case is BscMainNet: return "https://api.bscscan.com"
-        default: return "https://api-ropsten.etherscan.io"
+        switch networkType {
+        case .ethMainNet: return "https://api.etherscan.io"
+        case .bscMainNet: return "https://api.bscscan.com"
+        case .ropsten: return "https://api-ropsten.etherscan.io"
+        case .rinkeby: return "https://api-rinkeby.etherscan.io"
+        case .kovan: return "https://api-kovan.etherscan.io"
+        case .goerli: return "https://api-goerli.etherscan.io"
         }
     }
 
