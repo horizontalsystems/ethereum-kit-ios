@@ -13,7 +13,11 @@ class CryptoUtils: ICryptoUtils {
     }
 
     func ellipticSign(_ messageToSign: Data, key: ECKey) throws -> Data {
-        return try Secp256k1Kit.Kit.ellipticSign(messageToSign, privateKey: key.privateKey)
+        try ellipticSign(messageToSign, privateKey: key.privateKey)
+    }
+
+    func ellipticSign(_ messageToSign: Data, privateKey: Data) throws -> Data {
+        try Secp256k1Kit.Kit.ellipticSign(messageToSign, privateKey: privateKey)
     }
 
     func eciesDecrypt(privateKey: Data, message: ECIESEncryptedMessage) throws -> Data {

@@ -22,6 +22,7 @@ public class Kit {
     private let internalTransactionSyncer: TransactionInternalTransactionSyncer
     private let transactionBuilder: TransactionBuilder
     private let transactionSigner: TransactionSigner
+    private let ethSigner: EthSigner
     private let decorationManager: DecorationManager
     private let state: EthereumKitState
 
@@ -35,7 +36,7 @@ public class Kit {
 
 
     init(blockchain: IBlockchain, transactionManager: TransactionManager, transactionSyncManager: TransactionSyncManager, internalTransactionSyncer: TransactionInternalTransactionSyncer,
-         transactionBuilder: TransactionBuilder, transactionSigner: TransactionSigner, state: EthereumKitState = EthereumKitState(),
+         transactionBuilder: TransactionBuilder, transactionSigner: TransactionSigner, ethSigner: EthSigner, state: EthereumKitState = EthereumKitState(),
          address: Address, networkType: NetworkType, uniqueId: String, etherscanService: EtherscanService, decorationManager: DecorationManager, logger: Logger) {
         self.blockchain = blockchain
         self.transactionManager = transactionManager
@@ -43,6 +44,7 @@ public class Kit {
         self.internalTransactionSyncer = internalTransactionSyncer
         self.transactionBuilder = transactionBuilder
         self.transactionSigner = transactionSigner
+        self.ethSigner = ethSigner
         self.state = state
         self.address = address
         self.networkType = networkType
@@ -182,6 +184,18 @@ extension Kit {
         return transactionBuilder.encode(rawTransaction: rawTransaction, signature: signature)
     }
 
+    public func signed(message: Data) throws -> Data {
+        try ethSigner.sign(message: message)
+    }
+
+    public func parseTypedData(rawJson: Data) throws -> EIP712TypedData {
+        try ethSigner.parseTypedData(rawJson: rawJson)
+    }
+
+    public func signTypedData(message: Data) throws -> Data {
+        try ethSigner.signTypedData(message: message)
+    }
+
     public var debugInfo: String {
         var lines = [String]()
 
@@ -221,7 +235,7 @@ extension Kit {
     public func add(transactionSyncer: ITransactionSyncer) {
         transactionSyncManager.add(syncer: transactionSyncer)
     }
-    
+
     public func removeSyncer(byId id: String) {
         transactionSyncManager.removeSyncer(byId: id)
     }
@@ -333,6 +347,7 @@ extension Kit {
 
         let transactionSigner = TransactionSigner(chainId: networkType.chainId, privateKey: privKey.raw)
         let transactionBuilder = TransactionBuilder(address: address)
+        let ethSigner = EthSigner(privateKey: privKey.raw, cryptoUtils: CryptoUtils.shared)
         let etherscanService = EtherscanService(networkType: networkType, etherscanApiKey: etherscanApiKey, address: address, logger: logger)
 
         let storage: IApiStorage = try ApiStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "api-\(uniqueId)")
@@ -361,7 +376,7 @@ extension Kit {
 
         let kit = Kit(
                 blockchain: blockchain, transactionManager: transactionManager, transactionSyncManager: transactionSyncManager, internalTransactionSyncer: transactionInternalTransactionSyncer,
-                transactionBuilder: transactionBuilder, transactionSigner: transactionSigner, address: address, networkType: networkType,
+                transactionBuilder: transactionBuilder, transactionSigner: transactionSigner, ethSigner: ethSigner, address: address, networkType: networkType,
                 uniqueId: uniqueId, etherscanService: etherscanService, decorationManager: decorationManager, logger: logger
         )
 

@@ -48,6 +48,7 @@ protocol IECIESCryptoUtils {
 protocol ICryptoUtils: AnyObject {
     func ecdhAgree(myKey: ECKey, remotePublicKeyPoint: ECPoint) -> Data
     func ellipticSign(_ messageToSign: Data, key: ECKey) throws -> Data
+    func ellipticSign(_ messageToSign: Data, privateKey: Data) throws -> Data
     func eciesDecrypt(privateKey: Data, message: ECIESEncryptedMessage) throws -> Data
     func eciesEncrypt(remotePublicKey: ECPoint, message: Data) -> ECIESEncryptedMessage
     func sha3(_ data: Data) -> Data
