@@ -6,7 +6,7 @@ import UniswapKit
 import OneInchKit
 import BigInt
 
-class SwapController: UIViewController {
+class OneInchController: UIViewController {
     private let disposeBag = DisposeBag()
     private var swapDisposeBag = DisposeBag()
 
@@ -393,7 +393,7 @@ class SwapController: UIViewController {
 
         let gasPrice = self.gasPrice
         let spenderAddress = swapAdapter.routerAddress
-        
+
         let transactionData = adapter.erc20Kit.approveTransactionData(spenderAddress: spenderAddress, amount: amount)
 
         ethereumKit.estimateGas(transactionData: transactionData, gasPrice: gasPrice)
