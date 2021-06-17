@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 * `EthereumKit`
   * Add ability to sign message via EIP712
+* Refactor transactions decorations [ **non-back-compatible api change** ]
 
 ## 0.14.0
 
