@@ -1,7 +1,7 @@
 import EthereumKit
 import BigInt
 
-public class ApproveEventDecoration: EventDecoration {
+public class ApproveEventDecoration: ContractEventDecoration {
     static let signature = ContractEvent(name: "Approval", arguments: [.address, .address, .uint256]).signature
 
     public let owner: Address
@@ -16,7 +16,7 @@ public class ApproveEventDecoration: EventDecoration {
         super.init(contractAddress: contractAddress)
     }
 
-    override open var tags: [String] {
+    public override func tags(fromAddress: Address, toAddress: Address, userAddress: Address) -> [String] {
         [contractAddress.hex, "eip20Approve"]
     }
 

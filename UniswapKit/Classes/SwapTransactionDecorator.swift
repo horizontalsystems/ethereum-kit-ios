@@ -3,11 +3,11 @@ import Erc20Kit
 import BigInt
 
 class SwapTransactionDecorator {
-    private let userAddress: Address
+    private let address: Address
     private let contractMethodFactories: SwapContractMethodFactories
 
-    init(userAddress: Address, contractMethodFactories: SwapContractMethodFactories) {
-        self.userAddress = userAddress
+    init(address: Address, contractMethodFactories: SwapContractMethodFactories) {
+        self.address = address
         self.contractMethodFactories = contractMethodFactories
     }
 
@@ -48,8 +48,14 @@ class SwapTransactionDecorator {
 
 extension SwapTransactionDecorator: IDecorator {
 
-    func decorate(transactionData: TransactionData, fullTransaction: FullTransaction?) -> TransactionDecoration? {
+    func decorate(transactionData: TransactionData, fullTransaction: FullTransaction?) -> ContractMethodDecoration? {
         guard let contractMethod = contractMethodFactories.createMethod(input: transactionData.input) else {
+            return nil
+        }
+
+        if let transaction = fullTransaction?.transaction, transaction.from != address {
+            // We only parse transactions created by the user (owner of this wallet).
+            // If a swap was initiated by someone else and "recipient" is set to user's it should be shown as just an incoming transaction
             return nil
         }
 
@@ -65,7 +71,7 @@ extension SwapTransactionDecorator: IDecorator {
                 amountIn = fullTransaction.transaction.value - change
             }
 
-            return SwapTransactionDecoration(
+            return SwapMethodDecoration(
                     trade: .exactOut(amountOut: method.amountOut, amountInMax: transactionData.value, amountIn: amountIn),
                     tokenIn: .evmCoin,
                     tokenOut: .eip20Coin(address: lastCoinInPath),
@@ -85,7 +91,7 @@ extension SwapTransactionDecorator: IDecorator {
                 amountOut = totalTokenAmount(userAddress: method.to, tokenAddress: lastCoinInPath, logs: logs, collectIncomingAmounts: false)
             }
 
-            return SwapTransactionDecoration(
+            return SwapMethodDecoration(
                     trade: .exactIn(amountIn: transactionData.value, amountOutMin: method.amountOutMin, amountOut: amountOut),
                     tokenIn: .evmCoin,
                     tokenOut: .eip20Coin(address: lastCoinInPath),
@@ -105,7 +111,7 @@ extension SwapTransactionDecorator: IDecorator {
                 amountOut = totalETHIncoming(userAddress: method.to, transactions: internalTransactions)
             }
 
-            return SwapTransactionDecoration(
+            return SwapMethodDecoration(
                     trade: .exactIn(amountIn: method.amountIn, amountOutMin: method.amountOutMin, amountOut: amountOut),
                     tokenIn: .eip20Coin(address: firstCoinInPath),
                     tokenOut: .evmCoin,
@@ -125,7 +131,7 @@ extension SwapTransactionDecorator: IDecorator {
                 amountOut = totalTokenAmount(userAddress: method.to, tokenAddress: lastCoinInPath, logs: logs, collectIncomingAmounts: false)
             }
 
-            return SwapTransactionDecoration(
+            return SwapMethodDecoration(
                     trade: .exactIn(amountIn: method.amountIn, amountOutMin: method.amountOutMin, amountOut: amountOut),
                     tokenIn: .eip20Coin(address: firstCoinInPath),
                     tokenOut: .eip20Coin(address: lastCoinInPath),
@@ -145,7 +151,7 @@ extension SwapTransactionDecorator: IDecorator {
                 amountIn = totalTokenAmount(userAddress: method.to, tokenAddress: firstCoinInPath, logs: logs, collectIncomingAmounts: true)
             }
 
-            return SwapTransactionDecoration(
+            return SwapMethodDecoration(
                     trade: .exactOut(amountOut: method.amountOut, amountInMax: method.amountInMax, amountIn: amountIn),
                     tokenIn: .eip20Coin(address: firstCoinInPath),
                     tokenOut: .evmCoin,
@@ -165,7 +171,7 @@ extension SwapTransactionDecorator: IDecorator {
                 amountIn = totalTokenAmount(userAddress: method.to, tokenAddress: firstCoinInPath, logs: logs, collectIncomingAmounts: true)
             }
 
-            return SwapTransactionDecoration(
+            return SwapMethodDecoration(
                     trade: .exactOut(amountOut: method.amountOut, amountInMax: method.amountInMax, amountIn: amountIn),
                     tokenIn: .eip20Coin(address: firstCoinInPath),
                     tokenOut: .eip20Coin(address: lastCoinInPath),
@@ -179,8 +185,8 @@ extension SwapTransactionDecorator: IDecorator {
         }
     }
 
-    public func decorate(logs: [TransactionLog]) -> [EventDecoration] {
-        logs.compactMap { log -> EventDecoration? in
+    public func decorate(logs: [TransactionLog]) -> [ContractEventDecoration] {
+        logs.compactMap { log -> ContractEventDecoration? in
             let signature = log.topics[0]
             guard SwapEventDecoration.signature == signature, log.topics.count == 3, log.data.count == 128 else {
                 return nil
@@ -189,7 +195,7 @@ extension SwapTransactionDecorator: IDecorator {
             let firstParam = Address(raw: log.topics[1])
             let secondParam = Address(raw: log.topics[2])
 
-            guard firstParam == userAddress || secondParam == userAddress else {
+            guard firstParam == address || secondParam == address else {
                 return nil
             }
 

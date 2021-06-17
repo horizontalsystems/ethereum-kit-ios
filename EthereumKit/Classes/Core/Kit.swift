@@ -350,7 +350,8 @@ extension Kit {
         let pendingTransactionSyncer = PendingTransactionSyncer(blockchain: blockchain, storage: transactionStorage)
         let transactionSyncManager = TransactionSyncManager(notSyncedTransactionManager: notSyncedTransactionManager)
         let decorationManager = DecorationManager(address: address)
-        let transactionManager = TransactionManager(address: address, storage: transactionStorage, transactionSyncManager: transactionSyncManager, decorationManager: decorationManager)
+        let tagGenerator = TagGenerator(address: address)
+        let transactionManager = TransactionManager(address: address, storage: transactionStorage, transactionSyncManager: transactionSyncManager, decorationManager: decorationManager, tagGenerator: tagGenerator)
 
         transactionSyncManager.add(syncer: ethereumTransactionSyncer)
         transactionSyncManager.add(syncer: userInternalTransactionSyncer)
@@ -371,7 +372,7 @@ extension Kit {
         userInternalTransactionSyncer.listener = transactionSyncManager
         transactionInternalTransactionSyncer.listener = transactionSyncManager
 
-        decorationManager.add(decorator: ContractCallDecorator())
+        decorationManager.add(decorator: ContractCallDecorator(address: address))
 
         return kit
     }

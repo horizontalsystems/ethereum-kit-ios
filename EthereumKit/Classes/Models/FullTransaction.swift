@@ -4,8 +4,8 @@ public struct FullTransaction {
     public let transaction: Transaction
     public let receiptWithLogs: ReceiptWithLogs?
     public let internalTransactions: [InternalTransaction]
-    public var mainDecoration: TransactionDecoration? = nil
-    public var eventDecorations = [EventDecoration]()
+    public var mainDecoration: ContractMethodDecoration? = nil
+    public var eventDecorations = [ContractEventDecoration]()
     public let replacedWith: Data?
 
     init(transaction: Transaction, receiptWithLogs: ReceiptWithLogs? = nil, internalTransactions: [InternalTransaction] = [], replacedWith: Data? = nil) {

@@ -5,6 +5,7 @@ class TransactionManager {
     private let address: Address
     private let storage: ITransactionStorage
     private let decorationManager: DecorationManager
+    private let tagGenerator: TagGenerator
 
     private let etherTransactionsSubject = PublishSubject<[FullTransaction]>()
     private let allTransactionsSubject = PublishSubject<[FullTransaction]>()
@@ -18,10 +19,11 @@ class TransactionManager {
         allTransactionsSubject.asObservable()
     }
 
-    init(address: Address, storage: ITransactionStorage, transactionSyncManager: TransactionSyncManager, decorationManager: DecorationManager) {
+    init(address: Address, storage: ITransactionStorage, transactionSyncManager: TransactionSyncManager, decorationManager: DecorationManager, tagGenerator: TagGenerator) {
         self.address = address
         self.storage = storage
         self.decorationManager = decorationManager
+        self.tagGenerator = tagGenerator
 
         transactionSyncManager
                 .transactionsObservable
@@ -34,27 +36,10 @@ class TransactionManager {
                 .disposed(by: disposeBag)
     }
 
-    private func updateTags(transaction: FullTransaction) {
-        var tags = [TransactionTag]()
-
-        if let mainDecoration = transaction.mainDecoration, let toAddress = transaction.transaction.to, !(mainDecoration is UnknownTransactionDecoration) {
-            for tag in mainDecoration.tags {
-                tags.append(TransactionTag(name: tag, transactionHash: transaction.transaction.hash))
-            }
-            tags.append(TransactionTag(name: toAddress.hex, transactionHash: transaction.transaction.hash))
-        }
-
-        for event in transaction.eventDecorations {
-            tags.append(contentsOf: event.tags.map { TransactionTag(name: $0, transactionHash: transaction.transaction.hash) })
-        }
-
-        storage.set(tags: Array(Set(tags)))
-    }
-
     private func handle(syncedTransactions: [FullTransaction]) {
         let decoratedTransactions = syncedTransactions.map { decorationManager.decorateFullTransaction(fullTransaction: $0) }
         for transaction in decoratedTransactions {
-            updateTags(transaction: transaction)
+            storage.set(tags: tagGenerator.generate(for: transaction))
         }
 
         if !decoratedTransactions.isEmpty {
@@ -78,6 +63,10 @@ class TransactionManager {
                 }
     }
 
+}
+
+extension TransactionManager {
+
     func etherTransferTransactionData(to: Address, value: BigUInt) -> TransactionData {
         TransactionData(
                 to: to,
@@ -85,10 +74,6 @@ class TransactionManager {
                 input: Data()
         )
     }
-
-}
-
-extension TransactionManager {
 
     func etherTransactionsSingle(fromHash: Data?, limit: Int?) -> Single<[FullTransaction]> {
         storage.etherTransactionsBeforeSingle(address: address, hash: fromHash, limit: limit)
@@ -137,11 +122,7 @@ extension TransactionManager {
         storage.save(transaction: sentTransaction)
 
         let fullTransaction = FullTransaction(transaction: sentTransaction)
-        allTransactionsSubject.onNext([fullTransaction])
-
-        if hasEtherTransferred(fullTransaction: fullTransaction) {
-            etherTransactionsSubject.onNext([fullTransaction])
-        }
+        handle(syncedTransactions: [fullTransaction])
     }
 
     func transactions(fromSyncOrder: Int?) -> [FullTransaction] {

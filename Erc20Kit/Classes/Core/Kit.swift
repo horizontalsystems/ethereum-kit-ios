@@ -147,8 +147,6 @@ extension Kit {
 
         balanceManager.delegate = erc20Kit
 
-        ethereumKit.add(decorator: Eip20TransactionDecorator(userAddress: ethereumKit.address, tokenAddress: contractAddress, contractMethodFactories: Eip20ContractMethodFactories.shared))
-
         return erc20Kit
     }
 
@@ -177,6 +175,10 @@ extension Kit {
 
     public static func getTransactionSyncer(evmKit: EthereumKit.Kit) -> ITransactionSyncer {
         Erc20TransactionSyncer(provider: evmKit.etherscanService)
+    }
+
+    public static func decorator(evmKit: EthereumKit.Kit) -> IDecorator {
+        Eip20TransactionDecorator(userAddress: evmKit.address, contractMethodFactories: Eip20ContractMethodFactories.shared)
     }
 
 }

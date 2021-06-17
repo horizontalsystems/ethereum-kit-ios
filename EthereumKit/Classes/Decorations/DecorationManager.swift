@@ -48,7 +48,7 @@ class DecorationManager {
             let methodId = Data(fullTransaction.transaction.input.prefix(4))
             let inputArguments = Data(fullTransaction.transaction.input.suffix(from: 4))
 
-            fullTransaction.mainDecoration = UnknownTransactionDecoration(methodId: methodId, inputArguments: inputArguments)
+            fullTransaction.mainDecoration = UnknownMethodDecoration(methodId: methodId, inputArguments: inputArguments)
         }
 
         return fullTransaction
