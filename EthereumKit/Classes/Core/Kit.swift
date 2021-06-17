@@ -244,12 +244,8 @@ extension Kit {
         decorationManager.add(decorator: decorator)
     }
 
-    public func decorate(transactionData: TransactionData) -> TransactionDecoration? {
+    public func decorate(transactionData: TransactionData) -> ContractMethodDecoration? {
         decorationManager.decorateTransaction(transactionData: transactionData)
-    }
-
-    public func decorate(transaction: FullTransaction) -> FullTransaction? {
-        decorationManager.decorateFullTransaction(fullTransaction: transaction)
     }
 
     public func transferTransactionData(to: Address, value: BigUInt) -> TransactionData {

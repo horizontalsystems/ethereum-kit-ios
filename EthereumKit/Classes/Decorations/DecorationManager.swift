@@ -10,7 +10,7 @@ class DecorationManager {
         decorators.append(decorator)
     }
 
-    func decorateTransaction(transactionData: TransactionData) -> TransactionDecoration? {
+    func decorateTransaction(transactionData: TransactionData) -> ContractMethodDecoration? {
         guard !transactionData.input.isEmpty else {
             return nil
         }
