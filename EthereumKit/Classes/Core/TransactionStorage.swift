@@ -199,6 +199,16 @@ class TransactionStorage {
             }
         }
 
+        migrator.registerMigration("dumpTransactions") { db in
+            try Transaction.deleteAll(db)
+            try TransactionLog.deleteAll(db)
+            try TransactionReceipt.deleteAll(db)
+            try InternalTransaction.deleteAll(db)
+            try NotSyncedTransaction.deleteAll(db)
+            try DroppedTransaction.deleteAll(db)
+            try TransactionSyncerState.deleteAll(db)
+        }
+
         return migrator
     }
 
