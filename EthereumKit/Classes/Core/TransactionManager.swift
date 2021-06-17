@@ -38,29 +38,24 @@ class TransactionManager {
 
     private func handle(syncedTransactions: [FullTransaction]) {
         let decoratedTransactions = syncedTransactions.map { decorationManager.decorateFullTransaction(fullTransaction: $0) }
+        var etherTransactions = [FullTransaction]()
+
         for transaction in decoratedTransactions {
-            storage.set(tags: tagGenerator.generate(for: transaction))
+            let tags = tagGenerator.generate(for: transaction)
+            storage.set(tags: tags)
+
+            if tags.map({ $0.name }).contains("ETH") {
+                etherTransactions.append(transaction)
+            }
         }
 
         if !decoratedTransactions.isEmpty {
             allTransactionsSubject.onNext(decoratedTransactions)
         }
 
-        let etherTransactions = decoratedTransactions.filter {
-            hasEtherTransferred(fullTransaction: $0)
-        }
-
         if !etherTransactions.isEmpty {
             etherTransactionsSubject.onNext(etherTransactions)
         }
-    }
-
-    private func hasEtherTransferred(fullTransaction: FullTransaction) -> Bool {
-        (fullTransaction.transaction.from == address && fullTransaction.transaction.value > 0) ||
-                fullTransaction.transaction.to == address ||
-                fullTransaction.internalTransactions.contains {
-                    $0.to == address
-                }
     }
 
 }
@@ -76,16 +71,7 @@ extension TransactionManager {
     }
 
     func etherTransactionsSingle(fromHash: Data?, limit: Int?) -> Single<[FullTransaction]> {
-        storage.etherTransactionsBeforeSingle(address: address, hash: fromHash, limit: limit)
-                .map { [weak self] transactions in
-                    if let manager = self {
-                        return transactions.map {
-                            manager.decorationManager.decorateFullTransaction(fullTransaction: $0)
-                        }
-                    }
-
-                    return []
-                }
+        transactionsSingle(tags: [["ETH"]], fromHash: fromHash, limit: limit)
     }
 
     func transactionsSingle(tags: [[String]], fromHash: Data?, limit: Int?) -> Single<[FullTransaction]> {
