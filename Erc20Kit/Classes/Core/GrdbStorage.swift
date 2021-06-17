@@ -37,6 +37,13 @@ class GrdbStorage {
             }
         }
 
+        migrator.registerMigration("dumpTransactions") { db in
+            try TransactionSyncOrder.deleteAll(db)
+            if try db.tableExists("transactions") {
+                try db.drop(table: "transactions")
+            }
+        }
+
         return migrator
     }
 }
