@@ -1,6 +1,5 @@
 import UIKit
 import EthereumKit
-import UniswapKit
 
 class MainController: UITabBarController {
 
@@ -26,7 +25,7 @@ class MainController: UITabBarController {
         var controllers = [balanceNavigation, transactionsNavigation, sendNavigation, receiveNavigation]
 
 //        if let _ = Manager.shared.uniswapKit {
-//            let swapNavigation = UINavigationController(rootViewController: SwapController())
+//            let swapNavigation = UINavigationController(rootViewController: UniswapController())
 //            swapNavigation.tabBarItem.title = "Swap"
 //            swapNavigation.tabBarItem.image = UIImage(named: "Transactions Tab Bar Icon")
 //            controllers.append(swapNavigation)
@@ -36,7 +35,7 @@ class MainController: UITabBarController {
             let swapTradeDataFactory = SwapTradeDataFactory(swapTokenFactory: swapTokenFactory)
 //            let swapService = UniswapService(uniswapKit: swapKit, swapTokenFactory: swapTokenFactory, swapTradeDataFactory: swapTradeDataFactory)
             let oneInchService = OneInchService(oneInchKit: oneInchKit, swapTokenFactory: swapTokenFactory, swapTradeDataFactory: swapTradeDataFactory)
-            let swapController = SwapController(swapAdapter: oneInchService, inputFieldSwapAdapter: nil)
+            let swapController = OneInchController(swapAdapter: oneInchService, inputFieldSwapAdapter: nil)
 
             let swapNavigation = UINavigationController(rootViewController: swapController)
             swapNavigation.tabBarItem.title = "Swap"

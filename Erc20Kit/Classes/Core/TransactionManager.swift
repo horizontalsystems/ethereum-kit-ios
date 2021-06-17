@@ -25,7 +25,7 @@ class TransactionManager {
         self.storage = storage
 
         address = ethereumKit.receiveAddress
-        tags = [[contractAddress.hex], ["eip20Transfer", "eip20Approve"]]
+        tags = [[contractAddress.hex]]
 
         ethereumKit.allTransactionsObservable
                 .subscribe { [weak self] in
@@ -40,10 +40,10 @@ class TransactionManager {
 
             if let decoration = fullTransaction.mainDecoration {
                 switch decoration {
-                case let transfer as TransferTransactionDecoration:
+                case let transfer as TransferMethodDecoration:
                     return transfer.to == address || transaction.from == address
 
-                case is ApproveTransactionDecoration: return transaction.from == address
+                case is ApproveMethodDecoration: return transaction.from == address
 
                 default: return false
                 }

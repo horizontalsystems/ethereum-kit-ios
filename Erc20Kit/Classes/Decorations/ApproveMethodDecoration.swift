@@ -1,7 +1,7 @@
 import EthereumKit
 import BigInt
 
-public class ApproveTransactionDecoration: TransactionDecoration {
+public class ApproveMethodDecoration: ContractMethodDecoration {
     public let spender: Address
     public let value: BigUInt
 
@@ -10,7 +10,10 @@ public class ApproveTransactionDecoration: TransactionDecoration {
         self.value = value
 
         super.init()
-        tags.append("eip20Approve")
+    }
+
+    public override func tags(fromAddress: Address, toAddress: Address, userAddress: Address) -> [String] {
+        [toAddress.hex, "eip20Approve"]
     }
 
 }

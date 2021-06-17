@@ -1,7 +1,7 @@
 import EthereumKit
 import BigInt
 
-public class SwapEventDecoration: EventDecoration {
+public class SwapEventDecoration: ContractEventDecoration {
     static let signature = ContractEvent(name: "Swap", arguments: [.address, .uint256, .uint256, .uint256, .uint256, .address]).signature
 
     public let sender: Address
@@ -22,8 +22,12 @@ public class SwapEventDecoration: EventDecoration {
         super.init(contractAddress: contractAddress)
     }
 
-    override open var tags: [String] {
-        [contractAddress.hex, "swap"]
+    public override func tags(fromAddress: Address, toAddress: Address, userAddress: Address) -> [String] {
+        if fromAddress == userAddress {
+            return ["swap"]
+        } else {
+            return []
+        }
     }
 
 }

@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		11B353E98743C82520A37744 /* SwapController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35D85C5CE8FFFE3497F4B /* SwapController.swift */; };
+		11B353E98743C82520A37744 /* OneInchController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35D85C5CE8FFFE3497F4B /* OneInchController.swift */; };
+		2FA5D7425FFBE908226E68D0 /* UniswapController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D0E2F61472F1A464C5F7 /* UniswapController.swift */; };
 		58AAA3B299C155B52AF2AEE2 /* OneInchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAA42E9A5C7E4D27E81C09 /* OneInchService.swift */; };
 		58AAA3D1E8EC521787517849 /* SwapToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAACB97F5F3DCAA544A056 /* SwapToken.swift */; };
 		58AAA53B2A93259D4C42E284 /* SwapTokenFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AAAAB181F7B2529136A432 /* SwapTokenFactory.swift */; };
@@ -63,7 +64,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		11B35D85C5CE8FFFE3497F4B /* SwapController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwapController.swift; sourceTree = "<group>"; };
+		11B35D85C5CE8FFFE3497F4B /* OneInchController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OneInchController.swift; sourceTree = "<group>"; };
+		2FA5D0E2F61472F1A464C5F7 /* UniswapController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UniswapController.swift; sourceTree = "<group>"; };
 		4063AE224A4268ECAA4E8354 /* Pods-EthereumKit_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EthereumKit_Example.release.xcconfig"; path = "Target Support Files/Pods-EthereumKit_Example/Pods-EthereumKit_Example.release.xcconfig"; sourceTree = "<group>"; };
 		484F9E3A1C8BBB8D90AB0480 /* Pods-EthereumKitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EthereumKitTests.release.xcconfig"; path = "Target Support Files/Pods-EthereumKitTests/Pods-EthereumKitTests.release.xcconfig"; sourceTree = "<group>"; };
 		58AAA1C7BF41E74802BFABB2 /* SwapTradeDataFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwapTradeDataFactory.swift; sourceTree = "<group>"; };
@@ -306,7 +308,8 @@
 				D36AAAC523A237940065B32B /* TransactionsController.swift */,
 				D36AAAC623A237940065B32B /* SendController.swift */,
 				D36AAAC723A237940065B32B /* ReceiveController.xib */,
-				11B35D85C5CE8FFFE3497F4B /* SwapController.swift */,
+				11B35D85C5CE8FFFE3497F4B /* OneInchController.swift */,
+				2FA5D0E2F61472F1A464C5F7 /* UniswapController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -611,7 +614,7 @@
 				D36AAADC23A237940065B32B /* SendController.swift in Sources */,
 				607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */,
 				D36AAAD823A237940065B32B /* WordsController.swift in Sources */,
-				11B353E98743C82520A37744 /* SwapController.swift in Sources */,
+				11B353E98743C82520A37744 /* OneInchController.swift in Sources */,
 				58AAADAD2815F8185C85395A /* SwapAdapter.swift in Sources */,
 				58AAAE46D47593579D072E8A /* UniswapService.swift in Sources */,
 				58AAA3D1E8EC521787517849 /* SwapToken.swift in Sources */,
@@ -619,6 +622,7 @@
 				58AAAB3409C5971A10A4E18E /* SwapTradeDataFactory.swift in Sources */,
 				58AAA53B2A93259D4C42E284 /* SwapTokenFactory.swift in Sources */,
 				58AAA3B299C155B52AF2AEE2 /* OneInchService.swift in Sources */,
+				2FA5D7425FFBE908226E68D0 /* UniswapController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

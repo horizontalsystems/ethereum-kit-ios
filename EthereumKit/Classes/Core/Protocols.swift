@@ -99,6 +99,6 @@ protocol ITransactionManagerDelegate: AnyObject {
 }
 
 public protocol IDecorator {
-    func decorate(logs: [TransactionLog]) -> [EventDecoration]
-    func decorate(transactionData: TransactionData, fullTransaction: FullTransaction?) -> TransactionDecoration?
+    func decorate(transactionData: TransactionData, fullTransaction: FullTransaction?) -> ContractMethodDecoration?
+    func decorate(logs: [TransactionLog]) -> [ContractEventDecoration]
 }

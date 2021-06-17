@@ -1,12 +1,8 @@
-open class EventDecoration {
+open class ContractEventDecoration: TransactionDecoration {
     public let contractAddress: Address
 
     public init(contractAddress: Address) {
         self.contractAddress = contractAddress
-    }
-
-    open var tags: [String] {
-        fatalError("Must be implemented by subclass")
     }
 
 }

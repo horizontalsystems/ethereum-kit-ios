@@ -17,9 +17,12 @@ class ContractCallDecorator: IDecorator {
         }
     }
 
+    private var address: Address
     private var methods = [Data: RecognizedContractMethod]()
 
-    init() {
+    init(address: Address) {
+        self.address = address
+
         addMethod(name: "deposit", signature: "deposit(uint256)", arguments: [BigUInt.self])
         addMethod(name: "tradeWithHintAndFee", signature: "tradeWithHintAndFee(address,uint256,address,address,uint256,uint256,address,uint256,bytes)",
                 arguments: [Address.self, BigUInt.self, Address.self, Address.self, BigUInt.self, BigUInt.self, Address.self, BigUInt.self, Data.self])
@@ -30,7 +33,11 @@ class ContractCallDecorator: IDecorator {
         methods[method.methodId] = method
     }
 
-    func decorate(transactionData: TransactionData, fullTransaction: FullTransaction?) -> TransactionDecoration? {
+    func decorate(transactionData: TransactionData, fullTransaction: FullTransaction?) -> ContractMethodDecoration? {
+        guard let transaction = fullTransaction?.transaction, transaction.from == address else {
+            return nil
+        }
+
         let methodId = Data(transactionData.input.prefix(4))
         let inputArguments = Data(transactionData.input.suffix(from: 4))
 
@@ -40,10 +47,10 @@ class ContractCallDecorator: IDecorator {
 
         let arguments = ContractMethodHelper.decodeABI(inputArguments: inputArguments, argumentTypes: method.arguments)
 
-        return RecognizedTransactionDecoration(method: method.name, arguments: arguments)
+        return RecognizedMethodDecoration(method: method.name, arguments: arguments)
     }
 
-    func decorate(logs: [TransactionLog]) -> [EventDecoration] {
+    func decorate(logs: [TransactionLog]) -> [ContractEventDecoration] {
         []
     }
 
