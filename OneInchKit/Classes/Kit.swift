@@ -112,3 +112,15 @@ extension Kit {
     }
 
 }
+
+extension BigUInt {
+
+    public func toDecimal(decimals: Int) -> Decimal? {
+        guard let decimalValue = Decimal(string: description) else {
+            return nil
+        }
+
+        return decimalValue / pow(10, decimals)
+    }
+
+}
