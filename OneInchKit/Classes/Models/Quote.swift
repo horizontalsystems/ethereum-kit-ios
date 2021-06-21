@@ -1,4 +1,5 @@
 import BigInt
+import Foundation
 
 public struct Quote {
     public let fromToken: Token
@@ -23,6 +24,18 @@ extension Quote: CustomStringConvertible {
 
     public var description: String {
         "[Quote {fromToken:\(fromToken.name) - toToken:\(toToken.name); fromAmount: \(fromTokenAmount.description) - toAmount: \(toTokenAmount.description)]"
+    }
+
+}
+
+extension Quote {
+
+    public var amountIn: Decimal? {
+        fromTokenAmount.toDecimal(decimals: fromToken.decimals)
+    }
+
+    public var amountOut: Decimal? {
+        toTokenAmount.toDecimal(decimals: toToken.decimals)
     }
 
 }
