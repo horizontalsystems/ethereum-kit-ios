@@ -24,6 +24,7 @@ public class Kit {
     private let transactionSigner: TransactionSigner
     private let ethSigner: EthSigner
     private let decorationManager: DecorationManager
+    private let eip20Storage: Eip20Storage
     private let state: EthereumKitState
 
     public let address: Address
@@ -37,7 +38,7 @@ public class Kit {
 
     init(blockchain: IBlockchain, transactionManager: TransactionManager, transactionSyncManager: TransactionSyncManager, internalTransactionSyncer: TransactionInternalTransactionSyncer,
          transactionBuilder: TransactionBuilder, transactionSigner: TransactionSigner, ethSigner: EthSigner, state: EthereumKitState = EthereumKitState(),
-         address: Address, networkType: NetworkType, uniqueId: String, etherscanService: EtherscanService, decorationManager: DecorationManager, logger: Logger) {
+         address: Address, networkType: NetworkType, uniqueId: String, etherscanService: EtherscanService, decorationManager: DecorationManager, eip20Storage: Eip20Storage, logger: Logger) {
         self.blockchain = blockchain
         self.transactionManager = transactionManager
         self.transactionSyncManager = transactionSyncManager
@@ -51,6 +52,7 @@ public class Kit {
         self.uniqueId = uniqueId
         self.etherscanService = etherscanService
         self.decorationManager = decorationManager
+        self.eip20Storage = eip20Storage
         self.logger = logger
 
         state.accountState = blockchain.accountState
@@ -267,6 +269,27 @@ extension Kit {
 
 }
 
+// Eip20Kit database helpers
+
+extension Kit {
+
+    public func balance(contractAddress: Address) -> BigUInt? {
+        eip20Storage.balance(contractAddress: contractAddress)
+    }
+
+    public func save(balance: BigUInt, contractAddress: Address) {
+        eip20Storage.save(balance: balance, contractAddress: contractAddress)
+    }
+
+    public func transactionSyncOrder(contractAddress: Address) -> Int? {
+        eip20Storage.transactionSyncOrder(contractAddress: contractAddress)
+    }
+
+    public func save(transactionSyncOrder: Int, contractAddress: Address) {
+        eip20Storage.save(transactionSyncOrder: transactionSyncOrder, contractAddress: contractAddress)
+    }
+
+}
 
 extension Kit: IBlockchainDelegate {
 
@@ -370,10 +393,12 @@ extension Kit {
         transactionSyncManager.add(syncer: transactionSyncer)
         transactionSyncManager.add(syncer: pendingTransactionSyncer)
 
+        let eip20Storage = Eip20Storage(databaseDirectoryUrl: try dataDirectoryUrl(), databaseFileName: "eip20-\(uniqueId)")
+
         let kit = Kit(
                 blockchain: blockchain, transactionManager: transactionManager, transactionSyncManager: transactionSyncManager, internalTransactionSyncer: transactionInternalTransactionSyncer,
                 transactionBuilder: transactionBuilder, transactionSigner: transactionSigner, ethSigner: ethSigner, address: address, networkType: networkType,
-                uniqueId: uniqueId, etherscanService: etherscanService, decorationManager: decorationManager, logger: logger
+                uniqueId: uniqueId, etherscanService: etherscanService, decorationManager: decorationManager, eip20Storage: eip20Storage, logger: logger
         )
 
         blockchain.delegate = kit

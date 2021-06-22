@@ -5,7 +5,7 @@ class Configuration {
     static let shared = Configuration()
 
     let syncMode: SyncMode = .api
-    let networkType: NetworkType = .kovan
+    let networkType: NetworkType = .ropsten
     let minLogLevel: Logger.Level = .debug
     let defaultsWords = "apart approve black  comfort steel spin real renew tone primary key cherry"
 
