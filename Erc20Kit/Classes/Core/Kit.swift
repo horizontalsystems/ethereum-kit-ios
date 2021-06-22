@@ -134,13 +134,11 @@ extension Kit: IBalanceManagerDelegate {
 extension Kit {
 
     public static func instance(ethereumKit: EthereumKit.Kit, contractAddress: Address) throws -> Kit {
-        let databaseFileName = "\(ethereumKit.uniqueId)-\(contractAddress)"
         let address = ethereumKit.address
-        let storage: ITransactionStorage & ITokenBalanceStorage = try GrdbStorage(databaseDirectoryUrl: databaseDirectoryUrl(), databaseFileName: databaseFileName)
 
         let dataProvider: IDataProvider = DataProvider(ethereumKit: ethereumKit)
-        let transactionManager = TransactionManager(contractAddress: contractAddress, ethereumKit: ethereumKit, contractMethodFactories: Eip20ContractMethodFactories.shared, storage: storage)
-        let balanceManager = BalanceManager(contractAddress: contractAddress, address: address, storage: storage, dataProvider: dataProvider)
+        let transactionManager = TransactionManager(ethereumKit: ethereumKit, contractAddress: contractAddress, contractMethodFactories: Eip20ContractMethodFactories.shared)
+        let balanceManager = BalanceManager(ethereumKit: ethereumKit, contractAddress: contractAddress, address: address, dataProvider: dataProvider)
         let allowanceManager = AllowanceManager(ethereumKit: ethereumKit, contractAddress: contractAddress, address: address)
 
         let erc20Kit = Kit(contractAddress: contractAddress, ethereumKit: ethereumKit, transactionManager: transactionManager, balanceManager: balanceManager, allowanceManager: allowanceManager)
@@ -148,29 +146,6 @@ extension Kit {
         balanceManager.delegate = erc20Kit
 
         return erc20Kit
-    }
-
-    public static func clear(exceptFor excludedFiles: [String]) throws {
-        let fileManager = FileManager.default
-        let fileUrls = try fileManager.contentsOfDirectory(at: databaseDirectoryUrl(), includingPropertiesForKeys: nil)
-
-        for filename in fileUrls {
-            if !excludedFiles.contains(where: { filename.lastPathComponent.contains($0) }) {
-                try fileManager.removeItem(at: filename)
-            }
-        }
-    }
-
-    private static func databaseDirectoryUrl() throws -> URL {
-        let fileManager = FileManager.default
-
-        let url = try fileManager
-                .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-                .appendingPathComponent("erc20-kit", isDirectory: true)
-
-        try fileManager.createDirectory(at: url, withIntermediateDirectories: true)
-
-        return url
     }
 
     public static func getTransactionSyncer(evmKit: EthereumKit.Kit) -> ITransactionSyncer {

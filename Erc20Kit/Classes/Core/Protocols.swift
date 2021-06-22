@@ -26,11 +26,3 @@ protocol IBalanceManager {
 protocol IDataProvider {
     func getBalance(contractAddress: Address, address: Address) -> Single<BigUInt>
 }
-
-protocol ITransactionStorage {
-    var lastSyncOrder: Int? { get set }
-}
-
-protocol ITokenBalanceStorage {
-    var balance: BigUInt? { get set }
-}

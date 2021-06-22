@@ -26,7 +26,6 @@ class Manager {
 
     func login(words: [String]) {
         try! EthereumKit.Kit.clear(exceptFor: ["walletId"])
-        try! Erc20Kit.Kit.clear(exceptFor: ["walletId"])
 
         save(words: words)
         initEthereumKit(words: words)

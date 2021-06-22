@@ -5,10 +5,9 @@ import RxSwift
 class TransactionManager {
     private let disposeBag = DisposeBag()
 
-    private let contractAddress: Address
     private let ethereumKit: EthereumKit.Kit
+    private let contractAddress: Address
     private let contractMethodFactories: Eip20ContractMethodFactories
-    private var storage: ITransactionStorage
     private let address: Address
     private let tags: [[String]]
 
@@ -18,11 +17,10 @@ class TransactionManager {
         transactionsSubject.asObservable()
     }
 
-    init(contractAddress: Address, ethereumKit: EthereumKit.Kit, contractMethodFactories: Eip20ContractMethodFactories, storage: ITransactionStorage) {
-        self.contractAddress = contractAddress
+    init(ethereumKit: EthereumKit.Kit, contractAddress: Address, contractMethodFactories: Eip20ContractMethodFactories) {
         self.ethereumKit = ethereumKit
+        self.contractAddress = contractAddress
         self.contractMethodFactories = contractMethodFactories
-        self.storage = storage
 
         address = ethereumKit.receiveAddress
         tags = [[contractAddress.hex]]
@@ -69,7 +67,7 @@ class TransactionManager {
         }
 
         if let lastSyncOrder = fullTransactions.sorted(by: { a, b in a.transaction.syncOrder > b.transaction.syncOrder }).first {
-            storage.lastSyncOrder = lastSyncOrder.transaction.syncOrder
+            ethereumKit.save(transactionSyncOrder: lastSyncOrder.transaction.syncOrder, contractAddress: contractAddress)
         }
     }
 
@@ -94,7 +92,8 @@ extension TransactionManager: ITransactionManager {
     }
 
     func sync() {
-        let fullTransactions = ethereumKit.fullTransactions(fromSyncOrder: storage.lastSyncOrder)
+        let lastSyncOrder = ethereumKit.transactionSyncOrder(contractAddress: contractAddress)
+        let fullTransactions = ethereumKit.fullTransactions(fromSyncOrder: lastSyncOrder)
 
         processTransactions(fullTransactions: fullTransactions)
     }

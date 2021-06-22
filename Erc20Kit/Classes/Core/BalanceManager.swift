@@ -7,16 +7,20 @@ class BalanceManager {
 
     private let disposeBag = DisposeBag()
 
+    private let ethereumKit: EthereumKit.Kit
     private let contractAddress: Address
     private let address: Address
-    private var storage: ITokenBalanceStorage
     private let dataProvider: IDataProvider
 
-    init(contractAddress: Address, address: Address, storage: ITokenBalanceStorage, dataProvider: IDataProvider) {
+    init(ethereumKit: EthereumKit.Kit, contractAddress: Address, address: Address, dataProvider: IDataProvider) {
+        self.ethereumKit = ethereumKit
         self.contractAddress = contractAddress
         self.address = address
-        self.storage = storage
         self.dataProvider = dataProvider
+    }
+
+    private func save(balance: BigUInt) {
+        ethereumKit.save(balance: balance, contractAddress: contractAddress)
     }
 
 }
@@ -24,14 +28,14 @@ class BalanceManager {
 extension BalanceManager: IBalanceManager {
 
     var balance: BigUInt? {
-        storage.balance
+        ethereumKit.balance(contractAddress: contractAddress)
     }
 
     func sync() {
         dataProvider.getBalance(contractAddress: contractAddress, address: address)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(onSuccess: { [weak self] balance in
-                    self?.storage.balance = balance
+                    self?.save(balance: balance)
                     self?.delegate?.onSyncBalanceSuccess(balance: balance)
                 }, onError: { error in
                     self.delegate?.onSyncBalanceFailed(error: error)
