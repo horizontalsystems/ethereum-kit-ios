@@ -104,9 +104,9 @@ extension EIP712TypedData {
 
     /// Helper func for `encodeData`
     private func makeABIValue(data: JSON?, type: String) -> ABIValue? {
-        if (type == "string" || type == "bytes"),
-           let value = data?.stringValue,
-           let valueData = value.data(using: .utf8) {
+        if type == "string", let value = data?.stringValue, let valueData = value.data(using: .utf8) {
+            return try? ABIValue(CryptoUtils.shared.sha3(valueData), type: .bytes(32))
+        } else if type == "bytes", let value = data?.stringValue, let valueData = Data(hex: value) {
             return try? ABIValue(CryptoUtils.shared.sha3(valueData), type: .bytes(32))
         } else if type == "bool",
                   let value = data?.boolValue {
