@@ -8,7 +8,7 @@ public class SwapMethodDecoration: ContractMethodDecoration {
     public let to: Address
     public let deadline: BigUInt
 
-    init(trade: Trade, tokenIn: Token, tokenOut: Token, to: Address, deadline: BigUInt) {
+    public init(trade: Trade, tokenIn: Token, tokenOut: Token, to: Address, deadline: BigUInt) {
         self.trade = trade
         self.tokenIn = tokenIn
         self.tokenOut = tokenOut
