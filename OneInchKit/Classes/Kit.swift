@@ -56,7 +56,7 @@ extension Kit {
     public func swapSingle(fromToken: Address,
                     toToken: Address,
                     amount: BigUInt,
-                    slippage: Float,
+                    slippage: Decimal,
                     protocols: [String]? = nil,
                     recipient: Address? = nil,
                     gasPrice: Int? = nil,
@@ -109,6 +109,10 @@ extension Kit {
 
     public enum NetworkTypeError: Error {
         case invalid
+    }
+
+    public enum SwapError: Error {
+        case cannotEstimate
     }
 
 }

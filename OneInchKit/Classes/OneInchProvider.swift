@@ -79,7 +79,7 @@ extension OneInchProvider {
                      toToken: String,
                      amount: BigUInt,
                      fromAddress: String,
-                     slippage: Float,
+                     slippage: Decimal,
                      protocols: String? = nil,
                      recipient: String? = nil,
                      gasPrice: Int? = nil,
@@ -113,8 +113,19 @@ extension OneInchProvider {
         let tokenMapper = TokenMapper()
         let mapper = SwapMapper(tokenMapper: tokenMapper, swapTransactionMapper: SwapTransactionMapper(tokenMapper: tokenMapper))
 
-        return networkManager.single(url: url + "swap", method: .get, parameters: parameters, mapper: mapper, responseCacherBehavior: .doNotCache)
+        return networkManager
+                .single(url: url + "swap", method: .get, parameters: parameters, mapper: mapper, responseCacherBehavior: .doNotCache)
+                .catchError { error in
+                    if case let .invalidResponse(_, data) = (error as? NetworkManager.RequestError),
+                       let dictionary = data as? [String: Any],
+                       let message = dictionary["message"] as? String,
+                       message.contains("Try to leave the buffer of ETH for gas") {
+
+                        return Single.error(Kit.SwapError.cannotEstimate)
+                    }
+
+                    return Single.error(error)
+                }
     }
 
 }
-
