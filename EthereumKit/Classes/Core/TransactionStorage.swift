@@ -456,9 +456,7 @@ extension TransactionStorage: ITransactionStorage {
                     }
                     .joined(separator: " AND ")
 
-            whereClause += """
-                           AND \(TransactionReceipt.databaseTableName).\(TransactionReceipt.Columns.status.name) == NULL
-                           """
+            whereClause += " AND \(TransactionReceipt.databaseTableName).\(TransactionReceipt.Columns.status.name) IS NULL"
 
             let transactionTagJoinStatements = tags
                     .enumerated()
