@@ -4,6 +4,7 @@ import EthereumKit
 import BigInt
 import Erc20Kit
 import UniswapKit
+import OneInchKit
 
 class TransactionCell: UITableViewCell {
     static let dateFormatter: DateFormatter = {
@@ -87,6 +88,12 @@ class TransactionCell: UITableViewCell {
         let fromAddress = transaction.from.address!.eip55.prefix(6)
 
         switch decoration {
+        case let swap as OneInchUnoswapMethodDecoration:
+            return "\(bigUIntToString(amount: swap.amountIn)) \(stringify(token: swap.tokenIn)) <-> \(bigUIntToString(amount: swap.amountOut)) \(stringify(token: swap.tokenOut))"
+
+        case let swap as OneInchSwapMethodDecoration:
+            return "\(bigUIntToString(amount: swap.amountIn)) \(stringify(token: swap.tokenIn)) <-> \(bigUIntToString(amount: swap.amountOut)) \(stringify(token: swap.tokenOut))"
+
         case let swap as SwapMethodDecoration:
             return "\(amountIn(trade: swap.trade)) \(stringify(token: swap.tokenIn)) <-> \(amountOut(trade: swap.trade)) \(stringify(token: swap.tokenOut))"
 
@@ -104,6 +111,16 @@ class TransactionCell: UITableViewCell {
     }
 
     private func stringify(token: SwapMethodDecoration.Token) -> String {
+        switch token {
+        case .evmCoin: return "ETH"
+        case .eip20Coin(let address): return Manager.shared.erc20Tokens[address.eip55] ?? "n/a"
+        }
+    }
+
+    private func stringify(token: OneInchMethodDecoration.Token?) -> String {
+        guard let token = token else {
+            return ""
+        }
         switch token {
         case .evmCoin: return "ETH"
         case .eip20Coin(let address): return Manager.shared.erc20Tokens[address.eip55] ?? "n/a"

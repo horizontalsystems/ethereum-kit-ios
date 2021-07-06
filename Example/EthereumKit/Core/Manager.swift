@@ -79,6 +79,7 @@ class Manager {
         evmKit.add(transactionSyncer: Erc20Kit.Kit.getTransactionSyncer(evmKit: evmKit))
         evmKit.add(decorator: Erc20Kit.Kit.decorator(evmKit: evmKit))
         evmKit.add(decorator: UniswapKit.Kit.decorator(evmKit: evmKit))
+        evmKit.add(decorator: OneInchKit.Kit.decorator(evmKit: evmKit))
 
         evmKit.start()
 

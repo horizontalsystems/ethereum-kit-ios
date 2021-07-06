@@ -23,8 +23,8 @@ class ContractCallDecorator: IDecorator {
     init(address: Address) {
         self.address = address
 
-        addMethod(name: "deposit", signature: "deposit(uint256)", arguments: [BigUInt.self])
-        addMethod(name: "tradeWithHintAndFee", signature: "tradeWithHintAndFee(address,uint256,address,address,uint256,uint256,address,uint256,bytes)",
+        addMethod(name: "Deposit", signature: "deposit(uint256)", arguments: [BigUInt.self])
+        addMethod(name: "TradeWithHintAndFee", signature: "tradeWithHintAndFee(address,uint256,address,address,uint256,uint256,address,uint256,bytes)",
                 arguments: [Address.self, BigUInt.self, Address.self, Address.self, BigUInt.self, BigUInt.self, Address.self, BigUInt.self, Data.self])
     }
 

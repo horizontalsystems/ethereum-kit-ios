@@ -4,6 +4,14 @@ import Foundation
 
 public class ContractMethodHelper {
 
+    public struct StructParameter {
+        let arguments: [Any]
+
+        public init(_ arguments: [Any]) {
+            self.arguments = arguments
+        }
+    }
+
     public static func encodedABI(methodId: Data, arguments: [Any]) -> Data {
         var data = methodId
         var arraysData = Data()
@@ -55,6 +63,19 @@ public class ContractMethodHelper {
                 let data: Data = parseData(startPosition: dataPosition, inputArguments: inputArguments)
                 parsedArguments.append(data)
                 position += 32
+
+            case is [Data].Type:
+                let dataPosition = parseInt(data: inputArguments[position..<position + 32])
+                let data: [Data] = parseDataArray(startPosition: dataPosition, inputArguments: inputArguments)
+                parsedArguments.append(data)
+                position += 32
+
+            case let object as StructParameter:
+                let argumentsPosition = parseInt(data: inputArguments[position..<position + 32])
+                let data: [Any] = decodeABI(inputArguments: Data(inputArguments[argumentsPosition..<inputArguments.count]), argumentTypes: object.arguments)
+                parsedArguments.append(data)
+                position += 32
+
             default: ()
             }
         }
@@ -87,6 +108,18 @@ public class ContractMethodHelper {
         let dataStartPosition = startPosition + 32
         let size = parseInt(data: inputArguments[startPosition..<dataStartPosition])
         return Data(inputArguments[dataStartPosition..<(dataStartPosition + size)])
+    }
+
+    private class func parseDataArray(startPosition: Int, inputArguments: Data) -> [Data] {
+        let arrayStartPosition = startPosition + 32
+        let size = parseInt(data: inputArguments[startPosition..<arrayStartPosition])
+        var dataArray = [Data]()
+
+        for i in 0..<size {
+            dataArray.append(Data(inputArguments[(arrayStartPosition + 32 * i)..<(arrayStartPosition + 32 * (i + 1))]))
+        }
+
+        return dataArray
     }
 
     private static func encode(array: [Data]) -> Data {
