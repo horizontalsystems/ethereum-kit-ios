@@ -26,7 +26,12 @@ class DecorationManager {
 
     func decorateFullTransaction(fullTransaction: FullTransaction) -> FullTransaction {
         let transaction = fullTransaction.transaction
-        let transactionData = TransactionData(to: transaction.to!, value: transaction.value, input: transaction.input)
+
+        guard let to = transaction.to else {
+            return fullTransaction
+        }
+
+        let transactionData = TransactionData(to: to, value: transaction.value, input: transaction.input)
 
         guard !transactionData.input.isEmpty else {
             return fullTransaction
