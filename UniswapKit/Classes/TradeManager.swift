@@ -226,7 +226,7 @@ extension TradeManager {
     static func routerAddress(networkType: EthereumKit.NetworkType) -> Address {
         switch networkType {
         case .ethMainNet, .ropsten, .rinkeby, .kovan, .goerli: return try! Address(hex: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D")
-        case .bscMainNet: return try! Address(hex: "0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F")
+        case .bscMainNet: return try! Address(hex: "0x10ED43C718714eb63d5aA57B78B54704E256024E")
         }
     }
 
