@@ -25,50 +25,19 @@ class TransactionManager {
         address = ethereumKit.receiveAddress
         tags = [[contractAddress.hex]]
 
-        ethereumKit.allTransactionsObservable
+        ethereumKit.transactionsObservable(tags: [[contractAddress.hex]])
                 .subscribe { [weak self] in
-                    self?.processTransactions(fullTransactions: $0)
+                    self?.processTransactions(erc20Transactions: $0)
                 }
                 .disposed(by: disposeBag)
     }
 
-    private func processTransactions(fullTransactions: [FullTransaction]) {
-        let erc20Transactions = fullTransactions.filter { fullTransaction in
-            let transaction = fullTransaction.transaction
-
-            if let decoration = fullTransaction.mainDecoration {
-                switch decoration {
-                case let transfer as TransferMethodDecoration:
-                    return transfer.to == address || transaction.from == address
-
-                case is ApproveMethodDecoration: return transaction.from == address
-
-                default: return false
-                }
-            }
-
-            for decoration in fullTransaction.eventDecorations {
-                switch decoration {
-                case let transfer as TransferEventDecoration:
-                    return transfer.from == address || transfer.to == address
-
-                case let approve as ApproveEventDecoration:
-                    return approve.owner == address
-
-                default: return false
-                }
-            }
-
-            return false
+    private func processTransactions(erc20Transactions: [FullTransaction]) {
+        guard !erc20Transactions.isEmpty else {
+            return
         }
 
-        if !erc20Transactions.isEmpty {
-            transactionsSubject.onNext(erc20Transactions)
-        }
-
-        if let lastSyncOrder = fullTransactions.sorted(by: { a, b in a.transaction.syncOrder > b.transaction.syncOrder }).first {
-            ethereumKit.save(transactionSyncOrder: lastSyncOrder.transaction.syncOrder, contractAddress: contractAddress)
-        }
+        transactionsSubject.onNext(erc20Transactions)
     }
 
 }
@@ -89,13 +58,6 @@ extension TransactionManager: ITransactionManager {
                 value: BigUInt.zero,
                 input: TransferMethod(to: to, value: value).encodedABI()
         )
-    }
-
-    func sync() {
-        let lastSyncOrder = ethereumKit.transactionSyncOrder(contractAddress: contractAddress)
-        let fullTransactions = ethereumKit.fullTransactions(fromSyncOrder: lastSyncOrder)
-
-        processTransactions(fullTransactions: fullTransactions)
     }
 
 }

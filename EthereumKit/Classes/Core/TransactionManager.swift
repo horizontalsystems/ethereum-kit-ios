@@ -7,13 +7,9 @@ class TransactionManager {
     private let decorationManager: DecorationManager
     private let tagGenerator: TagGenerator
 
-    private let etherTransactionsSubject = PublishSubject<[FullTransaction]>()
     private let allTransactionsSubject = PublishSubject<[FullTransaction]>()
+    private let transactionsWithTagsSubject = PublishSubject<[(transaction: FullTransaction, tags: [String])]>()
     private let disposeBag = DisposeBag()
-
-    var etherTransactionsObservable: Observable<[FullTransaction]> {
-        etherTransactionsSubject.asObservable()
-    }
 
     var allTransactionsObservable: Observable<[FullTransaction]> {
         allTransactionsSubject.asObservable()
@@ -38,23 +34,17 @@ class TransactionManager {
 
     private func handle(syncedTransactions: [FullTransaction]) {
         let decoratedTransactions = syncedTransactions.map { decorationManager.decorateFullTransaction(fullTransaction: $0) }
-        var etherTransactions = [FullTransaction]()
-
+        var transactionsWithTags = [(transaction: FullTransaction, tags: [String])]()
         for transaction in decoratedTransactions {
             let tags = tagGenerator.generate(for: transaction)
             storage.set(tags: tags)
 
-            if tags.map({ $0.name }).contains("ETH") {
-                etherTransactions.append(transaction)
-            }
+            transactionsWithTags.append((transaction: transaction, tags: tags.map { $0.name }))
         }
 
         if !decoratedTransactions.isEmpty {
             allTransactionsSubject.onNext(decoratedTransactions)
-        }
-
-        if !etherTransactions.isEmpty {
-            etherTransactionsSubject.onNext(etherTransactions)
+            transactionsWithTagsSubject.onNext(transactionsWithTags)
         }
     }
 
@@ -70,8 +60,28 @@ extension TransactionManager {
         )
     }
 
-    func etherTransactionsSingle(fromHash: Data?, limit: Int?) -> Single<[FullTransaction]> {
-        transactionsSingle(tags: [["ETH"]], fromHash: fromHash, limit: limit)
+    func transactionsObservable(tags: [[String]]) -> Observable<[FullTransaction]> {
+        transactionsWithTagsSubject.asObservable()
+            .map { transactions in
+                transactions.compactMap { transactionsWithTags -> FullTransaction? in
+                    for andTags in tags {
+                        var hasTags = false
+
+                        for tag in transactionsWithTags.tags {
+                            if andTags.contains(tag) {
+                                hasTags = true
+                            }
+                        }
+                        
+                        if !hasTags {
+                            return nil
+                        }
+                    }
+                    
+                    return transactionsWithTags.transaction
+                }
+            }
+            .filter { transactions in transactions.count > 0 }
     }
 
     func transactionsSingle(tags: [[String]], fromHash: Data?, limit: Int?) -> Single<[FullTransaction]> {
@@ -109,10 +119,6 @@ extension TransactionManager {
 
         let fullTransaction = FullTransaction(transaction: sentTransaction)
         handle(syncedTransactions: [fullTransaction])
-    }
-
-    func transactions(fromSyncOrder: Int?) -> [FullTransaction] {
-        storage.fullTransactionsAfter(syncOrder: fromSyncOrder)
     }
 
 }

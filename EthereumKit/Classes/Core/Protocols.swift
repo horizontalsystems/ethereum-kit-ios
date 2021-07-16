@@ -57,7 +57,6 @@ protocol ITransactionStorage {
     func pendingTransactions(tags: [[String]]) -> [FullTransaction]
     func transaction(hash: Data) -> FullTransaction?
     func fullTransactions(byHashes: [Data]) -> [FullTransaction]
-    func fullTransactionsAfter(syncOrder: Int?) -> [FullTransaction]
     func add(droppedTransaction: DroppedTransaction)
 }
 

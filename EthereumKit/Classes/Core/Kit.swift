@@ -58,7 +58,7 @@ public class Kit {
         state.accountState = blockchain.accountState
         state.lastBlockHeight = blockchain.lastBlockHeight
 
-        transactionManager.etherTransactionsObservable
+        transactionManager.transactionsObservable(tags: [["ETH"]])
                 .observeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .subscribe(onNext: { [weak self] _ in
                     self?.blockchain.syncAccountState()
@@ -108,10 +108,6 @@ extension Kit {
         accountStateSubject.asObservable()
     }
 
-    public var etherTransactionsObservable: Observable<[FullTransaction]> {
-        transactionManager.etherTransactionsObservable
-    }
-
     public var allTransactionsObservable: Observable<[FullTransaction]> {
         transactionManager.allTransactionsObservable
     }
@@ -128,8 +124,8 @@ extension Kit {
         blockchain.refresh()
     }
 
-    public func etherTransactionsSingle(fromHash: Data? = nil, limit: Int? = nil) -> Single<[FullTransaction]> {
-        transactionManager.etherTransactionsSingle(fromHash: fromHash, limit: limit)
+    public func transactionsObservable(tags: [[String]]) -> Observable<[FullTransaction]> {
+        transactionManager.transactionsObservable(tags: tags)
     }
 
     public func transactionsSingle(tags: [[String]], fromHash: Data? = nil, limit: Int? = nil) -> Single<[FullTransaction]> {
@@ -142,10 +138,6 @@ extension Kit {
 
     public func transaction(hash: Data) -> FullTransaction? {
         transactionManager.transaction(hash: hash)
-    }
-
-    public func fullTransactions(fromSyncOrder: Int?) -> [FullTransaction] {
-        transactionManager.transactions(fromSyncOrder: fromSyncOrder)
     }
 
     public func fullTransactions(byHashes hashes: [Data]) -> [FullTransaction] {
@@ -279,14 +271,6 @@ extension Kit {
 
     public func save(balance: BigUInt, contractAddress: Address) {
         eip20Storage.save(balance: balance, contractAddress: contractAddress)
-    }
-
-    public func transactionSyncOrder(contractAddress: Address) -> Int? {
-        eip20Storage.transactionSyncOrder(contractAddress: contractAddress)
-    }
-
-    public func save(transactionSyncOrder: Int, contractAddress: Address) {
-        eip20Storage.save(transactionSyncOrder: transactionSyncOrder, contractAddress: contractAddress)
     }
 
 }
