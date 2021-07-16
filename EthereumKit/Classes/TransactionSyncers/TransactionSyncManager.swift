@@ -8,6 +8,7 @@ class TransactionSyncManager {
     private let transactionsSubject = PublishSubject<[FullTransaction]>()
     private let notSyncedTransactionManager: NotSyncedTransactionManager
     private let syncStateQueue = DispatchQueue(label: "transaction_sync_manager_state_queue", qos: .background)
+    private let transactionsQueue = DispatchQueue(label: "transaction_sync_manager_transactions_queue", qos: .background)
 
     private var syncers = [ITransactionSyncer]()
     private var syncerDisposables = [String: Disposable]()
@@ -121,7 +122,9 @@ class TransactionSyncManager {
 extension TransactionSyncManager: ITransactionSyncerListener {
 
     func onTransactionsSynced(fullTransactions: [FullTransaction]) {
-        transactionsSubject.onNext(fullTransactions)
+        transactionsQueue.async { [weak self] in
+            self?.transactionsSubject.onNext(fullTransactions)
+        }
     }
 
 }

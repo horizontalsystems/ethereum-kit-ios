@@ -13,7 +13,6 @@ protocol ITransactionManager {
     func transactionsSingle(from: Data?, limit: Int?) -> Single<[FullTransaction]>
     func pendingTransactions() -> [FullTransaction]
     func transferTransactionData(to: Address, value: BigUInt) -> TransactionData
-    func sync()
 }
 
 protocol IBalanceManager {

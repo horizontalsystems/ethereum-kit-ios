@@ -21,7 +21,6 @@ public class Transaction: Record {
     public let input: Data
 
     public var timestamp: Int
-    public var syncOrder: Int = 0
 
     public init(hash: Data, nonce: Int, input: Data = Data(), from: Address, to: Address?, value: BigUInt, gasLimit: Int, gasPrice: Int, timestamp: Int = Int(Date().timeIntervalSince1970)) {
         self.hash = hash
@@ -51,7 +50,6 @@ public class Transaction: Record {
         case gasLimit
         case gasPrice
         case timestamp
-        case syncOrder
     }
 
     required init(row: Row) {
@@ -64,7 +62,6 @@ public class Transaction: Record {
         gasLimit = row[Columns.gasLimit]
         gasPrice = row[Columns.gasPrice]
         timestamp = row[Columns.timestamp]
-        syncOrder = row[Columns.syncOrder]
 
         super.init(row: row)
     }
@@ -79,7 +76,6 @@ public class Transaction: Record {
         container[Columns.gasLimit] = gasLimit
         container[Columns.gasPrice] = gasPrice
         container[Columns.timestamp] = timestamp
-        container[Columns.syncOrder] = syncOrder
     }
 
 }

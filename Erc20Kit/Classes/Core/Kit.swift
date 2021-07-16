@@ -56,7 +56,7 @@ public class Kit {
 extension Kit {
 
     public func start() {
-        transactionManager.sync()
+        balanceManager.sync()
     }
 
     public func stop() {

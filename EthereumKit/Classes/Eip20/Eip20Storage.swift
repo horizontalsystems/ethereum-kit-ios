@@ -24,15 +24,6 @@ class Eip20Storage {
             }
         }
 
-        migrator.registerMigration("createEip20TransactionSyncOrders") { db in
-            try db.create(table: Eip20TransactionSyncOrder.databaseTableName) { t in
-                t.column(Eip20TransactionSyncOrder.Columns.contractAddress.name, .text).notNull()
-                t.column(Eip20TransactionSyncOrder.Columns.value.name, .integer)
-
-                t.primaryKey([Eip20TransactionSyncOrder.Columns.contractAddress.name], onConflict: .replace)
-            }
-        }
-
         return migrator
     }
 
@@ -49,18 +40,6 @@ extension Eip20Storage {
     func save(balance: BigUInt, contractAddress: Address) {
         _ = try? dbPool.write { db in
             try Eip20Balance(contractAddress: contractAddress.hex, value: balance).insert(db)
-        }
-    }
-
-    func transactionSyncOrder(contractAddress: Address) -> Int? {
-        try! dbPool.read { db in
-            try Eip20TransactionSyncOrder.filter(Eip20TransactionSyncOrder.Columns.contractAddress == contractAddress.hex).fetchOne(db)?.value
-        }
-    }
-
-    func save(transactionSyncOrder: Int, contractAddress: Address) {
-        _ = try? dbPool.write { db in
-            try Eip20TransactionSyncOrder(contractAddress: contractAddress.hex, value: transactionSyncOrder).insert(db)
         }
     }
 

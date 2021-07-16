@@ -152,7 +152,7 @@ class TransactionStorage {
 
         migrator.registerMigration("addSyncOrderToTransactions") { db in
             try db.alter(table: Transaction.databaseTableName) { t in
-                t.add(column: Transaction.Columns.syncOrder.name, .integer).notNull().indexed().defaults(to: 0)
+                t.add(column: "syncOrder", .integer).notNull().indexed().defaults(to: 0)
             }
         }
 
@@ -299,9 +299,6 @@ extension TransactionStorage: ITransactionStorage {
 
     func save(transaction: Transaction) {
         try! dbPool.write { db in
-            let lastSyncOrder = try Transaction.order(Transaction.Columns.syncOrder.desc).fetchOne(db)?.syncOrder ?? 0
-            transaction.syncOrder = lastSyncOrder + 1
-
             try transaction.save(db)
         }
     }
@@ -385,19 +382,25 @@ extension TransactionStorage: ITransactionStorage {
             }
 
             let transactions: [Transaction] = try! storage.dbPool.read { db in
-                var whereClause = "WHERE " + tags
+                var whereConditions = [String]()
+                
+                if tags.count > 0 {
+                    let tagConditions = tags
                         .enumerated()
                         .map { (index, andTags) -> String in
                             "\(TransactionTag.databaseTableName)_\(index).'\(TransactionTag.Columns.name)' IN (\(andTags.map({ "'\($0)'" }).joined(separator: ", ")))"
                         }
                         .joined(separator: " AND ")
-
+                    
+                    whereConditions.append(tagConditions)
+                }
+                
                 if let fromHash = hash,
                    let fromTransaction = try Transaction.filter(Transaction.Columns.hash == fromHash).fetchOne(db) {
                     let transactionIndex = (try fromTransaction.receipt.fetchOne(db))?.transactionIndex ?? 0
 
-                    whereClause += """
-                                   AND (
+                    let fromCondition = """
+                                   (
                                     \(Transaction.Columns.timestamp.name) < \(fromTransaction.timestamp) OR 
                                         (
                                             \(Transaction.databaseTableName).\(Transaction.Columns.timestamp.name) = \(fromTransaction.timestamp) AND 
@@ -405,7 +408,16 @@ extension TransactionStorage: ITransactionStorage {
                                         )
                                    )
                                    """
+                    
+                    whereConditions.append(fromCondition)
                 }
+
+                let transactionTagJoinStatements = tags
+                    .enumerated()
+                    .map { (index, _) -> String in
+                        "INNER JOIN transaction_tags AS transaction_tags_\(index) ON transactions.hash = transaction_tags_\(index).transactionHash"
+                    }
+                    .joined(separator: "\n")
 
                 var limitClause = ""
                 if let limit = limit {
@@ -417,12 +429,7 @@ extension TransactionStorage: ITransactionStorage {
                                   \(TransactionReceipt.databaseTableName).\(TransactionReceipt.Columns.transactionIndex.name) DESC
                                   """
 
-                let transactionTagJoinStatements = tags
-                        .enumerated()
-                        .map { (index, _) -> String in
-                            "INNER JOIN transaction_tags AS transaction_tags_\(index) ON transactions.hash = transaction_tags_\(index).transactionHash"
-                        }
-                        .joined(separator: "\n")
+                let whereClause = whereConditions.count > 0 ? "WHERE \(whereConditions.joined(separator: " AND "))" : ""
 
                 let sql = """
                           SELECT transactions.*
@@ -449,21 +456,30 @@ extension TransactionStorage: ITransactionStorage {
 
     func pendingTransactions(tags: [[String]]) -> [FullTransaction] {
         let transactions: [Transaction] = try! dbPool.read { db in
-            var whereClause = "WHERE " + tags
+            var whereConditions = [String]()
+            var transactionTagJoinStatements = ""
+    
+            if tags.count > 0 {
+                let tagConditions = tags
                     .enumerated()
                     .map { (index, andTags) -> String in
                         "\(TransactionTag.databaseTableName)_\(index).'\(TransactionTag.Columns.name)' IN (\(andTags.map({ "'\($0)'" }).joined(separator: ", ")))"
                     }
                     .joined(separator: " AND ")
-
-            whereClause += " AND \(TransactionReceipt.databaseTableName).\(TransactionReceipt.Columns.status.name) IS NULL"
-
-            let transactionTagJoinStatements = tags
+                
+                whereConditions.append(tagConditions)
+                
+                transactionTagJoinStatements += tags
                     .enumerated()
                     .map { (index, _) -> String in
                         "INNER JOIN transaction_tags AS transaction_tags_\(index) ON transactions.hash = transaction_tags_\(index).transactionHash"
                     }
                     .joined(separator: "\n")
+            }
+            
+            whereConditions.append("\(TransactionReceipt.databaseTableName).\(TransactionReceipt.Columns.status.name) IS NULL")
+            
+            let whereClause = whereConditions.count > 0 ? "WHERE \(whereConditions.joined(separator: " AND "))" : ""
 
             let sql = """
                       SELECT transactions.*
@@ -490,31 +506,6 @@ extension TransactionStorage: ITransactionStorage {
     func fullTransactions(byHashes hashes: [Data]) -> [FullTransaction] {
         let transactions = try! dbPool.read { db in
             try Transaction.filter(hashes.contains(Transaction.Columns.hash)).fetchAll(db)
-        }
-
-        return fullTransactions(from: transactions)
-    }
-
-    func fullTransactionsAfter(syncOrder: Int?) -> [FullTransaction] {
-        let transactions: [Transaction] = try! dbPool.read { db in
-            var whereClause = ""
-
-            if let syncOrder = syncOrder {
-                whereClause += "WHERE \(Transaction.Columns.syncOrder.name) > \(syncOrder)"
-            }
-
-            let sql = """
-                      SELECT transactions.*
-                      FROM transactions
-                      LEFT JOIN transaction_receipts ON transactions.hash = transaction_receipts.transactionHash
-                      \(whereClause)
-                      ORDER BY \(Transaction.Columns.syncOrder.name) ASC
-                      """
-
-            let rows = try Row.fetchAll(db.makeSelectStatement(sql: sql))
-            return rows.map { row -> Transaction in
-                Transaction(row: row)
-            }
         }
 
         return fullTransactions(from: transactions)
