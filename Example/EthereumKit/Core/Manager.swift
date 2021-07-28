@@ -76,10 +76,15 @@ class Manager {
         }
 
         self.evmKit = evmKit
-        evmKit.add(transactionSyncer: Erc20Kit.Kit.getTransactionSyncer(evmKit: evmKit))
-        evmKit.add(decorator: Erc20Kit.Kit.decorator(evmKit: evmKit))
-        evmKit.add(decorator: UniswapKit.Kit.decorator(evmKit: evmKit))
-        evmKit.add(decorator: OneInchKit.Kit.decorator(evmKit: evmKit))
+
+        Erc20Kit.Kit.addDecorator(to: evmKit)
+        Erc20Kit.Kit.addTransactionSyncer(to: evmKit)
+
+        UniswapKit.Kit.addDecorator(to: evmKit)
+        UniswapKit.Kit.addTransactionWatcher(to: evmKit)
+
+        OneInchKit.Kit.addDecorator(to: evmKit)
+        OneInchKit.Kit.addTransactionWatcher(to: evmKit)
 
         evmKit.start()
 

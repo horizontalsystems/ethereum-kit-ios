@@ -8,12 +8,10 @@ public class Kit {
 
     private let evmKit: EthereumKit.Kit
     private let provider: OneInchProvider
-    private let internalTransactionSyncer: OneInchInternalTransactionSyncer
 
-    init(evmKit: EthereumKit.Kit, provider: OneInchProvider, internalTransactionSyncer: OneInchInternalTransactionSyncer) {
+    init(evmKit: EthereumKit.Kit, provider: OneInchProvider) {
         self.evmKit = evmKit
         self.provider = provider
-        self.internalTransactionSyncer = internalTransactionSyncer
     }
 
 }
@@ -95,17 +93,20 @@ extension Kit {
         let logger = Logger(minLogLevel: .debug)
         let networkManager = NetworkManager(logger: logger)
         let provider = OneInchProvider(networkManager: networkManager, networkType: evmKit.networkType)
-        let internalTransactionSyncer = OneInchInternalTransactionSyncer(evmKit: evmKit)
 
 
-        let oneInchKit = Kit(evmKit: evmKit, provider: provider, internalTransactionSyncer: internalTransactionSyncer)
+        let oneInchKit = Kit(evmKit: evmKit, provider: provider)
 
         return oneInchKit
     }
 
 
-    public static func decorator(evmKit: EthereumKit.Kit) -> IDecorator {
-        OneInchTransactionDecorator(address: evmKit.address, contractMethodFactories: OneInchContractMethodFactories.shared)
+    public static func addDecorator(to evmKit: EthereumKit.Kit) {
+        evmKit.add(decorator: OneInchTransactionDecorator(address: evmKit.address, contractMethodFactories: OneInchContractMethodFactories.shared))
+    }
+
+    public static func addTransactionWatcher(to evmKit: EthereumKit.Kit) {
+        evmKit.add(transactionWatcher: OneInchTransactionWatcher(address: evmKit.address))
     }
 
 }

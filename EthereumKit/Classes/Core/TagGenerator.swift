@@ -19,11 +19,11 @@ extension TagGenerator {
         var tags = [String]()
 
         if transaction.from == address && transaction.value > 0 {
-            tags.append(contentsOf: ["ETH_outgoing", "ETH", "outgoing"])
+            tags.append(contentsOf: ["\(TransactionTag.evmCoin)_outgoing", TransactionTag.evmCoin, "outgoing"])
         }
 
         if toAddress == address || fullTransaction.internalTransactions.contains(where: { $0.to == address }) {
-            tags.append(contentsOf: ["ETH_incoming", "ETH", "incoming"])
+            tags.append(contentsOf: ["\(TransactionTag.evmCoin)_incoming", TransactionTag.evmCoin, "incoming"])
         }
 
         if let mainDecoration = fullTransaction.mainDecoration, !(mainDecoration is UnknownMethodDecoration) {

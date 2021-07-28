@@ -105,10 +105,12 @@ extension OneInchTransactionDecorator: IDecorator {
         case let method as SwapMethod:
             var amountOut: BigUInt? = nil
             let swapDescription = method.swapDescription
+            var tokenOut = addressToToken(address: swapDescription.dstToken)
 
             if let fullTransaction = fullTransaction,
                let amount = totalETHIncoming(userAddress: swapDescription.dstReceiver, transactions: fullTransaction.internalTransactions) {
                 amountOut = amount
+                tokenOut = .evmCoin
             }
 
             if amountOut == nil, let logs = fullTransaction?.receiptWithLogs?.logs,
@@ -118,7 +120,7 @@ extension OneInchTransactionDecorator: IDecorator {
 
             return OneInchSwapMethodDecoration(
                     tokenIn: addressToToken(address: swapDescription.srcToken),
-                    tokenOut: addressToToken(address: swapDescription.dstToken),
+                    tokenOut: tokenOut,
                     amountIn: swapDescription.amount,
                     amountOut: amountOut ?? swapDescription.minReturnAmount,
                     flags: swapDescription.flags,

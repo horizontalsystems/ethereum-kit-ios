@@ -10,9 +10,11 @@ import BigInt
 
 public class NotSyncedInternalTransaction: Record {
     let hash: Data
+    var retryCount: Int
 
-    public init(hash: Data) {
+    public init(hash: Data, retryCount: Int) {
         self.hash = hash
+        self.retryCount = retryCount
 
         super.init()
     }
@@ -22,17 +24,19 @@ public class NotSyncedInternalTransaction: Record {
     }
 
     enum Columns: String, ColumnExpression {
-        case hash
+        case hash, retryCount
     }
 
     required init(row: Row) {
         hash = row[Columns.hash]
+        retryCount = row[Columns.retryCount]
 
         super.init(row: row)
     }
 
     public override func encode(to container: inout PersistenceContainer) {
         container[Columns.hash] = hash
+        container[Columns.retryCount] = retryCount
     }
 
 }

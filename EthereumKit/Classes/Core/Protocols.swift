@@ -36,7 +36,7 @@ protocol ITransactionStorage {
     func notSyncedInternalTransaction() -> NotSyncedInternalTransaction?
 
     func add(notSyncedTransactions: [NotSyncedTransaction])
-    func add(notSyncedInternalTransaction: NotSyncedInternalTransaction)
+    func save(notSyncedInternalTransaction: NotSyncedInternalTransaction)
     func update(notSyncedTransaction: NotSyncedTransaction)
     func remove(notSyncedTransaction: NotSyncedTransaction)
     func remove(notSyncedInternalTransaction: NotSyncedInternalTransaction)
@@ -99,4 +99,8 @@ protocol ITransactionManagerDelegate: AnyObject {
 public protocol IDecorator {
     func decorate(transactionData: TransactionData, fullTransaction: FullTransaction?) -> ContractMethodDecoration?
     func decorate(logs: [TransactionLog]) -> [ContractEventDecoration]
+}
+
+public protocol ITransactionWatcher {
+    func needInternalTransactions(fullTransaction: FullTransaction) -> Bool
 }

@@ -148,12 +148,12 @@ extension Kit {
         return erc20Kit
     }
 
-    public static func getTransactionSyncer(evmKit: EthereumKit.Kit) -> ITransactionSyncer {
-        Erc20TransactionSyncer(provider: evmKit.etherscanService)
+    public static func addTransactionSyncer(to evmKit: EthereumKit.Kit) {
+        evmKit.add(transactionSyncer: Erc20TransactionSyncer(provider: evmKit.etherscanService))
     }
 
-    public static func decorator(evmKit: EthereumKit.Kit) -> IDecorator {
-        Eip20TransactionDecorator(userAddress: evmKit.address, contractMethodFactories: Eip20ContractMethodFactories.shared)
+    public static func addDecorator(to evmKit: EthereumKit.Kit) {
+        evmKit.add(decorator: Eip20TransactionDecorator(userAddress: evmKit.address, contractMethodFactories: Eip20ContractMethodFactories.shared))
     }
 
 }

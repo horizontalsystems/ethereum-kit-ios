@@ -133,7 +133,7 @@ extension EthereumAdapter: IAdapter {
     }
 
     func transactionsSingle(from hash: Data?, limit: Int?) -> Single<[TransactionRecord]> {
-        evmKit.transactionsSingle(tags: [[]], fromHash: hash, limit: limit)
+        evmKit.transactionsSingle(tags: [], fromHash: hash, limit: limit)
                 .map { [weak self] in
                     $0.compactMap {
                         self?.transactionRecord(fullTransaction: $0)
