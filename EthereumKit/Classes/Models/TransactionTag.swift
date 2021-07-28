@@ -1,6 +1,8 @@
 import GRDB
 
-class TransactionTag: Record {
+public class TransactionTag: Record {
+    public static let evmCoin = "ETH"
+
     let name: String
     let transactionHash: Data
 

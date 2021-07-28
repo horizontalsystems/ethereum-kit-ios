@@ -58,10 +58,11 @@ public class Kit {
         state.accountState = blockchain.accountState
         state.lastBlockHeight = blockchain.lastBlockHeight
 
-        transactionManager.transactionsObservable(tags: [["ETH"]])
+        transactionManager.allTransactionsObservable
                 .observeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
-                .subscribe(onNext: { [weak self] _ in
+                .subscribe(onNext: { [weak self] transactions in
                     self?.blockchain.syncAccountState()
+                    self?.internalTransactionSyncer.sync(transactions: transactions)
                 })
                 .disposed(by: disposeBag)
     }
@@ -246,8 +247,8 @@ extension Kit {
         transactionManager.etherTransferTransactionData(to: to, value: value)
     }
 
-    public func syncInternalTransactions(for transaction: Transaction) {
-        internalTransactionSyncer.add(transactionHash: transaction.hash)
+    public func add(transactionWatcher: ITransactionWatcher) {
+        internalTransactionSyncer.add(watcher: transactionWatcher)
     }
 
     public func statusInfo() -> [(String, Any)] {

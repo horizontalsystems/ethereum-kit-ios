@@ -209,6 +209,12 @@ class TransactionStorage {
             try TransactionSyncerState.deleteAll(db)
         }
 
+        migrator.registerMigration("addRetryCountToNotSyncedInternalTransactions") { db in
+            try db.alter(table: NotSyncedInternalTransaction.databaseTableName) { t in
+                t.add(column: NotSyncedInternalTransaction.Columns.retryCount.name, .integer).notNull().defaults(to: 0)
+            }
+        }
+
         return migrator
     }
 
@@ -273,9 +279,9 @@ extension TransactionStorage: ITransactionStorage {
         }
     }
 
-    func add(notSyncedInternalTransaction: NotSyncedInternalTransaction) {
+    func save(notSyncedInternalTransaction: NotSyncedInternalTransaction) {
         try! dbPool.write { db in
-            try notSyncedInternalTransaction.insert(db)
+            try notSyncedInternalTransaction.save(db)
         }
     }
 

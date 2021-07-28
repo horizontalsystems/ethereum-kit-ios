@@ -3,6 +3,7 @@ import RxSwift
 class TransactionInternalTransactionSyncer: AbstractTransactionSyncer {
     private let provider: EtherscanTransactionProvider
     private let storage: ITransactionStorage
+    private var watchers = [ITransactionWatcher]()
 
     weak var listener: ITransactionSyncerListener?
 
@@ -43,6 +44,17 @@ class TransactionInternalTransactionSyncer: AbstractTransactionSyncer {
     }
 
     private func handle(notSyncedTransaction: NotSyncedInternalTransaction, internalTransactions: [InternalTransaction]) {
+        guard !internalTransactions.isEmpty else {
+            if notSyncedTransaction.retryCount < 10 {
+                notSyncedTransaction.retryCount += 1
+                storage.save(notSyncedInternalTransaction: notSyncedTransaction)
+            } else {
+                storage.remove(notSyncedInternalTransaction: notSyncedTransaction)
+            }
+            doSync()
+            return
+        }
+
         storage.save(internalTransactions: internalTransactions)
         storage.remove(notSyncedInternalTransaction: notSyncedTransaction)
 
@@ -56,9 +68,26 @@ class TransactionInternalTransactionSyncer: AbstractTransactionSyncer {
         sync()
     }
 
-    func add(transactionHash: Data) {
-        storage.add(notSyncedInternalTransaction: NotSyncedInternalTransaction(hash: transactionHash))
-        sync()
+}
+
+extension TransactionInternalTransactionSyncer {
+
+    func add(watcher: ITransactionWatcher) {
+        watchers.append(watcher)
+    }
+
+    func sync(transactions: [FullTransaction]) {
+        let confirmedTransactions = transactions.filter { $0.receiptWithLogs != nil }
+
+        for watcher in watchers {
+            for transaction in confirmedTransactions {
+                if watcher.needInternalTransactions(fullTransaction: transaction) {
+                    storage.save(notSyncedInternalTransaction: NotSyncedInternalTransaction(hash: transaction.transaction.hash, retryCount: 0))
+                    sync()
+                    continue
+                }
+            }
+        }
     }
 
 }

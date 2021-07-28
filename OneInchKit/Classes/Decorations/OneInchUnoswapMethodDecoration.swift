@@ -22,13 +22,13 @@ public class OneInchUnoswapMethodDecoration: OneInchMethodDecoration {
         var tags: [String] = [toAddress.hex, "swap"]
 
         switch tokenIn {
-        case .evmCoin: tags.append(contentsOf: ["ETH_outgoing", "ETH", "outgoing"])
+        case .evmCoin: tags.append(contentsOf: ["\(TransactionTag.evmCoin)_outgoing", TransactionTag.evmCoin, "outgoing"])
         case .eip20Coin(let tokenAddress): tags.append(contentsOf: ["\(tokenAddress.hex)_outgoing", tokenAddress.hex, "outgoing"])
         }
 
         if let tokenOut = tokenOut {
             switch tokenOut {
-            case .evmCoin: tags.append(contentsOf: ["ETH_incoming", "ETH", "incoming"])
+            case .evmCoin: tags.append(contentsOf: ["\(TransactionTag.evmCoin)_incoming", TransactionTag.evmCoin, "incoming"])
             case .eip20Coin(let tokenAddress): tags.append(contentsOf: ["\(tokenAddress.hex)_incoming", tokenAddress.hex, "incoming"])
             }
         }

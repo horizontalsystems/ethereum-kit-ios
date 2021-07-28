@@ -8,13 +8,11 @@ public class Kit {
     private let tradeManager: TradeManager
     private let pairSelector: PairSelector
     private let tokenFactory: TokenFactory
-    private let internalTransactionSyncer: UniswapInternalTransactionSyncer
 
-    init(tradeManager: TradeManager, pairSelector: PairSelector, tokenFactory: TokenFactory, internalTransactionSyncer: UniswapInternalTransactionSyncer) {
+    init(tradeManager: TradeManager, pairSelector: PairSelector, tokenFactory: TokenFactory) {
         self.tradeManager = tradeManager
         self.pairSelector = pairSelector
         self.tokenFactory = tokenFactory
-        self.internalTransactionSyncer = internalTransactionSyncer
     }
 
 }
@@ -101,15 +99,18 @@ extension Kit {
         let tradeManager = TradeManager(evmKit: evmKit, address: address)
         let tokenFactory = TokenFactory(networkType: evmKit.networkType)
         let pairSelector = PairSelector(tokenFactory: tokenFactory)
-        let internalTransactionSyncer = UniswapInternalTransactionSyncer(evmKit: evmKit)
 
-        let uniswapKit = Kit(tradeManager: tradeManager, pairSelector: pairSelector, tokenFactory: tokenFactory, internalTransactionSyncer: internalTransactionSyncer)
+        let uniswapKit = Kit(tradeManager: tradeManager, pairSelector: pairSelector, tokenFactory: tokenFactory)
 
         return uniswapKit
     }
 
-    public static func decorator(evmKit: EthereumKit.Kit) -> IDecorator {
-        SwapTransactionDecorator(address: evmKit.address, contractMethodFactories: SwapContractMethodFactories.shared)
+    public static func addDecorator(to evmKit: EthereumKit.Kit) {
+        evmKit.add(decorator: SwapTransactionDecorator(address: evmKit.address, contractMethodFactories: SwapContractMethodFactories.shared))
+    }
+
+    public static func addTransactionWatcher(to evmKit: EthereumKit.Kit) {
+        evmKit.add(transactionWatcher: UniswapTransactionWatcher(address: evmKit.address))
     }
 
 }
