@@ -79,12 +79,12 @@ extension TransactionInternalTransactionSyncer {
     func sync(transactions: [FullTransaction]) {
         let confirmedTransactions = transactions.filter { $0.receiptWithLogs != nil }
 
-        for watcher in watchers {
-            for transaction in confirmedTransactions {
+        for transaction in confirmedTransactions {
+            for watcher in watchers {
                 if watcher.needInternalTransactions(fullTransaction: transaction) {
                     storage.save(notSyncedInternalTransaction: NotSyncedInternalTransaction(hash: transaction.transaction.hash, retryCount: 0))
                     sync()
-                    continue
+                    break
                 }
             }
         }

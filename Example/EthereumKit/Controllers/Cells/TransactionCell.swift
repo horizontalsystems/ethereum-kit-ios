@@ -89,10 +89,10 @@ class TransactionCell: UITableViewCell {
 
         switch decoration {
         case let swap as OneInchUnoswapMethodDecoration:
-            return "\(bigUIntToString(amount: swap.amountIn)) \(stringify(token: swap.tokenIn)) <-> \(bigUIntToString(amount: swap.amountOut)) \(stringify(token: swap.tokenOut))"
+            return "\(bigUIntToString(amount: swap.amountIn)) \(stringify(token: swap.tokenIn)) <-> \(bigUIntToString(amount: swap.amountOut ?? swap.amountOutMin)) \(stringify(token: swap.tokenOut))"
 
         case let swap as OneInchSwapMethodDecoration:
-            return "\(bigUIntToString(amount: swap.amountIn)) \(stringify(token: swap.tokenIn)) <-> \(bigUIntToString(amount: swap.amountOut)) \(stringify(token: swap.tokenOut))"
+            return "\(bigUIntToString(amount: swap.amountIn)) \(stringify(token: swap.tokenIn)) <-> \(bigUIntToString(amount: swap.amountOut ?? swap.amountOutMin)) \(stringify(token: swap.tokenOut))"
 
         case let swap as SwapMethodDecoration:
             return "\(amountIn(trade: swap.trade)) \(stringify(token: swap.tokenIn)) <-> \(amountOut(trade: swap.trade)) \(stringify(token: swap.tokenOut))"

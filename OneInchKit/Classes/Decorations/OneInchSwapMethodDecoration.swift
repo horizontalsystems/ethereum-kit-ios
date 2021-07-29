@@ -5,16 +5,18 @@ public class OneInchSwapMethodDecoration: OneInchMethodDecoration {
     public let tokenIn: Token
     public let tokenOut: Token
     public let amountIn: BigUInt
-    public let amountOut: BigUInt
+    public let amountOutMin: BigUInt
+    public let amountOut: BigUInt?
     public let flags: BigUInt
     public let permit: Data
     public let data: Data
     public let recipient: Address
 
-    public init(tokenIn: Token, tokenOut: Token, amountIn: BigUInt, amountOut: BigUInt, flags: BigUInt, permit: Data, data: Data, recipient: Address) {
+    public init(tokenIn: Token, tokenOut: Token, amountIn: BigUInt, amountOutMin: BigUInt, amountOut: BigUInt?, flags: BigUInt, permit: Data, data: Data, recipient: Address) {
         self.tokenIn = tokenIn
         self.tokenOut = tokenOut
         self.amountIn = amountIn
+        self.amountOutMin = amountOutMin
         self.amountOut = amountOut
         self.flags = flags
         self.permit = permit
