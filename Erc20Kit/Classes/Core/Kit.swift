@@ -56,7 +56,9 @@ public class Kit {
 extension Kit {
 
     public func start() {
-        balanceManager.sync()
+        if case .synced = ethereumKit.syncState {
+            balanceManager.sync()
+        }
     }
 
     public func stop() {
