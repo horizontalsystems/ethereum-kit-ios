@@ -51,6 +51,7 @@ protocol ITransactionStorage {
     func save(logs: [TransactionLog])
     func save(internalTransactions: [InternalTransaction])
     func set(tags: [TransactionTag])
+    func remove(logs: [TransactionLog])
 
     func hashesFromTransactions() -> [Data]
     func transactionsBeforeSingle(tags: [[String]], hash: Data?, limit: Int?) -> Single<[FullTransaction]>

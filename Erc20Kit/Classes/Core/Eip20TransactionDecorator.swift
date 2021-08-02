@@ -34,11 +34,13 @@ extension Eip20TransactionDecorator: IDecorator {
             switch event {
             case let transfer as TransferEventDecoration:
                 if transfer.from == userAddress || transfer.to == userAddress {
+                    log.set(relevant: true)
                     return event
                 }
 
             case let approve as ApproveEventDecoration:
                 if approve.owner == userAddress || approve.spender == userAddress {
+                    log.set(relevant: true)
                     return event
                 }
 

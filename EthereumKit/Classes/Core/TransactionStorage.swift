@@ -215,6 +215,10 @@ class TransactionStorage {
             }
         }
 
+        migrator.registerMigration("addIndexOnTransactionHashToTransactionLog") { db in
+            try db.create(index: "transaction_logs_transaction_hash", on: TransactionLog.databaseTableName, columns: [TransactionLog.Columns.transactionHash.name])
+        }
+
         return migrator
     }
 
@@ -367,6 +371,14 @@ extension TransactionStorage: ITransactionStorage {
         _ = try? dbPool.write { db in
             for tag in tags {
                 try tag.save(db)
+            }
+        }
+    }
+
+    func remove(logs: [TransactionLog]) {
+        try! dbPool.write { db in
+            for log in logs {
+                try log.delete(db)
             }
         }
     }

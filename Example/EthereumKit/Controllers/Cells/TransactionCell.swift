@@ -72,11 +72,6 @@ class TransactionCell: UITableViewCell {
                         let spender = approve.spender.eip55.prefix(6)
                         return "\(bigUIntToString(amount: approve.value)) \(coin) (\(owner) -approved-> \(spender))"
 
-                    case let swap as SwapEventDecoration:
-                        let sender = swap.sender.eip55.prefix(6)
-                        let to = swap.to.eip55.prefix(6)
-                        return "(\(sender) <-> \(to))"
-
                     default: return "unknown event"
                     }
                 }
