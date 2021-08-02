@@ -21,10 +21,12 @@ class SwapTransactionDecorator {
                let transferEventDecoration = erc20Event as? TransferEventDecoration {
                 if transferEventDecoration.from == userAddress {
                     amountIn += transferEventDecoration.value
+                    log.set(relevant: true)
                 }
 
                 if transferEventDecoration.to == userAddress {
                     amountOut += transferEventDecoration.value
+                    log.set(relevant: true)
                 }
             }
         }
@@ -186,29 +188,7 @@ extension SwapTransactionDecorator: IDecorator {
     }
 
     public func decorate(logs: [TransactionLog]) -> [ContractEventDecoration] {
-        logs.compactMap { log -> ContractEventDecoration? in
-            let signature = log.topics[0]
-            guard SwapEventDecoration.signature == signature, log.topics.count == 3, log.data.count == 128 else {
-                return nil
-            }
-
-            let firstParam = Address(raw: log.topics[1])
-            let secondParam = Address(raw: log.topics[2])
-
-            guard firstParam == address || secondParam == address else {
-                return nil
-            }
-
-            let amount0In = BigUInt(Data(log.data[0..<32]))
-            let amount1In = BigUInt(Data(log.data[32..<64]))
-            let amount0Out = BigUInt(Data(log.data[64..<96]))
-            let amount1Out = BigUInt(Data(log.data[96..<128]))
-
-            return SwapEventDecoration(
-                    contractAddress: log.address, sender: firstParam, amount0In: amount0In, amount1In: amount1In,
-                    amount0Out: amount0Out, amount1Out: amount1Out, to: secondParam
-            )
-        }
+        []
     }
 
 }

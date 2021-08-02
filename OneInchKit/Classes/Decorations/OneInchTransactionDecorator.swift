@@ -19,10 +19,10 @@ class OneInchTransactionDecorator {
         for log in logs {
             if log.address == tokenAddress,
                let erc20Event = log.erc20Event(),
-               let transferEventDecoration = erc20Event as? TransferEventDecoration {
-                if transferEventDecoration.to == userAddress {
-                    amountOut += transferEventDecoration.value
-                }
+               let transferEventDecoration = erc20Event as? TransferEventDecoration,
+               transferEventDecoration.to == userAddress, transferEventDecoration.value > 0 {
+                amountOut += transferEventDecoration.value
+                log.set(relevant: true)
             }
         }
 

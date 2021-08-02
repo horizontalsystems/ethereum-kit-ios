@@ -15,6 +15,8 @@ public class TransactionLog: Record, ImmutableMappable {
     public var transactionHash: Data  // hash of the transactions this log was created from. null when its pending log.
     public var transactionIndex: Int  // integer of the transactions index position log was created from. null when its pending log.
 
+    private(set) var relevant: Bool = false  // Only relevant logs are stored in DB
+
     public init(address: Address, blockHash: Data, blockNumber: Int, data: Data, logIndex: Int, removed: Bool,
                 topics: [Data], transactionHash: Data, transactionIndex: Int) throws {
         self.address = address
@@ -28,6 +30,10 @@ public class TransactionLog: Record, ImmutableMappable {
         self.transactionIndex = transactionIndex
 
         super.init()
+    }
+
+    public func set(relevant: Bool) {
+        self.relevant = relevant
     }
 
     public required init(map: Map) throws {

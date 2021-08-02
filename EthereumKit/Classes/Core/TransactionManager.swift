@@ -33,7 +33,20 @@ class TransactionManager {
     }
 
     private func handle(syncedTransactions: [FullTransaction]) {
-        let decoratedTransactions = syncedTransactions.map { decorationManager.decorateFullTransaction(fullTransaction: $0) }
+        let decoratedTransactions = syncedTransactions.map { transaction -> FullTransaction in
+            let decoratedTransaction = decorationManager.decorateFullTransaction(fullTransaction: transaction)
+
+            if let logs = decoratedTransaction.receiptWithLogs?.logs {
+                let neededLogs = logs.filter { $0.relevant }
+                if logs.count > neededLogs.count {
+                    storage.remove(logs: logs)
+                    storage.save(logs: neededLogs)
+                }
+            }
+
+            return decoratedTransaction
+        }
+
         var transactionsWithTags = [(transaction: FullTransaction, tags: [String])]()
         for transaction in decoratedTransactions {
             let tags = tagGenerator.generate(for: transaction)
