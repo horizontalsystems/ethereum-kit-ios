@@ -383,6 +383,16 @@ extension TransactionStorage: ITransactionStorage {
         }
     }
 
+    func transactionInBlock(nonce: Int) -> Transaction? {
+        try? dbPool.read { db in
+            try Transaction
+                    .joining(optional: Transaction.receipt)
+                    .filter(sql: "transaction_receipts.transactionHash IS NOT NULL AND transactions.nonce = \(nonce)")
+                    .order(Transaction.Columns.nonce.asc, Transaction.Columns.timestamp.asc)
+                    .fetchOne(db)
+        }
+    }
+
     func hashesFromTransactions() -> [Data] {
         try! dbPool.read { db in
             let rows = try Row.fetchAll(db, sql: "SELECT \(Transaction.Columns.hash.name) FROM \(Transaction.databaseTableName)")
