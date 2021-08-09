@@ -71,6 +71,11 @@ class PendingTransactionSyncer: AbstractTransactionSyncer {
         storage.save(logs: receipt.logs)
 
         listener?.onTransactionsSynced(fullTransactions: storage.fullTransactions(byHashes: [receipt.transactionHash]))
+
+        while let duplicatedTransaction = storage.pendingTransaction(nonce: pendingTransaction.nonce) {
+            storage.add(droppedTransaction: DroppedTransaction(hash: duplicatedTransaction.hash, replacedWith: pendingTransaction.hash))
+            listener?.onTransactionsSynced(fullTransactions: storage.fullTransactions(byHashes: [duplicatedTransaction.hash]))
+        }
     }
 
     override func onLastBlockNumber(blockNumber: Int) {

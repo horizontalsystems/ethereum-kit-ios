@@ -333,7 +333,8 @@ extension TransactionStorage: ITransactionStorage {
         try? dbPool.read { db in
             try Transaction
                     .joining(optional: Transaction.receipt)
-                    .filter(sql: "transaction_receipts.transactionHash IS NULL AND transactions.nonce = \(nonce)")
+                    .joining(optional: Transaction.droppedTransaction)
+                    .filter(sql: "transaction_receipts.transactionHash IS NULL AND dropped_transactions.hash IS NULL AND transactions.nonce = \(nonce)")
                     .order(Transaction.Columns.nonce.asc, Transaction.Columns.timestamp.asc)
                     .fetchOne(db)
         }
