@@ -30,13 +30,11 @@ class PendingTransactionSyncer: AbstractTransactionSyncer {
 
     private func doSync(fromTransaction: Transaction? = nil) -> Single<Void> {
         let pendingTransactions = storage.pendingTransactions(fromTransaction: fromTransaction)
-        let notReplacedPendingTransactions = replaceDuplicateTransactions(pendingTransactions: pendingTransactions)
-
-        guard !notReplacedPendingTransactions.isEmpty else {
+        guard !pendingTransactions.isEmpty else {
             return Single.just(())
         }
 
-        let singles = notReplacedPendingTransactions.map { pendingTransaction in
+        let singles = pendingTransactions.map { pendingTransaction in
             blockchain.transactionReceiptSingle(transactionHash: pendingTransaction.hash)
                     .flatMap { [weak self] receipt in
                         self?.syncTimestamp(transaction: pendingTransaction, receipt: receipt) ?? Single.just(())
@@ -47,21 +45,6 @@ class PendingTransactionSyncer: AbstractTransactionSyncer {
                 .flatMap { [weak self] _ in
                     self?.doSync(fromTransaction: pendingTransactions.last) ?? Single.just(())
                 }
-    }
-
-    private func replaceDuplicateTransactions(pendingTransactions: [Transaction]) -> [Transaction] {
-        var notReplaced = [Transaction]()
-
-        for transaction in pendingTransactions {
-            if let duplicatedTransaction = storage.transactionInBlock(nonce: transaction.nonce) {
-                storage.add(droppedTransaction: DroppedTransaction(hash: transaction.hash, replacedWith: duplicatedTransaction.hash))
-                listener?.onTransactionsSynced(fullTransactions: storage.fullTransactions(byHashes: [transaction.hash]))
-            } else {
-                notReplaced.append(transaction)
-            }
-        }
-
-        return notReplaced
     }
 
     private func syncTimestamp(transaction: Transaction, receipt: RpcTransactionReceipt?) -> Single<Void> {
