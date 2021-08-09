@@ -129,7 +129,7 @@ extension EthereumAdapter: IAdapter {
         let amount = BigUInt(amount.roundedString(decimal: decimal))!
         let transactionData = evmKit.transferTransactionData(to: to, value: amount)
 
-        return evmKit.sendSingle(transactionData: transactionData, gasPrice: 20_000_000_000, gasLimit: gasLimit).map { _ in ()}
+        return evmKit.sendSingle(transactionData: transactionData, gasPrice: 50_000_000_000, gasLimit: gasLimit).map { _ in ()}
     }
 
     func transactionsSingle(from hash: Data?, limit: Int?) -> Single<[TransactionRecord]> {
