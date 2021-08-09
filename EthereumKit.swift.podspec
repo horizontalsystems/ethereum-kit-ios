@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name             = 'EthereumKit.swift'
   s.module_name      = 'EthereumKit'
-  s.version          = '0.14.0'
+  s.version          = '0.15.0'
   s.summary          = 'Ethereum wallet library for Swift.'
 
   s.description      = <<-DESC
