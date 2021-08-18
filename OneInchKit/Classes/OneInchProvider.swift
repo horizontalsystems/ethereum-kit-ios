@@ -4,7 +4,7 @@ import BigInt
 import RxSwift
 
 class OneInchProvider {
-    private static let estimateErrors = ["Try to leave the buffer of ETH for gas", "you may not have enough ETH balance for gas fee"]
+    private static let notEnoughEthErrors = ["Try to leave the buffer of ETH for gas", "you may not have enough ETH balance for gas fee"]
     private let networkManager: NetworkManager
     private let networkType: NetworkType
 
@@ -27,8 +27,8 @@ class OneInchProvider {
         return result
     }
 
-    private static func estimateErrorContains(in message: String) -> Bool {
-        for error in estimateErrors {
+    private static func notEnoughErrorContains(in message: String) -> Bool {
+        for error in notEnoughEthErrors {
             if message.contains(error) { return true }
         }
 
@@ -128,10 +128,12 @@ extension OneInchProvider {
                 .catchError { error in
                     if case let .invalidResponse(_, data) = (error as? NetworkManager.RequestError),
                        let dictionary = data as? [String: Any],
-                       let message = dictionary["message"] as? String,
-                       Self.estimateErrorContains(in: message) {
-
-                        return Single.error(Kit.SwapError.cannotEstimate)
+                       let message = dictionary["message"] as? String {
+                        if Self.notEnoughErrorContains(in: message) {
+                            return Single.error(Kit.SwapError.notEnough)
+                        } else if message.contains("cannot estimate") {
+                            return Single.error(Kit.SwapError.cannotEstimate)
+                        }
                     }
 
                     return Single.error(error)

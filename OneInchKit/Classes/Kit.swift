@@ -118,6 +118,7 @@ extension Kit {
     }
 
     public enum SwapError: Error {
+        case notEnough
         case cannotEstimate
     }
 
