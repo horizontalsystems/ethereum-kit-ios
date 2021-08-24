@@ -17,7 +17,7 @@ public class ApproveEventDecoration: ContractEventDecoration {
     }
 
     public override func tags(fromAddress: Address, toAddress: Address, userAddress: Address) -> [String] {
-        [contractAddress.hex, "eip20Approve"]
+        []
     }
 
 }
