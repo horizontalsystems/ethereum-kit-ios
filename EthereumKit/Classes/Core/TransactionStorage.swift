@@ -219,6 +219,30 @@ class TransactionStorage {
             try db.create(index: "transaction_logs_transaction_hash", on: TransactionLog.databaseTableName, columns: [TransactionLog.Columns.transactionHash.name])
         }
 
+        migrator.registerMigration("alterTransactionTagPrimaryKey") { db in
+            let tmpTableName = "tmp_table"
+            try db.rename(table: TransactionTag.databaseTableName, to: tmpTableName)
+
+            for indexInfo in try db.indexes(on: tmpTableName) {
+                if !indexInfo.isUnique {
+                    try db.drop(index: indexInfo.name)
+                }
+            }
+
+            try db.create(table: TransactionTag.databaseTableName) { t in
+                t.column(TransactionTag.Columns.name.name, .text).notNull().indexed()
+                t.column(TransactionTag.Columns.transactionHash.name, .text).notNull()
+
+                t.uniqueKey([TransactionTag.Columns.name.name, TransactionTag.Columns.transactionHash.name], onConflict: .ignore)
+            }
+
+            for row in try Row.fetchAll(db, sql: "SELECT * FROM \(tmpTableName)") {
+                try TransactionTag(row: row).insert(db)
+            }
+
+            try db.drop(table: tmpTableName)
+        }
+
         return migrator
     }
 
