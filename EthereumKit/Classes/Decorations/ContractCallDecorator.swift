@@ -37,7 +37,9 @@ class ContractCallDecorator: IDecorator {
         addMethod(name: "Farm Deposit", methodId: "0xe2bbb158")
         addMethod(name: "Farm Withdrawal", methodId: "0x441a3e70")
         addMethod(name: "Pool Deposit", methodId: "0xf305d719")
+        addMethod(name: "Pool Withdrawal", methodId: "0xded9382a")
         addMethod(name: "Stake", methodId: "0xa59f3e0c")
+        addMethod(name: "Unstake", methodId: "0x67dfd4c9")
     }
 
     private func addMethod(name: String, signature: String, arguments: [Any]) {
