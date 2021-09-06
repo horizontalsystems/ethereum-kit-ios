@@ -4,7 +4,7 @@ import BigInt
 import RxSwift
 
 class OneInchProvider {
-    private static let notEnoughEthErrors = ["Try to leave the buffer of ETH for gas", "you may not have enough ETH balance for gas fee"]
+    private static let notEnoughEthErrors = ["Try to leave the buffer of ETH for gas", "you may not have enough ETH balance for gas fee", "Not enough ETH balance"]
     private let networkManager: NetworkManager
     private let networkType: NetworkType
 
