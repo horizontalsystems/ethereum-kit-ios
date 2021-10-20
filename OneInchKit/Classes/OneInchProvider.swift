@@ -4,7 +4,7 @@ import BigInt
 import RxSwift
 
 class OneInchProvider {
-    private static let notEnoughEthErrors = ["Try to leave the buffer of ETH for gas", "you may not have enough ETH balance for gas fee", "Not enough ETH balance"]
+    private static let notEnoughEthErrors = ["Try to leave the buffer of ETH for gas", "you may not have enough ETH balance for gas fee", "Not enough ETH balance", "insufficient funds for transfer"]
     private let networkManager: NetworkManager
     private let networkType: NetworkType
 
@@ -82,7 +82,19 @@ extension OneInchProvider {
        ])
 
         let mapper = QuoteMapper(tokenMapper: TokenMapper())
-        return networkManager.single(url: url + "quote", method: .get, parameters: parameters, mapper: mapper, responseCacherBehavior: .doNotCache)
+        return networkManager
+                .single(url: url + "quote", method: .get, parameters: parameters, mapper: mapper, responseCacherBehavior: .doNotCache)
+                .catchError { error in
+                    if case let .invalidResponse(_, data) = (error as? NetworkManager.RequestError),
+                       let dictionary = data as? [String: Any],
+                       let message = dictionary["message"] as? String {
+                        if message.contains("insufficient liquidity") {
+                            return Single.error(Kit.QuoteError.insufficientLiquidity)
+                        }
+                    }
+
+                    return Single.error(error)
+                }
     }
 
     func swapSingle(fromToken: String,
