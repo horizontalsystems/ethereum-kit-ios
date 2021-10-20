@@ -117,6 +117,10 @@ extension Kit {
         case invalid
     }
 
+    public enum QuoteError: Error {
+        case insufficientLiquidity
+    }
+
     public enum SwapError: Error {
         case notEnough
         case cannotEstimate
