@@ -33,6 +33,10 @@ struct Price {
         adjusted.toDecimal(decimals: quoteToken.decimals)
     }
 
+    var invertedPrice: Price {
+        Price(baseToken: quoteToken, quoteToken: baseToken, fraction: fraction.inverted)
+    }
+
 }
 
 extension Price {
