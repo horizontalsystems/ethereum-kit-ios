@@ -47,6 +47,10 @@ extension TradeData {
         trade.executionPrice.decimalValue
     }
 
+    public var executionPriceInverted: Decimal? {
+        trade.executionPrice.invertedPrice.decimalValue
+    }
+
     public var midPrice: Decimal? {
         trade.route.midPrice.decimalValue
     }
