@@ -118,7 +118,17 @@ extension RpcBlockchain: IBlockchain {
                     self?.onUpdate(accountState: AccountState(balance: balance, nonce: nonce))
                     self?.syncState = .synced
                 }, onError: { [weak self] error in
-                    self?.syncState = .notSynced(error: error)
+                    guard let webSocketError = error as? HsToolKit.WebSocketStateError else {
+                        self?.syncState = .notSynced(error: error)
+                        return
+                    }
+
+                    switch webSocketError {
+                    case .connecting:
+                        self?.syncState = .syncing(progress: nil)
+                    case .couldNotConnect:
+                        self?.syncState = .notSynced(error: webSocketError)
+                    }
                 })
                 .disposed(by: disposeBag)
     }
