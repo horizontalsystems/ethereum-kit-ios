@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name             = 'OneInchKit.swift'
   s.module_name      = 'OneInchKit'
-  s.version          = '0.1.0'
+  s.version          = '0.15.1'
   s.summary          = 'OneInch exchange integration for Swift.'
 
   s.homepage         = 'https://github.com/horizontalsystems/ethereum-kit-ios'

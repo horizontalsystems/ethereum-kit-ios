@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 ## Current Version
 
+## 0.15.1
+
+* Bugfixes and enhancements
+
 ## 0.15.0
 
 * `EthereumKit`
