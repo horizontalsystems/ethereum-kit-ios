@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name             = 'UniswapKit.swift'
   s.module_name      = 'UniswapKit'
-  s.version          = '0.11.0'
+  s.version          = '0.15.1'
   s.summary          = 'Uniswap exchange integration for Swift.'
 
   s.homepage         = 'https://github.com/horizontalsystems/ethereum-kit-ios'
