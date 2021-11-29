@@ -20,7 +20,7 @@ extension Kit {
 
     public var routerAddress: Address {
         switch evmKit.networkType {
-        case .ethMainNet, .bscMainNet: return try! Address(hex: "0x11111112542d85b3ef69ae05771c2dccff4faa26")
+        case .ethMainNet, .bscMainNet: return try! Address(hex: "0x1111111254fb6c44bac0bed2854e76f90643097d")
         default: return try! Address(hex: "0x11111112542d85b3ef69ae05771c2dccff4faa26") // todo: testnet
         }
     }
