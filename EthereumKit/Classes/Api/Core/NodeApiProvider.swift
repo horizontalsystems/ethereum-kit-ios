@@ -5,15 +5,15 @@ import HsToolKit
 
 class NodeApiProvider {
     private let networkManager: NetworkManager
-    private let url: URL
+    private let urls: [URL]
     let blockTime: TimeInterval
 
     private let headers: HTTPHeaders
     private var currentRpcId = 0
 
-    init(networkManager: NetworkManager, url: URL, blockTime: TimeInterval, auth: String?) {
+    init(networkManager: NetworkManager, urls: [URL], blockTime: TimeInterval, auth: String?) {
         self.networkManager = networkManager
-        self.url = url
+        self.urls = urls
         self.blockTime = blockTime
 
         var headers = HTTPHeaders()
@@ -25,17 +25,26 @@ class NodeApiProvider {
         self.headers = headers
     }
 
-    private func rpcResultSingle(parameters: [String: Any]) -> Single<Any> {
-        networkManager.single(
-                url: url,
-                method: .post,
-                parameters: parameters,
-                mapper: self,
-                encoding: JSONEncoding.default,
-                headers: headers,
-                interceptor: self,
-                responseCacherBehavior: .doNotCache
-        )
+    private func rpcResultSingle(urlIndex: Int, parameters: [String: Any]) -> Single<Any> {
+        networkManager
+                .single(
+                    url: urls[urlIndex],
+                    method: .post,
+                    parameters: parameters,
+                    mapper: self,
+                    encoding: JSONEncoding.default,
+                    headers: headers,
+                    interceptor: self,
+                    responseCacherBehavior: .doNotCache
+                )
+                .catchError { [weak self] error in
+                    if case NetworkManager.RequestError.invalidResponse(let statusCode, let data) = error, statusCode == 404,
+                       let provider = self, urlIndex < provider.urls.count - 1 {
+                        return provider.rpcResultSingle(urlIndex: urlIndex + 1, parameters: parameters) ?? Single.error(error)
+                    } else {
+                        return Single.error(error)
+                    }
+                }
     }
 
 }
@@ -44,6 +53,7 @@ extension NodeApiProvider {
 
     public enum RequestError: Error {
         case invalidResponse(jsonObject: Any)
+        case apiUrlNotFound
     }
 
 }
@@ -83,13 +93,17 @@ extension NodeApiProvider: IApiMapper {
 extension NodeApiProvider: IRpcApiProvider {
 
     var source: String {
-        url.host ?? ""
+        urls.first?.host ?? ""
     }
 
     func single<T>(rpc: JsonRpc<T>) -> Single<T> {
+        guard let url = urls.first else {
+            return Single.error(RequestError.apiUrlNotFound)
+        }
+
         currentRpcId += 1
 
-        return rpcResultSingle(parameters: rpc.parameters(id: currentRpcId))
+        return rpcResultSingle(urlIndex: 0, parameters: rpc.parameters(id: currentRpcId))
                 .flatMap { jsonObject in
                     do {
                         guard let rpcResponse = JsonRpcResponse.response(jsonObject: jsonObject) else {

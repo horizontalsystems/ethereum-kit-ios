@@ -1,11 +1,11 @@
 public enum SyncSource {
     case webSocket(url: URL, auth: String?)
-    case http(url: URL, blockTime: TimeInterval, auth: String?)
+    case http(urls: [URL], blockTime: TimeInterval, auth: String?)
 
-    public var url: URL {
+    public var urls: [URL] {
         switch self {
-        case .webSocket(let url, _): return url
-        case .http(let url, _, _): return url
+        case .webSocket(let url, _): return [url]
+        case .http(let urls, _, _): return urls
         }
     }
 
