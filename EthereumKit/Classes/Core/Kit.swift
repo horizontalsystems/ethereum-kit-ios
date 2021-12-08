@@ -344,8 +344,8 @@ extension Kit {
             let socket = WebSocket(url: url, reachabilityManager: reachabilityManager, auth: auth, logger: logger)
             syncer = WebSocketRpcSyncer.instance(socket: socket, logger: logger)
 
-        case let .http(url, blockTime, auth):
-            let apiProvider = NodeApiProvider(networkManager: networkManager, url: url, blockTime: blockTime, auth: auth)
+        case let .http(urls, blockTime, auth):
+            let apiProvider = NodeApiProvider(networkManager: networkManager, urls: urls, blockTime: blockTime, auth: auth)
             syncer = ApiRpcSyncer(rpcApiProvider: apiProvider, reachabilityManager: reachabilityManager)
         }
 
@@ -422,7 +422,7 @@ extension Kit {
             return nil
         }
 
-        return .http(url: url, blockTime: networkType.blockTime, auth: projectSecret)
+        return .http(urls: [url], blockTime: networkType.blockTime, auth: projectSecret)
     }
 
     public static func defaultBscWebsocketSyncSource() -> SyncSource? {
@@ -434,11 +434,25 @@ extension Kit {
     }
 
     public static func defaultBscHttpSyncSource() -> SyncSource? {
-        guard let url = URL(string: "https://bsc-dataseed.binance.org/v3/") else {
-            return nil
-        }
+        let urlStrings = [
+            "https://bsc-dataseed.binance.org/",
+            "https://bsc-dataseed1.defibit.io/",
+            "https://bsc-dataseed1.ninicoin.io/",
+            "https://bsc-dataseed2.defibit.io/",
+            "https://bsc-dataseed3.defibit.io/",
+            "https://bsc-dataseed4.defibit.io/",
+            "https://bsc-dataseed2.ninicoin.io/",
+            "https://bsc-dataseed3.ninicoin.io/",
+            "https://bsc-dataseed4.ninicoin.io/",
+            "https://bsc-dataseed1.binance.org/",
+            "https://bsc-dataseed2.binance.org/",
+            "https://bsc-dataseed3.binance.org/",
+            "https://bsc-dataseed4.binance.org/"
+        ]
 
-        return .http(url: url, blockTime: NetworkType.bscMainNet.blockTime, auth: nil)
+        let urls: [URL] = urlStrings.compactMap { URL(string: $0) }
+
+        return .http(urls: urls, blockTime: NetworkType.bscMainNet.blockTime, auth: nil)
     }
 
     private static func dataDirectoryUrl() throws -> URL {
