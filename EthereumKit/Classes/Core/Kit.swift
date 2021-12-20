@@ -20,9 +20,6 @@ public class Kit {
     private let transactionManager: TransactionManager
     private let transactionSyncManager: TransactionSyncManager
     private let internalTransactionSyncer: TransactionInternalTransactionSyncer
-    private let transactionBuilder: TransactionBuilder
-    private let transactionSigner: TransactionSigner
-    private let ethSigner: EthSigner
     private let decorationManager: DecorationManager
     private let eip20Storage: Eip20Storage
     private let state: EthereumKitState
@@ -37,15 +34,12 @@ public class Kit {
 
 
     init(blockchain: IBlockchain, transactionManager: TransactionManager, transactionSyncManager: TransactionSyncManager, internalTransactionSyncer: TransactionInternalTransactionSyncer,
-         transactionBuilder: TransactionBuilder, transactionSigner: TransactionSigner, ethSigner: EthSigner, state: EthereumKitState = EthereumKitState(),
+         state: EthereumKitState = EthereumKitState(),
          address: Address, networkType: NetworkType, uniqueId: String, etherscanService: EtherscanService, decorationManager: DecorationManager, eip20Storage: Eip20Storage, logger: Logger) {
         self.blockchain = blockchain
         self.transactionManager = transactionManager
         self.transactionSyncManager = transactionSyncManager
         self.internalTransactionSyncer = internalTransactionSyncer
-        self.transactionBuilder = transactionBuilder
-        self.transactionSigner = transactionSigner
-        self.ethSigner = ethSigner
         self.state = state
         self.address = address
         self.networkType = networkType
@@ -145,50 +139,26 @@ extension Kit {
         transactionManager.transactions(byHashes: hashes)
     }
 
-    public func sendSingle(address: Address, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int, nonce: Int? = nil) -> Single<FullTransaction> {
+    func rawTransaction(address: Address, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int, nonce: Int? = nil) -> Single<RawTransaction> {
         var syncNonceSingle = blockchain.nonceSingle(defaultBlockParameter: .pending)
 
         if let nonce = nonce {
             syncNonceSingle = Single<Int>.just(nonce)
         }
 
-        return syncNonceSingle.flatMap { [weak self] nonce in
-            guard let kit = self else {
-                return Single<FullTransaction>.error(SendError.nonceNotAvailable)
-            }
-
-            let rawTransaction = kit.transactionBuilder.rawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: address, value: value, data: transactionInput, nonce: nonce)
-
-            return kit.blockchain.sendSingle(rawTransaction: rawTransaction)
-                    .do(onSuccess: { [weak self] transaction in
-                        self?.transactionManager.handle(sentTransaction: transaction)
-                    })
-                    .map {
-                        FullTransaction(transaction: $0)
-                    }
+        return syncNonceSingle.map { nonce in
+            RawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: address, value: value, data: transactionInput, nonce: nonce)
         }
     }
 
-    public func sendSingle(transactionData: TransactionData, gasPrice: Int, gasLimit: Int, nonce: Int? = nil) -> Single<FullTransaction> {
-        sendSingle(address: transactionData.to, value: transactionData.value, transactionInput: transactionData.input, gasPrice: gasPrice, gasLimit: gasLimit, nonce: nonce)
-    }
-
-    public func signedTransaction(address: Address, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int, nonce: Int) throws -> Data {
-        let rawTransaction = transactionBuilder.rawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: address, value: value, data: transactionInput, nonce: nonce)
-        let signature = try transactionSigner.signature(rawTransaction: rawTransaction)
-        return transactionBuilder.encode(rawTransaction: rawTransaction, signature: signature)
-    }
-
-    public func signed(message: Data) throws -> Data {
-        try ethSigner.sign(message: message)
-    }
-
-    public func parseTypedData(rawJson: Data) throws -> EIP712TypedData {
-        try ethSigner.parseTypedData(rawJson: rawJson)
-    }
-
-    public func signTypedData(message: Data) throws -> Data {
-        try ethSigner.signTypedData(message: message)
+    func sendSingle(rawTransaction: RawTransaction, signature: Signature) -> Single<FullTransaction> {
+        blockchain.sendSingle(rawTransaction: rawTransaction, signature: signature)
+                .do(onSuccess: { [weak self] transaction in
+                    self?.transactionManager.handle(sentTransaction: transaction)
+                })
+                .map {
+                    FullTransaction(transaction: $0)
+                }
     }
 
     public var debugInfo: String {
@@ -305,17 +275,6 @@ extension Kit: IBlockchainDelegate {
 
 extension Kit {
 
-    public static func address(seed: Data, networkType: NetworkType = .ethMainNet) throws -> Address {
-        let privKey = try privateKey(seed: seed, networkType: networkType)
-
-        return ethereumAddress(privateKey: privKey)
-    }
-
-    public static func privateKey(seed: Data, networkType: NetworkType = .ethMainNet) throws -> HDPrivateKey {
-        let wallet = hdWallet(seed: seed, networkType: networkType)
-        return try wallet.privateKey(account: 0, index: 0, chain: .external)
-    }
-
     public static func clear(exceptFor excludedFiles: [String]) throws {
         let fileManager = FileManager.default
         let fileUrls = try fileManager.contentsOfDirectory(at: dataDirectoryUrl(), includingPropertiesForKeys: nil)
@@ -327,12 +286,9 @@ extension Kit {
         }
     }
 
-    public static func instance(seed: Data, networkType: NetworkType, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
+    public static func instance(address: Address, networkType: NetworkType, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
         let logger = Logger(minLogLevel: minLogLevel)
         let uniqueId = "\(walletId)-\(networkType)"
-
-        let privKey = try privateKey(seed: seed, networkType: networkType)
-        let address = ethereumAddress(privateKey: privKey)
 
         let networkManager = NetworkManager(logger: logger)
 
@@ -349,13 +305,11 @@ extension Kit {
             syncer = ApiRpcSyncer(rpcApiProvider: apiProvider, reachabilityManager: reachabilityManager)
         }
 
-        let transactionSigner = TransactionSigner(chainId: networkType.chainId, privateKey: privKey.raw)
         let transactionBuilder = TransactionBuilder(address: address)
-        let ethSigner = EthSigner(privateKey: privKey.raw, cryptoUtils: CryptoUtils.shared)
         let etherscanService = EtherscanService(networkType: networkType, etherscanApiKey: etherscanApiKey, address: address, logger: logger)
 
         let storage: IApiStorage = try ApiStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "api-\(uniqueId)")
-        let blockchain = RpcBlockchain.instance(address: address, storage: storage, syncer: syncer, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, logger: logger)
+        let blockchain = RpcBlockchain.instance(address: address, storage: storage, syncer: syncer, transactionBuilder: transactionBuilder, logger: logger)
 
         let transactionsProvider = EtherscanTransactionProvider(service: etherscanService)
         let transactionStorage: ITransactionStorage & ITransactionSyncerStateStorage = TransactionStorage(databaseDirectoryUrl: try dataDirectoryUrl(), databaseFileName: "transactions-\(uniqueId)")
@@ -382,7 +336,7 @@ extension Kit {
 
         let kit = Kit(
                 blockchain: blockchain, transactionManager: transactionManager, transactionSyncManager: transactionSyncManager, internalTransactionSyncer: transactionInternalTransactionSyncer,
-                transactionBuilder: transactionBuilder, transactionSigner: transactionSigner, ethSigner: ethSigner, address: address, networkType: networkType,
+                address: address, networkType: networkType,
                 uniqueId: uniqueId, etherscanService: etherscanService, decorationManager: decorationManager, eip20Storage: eip20Storage, logger: logger
         )
 
@@ -467,23 +421,6 @@ extension Kit {
         return url
     }
 
-    private static func hdWallet(seed: Data, networkType: NetworkType) -> HDWallet {
-        let coinType: UInt32
-
-        switch networkType {
-        case .ropsten, .rinkeby, .kovan, .goerli: coinType = 1
-        default: coinType = 60
-        }
-
-        return HDWallet(seed: seed, coinType: coinType, xPrivKey: 0, xPubKey: 0)
-    }
-
-    private static func ethereumAddress(privateKey: HDPrivateKey) -> Address {
-        let publicKey = Data(Secp256k1Kit.Kit.createPublicKey(fromPrivateKeyData: privateKey.raw, compressed: false).dropFirst())
-
-        return Address(raw: Data(CryptoUtils.shared.sha3(publicKey).suffix(20)))
-    }
-
 }
 
 extension Kit {
@@ -494,7 +431,6 @@ extension Kit {
     }
 
     public enum SendError: Error {
-        case nonceNotAvailable
         case noAccountState
     }
 

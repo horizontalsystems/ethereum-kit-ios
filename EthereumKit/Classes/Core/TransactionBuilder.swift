@@ -8,10 +8,6 @@ class TransactionBuilder {
         self.address = address
     }
 
-    func rawTransaction(gasPrice: Int, gasLimit: Int, to: Address, value: BigUInt, data: Data = Data(), nonce: Int) -> RawTransaction {
-        RawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: to, value: value, data: data, nonce: nonce)
-    }
-
     func transaction(rawTransaction: RawTransaction, signature: Signature) -> Transaction {
         let transactionHash = OpenSslKit.Kit.sha3(encode(rawTransaction: rawTransaction, signature: signature))
 

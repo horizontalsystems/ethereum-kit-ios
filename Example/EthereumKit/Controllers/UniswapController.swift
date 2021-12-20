@@ -34,6 +34,7 @@ class UniswapController: UIViewController {
 
     private let gasPrice = 20_000_000_000
 
+    private let signerKit = Manager.shared.evmSignerKit!
     private let ethereumKit = Manager.shared.evmKit!
     private let fromAdapter: IAdapter = Manager.shared.erc20Adapters[0]
     private let toAdapter: IAdapter = Manager.shared.ethereumAdapter
@@ -425,7 +426,7 @@ class UniswapController: UIViewController {
         ethereumKit.estimateGas(transactionData: transactionData, gasPrice: gasPrice)
                 .flatMap { gasLimit -> Single<FullTransaction> in
                     print("GAS LIMIT SUCCESS: \(gasLimit)")
-                    return self.ethereumKit.sendSingle(transactionData: transactionData, gasPrice: gasPrice, gasLimit: gasLimit)
+                    return self.signerKit.sendSingle(transactionData: transactionData, gasPrice: gasPrice, gasLimit: gasLimit)
                 }
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
@@ -449,7 +450,7 @@ class UniswapController: UIViewController {
                             gasPrice: gasPrice
                     ).flatMap { [unowned self] gasLimit -> Single<FullTransaction> in
                         print("GAS LIMIT SUCCESS: \(gasLimit)")
-                        return ethereumKit.sendSingle(
+                        return signerKit.sendSingle(
                                 transactionData: transactionData,
                                 gasPrice: gasPrice,
                                 gasLimit: gasLimit)
