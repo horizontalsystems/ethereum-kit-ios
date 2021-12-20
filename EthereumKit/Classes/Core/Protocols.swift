@@ -15,7 +15,7 @@ protocol IBlockchain {
     var accountState: AccountState? { get }
 
     func nonceSingle(defaultBlockParameter: DefaultBlockParameter) -> Single<Int>
-    func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction>
+    func sendSingle(rawTransaction: RawTransaction, signature: Signature) -> Single<Transaction>
 
     func transactionReceiptSingle(transactionHash: Data) -> Single<RpcTransactionReceipt?>
     func transactionSingle(transactionHash: Data) -> Single<RpcTransaction?>

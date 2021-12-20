@@ -80,18 +80,14 @@ extension SpvBlockchain: IBlockchain {
         return Single.just(nonce)
     }
 
-    func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction> {
+    func sendSingle(rawTransaction: RawTransaction, signature: Signature) -> Single<Transaction> {
         let sendId = RandomHelper.shared.randomInt
 
-        do {
-            try transactionSender.send(sendId: sendId, taskPerformer: peer, rawTransaction: rawTransaction)
+        transactionSender.send(sendId: sendId, taskPerformer: peer, rawTransaction: rawTransaction, signature: signature)
 
-            let subject = PublishSubject<Transaction>()
-            sendingTransactions[sendId] = subject
-            return subject.asSingle()
-        } catch {
-            return Single.error(error)
-        }
+        let subject = PublishSubject<Transaction>()
+        sendingTransactions[sendId] = subject
+        return subject.asSingle()
     }
 
     func getLogsSingle(address: Address?, topics: [Any?], fromBlock: Int, toBlock: Int, pullTimestamps: Bool) -> Single<[TransactionLog]> {
@@ -189,7 +185,7 @@ extension SpvBlockchain: ITransactionSenderDelegate {
 
 extension SpvBlockchain {
 
-    static func instance(storage: ISpvStorage, nodeManager: NodeManager, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, network: INetwork, address: Address, nodeKey: ECKey, logger: Logger? = nil) -> SpvBlockchain {
+    static func instance(storage: ISpvStorage, nodeManager: NodeManager, transactionBuilder: TransactionBuilder, network: INetwork, address: Address, nodeKey: ECKey, logger: Logger? = nil) -> SpvBlockchain {
         let validator = BlockValidator()
         let blockHelper = BlockHelper(storage: storage, network: network)
 
@@ -200,7 +196,7 @@ extension SpvBlockchain {
 
         let blockSyncer = BlockSyncer(storage: storage, blockHelper: blockHelper, validator: validator, logger: logger)
         let accountStateSyncer = AccountStateSyncer(storage: storage, address: address)
-        let transactionSender = TransactionSender(storage: storage, transactionBuilder: transactionBuilder, transactionSigner: transactionSigner)
+        let transactionSender = TransactionSender(storage: storage, transactionBuilder: transactionBuilder)
 
         let spvBlockchain = SpvBlockchain(peer: peer, blockSyncer: blockSyncer, nodeManager: nodeManager, accountStateSyncer: accountStateSyncer, transactionSender: transactionSender, storage: storage, network: network, logger: logger)
 

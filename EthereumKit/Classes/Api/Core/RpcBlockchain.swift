@@ -10,7 +10,6 @@ class RpcBlockchain {
     private let address: Address
     private let storage: IApiStorage
     private let syncer: IRpcSyncer
-    private let transactionSigner: TransactionSigner
     private let transactionBuilder: TransactionBuilder
     private var logger: Logger?
 
@@ -24,11 +23,10 @@ class RpcBlockchain {
 
     private var synced = false
 
-    init(address: Address, storage: IApiStorage, syncer: IRpcSyncer, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, logger: Logger? = nil) {
+    init(address: Address, storage: IApiStorage, syncer: IRpcSyncer, transactionBuilder: TransactionBuilder, logger: Logger? = nil) {
         self.address = address
         self.storage = storage
         self.syncer = syncer
-        self.transactionSigner = transactionSigner
         self.transactionBuilder = transactionBuilder
         self.logger = logger
     }
@@ -145,19 +143,14 @@ extension RpcBlockchain: IBlockchain {
         syncer.single(rpc: GetTransactionCountJsonRpc(address: address, defaultBlockParameter: defaultBlockParameter))
     }
 
-    func sendSingle(rawTransaction: RawTransaction) -> Single<Transaction> {
-        do {
-            let signature = try transactionSigner.signature(rawTransaction: rawTransaction)
-            let transaction = transactionBuilder.transaction(rawTransaction: rawTransaction, signature: signature)
-            let encoded = transactionBuilder.encode(rawTransaction: rawTransaction, signature: signature)
+    func sendSingle(rawTransaction: RawTransaction, signature: Signature) -> Single<Transaction> {
+        let transaction = transactionBuilder.transaction(rawTransaction: rawTransaction, signature: signature)
+        let encoded = transactionBuilder.encode(rawTransaction: rawTransaction, signature: signature)
 
-            return syncer.single(rpc: SendRawTransactionJsonRpc(signedTransaction: encoded))
-                    .map { _ in
-                        transaction
-                    }
-        } catch {
-            return Single.error(error)
-        }
+        return syncer.single(rpc: SendRawTransactionJsonRpc(signedTransaction: encoded))
+                .map { _ in
+                    transaction
+                }
     }
 
     func transactionReceiptSingle(transactionHash: Data) -> Single<RpcTransactionReceipt?> {
@@ -188,8 +181,8 @@ extension RpcBlockchain: IBlockchain {
 
 extension RpcBlockchain {
 
-    static func instance(address: Address, storage: IApiStorage, syncer: IRpcSyncer, transactionSigner: TransactionSigner, transactionBuilder: TransactionBuilder, logger: Logger? = nil) -> RpcBlockchain {
-        let blockchain = RpcBlockchain(address: address, storage: storage, syncer: syncer, transactionSigner: transactionSigner, transactionBuilder: transactionBuilder, logger: logger)
+    static func instance(address: Address, storage: IApiStorage, syncer: IRpcSyncer, transactionBuilder: TransactionBuilder, logger: Logger? = nil) -> RpcBlockchain {
+        let blockchain = RpcBlockchain(address: address, storage: storage, syncer: syncer, transactionBuilder: transactionBuilder, logger: logger)
         syncer.delegate = blockchain
         return blockchain
     }

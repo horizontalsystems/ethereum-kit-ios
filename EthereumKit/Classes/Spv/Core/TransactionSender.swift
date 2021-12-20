@@ -10,17 +10,13 @@ class TransactionSender {
 
     private let storage: ISpvStorage
     private let transactionBuilder: TransactionBuilder
-    private let transactionSigner: TransactionSigner
 
-    init(storage: ISpvStorage, transactionBuilder: TransactionBuilder, transactionSigner: TransactionSigner) {
+    init(storage: ISpvStorage, transactionBuilder: TransactionBuilder) {
         self.storage = storage
         self.transactionBuilder = transactionBuilder
-        self.transactionSigner = transactionSigner
     }
 
-    func send(sendId: Int, taskPerformer: ITaskPerformer, rawTransaction: RawTransaction) throws {
-        let signature = try transactionSigner.signature(rawTransaction: rawTransaction)
-
+    func send(sendId: Int, taskPerformer: ITaskPerformer, rawTransaction: RawTransaction, signature: Signature) {
         taskPerformer.add(task: SendTransactionTask(sendId: sendId, rawTransaction: rawTransaction, signature: signature))
     }
 
