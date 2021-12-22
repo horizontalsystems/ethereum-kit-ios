@@ -5,7 +5,7 @@ import BigInt
 
 class Erc20BaseAdapter: IAdapter {
     let gasPrice = 20_000_000_000
-    private let ethereumKit: EthereumKit.Kit
+    let ethereumKit: EthereumKit.Kit
     let erc20Kit: Erc20Kit.Kit
 
     let token: Erc20Token

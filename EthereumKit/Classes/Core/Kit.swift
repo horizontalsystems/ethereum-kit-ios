@@ -139,7 +139,11 @@ extension Kit {
         transactionManager.transactions(byHashes: hashes)
     }
 
-    func rawTransaction(address: Address, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int, nonce: Int? = nil) -> Single<RawTransaction> {
+    public func rawTransaction(transactionData: TransactionData, gasPrice: Int, gasLimit: Int, nonce: Int? = nil) -> Single<RawTransaction> {
+        rawTransaction(address: transactionData.to, value: transactionData.value, transactionInput: transactionData.input, gasPrice: gasPrice, gasLimit: gasLimit)
+    }
+
+    public func rawTransaction(address: Address, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int, nonce: Int? = nil) -> Single<RawTransaction> {
         var syncNonceSingle = blockchain.nonceSingle(defaultBlockParameter: .pending)
 
         if let nonce = nonce {
@@ -151,7 +155,7 @@ extension Kit {
         }
     }
 
-    func sendSingle(rawTransaction: RawTransaction, signature: Signature) -> Single<FullTransaction> {
+    public func sendSingle(rawTransaction: RawTransaction, signature: Signature) -> Single<FullTransaction> {
         blockchain.sendSingle(rawTransaction: rawTransaction, signature: signature)
                 .do(onSuccess: { [weak self] transaction in
                     self?.transactionManager.handle(sentTransaction: transaction)

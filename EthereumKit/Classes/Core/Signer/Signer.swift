@@ -5,34 +5,19 @@ import OpenSslKit
 import Secp256k1Kit
 import HsToolKit
 
-public class SignerKit {
-    public let kit: Kit
+public class Signer {
     private let transactionBuilder: TransactionBuilder
     private let transactionSigner: TransactionSigner
     private let ethSigner: EthSigner
 
-    init(kit: Kit, transactionBuilder: TransactionBuilder, transactionSigner: TransactionSigner, ethSigner: EthSigner) {
-        self.kit = kit
+    init(transactionBuilder: TransactionBuilder, transactionSigner: TransactionSigner, ethSigner: EthSigner) {
         self.transactionBuilder = transactionBuilder
         self.transactionSigner = transactionSigner
         self.ethSigner = ethSigner
     }
 
-    public func sendSingle(address: Address, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int, nonce: Int? = nil) -> Single<FullTransaction> {
-        kit.rawTransaction(address: address, value: value, transactionInput: transactionInput, gasPrice: gasPrice, gasLimit: gasLimit, nonce: nonce)
-                .flatMap { [weak self] rawTransaction -> Single<FullTransaction> in
-                    guard let strongSelf = self else {
-                        return Single.error(SendError.weakReferenceError)
-                    }
-
-                    let signature = try strongSelf.transactionSigner.signature(rawTransaction: rawTransaction)
-
-                    return strongSelf.kit.sendSingle(rawTransaction: rawTransaction, signature: signature)
-                }
-    }
-
-    public func sendSingle(transactionData: TransactionData, gasPrice: Int, gasLimit: Int, nonce: Int? = nil) -> Single<FullTransaction> {
-        sendSingle(address: transactionData.to, value: transactionData.value, transactionInput: transactionData.input, gasPrice: gasPrice, gasLimit: gasLimit, nonce: nonce)
+    public func signature(rawTransaction: RawTransaction) throws -> Signature {
+        try transactionSigner.signature(rawTransaction: rawTransaction)
     }
 
     public func signedTransaction(address: Address, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int, nonce: Int) throws -> Data {
@@ -55,19 +40,17 @@ public class SignerKit {
 
 }
 
-extension SignerKit {
+extension Signer {
 
-    public static func instance(seed: Data, networkType: NetworkType, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> SignerKit {
+    public static func instance(seed: Data, networkType: NetworkType) throws -> Signer {
         let privKey = try privateKey(seed: seed, networkType: networkType)
         let address = ethereumAddress(privateKey: privKey)
-
-        let kit = try Kit.instance(address: address, networkType: networkType, syncSource: syncSource, etherscanApiKey: etherscanApiKey, walletId: walletId, minLogLevel: minLogLevel)
 
         let transactionSigner = TransactionSigner(chainId: networkType.chainId, privateKey: privKey.raw)
         let transactionBuilder = TransactionBuilder(address: address)
         let ethSigner = EthSigner(privateKey: privKey.raw, cryptoUtils: CryptoUtils.shared)
 
-        return SignerKit(kit: kit, transactionBuilder: transactionBuilder, transactionSigner: transactionSigner, ethSigner: ethSigner)
+        return Signer(transactionBuilder: transactionBuilder, transactionSigner: transactionSigner, ethSigner: ethSigner)
     }
 
     public static func address(seed: Data, networkType: NetworkType = .ethMainNet) throws -> Address {
@@ -100,7 +83,7 @@ extension SignerKit {
 
 }
 
-extension SignerKit {
+extension Signer {
 
     public enum SendError: Error {
         case weakReferenceError

@@ -4,11 +4,11 @@ import RxSwift
 import BigInt
 
 class EthereumAdapter: EthereumBaseAdapter {
-    let evmSignerKit: SignerKit
+    let signer: Signer
     private let decimal = 18
 
-    init(ethereumSignerKit: SignerKit, ethereumKit: Kit) {
-        evmSignerKit = ethereumSignerKit
+    init(signer: Signer, ethereumKit: Kit) {
+        self.signer = signer
 
         super.init(ethereumKit: ethereumKit)
     }
@@ -17,7 +17,17 @@ class EthereumAdapter: EthereumBaseAdapter {
         let amount = BigUInt(amount.roundedString(decimal: decimal))!
         let transactionData = evmKit.transferTransactionData(to: to, value: amount)
 
-        return evmSignerKit.sendSingle(transactionData: transactionData, gasPrice: 50_000_000_000, gasLimit: gasLimit).map { _ in ()}
+        return evmKit.rawTransaction(transactionData: transactionData, gasPrice: 50_000_000_000, gasLimit: gasLimit)
+                .flatMap { [weak self] rawTransaction in
+                    guard let strongSelf = self else {
+                        throw Signer.SendError.weakReferenceError
+                    }
+
+                    let signature = try strongSelf.signer.signature(rawTransaction: rawTransaction)
+
+                    return strongSelf.evmKit.sendSingle(rawTransaction: rawTransaction, signature: signature)
+                }
+                .map { (tx: FullTransaction) in () }
     }
 
 }

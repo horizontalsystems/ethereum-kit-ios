@@ -1,6 +1,6 @@
 import BigInt
 
-class Signature {
+public class Signature {
     let v: Int
     let r: BigUInt
     let s: BigUInt
