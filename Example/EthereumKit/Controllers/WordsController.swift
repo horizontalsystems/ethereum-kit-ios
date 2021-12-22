@@ -80,7 +80,7 @@ class WordsController: UIViewController {
         addressFieldView.cornerRadius = 4
         addressFieldView.borderWidth = 1
         addressFieldView.borderColor = .gray
-//        addressFieldView.inset = .gray
+        addressFieldView.text = "0x2819c144d5946404c0516b6f817a960db37d4929"
 
         let watchButton = UIButton()
         view.addSubview(watchButton)

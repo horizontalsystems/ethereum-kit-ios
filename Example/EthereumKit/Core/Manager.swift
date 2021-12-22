@@ -11,7 +11,7 @@ class Manager {
     private let keyWords = "mnemonic_words"
     private let keyAddress = "address"
 
-    var evmSignerKit: EthereumKit.SignerKit!
+    var signer: EthereumKit.Signer!
     var evmKit: EthereumKit.Kit!
     var uniswapKit: UniswapKit.Kit?
     var oneInchKit: OneInchKit.Kit?
@@ -43,7 +43,7 @@ class Manager {
     func logout() {
         clearWords()
 
-        evmSignerKit = nil
+        signer = nil
         evmKit = nil
         uniswapKit = nil
         oneInchKit = nil
@@ -65,28 +65,31 @@ class Manager {
 
         let seed = Mnemonic.seed(mnemonic: words)
 
-        let evmSignerKit = try! SignerKit.instance(
+        let signer = try! Signer.instance(
                 seed: seed,
+                networkType: configuration.networkType
+        )
+        let evmKit = try! EthereumKit.Kit.instance(
+                address: Signer.address(seed: seed, networkType: configuration.networkType),
                 networkType: configuration.networkType,
                 syncSource: syncSource,
                 etherscanApiKey: configuration.etherscanApiKey,
                 walletId: "walletId",
                 minLogLevel: configuration.minLogLevel
         )
-        let evmKit = evmSignerKit.kit
 
         uniswapKit = UniswapKit.Kit.instance(evmKit: evmKit)
         oneInchKit = OneInchKit.Kit.instance(evmKit: evmKit)
 
-        ethereumAdapter = EthereumAdapter(ethereumSignerKit: evmSignerKit, ethereumKit: evmKit)
+        ethereumAdapter = EthereumAdapter(signer: signer, ethereumKit: evmKit)
 
         for token in configuration.erc20Tokens {
-            let adapter = Erc20Adapter(signerKit: evmSignerKit, ethereumKit: evmKit, token: token)
+            let adapter = Erc20Adapter(signer: signer, ethereumKit: evmKit, token: token)
             erc20Adapters.append(adapter)
             erc20Tokens[token.contractAddress.eip55] = token.coin
         }
 
-        self.evmSignerKit = evmSignerKit
+        self.signer = signer
         self.evmKit = evmKit
 
         Erc20Kit.Kit.addDecorator(to: evmKit)
