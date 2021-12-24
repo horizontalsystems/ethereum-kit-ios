@@ -131,6 +131,9 @@ extension OneInchTransactionDecorator: IDecorator {
                     recipient: swapDescription.dstReceiver
             )
 
+        case let method as OneInchV4Method:
+            return OneInchMethodDecoration()
+
         default: return nil
         }
     }

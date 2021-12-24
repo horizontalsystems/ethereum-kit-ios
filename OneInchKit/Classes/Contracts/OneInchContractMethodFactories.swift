@@ -7,7 +7,8 @@ class OneInchContractMethodFactories: ContractMethodFactories {
         super.init()
         register(factories: [
             UnoswapMethodFactory(),
-            SwapMethodFactory()
+            SwapMethodFactory(),
+            OneInchV4MethodsFactory()
         ])
     }
 
