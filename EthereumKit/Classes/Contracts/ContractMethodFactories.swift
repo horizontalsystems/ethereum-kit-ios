@@ -9,7 +9,13 @@ open class ContractMethodFactories {
 
     public func register(factories: [IContractMethodFactory]) {
         for factory in factories {
-            self.factories[factory.methodId] = factory
+            if let methodsFactory = factory as? IContractMethodsFactory {
+                for methodId in methodsFactory.methodIds {
+                    self.factories[methodId] = factory
+                }
+            } else {
+                self.factories[factory.methodId] = factory
+            }
         }
     }
 
