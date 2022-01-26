@@ -51,7 +51,10 @@ class DecorationManager {
 
         if fullTransaction.mainDecoration == nil {
             let methodId = Data(fullTransaction.transaction.input.prefix(4))
-            let inputArguments = Data(fullTransaction.transaction.input.suffix(from: 4))
+            var inputArguments = Data()
+            if fullTransaction.transaction.input.count > 4 {
+                inputArguments = Data(fullTransaction.transaction.input.suffix(from: 4))
+            }
 
             fullTransaction.mainDecoration = UnknownMethodDecoration(methodId: methodId, inputArguments: inputArguments)
         }

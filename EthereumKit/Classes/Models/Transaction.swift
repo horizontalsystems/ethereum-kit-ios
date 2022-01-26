@@ -14,7 +14,7 @@ public class Transaction: Record {
     public let hash: Data
     public let nonce: Int
     public let from: Address
-    public var to: Address?
+    public let to: Address?
     public let value: BigUInt
     public let gasPrice: Int
     public let gasLimit: Int
