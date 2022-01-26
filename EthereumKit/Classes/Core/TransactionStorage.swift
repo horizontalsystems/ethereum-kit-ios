@@ -243,6 +243,36 @@ class TransactionStorage {
             try db.drop(table: tmpTableName)
         }
 
+        migrator.registerMigration("makeTransactionsToFieldNullable") { db in
+            let internalTransactions = try InternalTransaction.fetchAll(db)
+            let transactions = try Transaction.fetchAll(db)
+
+            try InternalTransaction.deleteAll(db)
+            try db.drop(table: Transaction.databaseTableName)
+
+            try db.create(table: Transaction.databaseTableName) { t in
+                t.column(Transaction.Columns.hash.name, .text).notNull()
+                t.column(Transaction.Columns.nonce.name, .integer).notNull()
+                t.column(Transaction.Columns.input.name, .text).notNull()
+                t.column(Transaction.Columns.from.name, .text).notNull()
+                t.column(Transaction.Columns.to.name, .text)
+                t.column(Transaction.Columns.value.name, .text).notNull()
+                t.column(Transaction.Columns.gasLimit.name, .integer).notNull()
+                t.column(Transaction.Columns.gasPrice.name, .integer).notNull()
+                t.column(Transaction.Columns.timestamp.name, .integer).notNull()
+
+                t.primaryKey([Transaction.Columns.hash.name], onConflict: .replace)
+            }
+
+            for tx in transactions {
+                try tx.insert(db)
+            }
+
+            for tx in internalTransactions {
+                try tx.insert(db)
+            }
+        }
+
         return migrator
     }
 

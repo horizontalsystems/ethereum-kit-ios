@@ -110,13 +110,14 @@ class EtherscanTransactionProvider {
                 guard let hash = data["hash"].flatMap({ Data(hex: $0) }) else { return nil }
                 guard let nonce = data["nonce"].flatMap({ Int($0) }) else { return nil }
                 guard let from = data["from"].flatMap({ Data(hex: $0) }).map({ Address(raw: $0) }) else { return nil }
-                guard let to = data["to"].flatMap({ Data(hex: $0) }).map({ Address(raw: $0) }) else { return nil }
+                guard let toData = data["to"].flatMap({ Data(hex: $0) }) else { return nil }
                 guard let value = data["value"].flatMap({ BigUInt($0) }) else { return nil }
                 guard let gasLimit = data["gas"].flatMap({ Int($0) }) else { return nil }
                 guard let gasPrice = data["gasPrice"].flatMap({ Int($0) }) else { return nil }
                 guard let input = data["input"].flatMap({ Data(hex: $0) }) else { return nil }
                 guard let timestamp = data["timeStamp"].flatMap({ Int($0) }) else { return nil }
 
+                let to: Address? = toData.count > 0 ? Address(raw: toData) : nil
                 let transaction = EtherscanTransaction(hash: hash, nonce: nonce, input: input, from: from, to: to, value: value, gasLimit: gasLimit, gasPrice: gasPrice, timestamp: timestamp)
 
                 transaction.blockHash = data["blockHash"].flatMap({ Data(hex: $0) })

@@ -5,7 +5,7 @@ class EtherscanTransaction {
     public let nonce: Int
     public let input: Data
     public let from: Address
-    public let to: Address
+    public let to: Address?
     public let value: BigUInt
     public let gasLimit: Int
     public let gasPrice: Int
@@ -19,7 +19,7 @@ class EtherscanTransaction {
     public var transactionIndex: Int?
     public var txReceiptStatus: Int?
 
-    public init(hash: Data, nonce: Int, input: Data = Data(), from: Address, to: Address, value: BigUInt, gasLimit: Int, gasPrice: Int, timestamp: Int = Int(Date().timeIntervalSince1970)) {
+    public init(hash: Data, nonce: Int, input: Data = Data(), from: Address, to: Address?, value: BigUInt, gasLimit: Int, gasPrice: Int, timestamp: Int = Int(Date().timeIntervalSince1970)) {
         self.hash = hash
         self.nonce = nonce
         self.input = input
