@@ -20,7 +20,7 @@ public class Signer {
         try transactionSigner.signature(rawTransaction: rawTransaction)
     }
 
-    public func signedTransaction(address: Address, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int, nonce: Int) throws -> Data {
+    public func signedTransaction(address: Address, value: BigUInt, transactionInput: Data = Data(), gasPrice: GasPrice, gasLimit: Int, nonce: Int) throws -> Data {
         let rawTransaction = RawTransaction(gasPrice: gasPrice, gasLimit: gasLimit, to: address, value: value, data: transactionInput, nonce: nonce)
         let signature = try transactionSigner.signature(rawTransaction: rawTransaction)
         return transactionBuilder.encode(rawTransaction: rawTransaction, signature: signature)
@@ -47,7 +47,7 @@ extension Signer {
         let address = ethereumAddress(privateKey: privKey)
 
         let transactionSigner = TransactionSigner(chainId: networkType.chainId, privateKey: privKey.raw)
-        let transactionBuilder = TransactionBuilder(address: address)
+        let transactionBuilder = TransactionBuilder(chainId: networkType.chainId, address: address)
         let ethSigner = EthSigner(privateKey: privKey.raw, cryptoUtils: CryptoUtils.shared)
 
         return Signer(transactionBuilder: transactionBuilder, transactionSigner: transactionSigner, ethSigner: ethSigner)

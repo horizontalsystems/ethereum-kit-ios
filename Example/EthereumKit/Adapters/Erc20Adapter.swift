@@ -22,7 +22,7 @@ class Erc20Adapter: Erc20BaseAdapter {
                 }
     }
 
-    override func sendSingle(to: Address, amount: Decimal, gasLimit: Int) -> Single<Void> {
+    override func sendSingle(to: Address, amount: Decimal, gasLimit: Int, gasPrice: GasPrice) -> Single<Void> {
         let value = BigUInt(amount.roundedString(decimal: token.decimal))!
         let transactionData = erc20Kit.transferTransactionData(to: to, value: value)
 

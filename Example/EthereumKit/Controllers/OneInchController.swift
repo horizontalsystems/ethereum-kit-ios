@@ -30,7 +30,7 @@ class OneInchController: UIViewController {
 
     private var allowance: Decimal?
 
-    private let gasPrice = 40_000_000_000
+    private let gasPrice = GasPrice.legacy(gasPrice: 40_000_000_000)
 
     private let signer = Manager.shared.signer
     private let ethereumKit = Manager.shared.evmKit!
@@ -392,7 +392,7 @@ class OneInchController: UIViewController {
             return
         }
 
-        let gasPrice = self.gasPrice
+        let gasPrice = gasPrice
         let spenderAddress = swapAdapter.routerAddress
 
         let transactionData = adapter.erc20Kit.approveTransactionData(spenderAddress: spenderAddress, amount: amount)

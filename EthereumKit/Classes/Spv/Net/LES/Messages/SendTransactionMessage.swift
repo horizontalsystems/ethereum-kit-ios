@@ -15,7 +15,7 @@ class SendTransactionMessage: IOutMessage {
             [
                 [
                     rawTransaction.nonce,
-                    rawTransaction.gasPrice,
+                    rawTransaction.gasPrice, // TODO: Use 1559 RLP encoding
                     rawTransaction.gasLimit,
                     rawTransaction.to.raw,
                     rawTransaction.value,

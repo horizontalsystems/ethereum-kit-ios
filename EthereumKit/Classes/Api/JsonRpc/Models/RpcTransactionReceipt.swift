@@ -8,6 +8,7 @@ public class RpcTransactionReceipt: ImmutableMappable {
     public let blockNumber: Int
     public let from: Address
     public var to: Address?
+    public let effectiveGasPrice: Int
     public let cumulativeGasUsed: Int
     public let gasUsed: Int
     public var contractAddress: Data?
@@ -24,6 +25,7 @@ public class RpcTransactionReceipt: ImmutableMappable {
         blockNumber = try map.value("blockNumber", using: HexIntTransform())
         from = try map.value("from", using: HexAddressTransform())
         to = try? map.value("to", using: HexAddressTransform())
+        effectiveGasPrice = try map.value("effectiveGasPrice", using: HexIntTransform())
         cumulativeGasUsed = try map.value("cumulativeGasUsed", using: HexIntTransform())
         gasUsed = try map.value("gasUsed", using: HexIntTransform())
         contractAddress = try? map.value("contractAddress", using: HexDataTransform())
@@ -41,6 +43,7 @@ public class RpcTransactionReceipt: ImmutableMappable {
         blockNumber = record.blockNumber
         from = record.from
         to = record.to
+        effectiveGasPrice = record.effectiveGasPrice
         cumulativeGasUsed = record.cumulativeGasUsed
         gasUsed = record.gasUsed
         contractAddress = record.contractAddress

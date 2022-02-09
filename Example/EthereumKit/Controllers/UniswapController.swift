@@ -32,7 +32,7 @@ class UniswapController: UIViewController {
     private var tradeData: TradeData?
     private var allowance: Decimal?
 
-    private let gasPrice = 20_000_000_000
+    private let gasPrice = GasPrice.legacy(gasPrice: 20_000_000_000)
 
     private let signer = Manager.shared.signer!
     private let ethereumKit = Manager.shared.evmKit!
@@ -418,7 +418,7 @@ class UniswapController: UIViewController {
             return
         }
 
-        let gasPrice = self.gasPrice
+        let gasPrice = gasPrice
         let spenderAddress = uniswapKit.routerAddress
 
         let transactionData = adapter.erc20Kit.approveTransactionData(spenderAddress: spenderAddress, amount: amount)

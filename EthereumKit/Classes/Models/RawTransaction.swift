@@ -1,14 +1,14 @@
 import BigInt
 
 public class RawTransaction {
-    let gasPrice: Int
+    let gasPrice: GasPrice
     let gasLimit: Int
     let to: Address
     let value: BigUInt
     let data: Data
     let nonce: Int
 
-    init(gasPrice: Int, gasLimit: Int, to: Address, value: BigUInt, data: Data, nonce: Int) {
+    init(gasPrice: GasPrice, gasLimit: Int, to: Address, value: BigUInt, data: Data, nonce: Int) {
         self.gasPrice = gasPrice
         self.gasLimit = gasLimit
         self.to = to

@@ -32,4 +32,10 @@ public enum NetworkType {
         }
     }
 
+    public var isEIP1559Supported: Bool {
+        switch self {
+        case .ethMainNet, .ropsten, .rinkeby, .goerli, .kovan: return true
+        case .bscMainNet: return false
+        }
+    }
 }

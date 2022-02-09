@@ -95,6 +95,8 @@ class TransactionSyncer: AbstractTransactionSyncer {
                 value: transaction.value,
                 gasLimit: transaction.gasLimit,
                 gasPrice: transaction.gasPrice,
+                maxFeePerGas: nil,
+                maxPriorityFeePerGas: nil,
                 timestamp: timestamp
         )
 

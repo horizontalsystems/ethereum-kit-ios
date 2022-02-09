@@ -13,30 +13,13 @@ public class TransactionReceipt: Record {
     public let blockNumber: Int
     public let from: Address
     public var to: Address?
+    public let effectiveGasPrice: Int
     public let cumulativeGasUsed: Int
     public let gasUsed: Int
     public var contractAddress: Data?
     public let logsBloom: Data
     public let root: Data?
     public var status: Int?
-
-    public init(transactionHash: Data, transactionIndex: Int, blockHash: Data, blockNumber: Int, from: Address, to: Address?,
-                cumulativeGasUsed: Int, gasUsed: Int, contractAddress: Data?, logsBloom: Data, root: Data? = nil, status: Int? = nil) throws {
-        self.transactionHash = transactionHash
-        self.transactionIndex = transactionIndex
-        self.blockHash = blockHash
-        self.blockNumber = blockNumber
-        self.from = from
-        self.to = to
-        self.cumulativeGasUsed = cumulativeGasUsed
-        self.gasUsed = gasUsed
-        self.contractAddress = contractAddress
-        self.logsBloom = logsBloom
-        self.root = root
-        self.status = status
-
-        super.init()
-    }
 
     init(rpcReceipt: RpcTransactionReceipt) {
         transactionHash = rpcReceipt.transactionHash
@@ -45,6 +28,7 @@ public class TransactionReceipt: Record {
         blockNumber = rpcReceipt.blockNumber
         from = rpcReceipt.from
         to = rpcReceipt.to
+        effectiveGasPrice = rpcReceipt.effectiveGasPrice
         cumulativeGasUsed = rpcReceipt.cumulativeGasUsed
         gasUsed = rpcReceipt.gasUsed
         contractAddress = rpcReceipt.contractAddress
@@ -66,6 +50,7 @@ public class TransactionReceipt: Record {
         case blockNumber
         case from
         case to
+        case effectiveGasPrice
         case cumulativeGasUsed
         case gasUsed
         case contractAddress
@@ -81,6 +66,7 @@ public class TransactionReceipt: Record {
         blockNumber = row[Columns.blockNumber]
         from = Address(raw: row[Columns.from])
         to = row[Columns.to].map { Address(raw: $0) }
+        effectiveGasPrice = row[Columns.effectiveGasPrice]
         cumulativeGasUsed = row[Columns.cumulativeGasUsed]
         gasUsed = row[Columns.gasUsed]
         contractAddress = row[Columns.contractAddress]
@@ -98,6 +84,7 @@ public class TransactionReceipt: Record {
         container[Columns.blockNumber] = blockNumber
         container[Columns.from] = from.raw
         container[Columns.to] = to?.raw
+        container[Columns.effectiveGasPrice] = effectiveGasPrice
         container[Columns.cumulativeGasUsed] = cumulativeGasUsed
         container[Columns.gasUsed] = gasUsed
         container[Columns.contractAddress] = contractAddress
