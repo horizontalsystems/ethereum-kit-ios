@@ -169,12 +169,16 @@ extension RpcBlockchain: IBlockchain {
         syncer.single(rpc: CallJsonRpc(contractAddress: contractAddress, data: data, defaultBlockParameter: defaultBlockParameter))
     }
 
-    func estimateGas(to: Address?, amount: BigUInt?, gasLimit: Int?, gasPrice: Int?, data: Data?) -> Single<Int> {
+    func estimateGas(to: Address?, amount: BigUInt?, gasLimit: Int?, gasPrice: GasPrice, data: Data?) -> Single<Int> {
         syncer.single(rpc: EstimateGasJsonRpc(from: address, to: to, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice, data: data))
     }
 
     func getBlock(blockNumber: Int) -> Single<RpcBlock?> {
         syncer.single(rpc: GetBlockByNumberJsonRpc(number: blockNumber))
+    }
+
+    func rpcSingle<T>(rpcRequest: JsonRpc<T>) -> Single<T> {
+        syncer.single(rpc: rpcRequest)
     }
 
 }

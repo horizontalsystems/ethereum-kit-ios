@@ -273,6 +273,17 @@ class TransactionStorage {
             }
         }
 
+        migrator.registerMigration("addEip1559GasPriceFields") { db in
+            try db.alter(table: Transaction.databaseTableName) { t in
+                t.add(column: Transaction.Columns.maxFeePerGas.name, .integer)
+                t.add(column: Transaction.Columns.maxPriorityFeePerGas.name, .integer)
+            }
+
+            try db.alter(table: TransactionReceipt.databaseTableName) { t in
+                t.add(column: TransactionReceipt.Columns.effectiveGasPrice.name, .integer).notNull().defaults(to: 0)
+            }
+        }
+
         return migrator
     }
 

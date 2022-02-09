@@ -139,11 +139,11 @@ extension Kit {
         transactionManager.transactions(byHashes: hashes)
     }
 
-    public func rawTransaction(transactionData: TransactionData, gasPrice: Int, gasLimit: Int, nonce: Int? = nil) -> Single<RawTransaction> {
+    public func rawTransaction(transactionData: TransactionData, gasPrice: GasPrice, gasLimit: Int, nonce: Int? = nil) -> Single<RawTransaction> {
         rawTransaction(address: transactionData.to, value: transactionData.value, transactionInput: transactionData.input, gasPrice: gasPrice, gasLimit: gasLimit, nonce: nonce)
     }
 
-    public func rawTransaction(address: Address, value: BigUInt, transactionInput: Data = Data(), gasPrice: Int, gasLimit: Int, nonce: Int? = nil) -> Single<RawTransaction> {
+    public func rawTransaction(address: Address, value: BigUInt, transactionInput: Data = Data(), gasPrice: GasPrice, gasLimit: Int, nonce: Int? = nil) -> Single<RawTransaction> {
         var syncNonceSingle = blockchain.nonceSingle(defaultBlockParameter: .pending)
 
         if let nonce = nonce {
@@ -181,7 +181,7 @@ extension Kit {
         blockchain.call(contractAddress: contractAddress, data: data, defaultBlockParameter: defaultBlockParameter)
     }
 
-    public func estimateGas(to: Address?, amount: BigUInt, gasPrice: Int?) -> Single<Int> {
+    public func estimateGas(to: Address?, amount: BigUInt, gasPrice: GasPrice) -> Single<Int> {
         // without address - provide default gas limit
         guard let to = to else {
             return Single.just(Kit.defaultGasLimit)
@@ -193,12 +193,16 @@ extension Kit {
         return blockchain.estimateGas(to: to, amount: resolvedAmount, gasLimit: maxGasLimit, gasPrice: gasPrice, data: nil)
     }
 
-    public func estimateGas(to: Address?, amount: BigUInt?, gasPrice: Int?, data: Data?) -> Single<Int> {
+    public func estimateGas(to: Address?, amount: BigUInt?, gasPrice: GasPrice, data: Data?) -> Single<Int> {
         blockchain.estimateGas(to: to, amount: amount, gasLimit: maxGasLimit, gasPrice: gasPrice, data: data)
     }
 
-    public func estimateGas(transactionData: TransactionData, gasPrice: Int?) -> Single<Int> {
+    public func estimateGas(transactionData: TransactionData, gasPrice: GasPrice) -> Single<Int> {
         estimateGas(to: transactionData.to, amount: transactionData.value, gasPrice: gasPrice, data: transactionData.input)
+    }
+
+    func rpcSingle<T>(rpcRequest: JsonRpc<T>) -> Single<T> {
+        blockchain.rpcSingle(rpcRequest: rpcRequest)
     }
 
     public func add(transactionSyncer: ITransactionSyncer) {
@@ -309,7 +313,7 @@ extension Kit {
             syncer = ApiRpcSyncer(rpcApiProvider: apiProvider, reachabilityManager: reachabilityManager)
         }
 
-        let transactionBuilder = TransactionBuilder(address: address)
+        let transactionBuilder = TransactionBuilder(chainId: networkType.chainId, address: address)
         let etherscanService = EtherscanService(networkType: networkType, etherscanApiKey: etherscanApiKey, address: address, logger: logger)
 
         let storage: IApiStorage = try ApiStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "api-\(uniqueId)")

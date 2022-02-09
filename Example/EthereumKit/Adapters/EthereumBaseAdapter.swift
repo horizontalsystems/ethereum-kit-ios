@@ -121,7 +121,7 @@ class EthereumBaseAdapter: IAdapter {
         evmKit.transactionsObservable(tags: [[]]).map { _ in () }
     }
 
-    func sendSingle(to: Address, amount: Decimal, gasLimit: Int) -> Single<Void> {
+    func sendSingle(to address: Address, amount: Decimal, gasLimit: Int, gasPrice: GasPrice) -> Single<Void> {
         fatalError("Subclasses must override.")
 //        let amount = BigUInt(amount.roundedString(decimal: decimal))!
 //        let transactionData = evmKit.transferTransactionData(to: to, value: amount)
@@ -142,10 +142,10 @@ class EthereumBaseAdapter: IAdapter {
         evmKit.transaction(hash: hash).map { transactionRecord(fullTransaction: $0) }
     }
 
-    func estimatedGasLimit(to address: Address, value: Decimal) -> Single<Int> {
+    func estimatedGasLimit(to address: Address, value: Decimal, gasPrice: GasPrice) -> Single<Int> {
         let value = BigUInt(value.roundedString(decimal: decimal))!
 
-        return evmKit.estimateGas(to: address, amount: value, gasPrice: 50_000_000_000)
+        return evmKit.estimateGas(to: address, amount: value, gasPrice: gasPrice)
     }
 
 }

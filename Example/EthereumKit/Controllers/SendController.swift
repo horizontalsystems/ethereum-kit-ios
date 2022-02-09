@@ -5,6 +5,9 @@ import RxSwift
 class SendController: UIViewController {
     private let gasLimitPrefix = "Gas Limit: "
     private let disposeBag = DisposeBag()
+    private var feeHistoryProvider: EIP1559GasPriceProvider?
+    private var gasPrice = GasPrice.legacy(gasPrice: 50_000_000_000)
+    private var recommendedPriorityFee: Int? = nil
 
     @IBOutlet weak var addressTextField: UITextField?
     @IBOutlet weak var amountTextField: UITextField?
@@ -17,8 +20,44 @@ class SendController: UIViewController {
 
     private var estimateGasLimit: Int?
 
+    private func handle(feeHistory: FeeHistory) {
+        var recommendedBaseFee: Int? = nil
+        var recommendedPriorityFee: Int? = nil
+
+        if let baseFee = feeHistory.baseFeePerGas.last {
+            recommendedBaseFee = baseFee
+        }
+
+        var priorityFeeSum = 0
+        var priorityFeesCount = 0
+        for priorityFeeArray in feeHistory.reward {
+            if let priorityFee = priorityFeeArray.first {
+                priorityFeeSum += priorityFee
+                priorityFeesCount += 1
+            }
+        }
+
+        if priorityFeesCount > 0 {
+            recommendedPriorityFee = priorityFeeSum / feeHistory.reward.count
+        }
+
+        if let baseFee = recommendedBaseFee, let tip = recommendedPriorityFee {
+            gasPrice = .eip1559(maxFeePerGas: baseFee + tip, maxPriorityFeePerGas: tip)
+        }
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        let feeHistoryProvider = EIP1559GasPriceProvider(evmKit: Manager.shared.evmKit)
+
+        feeHistoryProvider.feeHistoryObservable(blocksCount: 2, rewardPercentile: [50])
+                .subscribe(onNext: { [weak self] history in
+                    self?.handle(feeHistory: history)
+                }, onError: { error in print("FeeHistoryError: \(error)") })
+                .disposed(by: disposeBag)
+
+        self.feeHistoryProvider = feeHistoryProvider
 
         adapters.append(Manager.shared.ethereumAdapter)
         adapters.append(contentsOf: Manager.shared.erc20Adapters)
@@ -66,7 +105,7 @@ class SendController: UIViewController {
             return
         }
 
-        currentAdapter.sendSingle(to: address, amount: amount, gasLimit: estimateGasLimit)
+        currentAdapter.sendSingle(to: address, amount: amount, gasLimit: estimateGasLimit, gasPrice: gasPrice)
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .observeOn(MainScheduler.instance)
                 .subscribe(onSuccess: { [weak self] _ in
@@ -119,7 +158,7 @@ class SendController: UIViewController {
 
         gasPriceLabel?.text = "Loading..."
 
-        currentAdapter.estimatedGasLimit(to: address, value: value)
+        currentAdapter.estimatedGasLimit(to: address, value: value, gasPrice: gasPrice)
             .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
             .observeOn(MainScheduler.instance)
             .subscribe(onSuccess: { [weak self] gasLimit in

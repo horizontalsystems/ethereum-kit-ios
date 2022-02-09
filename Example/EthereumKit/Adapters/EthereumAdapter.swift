@@ -13,11 +13,11 @@ class EthereumAdapter: EthereumBaseAdapter {
         super.init(ethereumKit: ethereumKit)
     }
 
-    override func sendSingle(to: Address, amount: Decimal, gasLimit: Int) -> Single<Void> {
+    override func sendSingle(to: Address, amount: Decimal, gasLimit: Int, gasPrice: GasPrice) -> Single<Void> {
         let amount = BigUInt(amount.roundedString(decimal: decimal))!
         let transactionData = evmKit.transferTransactionData(to: to, value: amount)
 
-        return evmKit.rawTransaction(transactionData: transactionData, gasPrice: 50_000_000_000, gasLimit: gasLimit)
+        return evmKit.rawTransaction(transactionData: transactionData, gasPrice: gasPrice, gasLimit: gasLimit)
                 .flatMap { [weak self] rawTransaction in
                     guard let strongSelf = self else {
                         throw Signer.SendError.weakReferenceError

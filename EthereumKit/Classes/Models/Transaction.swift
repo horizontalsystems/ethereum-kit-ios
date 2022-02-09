@@ -16,13 +16,15 @@ public class Transaction: Record {
     public let from: Address
     public let to: Address?
     public let value: BigUInt
-    public let gasPrice: Int
+    public var gasPrice: Int
+    public let maxFeePerGas: Int?
+    public let maxPriorityFeePerGas: Int?
     public let gasLimit: Int
     public let input: Data
 
     public var timestamp: Int
 
-    public init(hash: Data, nonce: Int, input: Data = Data(), from: Address, to: Address?, value: BigUInt, gasLimit: Int, gasPrice: Int, timestamp: Int = Int(Date().timeIntervalSince1970)) {
+    public init(hash: Data, nonce: Int, input: Data = Data(), from: Address, to: Address?, value: BigUInt, gasLimit: Int, gasPrice: Int, maxFeePerGas: Int?, maxPriorityFeePerGas: Int?, timestamp: Int = Int(Date().timeIntervalSince1970)) {
         self.hash = hash
         self.nonce = nonce
         self.input = input
@@ -31,6 +33,8 @@ public class Transaction: Record {
         self.value = value
         self.gasLimit = gasLimit
         self.gasPrice = gasPrice
+        self.maxFeePerGas = maxFeePerGas
+        self.maxPriorityFeePerGas = maxPriorityFeePerGas
         self.timestamp = timestamp
 
         super.init()
@@ -49,6 +53,8 @@ public class Transaction: Record {
         case value
         case gasLimit
         case gasPrice
+        case maxFeePerGas
+        case maxPriorityFeePerGas
         case timestamp
     }
 
@@ -61,6 +67,8 @@ public class Transaction: Record {
         value = row[Columns.value]
         gasLimit = row[Columns.gasLimit]
         gasPrice = row[Columns.gasPrice]
+        maxFeePerGas = row[Columns.maxFeePerGas]
+        maxPriorityFeePerGas = row[Columns.maxPriorityFeePerGas]
         timestamp = row[Columns.timestamp]
 
         super.init(row: row)
@@ -75,6 +83,8 @@ public class Transaction: Record {
         container[Columns.value] = value
         container[Columns.gasLimit] = gasLimit
         container[Columns.gasPrice] = gasPrice
+        container[Columns.maxFeePerGas] = maxFeePerGas
+        container[Columns.maxPriorityFeePerGas] = maxPriorityFeePerGas
         container[Columns.timestamp] = timestamp
     }
 

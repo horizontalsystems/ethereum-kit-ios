@@ -4,7 +4,6 @@ import RxSwift
 import BigInt
 
 class Erc20BaseAdapter: IAdapter {
-    let gasPrice = 20_000_000_000
     let ethereumKit: EthereumKit.Kit
     let erc20Kit: Erc20Kit.Kit
 
@@ -56,7 +55,7 @@ class Erc20BaseAdapter: IAdapter {
         )
     }
 
-    func sendSingle(to: Address, amount: Decimal, gasLimit: Int) -> Single<Void> {
+    func sendSingle(to: Address, amount: Decimal, gasLimit: Int, gasPrice: GasPrice) -> Single<Void> {
         fatalError("Subclasses must override.")
     }
 
@@ -145,7 +144,7 @@ class Erc20BaseAdapter: IAdapter {
         nil
     }
 
-    func estimatedGasLimit(to address: Address, value: Decimal) -> Single<Int> {
+    func estimatedGasLimit(to address: Address, value: Decimal, gasPrice: GasPrice) -> Single<Int> {
         let value = BigUInt(value.roundedString(decimal: token.decimal))!
         let transactionData = erc20Kit.transferTransactionData(to: address, value: value)
 
