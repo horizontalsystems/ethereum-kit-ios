@@ -8,7 +8,7 @@ class OneInchProvider {
     private let networkManager: NetworkManager
     private let networkType: NetworkType
 
-    private var url: String { "https://unstoppable.api.enterprise.1inch.exchange/v4.0/\(networkType.chainId)/" }
+    private var url: String { "https://unstoppable.api.enterprise.1inch.exchange/" }
 
     init(networkManager: NetworkManager, networkType: NetworkType) {
         self.networkManager = networkManager
@@ -49,41 +49,53 @@ extension OneInchProvider {
         }
 
         let mapper = ApproveCallDataMapper()
-        return networkManager.single(url: url + "approve/calldata", method: .get, parameters: parameters, mapper: mapper, responseCacherBehavior: .doNotCache)
+        return networkManager.single(url: url + "v4.0/\(networkType.chainId)/approve/calldata", method: .get, parameters: parameters, mapper: mapper, responseCacherBehavior: .doNotCache)
     }
 
     func approveSpenderSingle() -> Single<Spender> {
-        networkManager.single(url: url + "approve/spender", method: .get, parameters: [:], mapper: SpenderMapper(), responseCacherBehavior: .doNotCache)
+        networkManager.single(url: url + "v4.0/\(networkType.chainId)/approve/spender", method: .get, parameters: [:], mapper: SpenderMapper(), responseCacherBehavior: .doNotCache)
     }
 
     func quoteSingle(fromToken: Address,
                      toToken: Address,
                      amount: BigUInt,
                      protocols: String? = nil,
-                     gasPrice: Int? = nil,
+                     gasPrice: GasPrice? = nil,
                      complexityLevel: Int? = nil,
                      connectorTokens: String? = nil,
                      gasLimit: Int? = nil,
                      mainRouteParts: Int? = nil,
                      parts: Int? = nil) -> Single<Quote> {
 
-       let parameters = params(dictionary:
+       var parameters = params(dictionary:
        [
            "fromTokenAddress": fromToken,
            "toTokenAddress": toToken,
            "amount": amount.description,
            "protocols": protocols,
            "connectorTokens": connectorTokens,
-           "gasPrice": gasPrice,
            "complexityLevel": complexityLevel,
            "gasLimit": gasLimit,
            "mainRouteParts": mainRouteParts,
            "parts": parts,
        ])
 
+        let apiVersion: String
+        switch gasPrice {
+        case .legacy(let legacyGasPrice):
+            parameters["gasPrice"] = legacyGasPrice
+            apiVersion = "v4.0"
+        case .eip1559(let maxFeePerGas, let maxPriorityFeePerGas):
+            parameters["maxFeePerGas"] = maxFeePerGas
+            parameters["maxPriorityFeePerGas"] = maxPriorityFeePerGas
+            apiVersion = "v4.1"
+        case .none:
+            apiVersion = "v4.0"
+        }
+
         let mapper = QuoteMapper(tokenMapper: TokenMapper())
         return networkManager
-                .single(url: url + "quote", method: .get, parameters: parameters, mapper: mapper, responseCacherBehavior: .doNotCache)
+                .single(url: url + "\(apiVersion)/\(networkType.chainId)/quote", method: .get, parameters: parameters, mapper: mapper, responseCacherBehavior: .doNotCache)
                 .catchError { error in
                     if case let .invalidResponse(_, data) = (error as? NetworkManager.RequestError),
                        let dictionary = data as? [String: Any],
@@ -104,7 +116,7 @@ extension OneInchProvider {
                      slippage: Decimal,
                      protocols: String? = nil,
                      recipient: String? = nil,
-                     gasPrice: Int? = nil,
+                     gasPrice: GasPrice? = nil,
                      burnChi: Bool? = nil,
                      complexityLevel: Int? = nil,
                      connectorTokens: String? = nil,
@@ -113,7 +125,7 @@ extension OneInchProvider {
                      mainRouteParts: Int? = nil,
                      parts: Int? = nil) -> Single<Swap> {
 
-       let parameters = params(dictionary:
+       var parameters = params(dictionary:
        [
            "fromTokenAddress": fromToken,
            "toTokenAddress": toToken,
@@ -122,7 +134,6 @@ extension OneInchProvider {
            "slippage": slippage,
            "protocols": protocols,
            "destReceiver": recipient,
-           "gasPrice": gasPrice,
            "burnChi": burnChi,
            "complexityLevel": complexityLevel,
            "connectorTokens": connectorTokens,
@@ -132,11 +143,24 @@ extension OneInchProvider {
            "parts": parts,
        ])
 
+        let apiVersion: String
+        switch gasPrice {
+        case .legacy(let legacyGasPrice):
+            parameters["gasPrice"] = legacyGasPrice
+            apiVersion = "v4.0"
+        case .eip1559(let maxFeePerGas, let maxPriorityFeePerGas):
+            parameters["maxFeePerGas"] = maxFeePerGas
+            parameters["maxPriorityFeePerGas"] = maxPriorityFeePerGas
+            apiVersion = "v4.1"
+        case .none:
+            apiVersion = "v4.0"
+        }
+
         let tokenMapper = TokenMapper()
         let mapper = SwapMapper(tokenMapper: tokenMapper, swapTransactionMapper: SwapTransactionMapper(tokenMapper: tokenMapper))
 
         return networkManager
-                .single(url: url + "swap", method: .get, parameters: parameters, mapper: mapper, responseCacherBehavior: .doNotCache)
+                .single(url: url + "\(apiVersion)/\(networkType.chainId)/swap", method: .get, parameters: parameters, mapper: mapper, responseCacherBehavior: .doNotCache)
                 .catchError { error in
                     if case let .invalidResponse(_, data) = (error as? NetworkManager.RequestError),
                        let dictionary = data as? [String: Any],
