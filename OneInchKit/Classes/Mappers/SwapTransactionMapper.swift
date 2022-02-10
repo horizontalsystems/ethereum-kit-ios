@@ -24,12 +24,22 @@ struct SwapTransactionMapper: IApiMapper {
               let data = Data(hex: dataString),
               let valueSting = map["value"] as? String,
               let value = BigUInt(valueSting, radix: 10),
-              let gasPriceString = map["gasPrice"] as? String,
-              let gasPrice = Int(gasPriceString),
               let gasLimit = map["gas"] as? Int else {
 
             throw NetworkManager.RequestError.invalidResponse(statusCode: statusCode, data: data)
         }
+
+        let gasPrice: GasPrice
+
+        if let gasPriceString = map["gasPrice"] as? String, let gasPriceInt = Int(gasPriceString) {
+            gasPrice = .legacy(gasPrice: gasPriceInt)
+        } else if let maxFeePerGasString = map["maxFeePerGas"] as? String, let maxFeePerGas = Int(maxFeePerGasString),
+                  let maxPriorityFeePerGasString = map["maxPriorityFeePerGas"] as? String, let maxPriorityFeePerGas = Int(maxPriorityFeePerGasString) {
+            gasPrice = .eip1559(maxFeePerGas: maxFeePerGas, maxPriorityFeePerGas: maxPriorityFeePerGas)
+        } else {
+            throw NetworkManager.RequestError.invalidResponse(statusCode: statusCode, data: data)
+        }
+
 
         return T(from: from,
                 to: to,

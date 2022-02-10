@@ -33,7 +33,7 @@ extension Kit {
                             toToken: Address,
                             amount: BigUInt,
                             protocols: String? = nil,
-                            gasPrice: Int? = nil,
+                            gasPrice: GasPrice? = nil,
                             complexityLevel: Int? = nil,
                             connectorTokens: String? = nil,
                             gasLimit: Int? = nil,
@@ -59,7 +59,7 @@ extension Kit {
                     slippage: Decimal,
                     protocols: [String]? = nil,
                     recipient: Address? = nil,
-                    gasPrice: Int? = nil,
+                    gasPrice: GasPrice? = nil,
                     burnChi: Bool? = nil,
                     complexityLevel: Int? = nil,
                     connectorTokens: [String]? = nil,
@@ -89,11 +89,10 @@ extension Kit {
 
 extension Kit {
 
-    public static func instance(evmKit: EthereumKit.Kit) -> Kit {
-        let logger = Logger(minLogLevel: .debug)
+    public static func instance(evmKit: EthereumKit.Kit, minLogLevel: Logger.Level = .error) -> Kit {
+        let logger = Logger(minLogLevel: minLogLevel)
         let networkManager = NetworkManager(logger: logger)
         let provider = OneInchProvider(networkManager: networkManager, networkType: evmKit.networkType)
-
 
         let oneInchKit = Kit(evmKit: evmKit, provider: provider)
 

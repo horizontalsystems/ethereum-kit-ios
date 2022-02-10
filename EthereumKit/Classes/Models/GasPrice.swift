@@ -15,7 +15,7 @@ extension GasPrice: CustomStringConvertible {
     public var description: String {
         switch self {
         case .legacy(let gasPrice): return "Legacy(\(gasPrice))"
-        case  .eip1559(let maxFeePerGas, let maxPriorityFeePerGas): return "EIP1559(\(maxFeePerGas),\(maxPriorityFeePerGas)"
+        case  .eip1559(let maxFeePerGas, let maxPriorityFeePerGas): return "EIP1559(\(maxFeePerGas),\(maxPriorityFeePerGas))"
         }
     }
 

@@ -6,10 +6,10 @@ public struct SwapTransaction {
     public let to: Address
     public let data: Data
     public let value: BigUInt
-    public let gasPrice: Int
+    public let gasPrice: GasPrice
     public let gasLimit: Int
 
-    init(from: Address, to: Address, data: Data, value: BigUInt, gasPrice: Int, gasLimit: Int) {
+    init(from: Address, to: Address, data: Data, value: BigUInt, gasPrice: GasPrice, gasLimit: Int) {
         self.from = from
         self.to = to
         self.data = data
