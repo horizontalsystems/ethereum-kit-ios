@@ -33,7 +33,7 @@ extension Int {
 extension String {
 
     func removeLeadingZeros() -> String {
-        self.replacingOccurrences(of: "^0+", with: "", options: .regularExpression)
+        self == "0" ? self : self.replacingOccurrences(of: "^0+", with: "", options: .regularExpression)
     }
 
     func addHexPrefix() -> String {
