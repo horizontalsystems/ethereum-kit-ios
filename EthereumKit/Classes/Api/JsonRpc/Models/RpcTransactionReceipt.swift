@@ -25,7 +25,7 @@ public class RpcTransactionReceipt: ImmutableMappable {
         blockNumber = try map.value("blockNumber", using: HexIntTransform())
         from = try map.value("from", using: HexAddressTransform())
         to = try? map.value("to", using: HexAddressTransform())
-        effectiveGasPrice = try map.value("effectiveGasPrice", using: HexIntTransform())
+        effectiveGasPrice = (try? map.value("effectiveGasPrice", using: HexIntTransform())) ?? 0
         cumulativeGasUsed = try map.value("cumulativeGasUsed", using: HexIntTransform())
         gasUsed = try map.value("gasUsed", using: HexIntTransform())
         contractAddress = try? map.value("contractAddress", using: HexDataTransform())
