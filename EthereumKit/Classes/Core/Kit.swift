@@ -27,6 +27,7 @@ public class Kit {
     public let address: Address
 
     public let networkType: NetworkType
+    public let network: Network
     public let uniqueId: String
     public let etherscanService: EtherscanService
 
@@ -35,7 +36,7 @@ public class Kit {
 
     init(blockchain: IBlockchain, transactionManager: TransactionManager, transactionSyncManager: TransactionSyncManager, internalTransactionSyncer: TransactionInternalTransactionSyncer,
          state: EthereumKitState = EthereumKitState(),
-         address: Address, networkType: NetworkType, uniqueId: String, etherscanService: EtherscanService, decorationManager: DecorationManager, eip20Storage: Eip20Storage, logger: Logger) {
+         address: Address, networkType: NetworkType, network: Network, uniqueId: String, etherscanService: EtherscanService, decorationManager: DecorationManager, eip20Storage: Eip20Storage, logger: Logger) {
         self.blockchain = blockchain
         self.transactionManager = transactionManager
         self.transactionSyncManager = transactionSyncManager
@@ -43,6 +44,7 @@ public class Kit {
         self.state = state
         self.address = address
         self.networkType = networkType
+        self.network = network
         self.uniqueId = uniqueId
         self.etherscanService = etherscanService
         self.decorationManager = decorationManager
@@ -294,7 +296,7 @@ extension Kit {
         }
     }
 
-    public static func instance(address: Address, networkType: NetworkType, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
+    public static func instance(address: Address, networkType: NetworkType, network: Network, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
         let logger = Logger(minLogLevel: minLogLevel)
         let uniqueId = "\(walletId)-\(networkType)"
 
@@ -313,7 +315,7 @@ extension Kit {
             syncer = ApiRpcSyncer(rpcApiProvider: apiProvider, reachabilityManager: reachabilityManager)
         }
 
-        let transactionBuilder = TransactionBuilder(chainId: networkType.chainId, address: address)
+        let transactionBuilder = TransactionBuilder(network: network, address: address)
         let etherscanService = EtherscanService(networkType: networkType, etherscanApiKey: etherscanApiKey, address: address, logger: logger)
 
         let storage: IApiStorage = try ApiStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "api-\(uniqueId)")
@@ -344,7 +346,7 @@ extension Kit {
 
         let kit = Kit(
                 blockchain: blockchain, transactionManager: transactionManager, transactionSyncManager: transactionSyncManager, internalTransactionSyncer: transactionInternalTransactionSyncer,
-                address: address, networkType: networkType,
+                address: address, networkType: networkType, network: network,
                 uniqueId: uniqueId, etherscanService: etherscanService, decorationManager: decorationManager, eip20Storage: eip20Storage, logger: logger
         )
 

@@ -67,11 +67,12 @@ class Manager {
 
         let signer = try! Signer.instance(
                 seed: seed,
-                networkType: configuration.networkType
+                network: configuration.network
         )
         let evmKit = try! EthereumKit.Kit.instance(
-                address: Signer.address(seed: seed, networkType: configuration.networkType),
+                address: Signer.address(seed: seed, network: configuration.network),
                 networkType: configuration.networkType,
+                network: configuration.network,
                 syncSource: syncSource,
                 etherscanApiKey: configuration.etherscanApiKey,
                 walletId: "walletId",
@@ -122,6 +123,7 @@ class Manager {
 
         let evmKit = try! Kit.instance(address: address,
                 networkType: configuration.networkType,
+                network: configuration.network,
                 syncSource: syncSource,
                 etherscanApiKey: configuration.etherscanApiKey,
                 walletId: "walletId",

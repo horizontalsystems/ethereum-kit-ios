@@ -5,8 +5,8 @@ class TransactionBuilder {
     private let chainId: Int
     private let address: Address
 
-    init(chainId: Int, address: Address) {
-        self.chainId = chainId
+    init(network: Network, address: Address) {
+        chainId = network.chainId
         self.address = address
     }
 

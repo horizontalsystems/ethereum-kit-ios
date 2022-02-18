@@ -42,37 +42,30 @@ public class Signer {
 
 extension Signer {
 
-    public static func instance(seed: Data, networkType: NetworkType) throws -> Signer {
-        let privKey = try privateKey(seed: seed, networkType: networkType)
+    public static func instance(seed: Data, network: Network) throws -> Signer {
+        let privKey = try privateKey(seed: seed, network: network)
         let address = ethereumAddress(privateKey: privKey)
 
-        let transactionSigner = TransactionSigner(chainId: networkType.chainId, privateKey: privKey.raw)
-        let transactionBuilder = TransactionBuilder(chainId: networkType.chainId, address: address)
+        let transactionSigner = TransactionSigner(network: network, privateKey: privKey.raw)
+        let transactionBuilder = TransactionBuilder(network: network, address: address)
         let ethSigner = EthSigner(privateKey: privKey.raw, cryptoUtils: CryptoUtils.shared)
 
         return Signer(transactionBuilder: transactionBuilder, transactionSigner: transactionSigner, ethSigner: ethSigner)
     }
 
-    public static func address(seed: Data, networkType: NetworkType = .ethMainNet) throws -> Address {
-        let privKey = try privateKey(seed: seed, networkType: networkType)
+    public static func address(seed: Data, network: Network) throws -> Address {
+        let privKey = try privateKey(seed: seed, network: network)
 
         return ethereumAddress(privateKey: privKey)
     }
 
-    public static func privateKey(seed: Data, networkType: NetworkType = .ethMainNet) throws -> HDPrivateKey {
-        let wallet = hdWallet(seed: seed, networkType: networkType)
+    public static func privateKey(seed: Data, network: Network) throws -> HDPrivateKey {
+        let wallet = hdWallet(seed: seed, network: network)
         return try wallet.privateKey(account: 0, index: 0, chain: .external)
     }
 
-    private static func hdWallet(seed: Data, networkType: NetworkType) -> HDWallet {
-        let coinType: UInt32
-
-        switch networkType {
-        case .ropsten, .rinkeby, .kovan, .goerli: coinType = 1
-        default: coinType = 60
-        }
-
-        return HDWallet(seed: seed, coinType: coinType, xPrivKey: 0, xPubKey: 0)
+    private static func hdWallet(seed: Data, network: Network) -> HDWallet {
+        HDWallet(seed: seed, coinType: network.coinType, xPrivKey: 0, xPubKey: 0)
     }
 
     private static func ethereumAddress(privateKey: HDPrivateKey) -> Address {
