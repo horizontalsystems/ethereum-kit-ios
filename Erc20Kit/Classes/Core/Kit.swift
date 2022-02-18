@@ -151,7 +151,7 @@ extension Kit {
     }
 
     public static func addTransactionSyncer(to evmKit: EthereumKit.Kit) {
-        evmKit.add(transactionSyncer: Erc20TransactionSyncer(provider: evmKit.etherscanService))
+        evmKit.add(transactionSyncer: Erc20TransactionSyncer(provider: evmKit.transactionProvider))
     }
 
     public static func addDecorator(to evmKit: EthereumKit.Kit) {

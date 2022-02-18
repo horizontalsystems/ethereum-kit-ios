@@ -3,25 +3,25 @@ import BigInt
 import EthereumKit
 
 class Erc20TransactionSyncer: AbstractTransactionSyncer {
-    private let provider: EtherscanService
+    private let provider: ITransactionProvider
     private let scheduler = ConcurrentDispatchQueueScheduler(qos: .background)
 
-    init(provider: EtherscanService) {
+    init(provider: ITransactionProvider) {
         self.provider = provider
 
         super.init(id: "erc20_transaction_syncer")
     }
 
-    private func handle(transactions: [[String: String]]) {
+    private func handle(transactions: [ProviderTokenTransaction]) {
         if !transactions.isEmpty {
             var lastBlockNumber = lastSyncBlockNumber
 
-            let hashes = transactions.compactMap { data -> Data? in
-                if let blockNumber = data["blockNumber"].flatMap({ Int($0) }), blockNumber > lastBlockNumber {
+            let hashes = transactions.compactMap { transaction -> Data? in
+                if let blockNumber = transaction.blockNumber, blockNumber > lastBlockNumber {
                     lastBlockNumber = blockNumber
                 }
 
-                return data["hash"].flatMap { Data(hex: $0) }
+                return transaction.hash
             }
 
             if lastBlockNumber > lastSyncBlockNumber {

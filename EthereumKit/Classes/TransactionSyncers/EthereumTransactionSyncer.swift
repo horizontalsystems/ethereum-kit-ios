@@ -2,16 +2,16 @@ import RxSwift
 import BigInt
 
 class EthereumTransactionSyncer: AbstractTransactionSyncer {
-    private let provider: EtherscanTransactionProvider
+    private let provider: ITransactionProvider
     private let scheduler = ConcurrentDispatchQueueScheduler(qos: .background)
 
-    init(provider: EtherscanTransactionProvider) {
+    init(provider: ITransactionProvider) {
         self.provider = provider
 
         super.init(id: "ethereum_transaction_syncer")
     }
 
-    private func handle(transactions: [EtherscanTransaction]) {
+    private func handle(transactions: [ProviderTransaction]) {
         if !transactions.isEmpty {
             if let blockNumber = transactions.first?.blockNumber {
                 update(lastSyncBlockNumber: blockNumber)

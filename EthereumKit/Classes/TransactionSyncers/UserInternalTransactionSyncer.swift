@@ -2,13 +2,13 @@ import RxSwift
 import BigInt
 
 class UserInternalTransactionSyncer: AbstractTransactionSyncer {
-    private let provider: EtherscanTransactionProvider
+    private let provider: ITransactionProvider
     private let storage: ITransactionStorage
     private let scheduler = ConcurrentDispatchQueueScheduler(qos: .background)
 
     weak var listener: ITransactionSyncerListener?
 
-    init(provider: EtherscanTransactionProvider, storage: ITransactionStorage) {
+    init(provider: ITransactionProvider, storage: ITransactionStorage) {
         self.provider = provider
         self.storage = storage
 

@@ -1,6 +1,6 @@
 import BigInt
 
-class EtherscanTransaction {
+public class ProviderTransaction {
     public let hash: Data
     public let nonce: Int
     public let input: Data
@@ -31,4 +31,9 @@ class EtherscanTransaction {
         self.timestamp = timestamp
     }
 
+}
+
+public struct ProviderTokenTransaction {
+    public let hash: Data
+    public let blockNumber: Int?
 }
