@@ -6,6 +6,7 @@ class Configuration {
 
     let syncMode: SyncMode = .api
     let networkType: NetworkType = .ethMainNet
+    let network: Network = .ethereum
     let minLogLevel: Logger.Level = .debug
     let defaultsWords = "apart approve black  comfort steel spin real renew tone primary key cherry"
 
