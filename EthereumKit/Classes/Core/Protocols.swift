@@ -106,3 +106,10 @@ public protocol IDecorator {
 public protocol ITransactionWatcher {
     func needInternalTransactions(fullTransaction: FullTransaction) -> Bool
 }
+
+public protocol ITransactionProvider {
+    func transactionsSingle(startBlock: Int) -> Single<[ProviderTransaction]>
+    func internalTransactionsSingle(startBlock: Int) -> Single<[InternalTransaction]>
+    func internalTransactionsSingle(transactionHash: Data) -> Single<[InternalTransaction]>
+    func tokenTransactionsSingle(startBlock: Int) -> Single<[ProviderTokenTransaction]>
+}

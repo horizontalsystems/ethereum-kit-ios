@@ -1,13 +1,13 @@
 import RxSwift
 
 class TransactionInternalTransactionSyncer: AbstractTransactionSyncer {
-    private let provider: EtherscanTransactionProvider
+    private let provider: ITransactionProvider
     private let storage: ITransactionStorage
     private var watchers = [ITransactionWatcher]()
 
     weak var listener: ITransactionSyncerListener?
 
-    init(provider: EtherscanTransactionProvider, storage: ITransactionStorage) {
+    init(provider: ITransactionProvider, storage: ITransactionStorage) {
         self.provider = provider
         self.storage = storage
 
@@ -30,7 +30,7 @@ class TransactionInternalTransactionSyncer: AbstractTransactionSyncer {
 
         state = .syncing(progress: nil)
 
-        provider.internalTransactionsSingle(transactionHash: notSyncedTransaction)
+        provider.internalTransactionsSingle(transactionHash: notSyncedTransaction.hash)
                 .observeOn(ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(
                         onSuccess: { [weak self] internalTransactions in
