@@ -1,6 +1,6 @@
 # EthereumKit-iOS
 
-EthereumKit-iOS is a native(Swift), secure, reactive and extensible Ethereum client toolkit for iOS platform. It can be used by ETH/Erc20 wallet or by dapp client for any kind of interactions with Ethereum blockchain. 
+EthereumKit-iOS is a native(Swift), secure, reactive and extensible Ethereum client toolkit for iOS platform. It can be used by ETH/Erc20 wallet or by dapp client for any kind of interactions with Ethereum blockchain.
 
 ## Features
 
@@ -61,7 +61,7 @@ let ethereumKit = try! Kit.instance(
 
 - `.api`: Uses RPC
 - `.spv`: Ethereum light client. *Not supported currently*
-- `.geth`: Geth client. *Not supported currenly*
+- `.geth`: Geth client. *Not supported currently*
 
 ##### `networkfkType` parameter
 
@@ -190,7 +190,7 @@ uniswapKit
 
 ### Add transaction syncer
 
-Some smart contracts store some information concerning your address, which you can't retrieve in a standard way over RPC. If you have an external API to get them from, you can create a custom syncer and add it to EthereumKit. It will sync all the transactions your syncer gives. 
+Some smart contracts store some information concerning your address, which you can't retrieve in a standard way over RPC. If you have an external API to get them from, you can create a custom syncer and add it to EthereumKit. It will sync all the transactions your syncer gives.
 
 [Erc20TransactionSyncer](https://github.com/horizontalsystems/ethereum-kit-ios/blob/master/Erc20Kit/Classes/Core/Erc20TransactionSyncer.swift) is a good example of this. It gets token transfer transactions from Etherscan and feeds EthereumKit syncer with them. It is added to EthereumKit as following:
 ```swift
@@ -200,7 +200,7 @@ ethereumKit.add(syncer: transactionSyncer)
 
 ### Smart contract call
 
-In order to make a call to any smart contract, you can use `ethereumKit.sendSingle(transactionData:,gasPrice:,gasLimit:)` method. You need to create an instance of `TransactionData` object. Currently, we don't have an ABI or source code parser. Please, look in Erc20Kit.swift and UniswapKit.swift to see how `TransactionData` object is formed. 
+In order to make a call to any smart contract, you can use `ethereumKit.sendSingle(transactionData:,gasPrice:,gasLimit:)` method. You need to create an instance of `TransactionData` object. Currently, we don't have an ABI or source code parser. Please, look in Erc20Kit.swift and UniswapKit.swift to see how `TransactionData` object is formed.
 
 
 ## Prerequisites
@@ -251,7 +251,7 @@ All features of the library are used in example project. It can be referred as a
 
 * [HSHDWalletKit](https://github.com/horizontalsystems/hd-wallet-kit-ios) - HD Wallet related features, mnemonic phrase generation.
 * [OpenSslKit.swift](https://github.com/horizontalsystems/open-ssl-kit-ios) - Crypto functions required for working with blockchain.
-* [Secp256k1Kit.swift](https://github.com/horizontalsystems/secp256k1-kit-ios) - Crypto functions required for working with blockchain. 
+* [Secp256k1Kit.swift](https://github.com/horizontalsystems/secp256k1-kit-ios) - Crypto functions required for working with blockchain.
 * [HsToolKit.swift](https://github.com/horizontalsystems/hs-tool-kit-ios) - Helpers library from HorizontalSystems
 * RxSwift
 * BigInt

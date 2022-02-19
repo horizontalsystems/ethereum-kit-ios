@@ -113,7 +113,7 @@ class UdpClientTests: QuickSpec {
             }
         }
         describe("#send(data)") {
-            it("throws error when cant create address") {
+            it("throws error when can't create address") {
                 stub(mockSocket) { mock in
                     when(mock.createAddress(host: node.host, port: Int32(node.discoveryPort))).thenReturn(nil)
                 }
