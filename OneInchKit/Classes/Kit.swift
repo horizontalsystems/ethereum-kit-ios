@@ -4,12 +4,13 @@ import BigInt
 import HsToolKit
 
 public class Kit {
-    private let disposeBag = DisposeBag()
+    public let routerAddress: Address
 
     private let evmKit: EthereumKit.Kit
     private let provider: OneInchProvider
 
-    init(evmKit: EthereumKit.Kit, provider: OneInchProvider) {
+    init(routerAddress: Address, evmKit: EthereumKit.Kit, provider: OneInchProvider) {
+        self.routerAddress = routerAddress
         self.evmKit = evmKit
         self.provider = provider
     }
@@ -17,13 +18,6 @@ public class Kit {
 }
 
 extension Kit {
-
-    public var routerAddress: Address {
-        switch evmKit.networkType {
-        case .ethMainNet, .bscMainNet: return try! Address(hex: "0x1111111254fb6c44bac0bed2854e76f90643097d")
-        default: return try! Address(hex: "0x11111112542d85b3ef69ae05771c2dccff4faa26") // todo: testnet
-        }
-    }
 
     public func approveCallDataSingle(tokenAddress: Address, amount: BigUInt?, infinity: Bool? = nil) -> Single<ApproveCallData> {
         provider.approveCallDataSingle(tokenAddress: tokenAddress, amount: amount, infinity: infinity)
@@ -89,12 +83,15 @@ extension Kit {
 
 extension Kit {
 
-    public static func instance(evmKit: EthereumKit.Kit, minLogLevel: Logger.Level = .error) -> Kit {
+    public static func instance(evmKit: EthereumKit.Kit, minLogLevel: Logger.Level = .error) throws -> Kit {
         let logger = Logger(minLogLevel: minLogLevel)
         let networkManager = NetworkManager(logger: logger)
-        let provider = OneInchProvider(networkManager: networkManager, networkType: evmKit.networkType)
 
-        let oneInchKit = Kit(evmKit: evmKit, provider: provider)
+        let oneInchKit = Kit(
+                routerAddress: try routerAddress(network: evmKit.network),
+                evmKit: evmKit,
+                provider: OneInchProvider(networkManager: networkManager, network: evmKit.network)
+        )
 
         return oneInchKit
     }
@@ -108,12 +105,20 @@ extension Kit {
         evmKit.add(transactionWatcher: OneInchTransactionWatcher(address: evmKit.address))
     }
 
+    private static func routerAddress(network: Network) throws -> Address {
+        switch network.chainId {
+        case 1, 56: return try Address(hex: "0x1111111254fb6c44bac0bed2854e76f90643097d")
+        case 3, 4, 5, 42: return try Address(hex: "0x11111112542d85b3ef69ae05771c2dccff4faa26")
+        default: throw UnsupportedChainError.noRouterAddress
+        }
+    }
+
 }
 
 extension Kit {
 
-    public enum NetworkTypeError: Error {
-        case invalid
+    public enum UnsupportedChainError: Error {
+        case noRouterAddress
     }
 
     public enum QuoteError: Error {

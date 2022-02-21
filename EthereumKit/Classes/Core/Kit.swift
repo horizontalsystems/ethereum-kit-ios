@@ -26,7 +26,6 @@ public class Kit {
 
     public let address: Address
 
-    public let networkType: NetworkType
     public let network: Network
     public let uniqueId: String
     public let transactionProvider: ITransactionProvider
@@ -36,14 +35,13 @@ public class Kit {
 
     init(blockchain: IBlockchain, transactionManager: TransactionManager, transactionSyncManager: TransactionSyncManager, internalTransactionSyncer: TransactionInternalTransactionSyncer,
          state: EthereumKitState = EthereumKitState(),
-         address: Address, networkType: NetworkType, network: Network, uniqueId: String, transactionProvider: ITransactionProvider, decorationManager: DecorationManager, eip20Storage: Eip20Storage, logger: Logger) {
+         address: Address, network: Network, uniqueId: String, transactionProvider: ITransactionProvider, decorationManager: DecorationManager, eip20Storage: Eip20Storage, logger: Logger) {
         self.blockchain = blockchain
         self.transactionManager = transactionManager
         self.transactionSyncManager = transactionSyncManager
         self.internalTransactionSyncer = internalTransactionSyncer
         self.state = state
         self.address = address
-        self.networkType = networkType
         self.network = network
         self.uniqueId = uniqueId
         self.transactionProvider = transactionProvider
@@ -296,9 +294,9 @@ extension Kit {
         }
     }
 
-    public static func instance(address: Address, networkType: NetworkType, network: Network, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
+    public static func instance(address: Address, network: Network, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
         let logger = Logger(minLogLevel: minLogLevel)
-        let uniqueId = "\(walletId)-\(networkType)"
+        let uniqueId = "\(walletId)-\(network.chainId)"
 
         let networkManager = NetworkManager(logger: logger)
 
@@ -345,7 +343,7 @@ extension Kit {
 
         let kit = Kit(
                 blockchain: blockchain, transactionManager: transactionManager, transactionSyncManager: transactionSyncManager, internalTransactionSyncer: transactionInternalTransactionSyncer,
-                address: address, networkType: networkType, network: network,
+                address: address, network: network,
                 uniqueId: uniqueId, transactionProvider: transactionProvider, decorationManager: decorationManager, eip20Storage: eip20Storage, logger: logger
         )
 
