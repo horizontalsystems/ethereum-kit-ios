@@ -75,7 +75,7 @@ extension RpcSource {
         return .http(urls: urls, auth: nil)
     }
 
-    public static func binanceSmartChainWebSocket(bscscanApiKey: String) -> RpcSource {
+    public static func binanceSmartChainWebSocket() -> RpcSource {
         .webSocket(url: URL(string: "wss://bsc-ws-node.nariox.org:443")!, auth: nil)
     }
 
