@@ -86,19 +86,7 @@ public struct Pair {
 
 extension Pair {
 
-    static func address(token0: Token, token1: Token, networkType: EthereumKit.NetworkType) -> Address {
-        let factoryAddressString: String
-        switch networkType {
-        case .ethMainNet, .ropsten, .rinkeby, .kovan, .goerli: factoryAddressString = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
-        case .bscMainNet: factoryAddressString = "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73"
-        }
-
-        let initCodeHashString: String
-        switch networkType {
-        case .ethMainNet, .ropsten, .rinkeby, .kovan, .goerli: initCodeHashString = "0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f"
-        case .bscMainNet: initCodeHashString = "0x00fb7f630766e6a796048ea87d01acd3068e8ff67d078148a3fa3f4a84f69bd5"
-        }
-
+    static func address(token0: Token, token1: Token, factoryAddressString: String, initCodeHashString: String) -> Address {
         let data = Data(hex: "ff")! +
                 Data(hex: factoryAddressString)! +
                 OpenSslKit.Kit.sha3(token0.address.raw + token1.address.raw) +

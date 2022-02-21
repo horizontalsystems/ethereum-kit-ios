@@ -93,11 +93,11 @@ extension Kit {
 
 extension Kit {
 
-    public static func instance(evmKit: EthereumKit.Kit) -> Kit {
+    public static func instance(evmKit: EthereumKit.Kit) throws -> Kit {
         let address = evmKit.address
 
-        let tradeManager = TradeManager(evmKit: evmKit, address: address)
-        let tokenFactory = TokenFactory(networkType: evmKit.networkType)
+        let tradeManager = try TradeManager(evmKit: evmKit, address: address)
+        let tokenFactory = try TokenFactory(network: evmKit.network)
         let pairSelector = PairSelector(tokenFactory: tokenFactory)
 
         let uniswapKit = Kit(tradeManager: tradeManager, pairSelector: pairSelector, tokenFactory: tokenFactory)

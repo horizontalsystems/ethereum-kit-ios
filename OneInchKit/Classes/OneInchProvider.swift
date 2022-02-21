@@ -6,13 +6,13 @@ import RxSwift
 class OneInchProvider {
     private static let notEnoughEthErrors = ["Try to leave the buffer of ETH for gas", "you may not have enough ETH balance for gas fee", "Not enough ETH balance", "insufficient funds for transfer"]
     private let networkManager: NetworkManager
-    private let networkType: NetworkType
+    private let network: Network
 
     private var url: String { "https://unstoppable.api.enterprise.1inch.exchange/" }
 
-    init(networkManager: NetworkManager, networkType: NetworkType) {
+    init(networkManager: NetworkManager, network: Network) {
         self.networkManager = networkManager
-        self.networkType = networkType
+        self.network = network
     }
 
     private func params(dictionary: [String: Any?]) -> [String: Any] {
@@ -49,11 +49,11 @@ extension OneInchProvider {
         }
 
         let mapper = ApproveCallDataMapper()
-        return networkManager.single(url: url + "v4.0/\(networkType.chainId)/approve/calldata", method: .get, parameters: parameters, mapper: mapper, responseCacherBehavior: .doNotCache)
+        return networkManager.single(url: url + "v4.0/\(network.chainId)/approve/calldata", method: .get, parameters: parameters, mapper: mapper, responseCacherBehavior: .doNotCache)
     }
 
     func approveSpenderSingle() -> Single<Spender> {
-        networkManager.single(url: url + "v4.0/\(networkType.chainId)/approve/spender", method: .get, parameters: [:], mapper: SpenderMapper(), responseCacherBehavior: .doNotCache)
+        networkManager.single(url: url + "v4.0/\(network.chainId)/approve/spender", method: .get, parameters: [:], mapper: SpenderMapper(), responseCacherBehavior: .doNotCache)
     }
 
     func quoteSingle(fromToken: Address,
@@ -95,7 +95,7 @@ extension OneInchProvider {
 
         let mapper = QuoteMapper(tokenMapper: TokenMapper())
         return networkManager
-                .single(url: url + "\(apiVersion)/\(networkType.chainId)/quote", method: .get, parameters: parameters, mapper: mapper, responseCacherBehavior: .doNotCache)
+                .single(url: url + "\(apiVersion)/\(network.chainId)/quote", method: .get, parameters: parameters, mapper: mapper, responseCacherBehavior: .doNotCache)
                 .catchError { error in
                     if case let .invalidResponse(_, data) = (error as? NetworkManager.RequestError),
                        let dictionary = data as? [String: Any],
@@ -160,7 +160,7 @@ extension OneInchProvider {
         let mapper = SwapMapper(tokenMapper: tokenMapper, swapTransactionMapper: SwapTransactionMapper(tokenMapper: tokenMapper))
 
         return networkManager
-                .single(url: url + "\(apiVersion)/\(networkType.chainId)/swap", method: .get, parameters: parameters, mapper: mapper, responseCacherBehavior: .doNotCache)
+                .single(url: url + "\(apiVersion)/\(network.chainId)/swap", method: .get, parameters: parameters, mapper: mapper, responseCacherBehavior: .doNotCache)
                 .catchError { error in
                     if case let .invalidResponse(_, data) = (error as? NetworkManager.RequestError),
                        let dictionary = data as? [String: Any],

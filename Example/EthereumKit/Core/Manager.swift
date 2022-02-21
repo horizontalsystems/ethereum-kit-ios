@@ -71,7 +71,6 @@ class Manager {
         )
         let evmKit = try! EthereumKit.Kit.instance(
                 address: Signer.address(seed: seed, network: configuration.network),
-                networkType: configuration.networkType,
                 network: configuration.network,
                 syncSource: syncSource,
                 etherscanApiKey: configuration.etherscanApiKey,
@@ -79,8 +78,8 @@ class Manager {
                 minLogLevel: configuration.minLogLevel
         )
 
-        uniswapKit = UniswapKit.Kit.instance(evmKit: evmKit)
-        oneInchKit = OneInchKit.Kit.instance(evmKit: evmKit)
+        uniswapKit = try! UniswapKit.Kit.instance(evmKit: evmKit)
+        oneInchKit = try! OneInchKit.Kit.instance(evmKit: evmKit)
 
         ethereumAdapter = EthereumAdapter(signer: signer, ethereumKit: evmKit)
 
@@ -122,7 +121,6 @@ class Manager {
         }
 
         let evmKit = try! Kit.instance(address: address,
-                networkType: configuration.networkType,
                 network: configuration.network,
                 syncSource: syncSource,
                 etherscanApiKey: configuration.etherscanApiKey,
@@ -130,8 +128,8 @@ class Manager {
                 minLogLevel: configuration.minLogLevel
         )
 
-        uniswapKit = UniswapKit.Kit.instance(evmKit: evmKit)
-        oneInchKit = OneInchKit.Kit.instance(evmKit: evmKit)
+        uniswapKit = try! UniswapKit.Kit.instance(evmKit: evmKit)
+        oneInchKit = try! OneInchKit.Kit.instance(evmKit: evmKit)
 
         ethereumAdapter = EthereumBaseAdapter(ethereumKit: evmKit)
 
