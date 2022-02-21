@@ -6,8 +6,8 @@ class TransactionSigner {
     private let chainId: Int
     private let privateKey: Data
 
-    init(network: Network, privateKey: Data) {
-        chainId = network.chainId
+    init(chain: Chain, privateKey: Data) {
+        chainId = chain.id
         self.privateKey = privateKey
     }
 

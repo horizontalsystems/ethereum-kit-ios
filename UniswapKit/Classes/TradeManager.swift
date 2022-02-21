@@ -12,9 +12,9 @@ class TradeManager {
     private let address: Address
 
     init(evmKit: EthereumKit.Kit, address: Address) throws {
-        routerAddress = try Self.routerAddress(network: evmKit.network)
-        factoryAddressString = try Self.factoryAddressString(network: evmKit.network)
-        initCodeHashString = try Self.initCodeHashString(network: evmKit.network)
+        routerAddress = try Self.routerAddress(chain: evmKit.chain)
+        factoryAddressString = try Self.factoryAddressString(chain: evmKit.chain)
+        initCodeHashString = try Self.initCodeHashString(chain: evmKit.chain)
 
         self.evmKit = evmKit
         self.address = address
@@ -232,24 +232,24 @@ extension TradeManager {
         return trades
     }
 
-    private static func routerAddress(network: Network) throws -> Address {
-        switch network.chainId {
+    private static func routerAddress(chain: Chain) throws -> Address {
+        switch chain.id {
         case 1, 3, 4, 5, 42: return try Address(hex: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D")
         case 56: return try Address(hex: "0x10ED43C718714eb63d5aA57B78B54704E256024E")
         default: throw UnsupportedChainError.noRouterAddress
         }
     }
 
-    private static func factoryAddressString(network: Network) throws -> String {
-        switch network.chainId {
+    private static func factoryAddressString(chain: Chain) throws -> String {
+        switch chain.id {
         case 1, 3, 4, 5, 42: return "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
         case 56: return "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73"
         default: throw UnsupportedChainError.noFactoryAddress
         }
     }
 
-    private static func initCodeHashString(network: Network) throws -> String {
-        switch network.chainId {
+    private static func initCodeHashString(chain: Chain) throws -> String {
+        switch chain.id {
         case 1, 3, 4, 5, 42: return "0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f"
         case 56: return "0x00fb7f630766e6a796048ea87d01acd3068e8ff67d078148a3fa3f4a84f69bd5"
         default: throw UnsupportedChainError.noInitCodeHash

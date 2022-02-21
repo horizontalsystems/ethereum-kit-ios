@@ -42,30 +42,30 @@ public class Signer {
 
 extension Signer {
 
-    public static func instance(seed: Data, network: Network) throws -> Signer {
-        let privKey = try privateKey(seed: seed, network: network)
+    public static func instance(seed: Data, chain: Chain) throws -> Signer {
+        let privKey = try privateKey(seed: seed, chain: chain)
         let address = ethereumAddress(privateKey: privKey)
 
-        let transactionSigner = TransactionSigner(network: network, privateKey: privKey.raw)
-        let transactionBuilder = TransactionBuilder(network: network, address: address)
+        let transactionSigner = TransactionSigner(chain: chain, privateKey: privKey.raw)
+        let transactionBuilder = TransactionBuilder(chain: chain, address: address)
         let ethSigner = EthSigner(privateKey: privKey.raw, cryptoUtils: CryptoUtils.shared)
 
         return Signer(transactionBuilder: transactionBuilder, transactionSigner: transactionSigner, ethSigner: ethSigner)
     }
 
-    public static func address(seed: Data, network: Network) throws -> Address {
-        let privKey = try privateKey(seed: seed, network: network)
+    public static func address(seed: Data, chain: Chain) throws -> Address {
+        let privKey = try privateKey(seed: seed, chain: chain)
 
         return ethereumAddress(privateKey: privKey)
     }
 
-    public static func privateKey(seed: Data, network: Network) throws -> HDPrivateKey {
-        let wallet = hdWallet(seed: seed, network: network)
+    public static func privateKey(seed: Data, chain: Chain) throws -> HDPrivateKey {
+        let wallet = hdWallet(seed: seed, chain: chain)
         return try wallet.privateKey(account: 0, index: 0, chain: .external)
     }
 
-    private static func hdWallet(seed: Data, network: Network) -> HDWallet {
-        HDWallet(seed: seed, coinType: network.coinType, xPrivKey: 0, xPubKey: 0)
+    private static func hdWallet(seed: Data, chain: Chain) -> HDWallet {
+        HDWallet(seed: seed, coinType: chain.coinType, xPrivKey: 0, xPubKey: 0)
     }
 
     private static func ethereumAddress(privateKey: HDPrivateKey) -> Address {

@@ -4,7 +4,7 @@ import HsToolKit
 class Configuration {
     static let shared = Configuration()
 
-    let network: Network = .ethereum
+    let chain: Chain = .ethereum
 
     let rpcSource: RpcSource = .ethereumInfuraWebsocket(projectId: "2a1306f1d12f4c109a4d4fb9be46b02e", projectSecret: "fc479a9290b64a84a15fa6544a130218")
 //    let rpcSource: RpcSource = .ethereumInfuraHttp(projectId: "2a1306f1d12f4c109a4d4fb9be46b02e", projectSecret: "fc479a9290b64a84a15fa6544a130218")
@@ -17,7 +17,7 @@ class Configuration {
     let infuraCredentials: (id: String, secret: String?) = (id: "2a1306f1d12f4c109a4d4fb9be46b02e", secret: "fc479a9290b64a84a15fa6544a130218")
 
     var erc20Tokens: [Erc20Token] {
-        switch network.chainId {
+        switch chain.id {
         case 1: return [
             Erc20Token(name: "DAI",       coin: "DAI",  contractAddress: try! Address(hex: "0x6b175474e89094c44da98b954eedeac495271d0f"), decimal: 18),
             Erc20Token(name: "USD Coin",  coin: "USDC", contractAddress: try! Address(hex: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"), decimal: 6),
