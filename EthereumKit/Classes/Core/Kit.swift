@@ -294,7 +294,7 @@ extension Kit {
         }
     }
 
-    public static func instance(address: Address, network: Network, syncSource: SyncSource, etherscanApiKey: String, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
+    public static func instance(address: Address, network: Network, rpcSource: RpcSource, transactionSource: TransactionSource, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
         let logger = Logger(minLogLevel: minLogLevel)
         let uniqueId = "\(walletId)-\(network.chainId)"
 
@@ -303,18 +303,17 @@ extension Kit {
         let syncer: IRpcSyncer
         let reachabilityManager = ReachabilityManager()
 
-        switch syncSource {
+        switch rpcSource {
+        case let .http(urls, auth):
+            let apiProvider = NodeApiProvider(networkManager: networkManager, urls: urls, blockTime: network.blockTime, auth: auth)
+            syncer = ApiRpcSyncer(rpcApiProvider: apiProvider, reachabilityManager: reachabilityManager)
         case let .webSocket(url, auth):
             let socket = WebSocket(url: url, reachabilityManager: reachabilityManager, auth: auth, logger: logger)
             syncer = WebSocketRpcSyncer.instance(socket: socket, logger: logger)
-
-        case let .http(urls, blockTime, auth):
-            let apiProvider = NodeApiProvider(networkManager: networkManager, urls: urls, blockTime: blockTime, auth: auth)
-            syncer = ApiRpcSyncer(rpcApiProvider: apiProvider, reachabilityManager: reachabilityManager)
         }
 
         let transactionBuilder = TransactionBuilder(network: network, address: address)
-        let transactionProvider: ITransactionProvider = transactionProvider(network: network, address: address, logger: logger)
+        let transactionProvider: ITransactionProvider = transactionProvider(transactionSource: transactionSource, address: address, logger: logger)
 
         let storage: IApiStorage = try ApiStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "api-\(uniqueId)")
         let blockchain = RpcBlockchain.instance(address: address, storage: storage, syncer: syncer, transactionBuilder: transactionBuilder, logger: logger)
@@ -359,68 +358,11 @@ extension Kit {
         return kit
     }
 
-    private static func transactionProvider(network: Network, address: Address, logger: Logger) -> ITransactionProvider {
-        switch network.explorer {
+    private static func transactionProvider(transactionSource: TransactionSource, address: Address, logger: Logger) -> ITransactionProvider {
+        switch transactionSource {
         case .etherscan(let baseUrl, let apiKey):
             return EtherscanTransactionProvider(baseUrl: baseUrl, apiKey: apiKey, address: address, logger: logger)
         }
-    }
-
-    private static func infuraDomain(networkType: NetworkType) -> String? {
-        switch networkType {
-        case .ethMainNet: return "mainnet.infura.io"
-        case .ropsten: return "ropsten.infura.io"
-        case .rinkeby: return "rinkeby.infura.io"
-        case .kovan: return "kovan.infura.io"
-        case .goerli: return "goerli.infura.io"
-        default: return nil
-        }
-    }
-
-    public static func infuraWebsocketSyncSource(networkType: NetworkType, projectId: String, projectSecret: String?) -> SyncSource? {
-        guard let domain = infuraDomain(networkType: networkType), let url = URL(string: "wss://\(domain)/ws/v3/\(projectId)") else {
-            return nil
-        }
-
-        return .webSocket(url: url, auth: projectSecret)
-    }
-
-    public static func infuraHttpSyncSource(networkType: NetworkType, projectId: String, projectSecret: String?) -> SyncSource? {
-        guard let domain = infuraDomain(networkType: networkType), let url = URL(string: "https://\(domain)/v3/\(projectId)") else {
-            return nil
-        }
-
-        return .http(urls: [url], blockTime: networkType.blockTime, auth: projectSecret)
-    }
-
-    public static func defaultBscWebsocketSyncSource() -> SyncSource? {
-        guard let url = URL(string: "wss://bsc-ws-node.nariox.org:443") else {
-            return nil
-        }
-
-        return .webSocket(url: url, auth: nil)
-    }
-
-    public static func defaultBscHttpSyncSource() -> SyncSource? {
-        let urlStrings = [
-            "https://bsc-dataseed.binance.org/",
-            "https://bsc-dataseed1.defibit.io/",
-            "https://bsc-dataseed1.ninicoin.io/",
-            "https://bsc-dataseed2.defibit.io/",
-            "https://bsc-dataseed3.defibit.io/",
-            "https://bsc-dataseed4.defibit.io/",
-            "https://bsc-dataseed2.ninicoin.io/",
-            "https://bsc-dataseed3.ninicoin.io/",
-            "https://bsc-dataseed4.ninicoin.io/",
-            "https://bsc-dataseed1.binance.org/",
-            "https://bsc-dataseed2.binance.org/",
-            "https://bsc-dataseed3.binance.org/",
-            "https://bsc-dataseed4.binance.org/"
-        ]
-
-        let urls: [URL] = urlStrings.compactMap { URL(string: $0) }
-
-        return .http(urls: urls, blockTime: NetworkType.bscMainNet.blockTime, auth: nil)
     }
 
     private static func dataDirectoryUrl() throws -> URL {

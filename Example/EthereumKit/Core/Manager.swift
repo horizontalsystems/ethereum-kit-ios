@@ -54,15 +54,6 @@ class Manager {
     private func initEthereumKit(words: [String]) {
         let configuration = Configuration.shared
 
-        let syncSource: SyncSource
-
-        if case .bscMainNet = configuration.networkType {
-            syncSource = Kit.defaultBscWebsocketSyncSource()!
-        } else {
-//            syncSource = Kit.infuraWebsocketSyncSource(networkType: configuration.networkType, projectId: configuration.infuraCredentials.id, projectSecret: configuration.infuraCredentials.secret)!
-            syncSource = Kit.infuraHttpSyncSource(networkType: configuration.networkType, projectId: configuration.infuraCredentials.id, projectSecret: configuration.infuraCredentials.secret)!
-        }
-
         let seed = Mnemonic.seed(mnemonic: words)
 
         let signer = try! Signer.instance(
@@ -72,8 +63,8 @@ class Manager {
         let evmKit = try! EthereumKit.Kit.instance(
                 address: Signer.address(seed: seed, network: configuration.network),
                 network: configuration.network,
-                syncSource: syncSource,
-                etherscanApiKey: configuration.etherscanApiKey,
+                rpcSource: configuration.rpcSource,
+                transactionSource: configuration.transactionSource,
                 walletId: "walletId",
                 minLogLevel: configuration.minLogLevel
         )
@@ -111,19 +102,10 @@ class Manager {
     private func initEthereumKit(address: Address) {
         let configuration = Configuration.shared
 
-        let syncSource: SyncSource
-
-        if case .bscMainNet = configuration.networkType {
-            syncSource = Kit.defaultBscWebsocketSyncSource()!
-        } else {
-//            syncSource = Kit.infuraWebsocketSyncSource(networkType: configuration.networkType, projectId: configuration.infuraCredentials.id, projectSecret: configuration.infuraCredentials.secret)!
-            syncSource = Kit.infuraHttpSyncSource(networkType: configuration.networkType, projectId: configuration.infuraCredentials.id, projectSecret: configuration.infuraCredentials.secret)!
-        }
-
         let evmKit = try! Kit.instance(address: address,
                 network: configuration.network,
-                syncSource: syncSource,
-                etherscanApiKey: configuration.etherscanApiKey,
+                rpcSource: configuration.rpcSource,
+                transactionSource: configuration.transactionSource,
                 walletId: "walletId",
                 minLogLevel: configuration.minLogLevel
         )
