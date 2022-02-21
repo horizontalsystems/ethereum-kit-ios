@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 ## Current Version
 
+* Refactor the way chains are handled [ **non-back-compatible api change** ]
+  * replace old `NetworkType` enum with new `Chain` entity 
+  * refactor `SyncSource` into to separate enums: `RpcSource` and `TransactionSource`
+
 ## 0.15.1
 
 * Bugfixes and enhancements
