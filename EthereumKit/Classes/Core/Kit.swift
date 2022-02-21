@@ -26,7 +26,7 @@ public class Kit {
 
     public let address: Address
 
-    public let network: Network
+    public let chain: Chain
     public let uniqueId: String
     public let transactionProvider: ITransactionProvider
 
@@ -35,14 +35,14 @@ public class Kit {
 
     init(blockchain: IBlockchain, transactionManager: TransactionManager, transactionSyncManager: TransactionSyncManager, internalTransactionSyncer: TransactionInternalTransactionSyncer,
          state: EthereumKitState = EthereumKitState(),
-         address: Address, network: Network, uniqueId: String, transactionProvider: ITransactionProvider, decorationManager: DecorationManager, eip20Storage: Eip20Storage, logger: Logger) {
+         address: Address, chain: Chain, uniqueId: String, transactionProvider: ITransactionProvider, decorationManager: DecorationManager, eip20Storage: Eip20Storage, logger: Logger) {
         self.blockchain = blockchain
         self.transactionManager = transactionManager
         self.transactionSyncManager = transactionSyncManager
         self.internalTransactionSyncer = internalTransactionSyncer
         self.state = state
         self.address = address
-        self.network = network
+        self.chain = chain
         self.uniqueId = uniqueId
         self.transactionProvider = transactionProvider
         self.decorationManager = decorationManager
@@ -294,9 +294,9 @@ extension Kit {
         }
     }
 
-    public static func instance(address: Address, network: Network, rpcSource: RpcSource, transactionSource: TransactionSource, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
+    public static func instance(address: Address, chain: Chain, rpcSource: RpcSource, transactionSource: TransactionSource, walletId: String, minLogLevel: Logger.Level = .error) throws -> Kit {
         let logger = Logger(minLogLevel: minLogLevel)
-        let uniqueId = "\(walletId)-\(network.chainId)"
+        let uniqueId = "\(walletId)-\(chain.id)"
 
         let networkManager = NetworkManager(logger: logger)
 
@@ -305,14 +305,14 @@ extension Kit {
 
         switch rpcSource {
         case let .http(urls, auth):
-            let apiProvider = NodeApiProvider(networkManager: networkManager, urls: urls, blockTime: network.blockTime, auth: auth)
+            let apiProvider = NodeApiProvider(networkManager: networkManager, urls: urls, blockTime: chain.blockTime, auth: auth)
             syncer = ApiRpcSyncer(rpcApiProvider: apiProvider, reachabilityManager: reachabilityManager)
         case let .webSocket(url, auth):
             let socket = WebSocket(url: url, reachabilityManager: reachabilityManager, auth: auth, logger: logger)
             syncer = WebSocketRpcSyncer.instance(socket: socket, logger: logger)
         }
 
-        let transactionBuilder = TransactionBuilder(network: network, address: address)
+        let transactionBuilder = TransactionBuilder(chain: chain, address: address)
         let transactionProvider: ITransactionProvider = transactionProvider(transactionSource: transactionSource, address: address, logger: logger)
 
         let storage: IApiStorage = try ApiStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "api-\(uniqueId)")
@@ -342,7 +342,7 @@ extension Kit {
 
         let kit = Kit(
                 blockchain: blockchain, transactionManager: transactionManager, transactionSyncManager: transactionSyncManager, internalTransactionSyncer: transactionInternalTransactionSyncer,
-                address: address, network: network,
+                address: address, chain: chain,
                 uniqueId: uniqueId, transactionProvider: transactionProvider, decorationManager: decorationManager, eip20Storage: eip20Storage, logger: logger
         )
 

@@ -97,7 +97,7 @@ extension Kit {
         let address = evmKit.address
 
         let tradeManager = try TradeManager(evmKit: evmKit, address: address)
-        let tokenFactory = try TokenFactory(network: evmKit.network)
+        let tokenFactory = try TokenFactory(chain: evmKit.chain)
         let pairSelector = PairSelector(tokenFactory: tokenFactory)
 
         let uniswapKit = Kit(tradeManager: tradeManager, pairSelector: pairSelector, tokenFactory: tokenFactory)
