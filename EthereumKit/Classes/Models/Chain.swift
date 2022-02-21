@@ -13,8 +13,16 @@ public struct Chain {
         self.isEIP1559Supported = isEIP1559Supported
     }
 
-    var isMainNet: Bool {
+    public var isMainNet: Bool {
         coinType != 1
+    }
+
+}
+
+extension Chain: Equatable {
+
+    public static func ==(lhs: Chain, rhs: Chain) -> Bool {
+        lhs.id == rhs.id
     }
 
 }
