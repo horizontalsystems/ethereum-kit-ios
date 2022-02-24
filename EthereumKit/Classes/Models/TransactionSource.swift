@@ -50,4 +50,11 @@ extension TransactionSource {
         )
     }
 
+    public static func polygonscan(apiKey: String) -> TransactionSource {
+        TransactionSource(
+                name: "polygonscan.com",
+                type: .etherscan(baseUrl: "https://api.polygonscan.com", apiKey: apiKey)
+        )
+    }
+
 }
