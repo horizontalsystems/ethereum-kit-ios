@@ -47,6 +47,15 @@ extension Chain {
         )
     }
 
+    public static var polygon: Chain {
+        Chain(
+                id: 137,
+                coinType: 60, // actually Matic has coin type 966
+                blockTime: 1,
+                isEIP1559Supported: true
+        )
+    }
+
     public static var ethereumRopsten: Chain {
         Chain(
                 id: 3,

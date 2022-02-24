@@ -79,4 +79,8 @@ extension RpcSource {
         .webSocket(url: URL(string: "wss://bsc-ws-node.nariox.org:443")!, auth: nil)
     }
 
+    public static func polygonRpcHttp() -> RpcSource {
+        .http(urls: [URL(string: "https://polygon-rpc.com")!], auth: nil)
+    }
+
 }
