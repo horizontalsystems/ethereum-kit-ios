@@ -360,8 +360,8 @@ extension Kit {
 
     private static func transactionProvider(transactionSource: TransactionSource, address: Address, logger: Logger) -> ITransactionProvider {
         switch transactionSource.type {
-        case .etherscan(let baseUrl, let apiKey):
-            return EtherscanTransactionProvider(baseUrl: baseUrl, apiKey: apiKey, address: address, logger: logger)
+        case .etherscan(let apiBaseUrl, _, let apiKey):
+            return EtherscanTransactionProvider(baseUrl: apiBaseUrl, apiKey: apiKey, address: address, logger: logger)
         }
     }
 
