@@ -236,6 +236,7 @@ extension TradeManager {
         switch chain.id {
         case 1, 3, 4, 5, 42: return try Address(hex: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D")
         case 56: return try Address(hex: "0x10ED43C718714eb63d5aA57B78B54704E256024E")
+        case 137: return try Address(hex: "0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff")
         default: throw UnsupportedChainError.noRouterAddress
         }
     }
@@ -244,6 +245,7 @@ extension TradeManager {
         switch chain.id {
         case 1, 3, 4, 5, 42: return "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
         case 56: return "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73"
+        case 137: return "0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32"
         default: throw UnsupportedChainError.noFactoryAddress
         }
     }
@@ -252,6 +254,7 @@ extension TradeManager {
         switch chain.id {
         case 1, 3, 4, 5, 42: return "0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f"
         case 56: return "0x00fb7f630766e6a796048ea87d01acd3068e8ff67d078148a3fa3f4a84f69bd5"
+        case 137: return "0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f"
         default: throw UnsupportedChainError.noInitCodeHash
         }
     }
