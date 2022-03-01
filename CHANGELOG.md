@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 ## Current Version
 
+## 0.16.0
+
+* add support polygon chain with hold/send/swap
+* add support EIP1599
 * Refactor the way chains are handled [ **non-back-compatible api change** ]
   * replace old `NetworkType` enum with new `Chain` entity 
   * refactor `SyncSource` into to separate enums: `RpcSource` and `TransactionSource`
