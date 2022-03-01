@@ -2,6 +2,11 @@ public struct TransactionSource {
     public let name: String
     public let type: SourceType
 
+    public init(name: String, type: SourceType) {
+        self.name = name
+        self.type = type
+    }
+
     public func transactionUrl(hash: String) -> String {
         switch type {
         case .etherscan(_, let txBaseUrl, _):
