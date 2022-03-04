@@ -56,6 +56,24 @@ extension Chain {
         )
     }
 
+    public static var optimism: Chain {
+        Chain(
+                id: 10,
+                coinType: 60, // actually Optimism has coin type 614
+                blockTime: 1, // todo: find out correct block time
+                isEIP1559Supported: false
+        )
+    }
+
+    public static var arbitrumOne: Chain {
+        Chain(
+                id: 42161,
+                coinType: 60, // actually Arbitrum One has coin type 9001
+                blockTime: 1, // todo: find out correct block time
+                isEIP1559Supported: false
+        )
+    }
+
     public static var ethereumRopsten: Chain {
         Chain(
                 id: 3,

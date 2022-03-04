@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 ## Current Version
 
+* add `Arbitrum One` chain support
+* add `Optimism` chain support
+
 ## 0.16.0
 
 * add support polygon chain with hold/send/swap
