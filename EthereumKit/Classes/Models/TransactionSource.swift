@@ -62,4 +62,18 @@ extension TransactionSource {
         )
     }
 
+    public static func optimisticEtherscan(apiKey: String) -> TransactionSource {
+        TransactionSource(
+                name: "optimistic.etherscan.io",
+                type: .etherscan(apiBaseUrl: "https://api-optimistic.etherscan.io", txBaseUrl: "https://optimistic.etherscan.io", apiKey: apiKey)
+        )
+    }
+
+    public static func arbiscan(apiKey: String) -> TransactionSource {
+        TransactionSource(
+                name: "arbiscan.io",
+                type: .etherscan(apiBaseUrl: "https://api.arbiscan.io", txBaseUrl: "https://arbiscan.io", apiKey: apiKey)
+        )
+    }
+
 }

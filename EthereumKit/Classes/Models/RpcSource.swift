@@ -83,4 +83,12 @@ extension RpcSource {
         .http(urls: [URL(string: "https://polygon-rpc.com")!], auth: nil)
     }
 
+    public static func optimismRpcHttp() -> RpcSource {
+        .http(urls: [URL(string: "https://mainnet.optimism.io")!], auth: nil)
+    }
+
+    public static func arbitrumOneRpcHttp() -> RpcSource {
+        .http(urls: [URL(string: "https://arb1.arbitrum.io/rpc")!], auth: nil)
+    }
+
 }
