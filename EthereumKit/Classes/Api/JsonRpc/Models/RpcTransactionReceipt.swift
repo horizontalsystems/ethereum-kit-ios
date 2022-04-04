@@ -36,23 +36,6 @@ public class RpcTransactionReceipt: ImmutableMappable {
         status = try? map.value("status", using: HexIntTransform())
     }
 
-    public init(record: TransactionReceipt, logs: [TransactionLog]) {
-        transactionHash = record.transactionHash
-        transactionIndex = record.transactionIndex
-        blockHash = record.blockHash
-        blockNumber = record.blockNumber
-        from = record.from
-        to = record.to
-        effectiveGasPrice = record.effectiveGasPrice
-        cumulativeGasUsed = record.cumulativeGasUsed
-        gasUsed = record.gasUsed
-        contractAddress = record.contractAddress
-        self.logs = logs
-        logsBloom = record.logsBloom
-        root = record.root
-        status = record.status
-    }
-
 }
 
 extension RpcTransactionReceipt: CustomStringConvertible {

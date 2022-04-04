@@ -2,68 +2,53 @@ import RxSwift
 import BigInt
 
 class TransactionManager {
-    private let address: Address
     private let storage: ITransactionStorage
     private let decorationManager: DecorationManager
     private let tagGenerator: TagGenerator
-
-    private let allTransactionsSubject = PublishSubject<[FullTransaction]>()
-    private let transactionsWithTagsSubject = PublishSubject<[(transaction: FullTransaction, tags: [String])]>()
     private let disposeBag = DisposeBag()
 
-    var allTransactionsObservable: Observable<[FullTransaction]> {
-        allTransactionsSubject.asObservable()
-    }
+    private let fullTransactionsSubject = PublishSubject<[FullTransaction]>()
+    private let fullTransactionsWithTagsSubject = PublishSubject<[(transaction: FullTransaction, tags: [String])]>()
 
-    init(address: Address, storage: ITransactionStorage, transactionSyncManager: TransactionSyncManager, decorationManager: DecorationManager, tagGenerator: TagGenerator) {
-        self.address = address
+    init(storage: ITransactionStorage, decorationManager: DecorationManager, tagGenerator: TagGenerator) {
         self.storage = storage
         self.decorationManager = decorationManager
         self.tagGenerator = tagGenerator
-
-        transactionSyncManager
-                .transactionsObservable
-                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .background))
-                .subscribe(
-                        onNext: { [weak self] transactions in
-                            self?.handle(syncedTransactions: transactions)
-                        }
-                )
-                .disposed(by: disposeBag)
     }
 
-    private func handle(syncedTransactions: [FullTransaction]) {
-        let decoratedTransactions = syncedTransactions.map { transaction -> FullTransaction in
-            let decoratedTransaction = decorationManager.decorateFullTransaction(fullTransaction: transaction)
+    private func failPendingTransactions() -> [Transaction] {
+        let pendingTransactions = storage.pendingTransactions()
 
-            if let logs = decoratedTransaction.receiptWithLogs?.logs {
-                let neededLogs = logs.filter { $0.relevant }
-                if logs.count > neededLogs.count {
-                    storage.remove(logs: logs)
-                    storage.save(logs: neededLogs)
-                }
+        guard !pendingTransactions.isEmpty else {
+            return []
+        }
+
+        let nonces = Array(Set(pendingTransactions.compactMap { $0.nonce }))
+
+        let nonPendingTransactions = storage.nonPendingTransactions(nonces: nonces)
+        var processedTransactions = [Transaction]()
+
+        for nonPendingTransaction in nonPendingTransactions {
+            let duplicateTransactions = pendingTransactions.filter { $0.nonce == nonPendingTransaction.nonce }
+            for transaction in duplicateTransactions {
+                transaction.isFailed = true
+                transaction.replacedWith = nonPendingTransaction.hash
+                processedTransactions.append(transaction)
             }
-
-            return decoratedTransaction
         }
 
-        var transactionsWithTags = [(transaction: FullTransaction, tags: [String])]()
-        for transaction in decoratedTransactions {
-            let tags = tagGenerator.generate(for: transaction)
-            storage.set(tags: tags)
+        storage.save(transactions: processedTransactions)
 
-            transactionsWithTags.append((transaction: transaction, tags: tags.map { $0.name }))
-        }
-
-        if !decoratedTransactions.isEmpty {
-            allTransactionsSubject.onNext(decoratedTransactions)
-            transactionsWithTagsSubject.onNext(transactionsWithTags)
-        }
+        return processedTransactions
     }
 
 }
 
 extension TransactionManager {
+
+    var fullTransactionsObservable: Observable<[FullTransaction]> {
+        fullTransactionsSubject.asObservable()
+    }
 
     func etherTransferTransactionData(to: Address, value: BigUInt) -> TransactionData {
         TransactionData(
@@ -73,8 +58,8 @@ extension TransactionManager {
         )
     }
 
-    func transactionsObservable(tags: [[String]]) -> Observable<[FullTransaction]> {
-        transactionsWithTagsSubject.asObservable()
+    func fullTransactionsObservable(tags: [[String]]) -> Observable<[FullTransaction]> {
+        fullTransactionsWithTagsSubject.asObservable()
             .map { transactions in
                 transactions.compactMap { transactionsWithTags -> FullTransaction? in
                     for andTags in tags {
@@ -97,41 +82,57 @@ extension TransactionManager {
             .filter { transactions in transactions.count > 0 }
     }
 
-    func transactionsSingle(tags: [[String]], fromHash: Data?, limit: Int?) -> Single<[FullTransaction]> {
-        storage
-                .transactionsBeforeSingle(tags: tags, hash: fromHash, limit: limit)
-                .map { [weak self] transactions in
-                    if let manager = self {
-                        return transactions.map {
-                            manager.decorationManager.decorateFullTransaction(fullTransaction: $0)
-                        }
-                    }
+    func fullTransactionsSingle(tags: [[String]], fromHash: Data?, limit: Int?) -> Single<[FullTransaction]> {
+        Single.create { [unowned self] observer in
+            let transactions = storage.transactionsBefore(tags: tags, hash: fromHash, limit: limit)
+            let fullTransactions = decorationManager.decorate(transactions: transactions)
+            observer(.success(fullTransactions))
 
-                    return []
-                }
+            return Disposables.create()
+        }
     }
 
-    func pendingTransactions(tags: [[String]]) -> [FullTransaction] {
-        storage
-                .pendingTransactions(tags: tags)
-                .map { transaction in
-                    decorationManager.decorateFullTransaction(fullTransaction: transaction)
-                }
+    func pendingFullTransactions(tags: [[String]]) -> [FullTransaction] {
+        decorationManager.decorate(transactions: storage.pendingTransactions(tags: tags))
     }
 
-    func transactions(byHashes hashes: [Data]) -> [FullTransaction] {
-        storage.fullTransactions(byHashes: hashes)
+    func fullTransactions(byHashes hashes: [Data]) -> [FullTransaction] {
+        decorationManager.decorate(transactions: storage.transactions(hashes: hashes))
     }
 
-    func transaction(hash: Data) -> FullTransaction? {
-        storage.transaction(hash: hash)
+    func fullTransaction(hash: Data) -> FullTransaction? {
+        storage.transaction(hash: hash).flatMap { decorationManager.decorate(transactions: [$0]).first }
     }
 
-    func handle(sentTransaction: Transaction) {
-        storage.save(transaction: sentTransaction)
+    func lastTransaction() -> Transaction? {
+        storage.lastTransaction()
+    }
 
-        let fullTransaction = FullTransaction(transaction: sentTransaction)
-        handle(syncedTransactions: [fullTransaction])
+    func handle(transactions: [Transaction]) {
+        guard !transactions.isEmpty else {
+            return
+        }
+
+        storage.save(transactions: transactions)
+
+        let failedTransactions = failPendingTransactions()
+        let transactions = transactions + failedTransactions
+
+        let fullTransactions = decorationManager.decorate(transactions: transactions)
+
+        var fullTransactionsWithTags = [(transaction: FullTransaction, tags: [String])]()
+        var allTags = [TransactionTag]()
+
+        for fullTransaction in fullTransactions {
+            let tags = tagGenerator.generate(for: fullTransaction)
+            allTags.append(contentsOf: tags)
+            fullTransactionsWithTags.append((transaction: fullTransaction, tags: tags.map { $0.name }))
+        }
+
+        storage.save(tags: allTags)
+
+        fullTransactionsSubject.onNext(fullTransactions)
+        fullTransactionsWithTagsSubject.onNext(fullTransactionsWithTags)
     }
 
 }

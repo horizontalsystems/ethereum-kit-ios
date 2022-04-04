@@ -1,8 +1,12 @@
-open class ContractEventDecoration: TransactionDecoration {
+open class ContractEventDecoration {
     public let contractAddress: Address
 
     public init(contractAddress: Address) {
         self.contractAddress = contractAddress
+    }
+
+    open func tags(userAddress: Address) -> [String] {
+        []
     }
 
 }

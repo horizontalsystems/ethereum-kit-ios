@@ -101,10 +101,6 @@ extension Kit {
         evmKit.add(decorator: OneInchTransactionDecorator(address: evmKit.address, contractMethodFactories: OneInchContractMethodFactories.shared))
     }
 
-    public static func addTransactionWatcher(to evmKit: EthereumKit.Kit) {
-        evmKit.add(transactionWatcher: OneInchTransactionWatcher(address: evmKit.address))
-    }
-
     private static func routerAddress(chain: Chain) throws -> Address {
         switch chain.id {
         case 1, 56, 137, 42161: return try Address(hex: "0x1111111254fb6c44bac0bed2854e76f90643097d")

@@ -11,7 +11,7 @@ extension Array {
 
 extension TransactionLog {
 
-    public func erc20Event() -> ContractEventDecoration? {
+    public func erc20EventDecoration() -> ContractEventDecoration? {
         guard topics.count == 3 else {
             return nil
         }

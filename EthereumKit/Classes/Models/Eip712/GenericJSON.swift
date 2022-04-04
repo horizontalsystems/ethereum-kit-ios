@@ -82,7 +82,7 @@ extension JSON: CustomDebugStringConvertible {
 
 public extension JSON {
     /// Return the string value if this is a `.string`, otherwise `nil`
-    public var stringValue: String? {
+    var stringValue: String? {
         if case .string(let value) = self {
             return value
         }
@@ -90,7 +90,7 @@ public extension JSON {
     }
 
     /// Return the float value if this is a `.number`, otherwise `nil`
-    public var floatValue: Float? {
+    var floatValue: Float? {
         if case .number(let value) = self {
             return value
         }
@@ -98,7 +98,7 @@ public extension JSON {
     }
 
     /// Return the bool value if this is a `.bool`, otherwise `nil`
-    public var boolValue: Bool? {
+    var boolValue: Bool? {
         if case .bool(let value) = self {
             return value
         }
@@ -106,7 +106,7 @@ public extension JSON {
     }
 
     /// Return the object value if this is an `.object`, otherwise `nil`
-    public var objectValue: [String: JSON]? {
+    var objectValue: [String: JSON]? {
         if case .object(let value) = self {
             return value
         }
@@ -114,7 +114,7 @@ public extension JSON {
     }
 
     /// Return the array value if this is an `.array`, otherwise `nil`
-    public var arrayValue: [JSON]? {
+    var arrayValue: [JSON]? {
         if case .array(let value) = self {
             return value
         }
@@ -122,7 +122,7 @@ public extension JSON {
     }
 
     /// Return `true` if this is `.null`
-    public var isNull: Bool {
+    var isNull: Bool {
         if case .null = self {
             return true
         }
@@ -132,7 +132,7 @@ public extension JSON {
     /// If this is an `.array`, return item at index
     ///
     /// If this is not an `.array` or the index is out of bounds, returns `nil`.
-    public subscript(index: Int) -> JSON? {
+    subscript(index: Int) -> JSON? {
         if case .array(let arr) = self, arr.indices.contains(index) {
             return arr[index]
         }
@@ -140,7 +140,7 @@ public extension JSON {
     }
 
     /// If this is an `.object`, return item at key
-    public subscript(key: String) -> JSON? {
+    subscript(key: String) -> JSON? {
         if case .object(let dict) = self {
             return dict[key]
         }

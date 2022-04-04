@@ -33,64 +33,25 @@ protocol IBlockchainDelegate: AnyObject {
 }
 
 protocol ITransactionStorage {
-    func notSyncedTransactions(limit: Int) -> [NotSyncedTransaction]
-    func notSyncedInternalTransaction() -> NotSyncedInternalTransaction?
+    func lastTransaction() -> Transaction?
+    func transaction(hash: Data) -> Transaction?
+    func transactions(hashes: [Data]) -> [Transaction]
+    func transactionsBefore(tags: [[String]], hash: Data?, limit: Int?) -> [Transaction]
+    func save(transactions: [Transaction])
 
-    func add(notSyncedTransactions: [NotSyncedTransaction])
-    func save(notSyncedInternalTransaction: NotSyncedInternalTransaction)
-    func update(notSyncedTransaction: NotSyncedTransaction)
-    func remove(notSyncedTransaction: NotSyncedTransaction)
-    func remove(notSyncedInternalTransaction: NotSyncedInternalTransaction)
+    func pendingTransactions() -> [Transaction]
+    func pendingTransactions(tags: [[String]]) -> [Transaction]
+    func nonPendingTransactions(nonces: [Int]) -> [Transaction]
 
-    func save(transaction: Transaction)
-    func pendingTransactions(fromTransaction: Transaction?) -> [Transaction]
-    func pendingTransaction(nonce: Int) -> Transaction?
-
-    func save(transactionReceipt: TransactionReceipt)
-    func transactionReceipt(hash: Data) -> TransactionReceipt?
-
-    func save(logs: [TransactionLog])
+    func internalTransactions() -> [InternalTransaction]
+    func internalTransactions(hashes: [Data]) -> [InternalTransaction]
     func save(internalTransactions: [InternalTransaction])
-    func set(tags: [TransactionTag])
-    func remove(logs: [TransactionLog])
 
-    func hashesFromTransactions() -> [Data]
-    func transactionsBeforeSingle(tags: [[String]], hash: Data?, limit: Int?) -> Single<[FullTransaction]>
-    func pendingTransactions(tags: [[String]]) -> [FullTransaction]
-    func transaction(hash: Data) -> FullTransaction?
-    func fullTransactions(byHashes: [Data]) -> [FullTransaction]
-    func add(droppedTransaction: DroppedTransaction)
-}
-
-public protocol ITransactionSyncerStateStorage {
-    func transactionSyncerState(id: String) -> TransactionSyncerState?
-    func save(transactionSyncerState: TransactionSyncerState)
-}
-
-protocol ITransactionSyncerListener: AnyObject {
-    func onTransactionsSynced(fullTransactions: [FullTransaction])
+    func save(tags: [TransactionTag])
 }
 
 public protocol ITransactionSyncer {
-    var id: String { get }
-    var state: SyncState { get }
-    var stateObservable: Observable<SyncState> { get }
-
-    func set(delegate: ITransactionSyncerDelegate)
-    func start()
-    func onEthereumSynced()
-    func onLastBlockNumber(blockNumber: Int)
-    func onUpdateAccountState(accountState: AccountState)
-}
-
-public protocol ITransactionSyncerDelegate {
-    var notSyncedTransactionsSignal: PublishSubject<Void> { get }
-    func transactionSyncerState(id: String) -> TransactionSyncerState?
-    func update(transactionSyncerState: TransactionSyncerState)
-    func add(notSyncedTransactions: [NotSyncedTransaction])
-    func notSyncedTransactions(limit: Int) -> [NotSyncedTransaction]
-    func remove(notSyncedTransaction: NotSyncedTransaction)
-    func update(notSyncedTransaction: NotSyncedTransaction)
+    func transactionsSingle(lastBlockNumber: Int) -> Single<[Transaction]>
 }
 
 protocol ITransactionManagerDelegate: AnyObject {
@@ -99,17 +60,14 @@ protocol ITransactionManagerDelegate: AnyObject {
 }
 
 public protocol IDecorator {
-    func decorate(transactionData: TransactionData, fullTransaction: FullTransaction?) -> ContractMethodDecoration?
-    func decorate(logs: [TransactionLog]) -> [ContractEventDecoration]
-}
-
-public protocol ITransactionWatcher {
-    func needInternalTransactions(fullTransaction: FullTransaction) -> Bool
+    func decorate(transactionData: TransactionData) -> ContractMethodDecoration?
+    func decorate(fullTransaction: FullTransaction, fullRpcTransaction: FullRpcTransaction)
+    func decorate(fullTransactionMap: [Data: FullTransaction])
 }
 
 public protocol ITransactionProvider {
     func transactionsSingle(startBlock: Int) -> Single<[ProviderTransaction]>
-    func internalTransactionsSingle(startBlock: Int) -> Single<[InternalTransaction]>
-    func internalTransactionsSingle(transactionHash: Data) -> Single<[InternalTransaction]>
+    func internalTransactionsSingle(startBlock: Int) -> Single<[ProviderInternalTransaction]>
+    func internalTransactionsSingle(transactionHash: Data) -> Single<[ProviderInternalTransaction]>
     func tokenTransactionsSingle(startBlock: Int) -> Single<[ProviderTokenTransaction]>
 }

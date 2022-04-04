@@ -5,36 +5,59 @@ class TagGenerator {
         self.address = address
     }
 
+    private func generateFromMain(fullTransaction: FullTransaction) -> [String] {
+        let transaction = fullTransaction.transaction
+
+        guard let value = transaction.value, let from = transaction.from else {
+            return []
+        }
+
+        guard let to = transaction.to else {
+            return ["contractCreation"]
+        }
+
+        var tags = [String]()
+
+        if value > 0, from == address {
+            tags.append(contentsOf: ["\(TransactionTag.evmCoin)_outgoing", TransactionTag.evmCoin, "outgoing"])
+        }
+
+        if to == address || fullTransaction.internalTransactions.contains(where: { $0.to == address }) {
+            tags.append(contentsOf: ["\(TransactionTag.evmCoin)_incoming", TransactionTag.evmCoin, "incoming"])
+        }
+
+        if let mainDecoration = fullTransaction.mainDecoration {
+            tags.append(contentsOf: mainDecoration.tags(fromAddress: from, toAddress: to, userAddress: address))
+        }
+
+        return tags
+    }
+
+    private func generateFromEvents(fullTransaction: FullTransaction) -> [String] {
+        let transaction = fullTransaction.transaction
+        var tags = [String]()
+
+        for event in fullTransaction.eventDecorations {
+            tags.append(contentsOf: event.tags(userAddress: address))
+        }
+
+        return tags
+    }
+
 }
 
 extension TagGenerator {
 
     func generate(for fullTransaction: FullTransaction) -> [TransactionTag] {
-        let transaction = fullTransaction.transaction
+        let tags = generateFromMain(fullTransaction: fullTransaction) + generateFromEvents(fullTransaction: fullTransaction)
+        let uniqueTags = Array(Set(tags))
 
-        guard let toAddress = transaction.to else {
-            return [TransactionTag(name: "contractCreation", transactionHash: transaction.hash)]
+        return uniqueTags.map { tag in
+            TransactionTag(
+                    name: tag,
+                    transactionHash: fullTransaction.transaction.hash
+            )
         }
-
-        var tags = [String]()
-
-        if transaction.from == address && transaction.value > 0 {
-            tags.append(contentsOf: ["\(TransactionTag.evmCoin)_outgoing", TransactionTag.evmCoin, "outgoing"])
-        }
-
-        if toAddress == address || fullTransaction.internalTransactions.contains(where: { $0.to == address }) {
-            tags.append(contentsOf: ["\(TransactionTag.evmCoin)_incoming", TransactionTag.evmCoin, "incoming"])
-        }
-
-        if let mainDecoration = fullTransaction.mainDecoration, !(mainDecoration is UnknownMethodDecoration) {
-            tags.append(contentsOf: mainDecoration.tags(fromAddress: transaction.from, toAddress: toAddress, userAddress: address))
-        }
-
-        for event in fullTransaction.eventDecorations {
-            tags.append(contentsOf: event.tags(fromAddress: transaction.from, toAddress: toAddress, userAddress: address))
-        }
-
-        return Array(Set(tags)).map({ TransactionTag(name: $0, transactionHash: transaction.hash) })
     }
 
 }

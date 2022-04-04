@@ -19,7 +19,6 @@ public class Kit {
     private let blockchain: IBlockchain
     private let transactionManager: TransactionManager
     private let transactionSyncManager: TransactionSyncManager
-    private let internalTransactionSyncer: TransactionInternalTransactionSyncer
     private let decorationManager: DecorationManager
     private let eip20Storage: Eip20Storage
     private let state: EthereumKitState
@@ -33,13 +32,12 @@ public class Kit {
     public let logger: Logger
 
 
-    init(blockchain: IBlockchain, transactionManager: TransactionManager, transactionSyncManager: TransactionSyncManager, internalTransactionSyncer: TransactionInternalTransactionSyncer,
+    init(blockchain: IBlockchain, transactionManager: TransactionManager, transactionSyncManager: TransactionSyncManager,
          state: EthereumKitState = EthereumKitState(),
          address: Address, chain: Chain, uniqueId: String, transactionProvider: ITransactionProvider, decorationManager: DecorationManager, eip20Storage: Eip20Storage, logger: Logger) {
         self.blockchain = blockchain
         self.transactionManager = transactionManager
         self.transactionSyncManager = transactionSyncManager
-        self.internalTransactionSyncer = internalTransactionSyncer
         self.state = state
         self.address = address
         self.chain = chain
@@ -52,11 +50,10 @@ public class Kit {
         state.accountState = blockchain.accountState
         state.lastBlockHeight = blockchain.lastBlockHeight
 
-        transactionManager.allTransactionsObservable
+        transactionManager.fullTransactionsObservable
                 .observeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
                 .subscribe(onNext: { [weak self] transactions in
                     self?.blockchain.syncAccountState()
-                    self?.internalTransactionSyncer.sync(transactions: transactions)
                 })
                 .disposed(by: disposeBag)
     }
@@ -104,11 +101,12 @@ extension Kit {
     }
 
     public var allTransactionsObservable: Observable<[FullTransaction]> {
-        transactionManager.allTransactionsObservable
+        transactionManager.fullTransactionsObservable
     }
 
     public func start() {
         blockchain.start()
+        transactionSyncManager.sync()
     }
 
     public func stop() {
@@ -117,26 +115,27 @@ extension Kit {
 
     public func refresh() {
         blockchain.refresh()
+        transactionSyncManager.sync()
     }
 
     public func transactionsObservable(tags: [[String]]) -> Observable<[FullTransaction]> {
-        transactionManager.transactionsObservable(tags: tags)
+        transactionManager.fullTransactionsObservable(tags: tags)
     }
 
     public func transactionsSingle(tags: [[String]], fromHash: Data? = nil, limit: Int? = nil) -> Single<[FullTransaction]> {
-        transactionManager.transactionsSingle(tags: tags, fromHash: fromHash, limit: limit)
+        transactionManager.fullTransactionsSingle(tags: tags, fromHash: fromHash, limit: limit)
     }
 
     public func pendingTransactions(tags: [[String]]) -> [FullTransaction] {
-        transactionManager.pendingTransactions(tags: tags)
+        transactionManager.pendingFullTransactions(tags: tags)
     }
 
     public func transaction(hash: Data) -> FullTransaction? {
-        transactionManager.transaction(hash: hash)
+        transactionManager.fullTransaction(hash: hash)
     }
 
     public func fullTransactions(byHashes hashes: [Data]) -> [FullTransaction] {
-        transactionManager.transactions(byHashes: hashes)
+        transactionManager.fullTransactions(byHashes: hashes)
     }
 
     public func rawTransaction(transactionData: TransactionData, gasPrice: GasPrice, gasLimit: Int, nonce: Int? = nil) -> Single<RawTransaction> {
@@ -158,7 +157,7 @@ extension Kit {
     public func sendSingle(rawTransaction: RawTransaction, signature: Signature) -> Single<FullTransaction> {
         blockchain.sendSingle(rawTransaction: rawTransaction, signature: signature)
                 .do(onSuccess: { [weak self] transaction in
-                    self?.transactionManager.handle(sentTransaction: transaction)
+                    self?.transactionManager.handle(transactions: [transaction])
                 })
                 .map {
                     FullTransaction(transaction: $0)
@@ -209,10 +208,6 @@ extension Kit {
         transactionSyncManager.add(syncer: transactionSyncer)
     }
 
-    public func removeSyncer(byId id: String) {
-        transactionSyncManager.removeSyncer(byId: id)
-    }
-
     public func add(decorator: IDecorator) {
         decorationManager.add(decorator: decorator)
     }
@@ -223,10 +218,6 @@ extension Kit {
 
     public func transferTransactionData(to: Address, value: BigUInt) -> TransactionData {
         transactionManager.etherTransferTransactionData(to: to, value: value)
-    }
-
-    public func add(transactionWatcher: ITransactionWatcher) {
-        internalTransactionSyncer.add(watcher: transactionWatcher)
     }
 
     public func statusInfo() -> [(String, Any)] {
@@ -252,6 +243,18 @@ extension Kit {
         eip20Storage.save(balance: balance, contractAddress: contractAddress)
     }
 
+    public func events() -> [Event] {
+        eip20Storage.events()
+    }
+
+    public func events(hashes: [Data]) -> [Event] {
+        eip20Storage.events(hashes: hashes)
+    }
+
+    public func save(events: [Event]) {
+        eip20Storage.save(events: events)
+    }
+
 }
 
 extension Kit: IBlockchainDelegate {
@@ -264,6 +267,7 @@ extension Kit: IBlockchainDelegate {
         state.lastBlockHeight = lastBlockHeight
 
         lastBlockHeightSubject.onNext(lastBlockHeight)
+        transactionSyncManager.sync()
     }
 
     func onUpdate(accountState: AccountState) {
@@ -318,41 +322,29 @@ extension Kit {
         let storage: IApiStorage = try ApiStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "api-\(uniqueId)")
         let blockchain = RpcBlockchain.instance(address: address, storage: storage, syncer: syncer, transactionBuilder: transactionBuilder, logger: logger)
 
-        let transactionStorage: ITransactionStorage & ITransactionSyncerStateStorage = TransactionStorage(databaseDirectoryUrl: try dataDirectoryUrl(), databaseFileName: "transactions-\(uniqueId)")
-        let notSyncedTransactionPool = NotSyncedTransactionPool(storage: transactionStorage)
-        let notSyncedTransactionManager = NotSyncedTransactionManager(pool: notSyncedTransactionPool, storage: transactionStorage)
+        let transactionStorage: ITransactionStorage = TransactionStorage(databaseDirectoryUrl: try dataDirectoryUrl(), databaseFileName: "transactions-\(uniqueId)")
 
-        let userInternalTransactionSyncer = UserInternalTransactionSyncer(provider: transactionProvider, storage: transactionStorage)
-        let transactionInternalTransactionSyncer = TransactionInternalTransactionSyncer(provider: transactionProvider, storage: transactionStorage)
         let ethereumTransactionSyncer = EthereumTransactionSyncer(provider: transactionProvider)
-        let transactionSyncer = TransactionSyncer(blockchain: blockchain, storage: transactionStorage)
-        let pendingTransactionSyncer = PendingTransactionSyncer(blockchain: blockchain, storage: transactionStorage)
-        let transactionSyncManager = TransactionSyncManager(notSyncedTransactionManager: notSyncedTransactionManager)
-        let decorationManager = DecorationManager(address: address)
+        let internalTransactionSyncer = InternalTransactionSyncer(provider: transactionProvider, storage: transactionStorage)
+        let decorationManager = DecorationManager()
         let tagGenerator = TagGenerator(address: address)
-        let transactionManager = TransactionManager(address: address, storage: transactionStorage, transactionSyncManager: transactionSyncManager, decorationManager: decorationManager, tagGenerator: tagGenerator)
+        let transactionManager = TransactionManager(storage: transactionStorage, decorationManager: decorationManager, tagGenerator: tagGenerator)
+        let transactionSyncManager = TransactionSyncManager(transactionManager: transactionManager)
 
         transactionSyncManager.add(syncer: ethereumTransactionSyncer)
-        transactionSyncManager.add(syncer: userInternalTransactionSyncer)
-        transactionSyncManager.add(syncer: transactionInternalTransactionSyncer)
-        transactionSyncManager.add(syncer: transactionSyncer)
-        transactionSyncManager.add(syncer: pendingTransactionSyncer)
+        transactionSyncManager.add(syncer: internalTransactionSyncer)
 
         let eip20Storage = Eip20Storage(databaseDirectoryUrl: try dataDirectoryUrl(), databaseFileName: "eip20-\(uniqueId)")
 
         let kit = Kit(
-                blockchain: blockchain, transactionManager: transactionManager, transactionSyncManager: transactionSyncManager, internalTransactionSyncer: transactionInternalTransactionSyncer,
+                blockchain: blockchain, transactionManager: transactionManager, transactionSyncManager: transactionSyncManager,
                 address: address, chain: chain,
                 uniqueId: uniqueId, transactionProvider: transactionProvider, decorationManager: decorationManager, eip20Storage: eip20Storage, logger: logger
         )
 
         blockchain.delegate = kit
-        transactionSyncManager.set(ethereumKit: kit)
-        transactionSyncer.listener = transactionSyncManager
-        pendingTransactionSyncer.listener = transactionSyncManager
-        userInternalTransactionSyncer.listener = transactionSyncManager
-        transactionInternalTransactionSyncer.listener = transactionSyncManager
 
+        decorationManager.add(decorator: InternalTransactionsDecorator(storage: transactionStorage))
         decorationManager.add(decorator: ContractCallDecorator(address: address))
 
         return kit

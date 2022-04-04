@@ -16,8 +16,4 @@ public class ApproveEventDecoration: ContractEventDecoration {
         super.init(contractAddress: contractAddress)
     }
 
-    public override func tags(fromAddress: Address, toAddress: Address, userAddress: Address) -> [String] {
-        []
-    }
-
 }

@@ -1,13 +1,28 @@
 class DecorationManager {
-    private let address: Address
     private var decorators = [IDecorator]()
-
-    init(address: Address) {
-        self.address = address
-    }
 
     func add(decorator: IDecorator) {
         decorators.append(decorator)
+    }
+
+    private func decorateMain(fullTransaction: FullTransaction) {
+        guard fullTransaction.mainDecoration == nil else {
+            return
+        }
+
+        guard let transactionData = fullTransaction.transactionData else {
+            return
+        }
+
+        let input = transactionData.input
+
+        let methodId = Data(input.prefix(4))
+        var inputArguments = Data()
+        if input.count > 4 {
+            inputArguments = Data(input.suffix(from: 4))
+        }
+
+        fullTransaction.mainDecoration = UnknownMethodDecoration(methodId: methodId, inputArguments: inputArguments)
     }
 
     func decorateTransaction(transactionData: TransactionData) -> ContractMethodDecoration? {
@@ -16,7 +31,7 @@ class DecorationManager {
         }
 
         for decorator in decorators {
-            if let decoration = decorator.decorate(transactionData: transactionData, fullTransaction: nil) {
+            if let decoration = decorator.decorate(transactionData: transactionData) {
                 return decoration
             }
         }
@@ -24,42 +39,32 @@ class DecorationManager {
         return nil
     }
 
-    func decorateFullTransaction(fullTransaction: FullTransaction) -> FullTransaction {
-        let transaction = fullTransaction.transaction
+    func decorate(transactions: [Transaction]) -> [FullTransaction] {
+        let fullTransactions = transactions.map { FullTransaction(transaction: $0) }
 
-        guard let to = transaction.to else {
-            return fullTransaction
+        let map = fullTransactions.reduce(into: [Data: FullTransaction]()) { $0[$1.transaction.hash] = $1 }
+        for decorator in decorators {
+            decorator.decorate(fullTransactionMap: map)
         }
 
-        let transactionData = TransactionData(to: to, value: transaction.value, input: transaction.input)
-
-        guard !transactionData.input.isEmpty else {
-            return fullTransaction
+        for fullTransaction in fullTransactions {
+            decorateMain(fullTransaction: fullTransaction)
         }
 
-        var fullTransaction = fullTransaction
+        return fullTransactions
+    }
+
+    func decorate(fullRpcTransaction: FullRpcTransaction) -> FullTransaction {
+        let fullTransaction = FullTransaction(transaction: fullRpcTransaction.transaction)
 
         for decorator in decorators {
-            if let decoration = decorator.decorate(transactionData: transactionData, fullTransaction: fullTransaction) {
-                fullTransaction.mainDecoration = decoration
-            }
-
-            if let logs = fullTransaction.receiptWithLogs?.logs {
-                fullTransaction.eventDecorations.append(contentsOf: decorator.decorate(logs: logs))
-            }
+            decorator.decorate(fullTransaction: fullTransaction, fullRpcTransaction: fullRpcTransaction)
         }
 
-        if fullTransaction.mainDecoration == nil {
-            let methodId = Data(fullTransaction.transaction.input.prefix(4))
-            var inputArguments = Data()
-            if fullTransaction.transaction.input.count > 4 {
-                inputArguments = Data(fullTransaction.transaction.input.suffix(from: 4))
-            }
-
-            fullTransaction.mainDecoration = UnknownMethodDecoration(methodId: methodId, inputArguments: inputArguments)
-        }
+        decorateMain(fullTransaction: fullTransaction)
 
         return fullTransaction
+
     }
 
 }

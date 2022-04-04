@@ -1,72 +1,49 @@
 import RxSwift
 import BigInt
 
-class EthereumTransactionSyncer: AbstractTransactionSyncer {
+class EthereumTransactionSyncer {
     private let provider: ITransactionProvider
-    private let scheduler = ConcurrentDispatchQueueScheduler(qos: .background)
 
     init(provider: ITransactionProvider) {
         self.provider = provider
-
-        super.init(id: "ethereum_transaction_syncer")
     }
 
-    private func handle(transactions: [ProviderTransaction]) {
-        if !transactions.isEmpty {
-            if let blockNumber = transactions.first?.blockNumber {
-                update(lastSyncBlockNumber: blockNumber)
-            }
+}
 
-            let notSyncedTransactions = transactions.map { etherscanTransaction in
-                NotSyncedTransaction(
-                        hash: etherscanTransaction.hash,
-                        transaction: RpcTransaction(
-                                hash: etherscanTransaction.hash,
-                                nonce: etherscanTransaction.nonce,
-                                from: etherscanTransaction.from,
-                                to: etherscanTransaction.to,
-                                value: etherscanTransaction.value,
-                                gasPrice: etherscanTransaction.gasPrice,
-                                gasLimit: etherscanTransaction.gasLimit,
-                                input: etherscanTransaction.input,
-                                blockHash: etherscanTransaction.blockHash,
-                                blockNumber: etherscanTransaction.blockNumber,
-                                transactionIndex: etherscanTransaction.transactionIndex
-                        ),
-                        timestamp: etherscanTransaction.timestamp
-                )
-            }
+extension EthereumTransactionSyncer: ITransactionSyncer {
 
-            delegate.add(notSyncedTransactions: notSyncedTransactions)
-        }
+    func transactionsSingle(lastBlockNumber: Int) -> Single<[Transaction]> {
+        provider.transactionsSingle(startBlock: lastBlockNumber + 1)
+                .map { transactions in
+                    transactions.map { tx in
+                        var isFailed: Bool
 
-        state = .synced
-    }
-
-    private func sync() {
-        guard !state.syncing else {
-            return
-        }
-
-        let single = provider.transactionsSingle(startBlock: lastSyncBlockNumber + 1)
-
-        state = .syncing(progress: nil)
-
-        single
-                .observeOn(scheduler)
-                .subscribe(
-                        onSuccess: { [weak self] transactions in
-                            self?.handle(transactions: transactions)
-                        },
-                        onError: { [weak self] error in
-                            self?.state = .notSynced(error: error)
+                        if let status = tx.txReceiptStatus {
+                            isFailed = status != 1
+                        } else if let isError = tx.isError {
+                            isFailed = isError != 0
+                        } else if let gasUsed = tx.gasUsed {
+                            isFailed = tx.gasLimit == gasUsed
+                        } else {
+                            isFailed = false
                         }
-                )
-                .disposed(by: disposeBag)
-    }
 
-    override func onLastBlockNumber(blockNumber: Int) {
-        sync()
+                        return Transaction(
+                                hash: tx.hash,
+                                timestamp: tx.timestamp,
+                                isFailed: isFailed,
+                                blockNumber: tx.blockNumber,
+                                transactionIndex: tx.transactionIndex,
+                                from: tx.from,
+                                to: tx.to,
+                                value: tx.value,
+                                input: tx.input,
+                                nonce: tx.nonce,
+                                gasPrice: tx.gasPrice,
+                                gasUsed: tx.gasUsed
+                        )
+                    }
+                }
     }
 
 }

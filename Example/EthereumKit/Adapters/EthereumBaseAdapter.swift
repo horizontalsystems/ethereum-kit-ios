@@ -26,7 +26,7 @@ class EthereumBaseAdapter: IAdapter {
 
         var amount: Decimal = 0
 
-        if let significand = Decimal(string: transaction.value.description), significand != 0 {
+        if let value = transaction.value, let significand = Decimal(string: value.description), significand != 0 {
             let sign: FloatingPointSign = from.mine ? .minus : .plus
             amount = Decimal(sign: sign, exponent: -decimal, significand: significand)
         }
@@ -43,14 +43,14 @@ class EthereumBaseAdapter: IAdapter {
         return TransactionRecord(
                 transactionHash: transaction.hash.toHexString(),
                 transactionHashData: transaction.hash,
-                transactionIndex: fullTransaction.receiptWithLogs?.receipt.transactionIndex ?? 0,
+                transactionIndex: transaction.transactionIndex ?? 0,
                 interTransactionIndex: 0,
                 amount: amount,
                 timestamp: transaction.timestamp,
                 from: from,
                 to: to,
-                blockHeight: fullTransaction.receiptWithLogs?.receipt.blockNumber,
-                isError: fullTransaction.failed,
+                blockHeight: transaction.blockNumber,
+                isError: transaction.isFailed,
                 type: "",
                 mainDecoration: fullTransaction.mainDecoration,
                 eventsDecorations: fullTransaction.eventDecorations

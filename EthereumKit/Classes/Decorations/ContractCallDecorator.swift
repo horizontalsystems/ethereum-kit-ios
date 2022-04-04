@@ -1,29 +1,7 @@
 import BigInt
 import Foundation
 
-class ContractCallDecorator: IDecorator {
-
-    private class RecognizedContractMethod {
-        let name: String
-        let signature: String?
-        let arguments: [Any]?
-        let methodId: Data
-
-        init(name: String, signature: String, arguments: [Any]) {
-            self.name = name
-            self.signature = signature
-            self.arguments = arguments
-            methodId = ContractMethodHelper.methodId(signature: signature)
-        }
-        
-        init(name: String, methodId: Data) {
-            self.name = name
-            self.methodId = methodId
-            signature = nil
-            arguments = nil
-        }
-    }
-
+class ContractCallDecorator {
     private var address: Address
     private var methods = [Data: RecognizedContractMethod]()
 
@@ -33,7 +11,7 @@ class ContractCallDecorator: IDecorator {
         addMethod(name: "Deposit", signature: "deposit(uint256)", arguments: [BigUInt.self])
         addMethod(name: "TradeWithHintAndFee", signature: "tradeWithHintAndFee(address,uint256,address,address,uint256,uint256,address,uint256,bytes)",
                 arguments: [Address.self, BigUInt.self, Address.self, Address.self, BigUInt.self, BigUInt.self, Address.self, BigUInt.self, Data.self])
-        
+
         addMethod(name: "Farm Deposit", methodId: "0xe2bbb158")
         addMethod(name: "Farm Withdrawal", methodId: "0x441a3e70")
         addMethod(name: "Pool Deposit", methodId: "0xf305d719")
@@ -52,11 +30,27 @@ class ContractCallDecorator: IDecorator {
         methods[method.methodId] = method
     }
 
-    func decorate(transactionData: TransactionData, fullTransaction: FullTransaction?) -> ContractMethodDecoration? {
-        guard let transaction = fullTransaction?.transaction, transaction.from == address else {
-            return nil
+    private func decorateMain(fullTransaction: FullTransaction) {
+        guard fullTransaction.transaction.from == address else {
+            return
         }
 
+        guard let transactionData = fullTransaction.transactionData else {
+            return
+        }
+
+        guard let decoration = decorate(transactionData: transactionData) else {
+            return
+        }
+
+        fullTransaction.mainDecoration = decoration
+    }
+
+}
+
+extension ContractCallDecorator: IDecorator {
+
+    public func decorate(transactionData: TransactionData) -> ContractMethodDecoration? {
         let methodId = Data(transactionData.input.prefix(4))
         let inputArguments = Data(transactionData.input.suffix(from: 4))
 
@@ -71,8 +65,39 @@ class ContractCallDecorator: IDecorator {
         return RecognizedMethodDecoration(method: method.name, arguments: arguments)
     }
 
-    func decorate(logs: [TransactionLog]) -> [ContractEventDecoration] {
-        []
+    public func decorate(fullTransaction: FullTransaction, fullRpcTransaction: FullRpcTransaction) {
+        decorateMain(fullTransaction: fullTransaction)
+    }
+
+    func decorate(fullTransactionMap: [Data: FullTransaction]) {
+        for fullTransaction in fullTransactionMap.values {
+            decorateMain(fullTransaction: fullTransaction)
+        }
+    }
+
+}
+
+extension ContractCallDecorator {
+
+    private class RecognizedContractMethod {
+        let name: String
+        let signature: String?
+        let arguments: [Any]?
+        let methodId: Data
+
+        init(name: String, signature: String, arguments: [Any]) {
+            self.name = name
+            self.signature = signature
+            self.arguments = arguments
+            methodId = ContractMethodHelper.methodId(signature: signature)
+        }
+
+        init(name: String, methodId: Data) {
+            self.name = name
+            self.methodId = methodId
+            signature = nil
+            arguments = nil
+        }
     }
 
 }

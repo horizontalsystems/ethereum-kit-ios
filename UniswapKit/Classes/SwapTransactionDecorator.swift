@@ -11,22 +11,18 @@ class SwapTransactionDecorator {
         self.contractMethodFactories = contractMethodFactories
     }
 
-    private func totalTokenAmount(userAddress: Address, tokenAddress: Address, logs: [TransactionLog], collectIncomingAmounts: Bool) -> BigUInt {
+    private func totalTokenAmount(userAddress: Address, tokenAddress: Address, eventDecorations: [ContractEventDecoration], collectIncomingAmounts: Bool) -> BigUInt {
         var amountIn: BigUInt = 0
         var amountOut: BigUInt = 0
 
-        for log in logs {
-            if log.address == tokenAddress,
-               let erc20Event = log.erc20Event(),
-               let transferEventDecoration = erc20Event as? TransferEventDecoration {
+        for eventDecoration in eventDecorations {
+            if eventDecoration.contractAddress == tokenAddress, let transferEventDecoration = eventDecoration as? TransferEventDecoration {
                 if transferEventDecoration.from == userAddress {
                     amountIn += transferEventDecoration.value
-                    log.set(relevant: true)
                 }
 
                 if transferEventDecoration.to == userAddress {
                     amountOut += transferEventDecoration.value
-                    log.set(relevant: true)
                 }
             }
         }
@@ -46,18 +42,8 @@ class SwapTransactionDecorator {
         return amountOut
     }
 
-}
-
-extension SwapTransactionDecorator: IDecorator {
-
-    func decorate(transactionData: TransactionData, fullTransaction: FullTransaction?) -> ContractMethodDecoration? {
+    private func methodDecoration(transactionData: TransactionData, internalTransactions: [InternalTransaction]? = nil, eventDecorations: [ContractEventDecoration]? = nil) -> ContractMethodDecoration? {
         guard let contractMethod = contractMethodFactories.createMethod(input: transactionData.input) else {
-            return nil
-        }
-
-        if let transaction = fullTransaction?.transaction, transaction.from != address {
-            // We only parse transactions created by the user (owner of this wallet).
-            // If a swap was initiated by someone else and "recipient" is set to user's it should be shown as just an incoming transaction
             return nil
         }
 
@@ -68,9 +54,9 @@ extension SwapTransactionDecorator: IDecorator {
             }
 
             var amountIn: BigUInt? = nil
-            if let fullTransaction = fullTransaction {
-                let change = totalETHIncoming(userAddress: method.to, transactions: fullTransaction.internalTransactions)
-                amountIn = fullTransaction.transaction.value - change
+            if let internalTransactions = internalTransactions {
+                let change = totalETHIncoming(userAddress: method.to, transactions: internalTransactions)
+                amountIn = transactionData.value - change
             }
 
             return SwapMethodDecoration(
@@ -89,8 +75,8 @@ extension SwapTransactionDecorator: IDecorator {
             }
 
             var amountOut: BigUInt? = nil
-            if let logs = fullTransaction?.receiptWithLogs?.logs {
-                amountOut = totalTokenAmount(userAddress: method.to, tokenAddress: lastCoinInPath, logs: logs, collectIncomingAmounts: false)
+            if let eventDecorations = eventDecorations {
+                amountOut = totalTokenAmount(userAddress: method.to, tokenAddress: lastCoinInPath, eventDecorations: eventDecorations, collectIncomingAmounts: false)
             }
 
             return SwapMethodDecoration(
@@ -109,7 +95,7 @@ extension SwapTransactionDecorator: IDecorator {
             }
 
             var amountOut: BigUInt? = nil
-            if let internalTransactions = fullTransaction?.internalTransactions {
+            if let internalTransactions = internalTransactions {
                 amountOut = totalETHIncoming(userAddress: method.to, transactions: internalTransactions)
             }
 
@@ -129,8 +115,8 @@ extension SwapTransactionDecorator: IDecorator {
             }
 
             var amountOut: BigUInt? = nil
-            if let logs = fullTransaction?.receiptWithLogs?.logs {
-                amountOut = totalTokenAmount(userAddress: method.to, tokenAddress: lastCoinInPath, logs: logs, collectIncomingAmounts: false)
+            if let eventDecorations = eventDecorations {
+                amountOut = totalTokenAmount(userAddress: method.to, tokenAddress: lastCoinInPath, eventDecorations: eventDecorations, collectIncomingAmounts: false)
             }
 
             return SwapMethodDecoration(
@@ -149,8 +135,8 @@ extension SwapTransactionDecorator: IDecorator {
             }
 
             var amountIn: BigUInt? = nil
-            if let logs = fullTransaction?.receiptWithLogs?.logs {
-                amountIn = totalTokenAmount(userAddress: method.to, tokenAddress: firstCoinInPath, logs: logs, collectIncomingAmounts: true)
+            if let eventDecorations = eventDecorations {
+                amountIn = totalTokenAmount(userAddress: method.to, tokenAddress: firstCoinInPath, eventDecorations: eventDecorations, collectIncomingAmounts: true)
             }
 
             return SwapMethodDecoration(
@@ -169,8 +155,8 @@ extension SwapTransactionDecorator: IDecorator {
             }
 
             var amountIn: BigUInt? = nil
-            if let logs = fullTransaction?.receiptWithLogs?.logs {
-                amountIn = totalTokenAmount(userAddress: method.to, tokenAddress: firstCoinInPath, logs: logs, collectIncomingAmounts: true)
+            if let eventDecorations = eventDecorations {
+                amountIn = totalTokenAmount(userAddress: method.to, tokenAddress: firstCoinInPath, eventDecorations: eventDecorations, collectIncomingAmounts: true)
             }
 
             return SwapMethodDecoration(
@@ -187,8 +173,40 @@ extension SwapTransactionDecorator: IDecorator {
         }
     }
 
-    public func decorate(logs: [TransactionLog]) -> [ContractEventDecoration] {
-        []
+    private func decorateMain(fullTransaction: FullTransaction, eventDecorations: [ContractEventDecoration]) {
+        guard fullTransaction.transaction.from == address else {
+            // We only parse transactions created by the user (owner of this wallet).
+            // If a swap was initiated by someone else and "recipient" is set to user's it should be shown as just an incoming transaction
+            return
+        }
+
+        guard let transactionData = fullTransaction.transactionData else {
+            return
+        }
+
+        guard let decoration = methodDecoration(transactionData: transactionData, internalTransactions: fullTransaction.internalTransactions, eventDecorations: eventDecorations) else {
+            return
+        }
+
+        fullTransaction.mainDecoration = decoration
+    }
+
+}
+
+extension SwapTransactionDecorator: IDecorator {
+
+    public func decorate(transactionData: TransactionData) -> ContractMethodDecoration? {
+        methodDecoration(transactionData: transactionData)
+    }
+
+    public func decorate(fullTransaction: FullTransaction, fullRpcTransaction: FullRpcTransaction) {
+        decorateMain(fullTransaction: fullTransaction, eventDecorations: fullRpcTransaction.rpcTransactionReceipt.logs.compactMap { $0.erc20EventDecoration() })
+    }
+
+    public func decorate(fullTransactionMap: [Data: FullTransaction]) {
+        for fullTransaction in fullTransactionMap.values {
+            decorateMain(fullTransaction: fullTransaction, eventDecorations: fullTransaction.eventDecorations)
+        }
     }
 
 }
