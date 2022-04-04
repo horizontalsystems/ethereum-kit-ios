@@ -13,16 +13,14 @@ class OneInchTransactionDecorator {
         self.contractMethodFactories = contractMethodFactories
     }
 
-    private func totalTokenIncoming(userAddress: Address, tokenAddress: Address, logs: [TransactionLog]) -> BigUInt? {
+    private func totalTokenIncoming(userAddress: Address, tokenAddress: Address, eventDecorations: [ContractEventDecoration]) -> BigUInt? {
         var amountOut: BigUInt = 0
 
-        for log in logs {
-            if log.address == tokenAddress,
-               let erc20Event = log.erc20Event(),
-               let transferEventDecoration = erc20Event as? TransferEventDecoration,
+        for decoration in eventDecorations {
+            if decoration.contractAddress == tokenAddress,
+               let transferEventDecoration = decoration as? TransferEventDecoration,
                transferEventDecoration.to == userAddress, transferEventDecoration.value > 0 {
                 amountOut += transferEventDecoration.value
-                log.set(relevant: true)
             }
         }
 
@@ -51,18 +49,8 @@ class OneInchTransactionDecorator {
         }
     }
 
-}
-
-extension OneInchTransactionDecorator: IDecorator {
-
-    func decorate(transactionData: TransactionData, fullTransaction: FullTransaction?) -> ContractMethodDecoration? {
+    private func methodDecoration(transactionData: TransactionData, internalTransactions: [InternalTransaction]? = nil, eventDecorations: [ContractEventDecoration]? = nil) -> ContractMethodDecoration? {
         guard let contractMethod = contractMethodFactories.createMethod(input: transactionData.input) else {
-            return nil
-        }
-
-        if let transaction = fullTransaction?.transaction, transaction.from != address {
-            // We only parse transactions created by the user (owner of this wallet).
-            // If a swap was initiated by someone else and "recipient" is set to user's it should be shown as just an incoming transaction
             return nil
         }
 
@@ -71,26 +59,25 @@ extension OneInchTransactionDecorator: IDecorator {
             var tokenOut: OneInchMethodDecoration.Token? = nil
             var amountOut: BigUInt? = nil
 
-            if let fullTransaction = fullTransaction,
-               let amount = totalETHIncoming(userAddress: address, transactions: fullTransaction.internalTransactions) {
+            if let internalTransactions = internalTransactions,
+               let amount = totalETHIncoming(userAddress: address, transactions: internalTransactions) {
                 amountOut = amount
                 tokenOut = .evmCoin
             }
 
-            if tokenOut == nil, let logs = fullTransaction?.receiptWithLogs?.logs {
-                let incomingEip20Log = logs.first(where: { log in
-                    if let erc20Event = log.erc20Event(), let transferEventDecoration = erc20Event as? TransferEventDecoration {
+            if tokenOut == nil, let eventDecorations = eventDecorations {
+                let incomingEip20EventDecoration = eventDecorations.first(where: { eventDecoration in
+                    if let transferEventDecoration = eventDecoration as? TransferEventDecoration {
                         return transferEventDecoration.to == address
                     }
 
                     return false
                 })
 
-                if let incomingEip20Log = incomingEip20Log,
-                   let erc20Event = incomingEip20Log.erc20Event(), let transferEventDecoration = erc20Event as? TransferEventDecoration,
-                   let amount = totalTokenIncoming(userAddress: address, tokenAddress: transferEventDecoration.contractAddress, logs: logs) {
+                if let decoration = incomingEip20EventDecoration,
+                   let amount = totalTokenIncoming(userAddress: address, tokenAddress: decoration.contractAddress, eventDecorations: eventDecorations) {
                     amountOut = amount
-                    tokenOut = .eip20Coin(address: transferEventDecoration.contractAddress)
+                    tokenOut = .eip20Coin(address: decoration.contractAddress)
                 }
             }
 
@@ -108,14 +95,14 @@ extension OneInchTransactionDecorator: IDecorator {
             let swapDescription = method.swapDescription
             let tokenOut = addressToToken(address: swapDescription.dstToken)
 
-            if let fullTransaction = fullTransaction,
+            if let internalTransactions = internalTransactions,
                case .evmCoin = tokenOut,
-               let amount = totalETHIncoming(userAddress: swapDescription.dstReceiver, transactions: fullTransaction.internalTransactions) {
+               let amount = totalETHIncoming(userAddress: swapDescription.dstReceiver, transactions: internalTransactions) {
                 amountOut = amount
             }
 
-            if amountOut == nil, let logs = fullTransaction?.receiptWithLogs?.logs,
-               let amount = totalTokenIncoming(userAddress: swapDescription.dstReceiver, tokenAddress: swapDescription.dstToken, logs: logs){
+            if amountOut == nil, let eventDecorations = eventDecorations,
+               let amount = totalTokenIncoming(userAddress: swapDescription.dstReceiver, tokenAddress: swapDescription.dstToken, eventDecorations: eventDecorations){
                 amountOut = amount
             }
 
@@ -131,15 +118,47 @@ extension OneInchTransactionDecorator: IDecorator {
                     recipient: swapDescription.dstReceiver
             )
 
-        case let method as OneInchV4Method:
+        case is OneInchV4Method:
             return OneInchMethodDecoration()
 
         default: return nil
         }
     }
 
-    public func decorate(logs: [TransactionLog]) -> [ContractEventDecoration] {
-        []
+    private func decorateMain(fullTransaction: FullTransaction, eventDecorations: [ContractEventDecoration]) {
+        guard fullTransaction.transaction.from == address else {
+            // We only parse transactions created by the user (owner of this wallet).
+            // If a swap was initiated by someone else and "recipient" is set to user's it should be shown as just an incoming transaction
+            return
+        }
+
+        guard let transactionData = fullTransaction.transactionData else {
+            return
+        }
+
+        guard let decoration = methodDecoration(transactionData: transactionData, internalTransactions: fullTransaction.internalTransactions, eventDecorations: eventDecorations) else {
+            return
+        }
+
+        fullTransaction.mainDecoration = decoration
+    }
+
+}
+
+extension OneInchTransactionDecorator: IDecorator {
+
+    public func decorate(transactionData: TransactionData) -> ContractMethodDecoration? {
+        methodDecoration(transactionData: transactionData)
+    }
+
+    public func decorate(fullTransaction: FullTransaction, fullRpcTransaction: FullRpcTransaction) {
+        decorateMain(fullTransaction: fullTransaction, eventDecorations: fullRpcTransaction.rpcTransactionReceipt.logs.compactMap { $0.erc20EventDecoration() })
+    }
+
+    public func decorate(fullTransactionMap: [Data: FullTransaction]) {
+        for fullTransaction in fullTransactionMap.values {
+            decorateMain(fullTransaction: fullTransaction, eventDecorations: fullTransaction.eventDecorations)
+        }
     }
 
 }

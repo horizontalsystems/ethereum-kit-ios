@@ -26,41 +26,51 @@ class EtherscanTransactionProvider {
     }
 
     private func providerTransaction(data: [String: String]) -> ProviderTransaction? {
+        guard let blockNumber = data["blockNumber"].flatMap({ Int($0) }) else { return nil }
+        guard let timestamp = data["timeStamp"].flatMap({ Int($0) }) else { return nil }
         guard let hash = data["hash"].flatMap({ Data(hex: $0) }) else { return nil }
         guard let nonce = data["nonce"].flatMap({ Int($0) }) else { return nil }
+        guard let transactionIndex = data["transactionIndex"].flatMap({ Int($0) }) else { return nil }
         guard let from = data["from"].flatMap({ Data(hex: $0) }).map({ Address(raw: $0) }) else { return nil }
         guard let toData = data["to"].flatMap({ Data(hex: $0) }) else { return nil }
         guard let value = data["value"].flatMap({ BigUInt($0) }) else { return nil }
         guard let gasLimit = data["gas"].flatMap({ Int($0) }) else { return nil }
         guard let gasPrice = data["gasPrice"].flatMap({ Int($0) }) else { return nil }
         guard let input = data["input"].flatMap({ Data(hex: $0) }) else { return nil }
-        guard let timestamp = data["timeStamp"].flatMap({ Int($0) }) else { return nil }
 
-        let to: Address? = toData.count > 0 ? Address(raw: toData) : nil
-        let transaction = ProviderTransaction(hash: hash, nonce: nonce, input: input, from: from, to: to, value: value, gasLimit: gasLimit, gasPrice: gasPrice, timestamp: timestamp)
-
-        transaction.blockHash = data["blockHash"].flatMap({ Data(hex: $0) })
-        transaction.blockNumber = data["blockNumber"].flatMap { Int($0) }
-        transaction.gasUsed = data["gasUsed"].flatMap { Int($0) }
-        transaction.cumulativeGasUsed = data["cumulativeGasUsed"].flatMap { Int($0) }
-        transaction.isError = data["isError"].flatMap { Int($0) }
-        transaction.transactionIndex = data["transactionIndex"].flatMap { Int($0) }
-        transaction.txReceiptStatus = data["txreceipt_status"].flatMap { Int($0) }
-
-        return transaction
+        return ProviderTransaction(
+                blockNumber: blockNumber,
+                timestamp: timestamp,
+                hash: hash,
+                nonce: nonce,
+                blockHash: data["blockHash"].flatMap({ Data(hex: $0) }),
+                transactionIndex: transactionIndex,
+                from: from,
+                to: toData.count > 0 ? Address(raw: toData) : nil,
+                value: value,
+                gasLimit: gasLimit,
+                gasPrice: gasPrice,
+                isError: data["isError"].flatMap { Int($0) },
+                txReceiptStatus: data["txreceipt_status"].flatMap { Int($0) },
+                input: input,
+                cumulativeGasUsed: data["cumulativeGasUsed"].flatMap { Int($0) },
+                gasUsed: data["gasUsed"].flatMap { Int($0) }
+        )
     }
 
-    private func internalTransaction(data: [String: String]) -> InternalTransaction? {
+    private func internalTransaction(data: [String: String]) -> ProviderInternalTransaction? {
         guard let hash = data["hash"].flatMap({ Data(hex: $0) }) else { return nil }
         guard let blockNumber = data["blockNumber"].flatMap({ Int($0) }) else { return nil }
+        guard let timestamp = data["timeStamp"].flatMap({ Int($0) }) else { return nil }
         guard let from = data["from"].flatMap({ Data(hex: $0) }).map({ Address(raw: $0) }) else { return nil }
         guard let to = data["to"].flatMap({ Data(hex: $0) }).map({ Address(raw: $0) }) else { return nil }
         guard let value = data["value"].flatMap({ BigUInt($0) }) else { return nil }
         guard let traceId = data["traceId"] else { return nil }
 
-        return InternalTransaction(
+        return ProviderInternalTransaction(
                 hash: hash,
                 blockNumber: blockNumber,
+                timestamp: timestamp,
                 from: from,
                 to: to,
                 value: value,
@@ -69,11 +79,42 @@ class EtherscanTransactionProvider {
     }
 
     private func providerTokenTransaction(data: [String: String]) -> ProviderTokenTransaction? {
+        guard let blockNumber = data["blockNumber"].flatMap({ Int($0) }) else { return nil }
+        guard let timestamp = data["timeStamp"].flatMap({ Int($0) }) else { return nil }
         guard let hash = data["hash"].flatMap({ Data(hex: $0) }) else { return nil }
+        guard let nonce = data["nonce"].flatMap({ Int($0) }) else { return nil }
+        guard let blockHash = data["blockHash"].flatMap({ Data(hex: $0) }) else { return nil }
+        guard let from = data["from"].flatMap({ Data(hex: $0) }).map({ Address(raw: $0) }) else { return nil }
+        guard let contractAddress = data["contractAddress"].flatMap({ Data(hex: $0) }).map({ Address(raw: $0) }) else { return nil }
+        guard let to = data["to"].flatMap({ Data(hex: $0) }).map({ Address(raw: $0) }) else { return nil }
+        guard let value = data["value"].flatMap({ BigUInt($0) }) else { return nil }
+        guard let tokenName = data["tokenName"] else { return nil }
+        guard let tokenSymbol = data["tokenSymbol"] else { return nil }
+        guard let tokenDecimal = data["tokenDecimal"].flatMap({ Int($0) }) else { return nil }
+        guard let transactionIndex = data["transactionIndex"].flatMap({ Int($0) }) else { return nil }
+        guard let gasLimit = data["gas"].flatMap({ Int($0) }) else { return nil }
+        guard let gasPrice = data["gasPrice"].flatMap({ Int($0) }) else { return nil }
+        guard let gasUsed = data["gasUsed"].flatMap({ Int($0) }) else { return nil }
+        guard let cumulativeGasUsed = data["cumulativeGasUsed"].flatMap({ Int($0) }) else { return nil }
 
         return ProviderTokenTransaction(
+                blockNumber: blockNumber,
+                timestamp: timestamp,
                 hash: hash,
-                blockNumber: data["blockNumber"].flatMap { Int($0) }
+                nonce: nonce,
+                blockHash: blockHash,
+                from: from,
+                contractAddress: contractAddress,
+                to: to,
+                value: value,
+                tokenName: tokenName,
+                tokenSymbol: tokenSymbol,
+                tokenDecimal: tokenDecimal,
+                transactionIndex: transactionIndex,
+                gasLimit: gasLimit,
+                gasPrice: gasPrice,
+                gasUsed: gasUsed,
+                cumulativeGasUsed: cumulativeGasUsed
         )
     }
 
@@ -96,7 +137,7 @@ extension EtherscanTransactionProvider: ITransactionProvider {
         }
     }
 
-    func internalTransactionsSingle(startBlock: Int) -> Single<[InternalTransaction]> {
+    func internalTransactionsSingle(startBlock: Int) -> Single<[ProviderInternalTransaction]> {
         let params: [String: Any] = [
             "module": "account",
             "action": "txlistinternal",
@@ -106,12 +147,12 @@ extension EtherscanTransactionProvider: ITransactionProvider {
             "sort": "desc"
         ]
 
-        return apiSingle(params: params).map { [weak self] array -> [InternalTransaction] in
+        return apiSingle(params: params).map { [weak self] array -> [ProviderInternalTransaction] in
             array.compactMap { self?.internalTransaction(data: $0) }
         }
     }
 
-    func internalTransactionsSingle(transactionHash: Data) -> Single<[InternalTransaction]> {
+    func internalTransactionsSingle(transactionHash: Data) -> Single<[ProviderInternalTransaction]> {
         let params: [String: Any] = [
             "module": "account",
             "action": "txlistinternal",
@@ -119,7 +160,7 @@ extension EtherscanTransactionProvider: ITransactionProvider {
             "sort": "desc"
         ]
 
-        return apiSingle(params: params).map { [weak self] array -> [InternalTransaction] in
+        return apiSingle(params: params).map { [weak self] array -> [ProviderInternalTransaction] in
             array.compactMap { self?.internalTransaction(data: $0) }
         }
     }

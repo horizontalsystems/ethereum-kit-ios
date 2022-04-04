@@ -41,7 +41,7 @@ class TransactionSigner {
     }
 
     func signEip1559(rawTransaction: RawTransaction, maxFeePerGas: Int, maxPriorityFeePerGas: Int) throws -> Data {
-        var toEncode: [Any] = [
+        let toEncode: [Any] = [
             chainId,
             rawTransaction.nonce,
             maxPriorityFeePerGas,

@@ -15,15 +15,15 @@ PODS:
   - Cuckoo (1.6.0):
     - Cuckoo/Swift (= 1.6.0)
   - Cuckoo/Swift (1.6.0)
-  - Erc20Kit.swift (0.15.1):
+  - Erc20Kit.swift (0.16.0):
     - BigInt (~> 5.0)
-    - EthereumKit.swift (~> 0.15)
+    - EthereumKit.swift (~> 0.16)
     - GRDB.swift (~> 5.0)
     - OpenSslKit.swift (~> 1.0)
     - RxSwift (~> 5.0)
     - Secp256k1Kit.swift (~> 1.0)
     - UIExtensions.swift (~> 1.1.0)
-  - EthereumKit.swift (0.15.1):
+  - EthereumKit.swift (0.16.0):
     - BigInt (~> 5.0)
     - BlueSocket (~> 1.0)
     - GRDB.swift (~> 5.0)
@@ -48,10 +48,10 @@ PODS:
     - SwiftNIOWebSocket
   - Nimble (9.2.1)
   - ObjectMapper (4.2.0)
-  - OneInchKit.swift (0.15.1):
+  - OneInchKit.swift (0.16.0):
     - BigInt (~> 5.0)
-    - Erc20Kit.swift (~> 0.15)
-    - EthereumKit.swift (~> 0.15)
+    - Erc20Kit.swift (~> 0.16)
+    - EthereumKit.swift (~> 0.16)
     - OpenSslKit.swift (~> 1.0)
     - RxSwift (~> 5.0)
     - Secp256k1Kit.swift (~> 1.0)
@@ -108,10 +108,10 @@ PODS:
     - SwiftNIOCore (= 2.32.3)
     - SwiftNIOHTTP1 (= 2.32.3)
   - UIExtensions.swift (1.1.1)
-  - UniswapKit.swift (0.15.1):
+  - UniswapKit.swift (0.16.0):
     - BigInt (~> 5.0)
-    - Erc20Kit.swift (~> 0.15)
-    - EthereumKit.swift (~> 0.15)
+    - Erc20Kit.swift (~> 0.16)
+    - EthereumKit.swift (~> 0.16)
     - OpenSslKit.swift (~> 1.0)
     - RxSwift (~> 5.0)
     - Secp256k1Kit.swift (~> 1.0)
@@ -203,14 +203,14 @@ SPEC CHECKSUMS:
   CNIOSHA1: cdf6523d56bbb78be9b11ae4e6340fbc591b492d
   CNIOWindows: f5aa9dfb401b440a7b4c9cd911e53e981a787193
   Cuckoo: 4da01933dfcc88b23a3bb3ac95314d35c93e7c3d
-  Erc20Kit.swift: c02d1efa90b22888a3af3e7c72ffbcdd84ff7700
-  EthereumKit.swift: 32033cf22cf4cb9d14f1e5a70eeb21a0859bd56e
+  Erc20Kit.swift: 45f76da262a8a8d616ef3b0b09784b2e3db3cf0c
+  EthereumKit.swift: 9f03569fb3e89a8bc325eed72e33046a560ebe22
   GRDB.swift: 09b2c81379f8949e1f6e2696f620bf15b7b9a051
   HdWalletKit.swift: 30b1ab08c736422eeefe346369ced89574e2ec00
   HsToolKit.swift: 88f5c25dcf2b6fde2370f0125a8864782fbb3d90
   Nimble: e7e615c0335ee4bf5b0d786685451e62746117d5
   ObjectMapper: 1eb41f610210777375fa806bf161dc39fb832b81
-  OneInchKit.swift: d41bce443c99389a5e08757a2975d33693054e3d
+  OneInchKit.swift: a30eafefc02a12a14042125dc1de32e7b76c6eca
   OpenSslKit.swift: 0e2194853fd9ce42006cf18c89743331406a10a9
   Quick: 6473349e43b9271a8d43839d9ba1c442ed1b7ac4
   RxCocoa: e2ed092d5432e4296aa818021d27de4090ac0354
@@ -229,7 +229,7 @@ SPEC CHECKSUMS:
   SwiftNIOTLS: 1b8290ec775238ccc714ed842d929494df95a2c2
   SwiftNIOWebSocket: 035534780a7ed1c1b1fb068084690ce4747f83f5
   UIExtensions.swift: 3ed084c0343ddd0f86c7c558d37759e1fd7d5778
-  UniswapKit.swift: 8a61c5a0e01bce030ba367848c2a75b6291cd647
+  UniswapKit.swift: adf5315f385f33ecceb0d2bbb8e504a6246f1739
 
 PODFILE CHECKSUM: 65b88ae6a329cae8d6464af23b1e10b5d8a8de69
 

@@ -109,10 +109,6 @@ extension Kit {
         evmKit.add(decorator: SwapTransactionDecorator(address: evmKit.address, contractMethodFactories: SwapContractMethodFactories.shared))
     }
 
-    public static func addTransactionWatcher(to evmKit: EthereumKit.Kit) {
-        evmKit.add(transactionWatcher: UniswapTransactionWatcher(address: evmKit.address))
-    }
-
 }
 
 extension Kit {

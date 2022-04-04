@@ -78,7 +78,7 @@ class TransactionCell: UITableViewCell {
                 .joined(separator: "\n")
     }
 
-    private func stringify(decoration: TransactionDecoration, transaction: TransactionRecord) -> String {
+    private func stringify(decoration: ContractMethodDecoration, transaction: TransactionRecord) -> String {
         let coinName = Manager.shared.erc20Tokens[transaction.to.address!.eip55] ?? "n/a"
         let fromAddress = transaction.from.address!.eip55.prefix(6)
 

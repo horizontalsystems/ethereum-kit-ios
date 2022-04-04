@@ -2,18 +2,12 @@ import RxSwift
 import BigInt
 
 class TransactionSyncManager {
+    private let transactionManager: TransactionManager
     private let disposeBag = DisposeBag()
-    private let scheduler = ConcurrentDispatchQueueScheduler(qos: .background)
-    private let stateSubject = PublishSubject<SyncState>()
-    private let transactionsSubject = PublishSubject<[FullTransaction]>()
-    private let notSyncedTransactionManager: NotSyncedTransactionManager
-    private let syncStateQueue = DispatchQueue(label: "transaction_sync_manager_state_queue", qos: .background)
-    private let transactionsQueue = DispatchQueue(label: "transaction_sync_manager_transactions_queue", qos: .background)
 
     private var syncers = [ITransactionSyncer]()
-    private var syncerDisposables = [String: Disposable]()
-    private var accountState: AccountState? = nil
 
+    private let stateSubject = PublishSubject<SyncState>()
     var state: SyncState = .notSynced(error: Kit.SyncError.notStarted) {
         didSet {
             if state != oldValue {
@@ -22,109 +16,80 @@ class TransactionSyncManager {
         }
     }
 
-    var stateObservable: Observable<SyncState> {
-        stateSubject.asObservable()
+    init(transactionManager: TransactionManager) {
+        self.transactionManager = transactionManager
     }
 
-    var transactionsObservable: Observable<[FullTransaction]> {
-        transactionsSubject.asObservable()
-    }
+    private func handle(transactionsArray: [[Transaction]]) {
+        let transactions = Array(transactionsArray.joined())
 
-    init(notSyncedTransactionManager: NotSyncedTransactionManager) {
-        self.notSyncedTransactionManager = notSyncedTransactionManager
-    }
+        var dictionary = [Data: Transaction]()
 
-    func set(ethereumKit: EthereumKit.Kit) {
-        accountState = ethereumKit.accountState
-
-        ethereumKit.accountStateObservable
-                .observeOn(scheduler)
-                .subscribe(onNext: { [weak self] in
-                    self?.onUpdateAccountState(accountState: $0)
-                })
-                .disposed(by: disposeBag)
-
-        ethereumKit.lastBlockHeightObservable
-                .observeOn(scheduler)
-                .subscribe(onNext: { [weak self] in
-                    self?.onLastBlockNumber(blockNumber: $0)
-                })
-                .disposed(by: disposeBag)
-
-        ethereumKit.syncStateObservable
-                .observeOn(scheduler)
-                .subscribe(onNext: { [weak self] in
-                    self?.onEthereumKitSyncState(state: $0)
-                })
-                .disposed(by: disposeBag)
-    }
-
-    private func onEthereumKitSyncState(state: SyncState) {
-        if .synced == state {
-            syncers.forEach { $0.onEthereumSynced() }
-        }
-    }
-
-    private func onLastBlockNumber(blockNumber: Int) {
-        syncers.forEach { $0.onLastBlockNumber(blockNumber: blockNumber) }
-    }
-
-    private func onUpdateAccountState(accountState: AccountState) {
-        if self.accountState != nil {
-            syncers.forEach {
-                $0.onUpdateAccountState(accountState: accountState)
+        for transaction in transactions {
+            if let existingTransaction = dictionary[transaction.hash] {
+                dictionary[transaction.hash] = merge(lhsTransaction: existingTransaction, rhsTransaction: transaction)
+            } else {
+                dictionary[transaction.hash] = transaction
             }
         }
 
-        self.accountState = accountState
+        transactionManager.handle(transactions: Array(dictionary.values))
     }
 
-    private func syncState() {
-        switch state {
-        case .synced:
-            if let notSyncedState = syncers.first(where: { $0.state.notSynced })?.state {
-                state = notSyncedState
-            }
-        case .syncing, .notSynced:
-            state = syncers.first { $0.state.notSynced }?.state ??
-                    syncers.first { $0.state.syncing }?.state ??
-                    .synced
-        }
-    }
-
-    func add(syncer: ITransactionSyncer) {
-        guard !syncers.contains(where: { $0.id == syncer.id }) else {
-            return
-        }
-
-        syncer.set(delegate: notSyncedTransactionManager)
-
-        syncers.append(syncer)
-        syncerDisposables[syncer.id] = syncer.stateObservable
-                .observeOn(scheduler)
-                .subscribe(onNext: { [weak self] _ in
-                    self?.syncStateQueue.async { [weak self] in
-                        self?.syncState()
-                    }
-                })
-
-        syncer.start()
-    }
-
-    func removeSyncer(byId id: String) {
-        syncers.removeAll { $0.id == id }
-        syncerDisposables[id]?.dispose()
-        syncerDisposables.removeValue(forKey: id)
+    private func merge(lhsTransaction lhs: Transaction, rhsTransaction rhs: Transaction) -> Transaction {
+        Transaction(
+                hash: lhs.hash,
+                timestamp: lhs.timestamp,
+                isFailed: lhs.isFailed,
+                blockNumber: lhs.blockNumber ?? rhs.blockNumber,
+                transactionIndex: lhs.transactionIndex ?? rhs.transactionIndex,
+                from: lhs.from ?? rhs.from,
+                to: lhs.to ?? rhs.to,
+                value: lhs.value ?? rhs.value,
+                input: lhs.input ?? rhs.input,
+                nonce: lhs.nonce ?? rhs.nonce,
+                gasPrice: lhs.gasPrice ?? rhs.gasPrice,
+                maxFeePerGas: lhs.maxFeePerGas ?? rhs.maxFeePerGas,
+                maxPriorityFeePerGas: lhs.maxPriorityFeePerGas ?? rhs.maxPriorityFeePerGas,
+                gasLimit: lhs.gasLimit ?? rhs.gasLimit,
+                gasUsed: lhs.gasUsed ?? rhs.gasUsed,
+                replacedWith: lhs.replacedWith ?? rhs.replacedWith
+        )
     }
 
 }
 
-extension TransactionSyncManager: ITransactionSyncerListener {
+extension TransactionSyncManager {
 
-    func onTransactionsSynced(fullTransactions: [FullTransaction]) {
-        transactionsQueue.async { [weak self] in
-            self?.transactionsSubject.onNext(fullTransactions)
+    var stateObservable: Observable<SyncState> {
+        stateSubject.asObservable()
+    }
+
+    func add(syncer: ITransactionSyncer) {
+        syncers.append(syncer)
+    }
+
+    func sync() {
+        guard !state.syncing else {
+            return
         }
+
+        state = .syncing(progress: nil)
+
+        let lastBlockNumber = transactionManager.lastTransaction()?.blockNumber ?? 0
+
+        Single.zip(syncers.map { $0.transactionsSingle(lastBlockNumber: lastBlockNumber) })
+                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .utility))
+                .subscribe(
+                        onSuccess: { [weak self] transactionsArray in
+                            self?.handle(transactionsArray: transactionsArray)
+                            self?.state = .synced
+                        },
+                        onError: { [weak self] error in
+                            self?.state = .notSynced(error: error)
+                        }
+                )
+                .disposed(by: disposeBag)
     }
 
 }

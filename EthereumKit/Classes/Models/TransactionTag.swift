@@ -14,7 +14,7 @@ public class TransactionTag: Record {
     }
 
     public override class var databaseTableName: String {
-        "transaction_tags"
+        "transactionTags"
     }
 
     enum Columns: String, ColumnExpression, CaseIterable {

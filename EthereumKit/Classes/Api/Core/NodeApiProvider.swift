@@ -38,9 +38,9 @@ class NodeApiProvider {
                     responseCacherBehavior: .doNotCache
                 )
                 .catchError { [weak self] error in
-                    if case NetworkManager.RequestError.invalidResponse(let statusCode, let data) = error, statusCode == 404,
+                    if case NetworkManager.RequestError.invalidResponse(let statusCode, _) = error, statusCode == 404,
                        let provider = self, urlIndex < provider.urls.count - 1 {
-                        return provider.rpcResultSingle(urlIndex: urlIndex + 1, parameters: parameters) ?? Single.error(error)
+                        return provider.rpcResultSingle(urlIndex: urlIndex + 1, parameters: parameters)
                     } else {
                         return Single.error(error)
                     }
@@ -97,7 +97,7 @@ extension NodeApiProvider: IRpcApiProvider {
     }
 
     func single<T>(rpc: JsonRpc<T>) -> Single<T> {
-        guard let url = urls.first else {
+        guard !urls.isEmpty else {
             return Single.error(RequestError.apiUrlNotFound)
         }
 

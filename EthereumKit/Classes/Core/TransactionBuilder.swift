@@ -22,15 +22,17 @@ class TransactionBuilder {
 
         return Transaction(
                 hash: transactionHash,
-                nonce: rawTransaction.nonce,
-                input: rawTransaction.data,
+                timestamp: Int(Date().timeIntervalSince1970),
+                isFailed: false,
                 from: address,
                 to: rawTransaction.to,
                 value: rawTransaction.value,
-                gasLimit: rawTransaction.gasLimit,
+                input: rawTransaction.data,
+                nonce: rawTransaction.nonce,
                 gasPrice: rawTransaction.gasPrice.max,
                 maxFeePerGas: maxFeePerGas,
-                maxPriorityFeePerGas: maxPriorityFeePerGas
+                maxPriorityFeePerGas: maxPriorityFeePerGas,
+                gasLimit: rawTransaction.gasLimit
         )
     }
 

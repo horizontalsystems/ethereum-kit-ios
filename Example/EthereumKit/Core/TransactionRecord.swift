@@ -16,7 +16,7 @@ struct TransactionRecord {
     let isError: Bool
     let type: String
 
-    let mainDecoration: TransactionDecoration?
+    let mainDecoration: ContractMethodDecoration?
     let eventsDecorations: [ContractEventDecoration]
 }
 
