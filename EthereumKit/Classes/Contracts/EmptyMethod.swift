@@ -1,0 +1,2 @@
+public class EmptyMethod: ContractMethod {
+}

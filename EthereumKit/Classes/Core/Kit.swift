@@ -156,11 +156,9 @@ extension Kit {
 
     public func sendSingle(rawTransaction: RawTransaction, signature: Signature) -> Single<FullTransaction> {
         blockchain.sendSingle(rawTransaction: rawTransaction, signature: signature)
-                .do(onSuccess: { [weak self] transaction in
-                    self?.transactionManager.handle(transactions: [transaction])
-                })
-                .map {
-                    FullTransaction(transaction: $0)
+                .map { [unowned self] transaction in
+                    let fullTransactions = transactionManager.handle(transactions: [transaction])
+                    return fullTransactions[0]
                 }
     }
 
@@ -208,12 +206,20 @@ extension Kit {
         transactionSyncManager.add(syncer: transactionSyncer)
     }
 
-    public func add(decorator: IDecorator) {
-        decorationManager.add(decorator: decorator)
+    public func add(methodDecorator: IMethodDecorator) {
+        decorationManager.add(methodDecorator: methodDecorator)
     }
 
-    public func decorate(transactionData: TransactionData) -> ContractMethodDecoration? {
-        decorationManager.decorateTransaction(transactionData: transactionData)
+    public func add(eventDecorator: IEventDecorator) {
+        decorationManager.add(eventDecorator: eventDecorator)
+    }
+
+    public func add(transactionDecorator: ITransactionDecorator) {
+        decorationManager.add(transactionDecorator: transactionDecorator)
+    }
+
+    public func decorate(transactionData: TransactionData) -> TransactionDecoration {
+        decorationManager.decorateTransaction(from: address, transactionData: transactionData)
     }
 
     public func transferTransactionData(to: Address, value: BigUInt) -> TransactionData {
@@ -326,9 +332,8 @@ extension Kit {
 
         let ethereumTransactionSyncer = EthereumTransactionSyncer(provider: transactionProvider)
         let internalTransactionSyncer = InternalTransactionSyncer(provider: transactionProvider, storage: transactionStorage)
-        let decorationManager = DecorationManager()
-        let tagGenerator = TagGenerator(address: address)
-        let transactionManager = TransactionManager(storage: transactionStorage, decorationManager: decorationManager, tagGenerator: tagGenerator)
+        let decorationManager = DecorationManager(userAddress: address, storage: transactionStorage)
+        let transactionManager = TransactionManager(storage: transactionStorage, decorationManager: decorationManager)
         let transactionSyncManager = TransactionSyncManager(transactionManager: transactionManager)
 
         transactionSyncManager.add(syncer: ethereumTransactionSyncer)
@@ -344,8 +349,7 @@ extension Kit {
 
         blockchain.delegate = kit
 
-        decorationManager.add(decorator: InternalTransactionsDecorator(storage: transactionStorage))
-        decorationManager.add(decorator: ContractCallDecorator(address: address))
+        decorationManager.add(transactionDecorator: EthereumDecorator(address: address))
 
         return kit
     }

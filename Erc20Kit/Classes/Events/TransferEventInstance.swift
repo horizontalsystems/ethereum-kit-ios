@@ -1,18 +1,18 @@
 import EthereumKit
 import BigInt
 
-public class TransferEventDecoration: ContractEventDecoration {
+public class TransferEventInstance: ContractEventInstance {
     static let signature = ContractEvent(name: "Transfer", arguments: [.address, .address, .uint256]).signature
 
     public let from: Address
     public let to: Address
     public let value: BigUInt
 
-    public let tokenName: String?
-    public let tokenSymbol: String?
-    public let tokenDecimal: Int?
+    public let tokenName: String
+    public let tokenSymbol: String
+    public let tokenDecimal: Int
 
-    init(contractAddress: Address, from: Address, to: Address, value: BigUInt, tokenName: String? = nil, tokenSymbol: String? = nil, tokenDecimal: Int? = nil) {
+    init(contractAddress: Address, from: Address, to: Address, value: BigUInt, tokenName: String, tokenSymbol: String, tokenDecimal: Int) {
         self.from = from
         self.to = to
         self.value = value
@@ -24,7 +24,7 @@ public class TransferEventDecoration: ContractEventDecoration {
     }
 
     public override func tags(userAddress: Address) -> [String] {
-        var tags: [String] = [contractAddress.hex, "eip20Transfer"]
+        var tags: [String] = [contractAddress.hex]
 
         if from == userAddress {
             tags.append("\(contractAddress.hex)_outgoing")
