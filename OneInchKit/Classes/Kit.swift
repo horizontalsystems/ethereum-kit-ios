@@ -97,8 +97,9 @@ extension Kit {
     }
 
 
-    public static func addDecorator(to evmKit: EthereumKit.Kit) {
-        evmKit.add(decorator: OneInchTransactionDecorator(address: evmKit.address, contractMethodFactories: OneInchContractMethodFactories.shared))
+    public static func addDecorators(to evmKit: EthereumKit.Kit) {
+        evmKit.add(methodDecorator: OneInchMethodDecorator(contractMethodFactories: OneInchContractMethodFactories.shared))
+        evmKit.add(transactionDecorator: OneInchTransactionDecorator(address: evmKit.address))
     }
 
     private static func routerAddress(chain: Chain) throws -> Address {

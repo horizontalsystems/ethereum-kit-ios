@@ -1,7 +1,7 @@
 import EthereumKit
 import BigInt
 
-public class ApproveEventDecoration: ContractEventDecoration {
+public class ApproveEventInstance: ContractEventInstance {
     static let signature = ContractEvent(name: "Approval", arguments: [.address, .address, .uint256]).signature
 
     public let owner: Address

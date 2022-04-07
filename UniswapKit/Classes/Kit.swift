@@ -105,8 +105,9 @@ extension Kit {
         return uniswapKit
     }
 
-    public static func addDecorator(to evmKit: EthereumKit.Kit) {
-        evmKit.add(decorator: SwapTransactionDecorator(address: evmKit.address, contractMethodFactories: SwapContractMethodFactories.shared))
+    public static func addDecorators(to evmKit: EthereumKit.Kit) {
+        evmKit.add(methodDecorator: SwapMethodDecorator(contractMethodFactories: SwapContractMethodFactories.shared))
+        evmKit.add(transactionDecorator: SwapTransactionDecorator())
     }
 
 }

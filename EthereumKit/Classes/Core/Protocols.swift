@@ -59,10 +59,17 @@ protocol ITransactionManagerDelegate: AnyObject {
     func onUpdate(transactionsWithInternal: [FullTransaction])
 }
 
-public protocol IDecorator {
-    func decorate(transactionData: TransactionData) -> ContractMethodDecoration?
-    func decorate(fullTransaction: FullTransaction, fullRpcTransaction: FullRpcTransaction)
-    func decorate(fullTransactionMap: [Data: FullTransaction])
+public protocol IMethodDecorator {
+    func contractMethod(input: Data) -> ContractMethod?
+}
+
+public protocol IEventDecorator {
+    func contractEventInstancesMap(transactions: [Transaction]) -> [Data: [ContractEventInstance]]
+    func contractEventInstances(logs: [TransactionLog]) -> [ContractEventInstance]
+}
+
+public protocol ITransactionDecorator {
+    func decoration(from: Address?, to: Address?, value: BigUInt?, contractMethod: ContractMethod?, internalTransactions: [InternalTransaction], eventInstances: [ContractEventInstance]) -> TransactionDecoration?
 }
 
 public protocol ITransactionProvider {

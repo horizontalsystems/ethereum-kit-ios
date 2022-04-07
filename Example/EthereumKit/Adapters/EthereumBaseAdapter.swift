@@ -14,46 +14,33 @@ class EthereumBaseAdapter: IAdapter {
     private func transactionRecord(fullTransaction: FullTransaction) -> TransactionRecord {
         let transaction = fullTransaction.transaction
 
-        let from = TransactionAddress(
-                address: transaction.from,
-                mine: transaction.from == receiveAddress
-        )
+        var amount: Decimal?
 
-        let to = TransactionAddress(
-                address: transaction.to,
-                mine: transaction.to == receiveAddress
-        )
-
-        var amount: Decimal = 0
-
-        if let value = transaction.value, let significand = Decimal(string: value.description), significand != 0 {
-            let sign: FloatingPointSign = from.mine ? .minus : .plus
-            amount = Decimal(sign: sign, exponent: -decimal, significand: significand)
+        if let value = transaction.value, let significand = Decimal(string: value.description) {
+            amount = Decimal(sign: .plus, exponent: -decimal, significand: significand)
         }
 
-        for internalTransaction in fullTransaction.internalTransactions {
-            if let significand = Decimal(string: internalTransaction.value.description), significand != 0 {
-                let mine = internalTransaction.from == receiveAddress
-                let sign: FloatingPointSign = mine ? .minus : .plus
-                let internalTransactionAmount = Decimal(sign: sign, exponent: -decimal, significand: significand)
-                amount += internalTransactionAmount
-            }
-        }
+//        for internalTransaction in fullTransaction.internalTransactions {
+//            if let significand = Decimal(string: internalTransaction.value.description), significand != 0 {
+//                let mine = internalTransaction.from == receiveAddress
+//                let sign: FloatingPointSign = mine ? .minus : .plus
+//                let internalTransactionAmount = Decimal(sign: sign, exponent: -decimal, significand: significand)
+//                amount += internalTransactionAmount
+//            }
+//        }
 
         return TransactionRecord(
                 transactionHash: transaction.hash.toHexString(),
                 transactionHashData: transaction.hash,
-                transactionIndex: transaction.transactionIndex ?? 0,
-                interTransactionIndex: 0,
-                amount: amount,
                 timestamp: transaction.timestamp,
-                from: from,
-                to: to,
+                isFailed: transaction.isFailed,
+                from: transaction.from,
+                to: transaction.to,
+                amount: amount,
+                input: transaction.input.map { $0.toHexString() },
                 blockHeight: transaction.blockNumber,
-                isError: transaction.isFailed,
-                type: "",
-                mainDecoration: fullTransaction.mainDecoration,
-                eventsDecorations: fullTransaction.eventDecorations
+                transactionIndex: transaction.transactionIndex,
+                decoration: String(describing: fullTransaction.decoration)
         )
     }
 

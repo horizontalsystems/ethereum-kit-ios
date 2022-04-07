@@ -4,16 +4,14 @@ import BigInt
 class TransactionManager {
     private let storage: ITransactionStorage
     private let decorationManager: DecorationManager
-    private let tagGenerator: TagGenerator
     private let disposeBag = DisposeBag()
 
     private let fullTransactionsSubject = PublishSubject<[FullTransaction]>()
     private let fullTransactionsWithTagsSubject = PublishSubject<[(transaction: FullTransaction, tags: [String])]>()
 
-    init(storage: ITransactionStorage, decorationManager: DecorationManager, tagGenerator: TagGenerator) {
+    init(storage: ITransactionStorage, decorationManager: DecorationManager) {
         self.storage = storage
         self.decorationManager = decorationManager
-        self.tagGenerator = tagGenerator
     }
 
     private func failPendingTransactions() -> [Transaction] {
@@ -108,9 +106,9 @@ extension TransactionManager {
         storage.lastTransaction()
     }
 
-    func handle(transactions: [Transaction]) {
+    @discardableResult func handle(transactions: [Transaction]) -> [FullTransaction] {
         guard !transactions.isEmpty else {
-            return
+            return []
         }
 
         storage.save(transactions: transactions)
@@ -124,7 +122,7 @@ extension TransactionManager {
         var allTags = [TransactionTag]()
 
         for fullTransaction in fullTransactions {
-            let tags = tagGenerator.generate(for: fullTransaction)
+            let tags = fullTransaction.decoration.tags().map { TransactionTag(name: $0, transactionHash: fullTransaction.transaction.hash) }
             allTags.append(contentsOf: tags)
             fullTransactionsWithTags.append((transaction: fullTransaction, tags: tags.map { $0.name }))
         }
@@ -133,6 +131,8 @@ extension TransactionManager {
 
         fullTransactionsSubject.onNext(fullTransactions)
         fullTransactionsWithTagsSubject.onNext(fullTransactionsWithTags)
+
+        return fullTransactions
     }
 
 }

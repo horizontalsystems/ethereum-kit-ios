@@ -155,9 +155,10 @@ extension Kit {
         evmKit.add(transactionSyncer: syncer)
     }
 
-    public static func addDecorator(to evmKit: EthereumKit.Kit) {
-        let decorator = Eip20TransactionDecorator(userAddress: evmKit.address, contractMethodFactories: Eip20ContractMethodFactories.shared, evmKit: evmKit)
-        evmKit.add(decorator: decorator)
+    public static func addDecorators(to evmKit: EthereumKit.Kit) {
+        evmKit.add(methodDecorator: Eip20MethodDecorator(contractMethodFactories: Eip20ContractMethodFactories.shared))
+        evmKit.add(eventDecorator: Eip20EventDecorator(userAddress: evmKit.address, evmKit: evmKit))
+        evmKit.add(transactionDecorator: Eip20TransactionDecorator(userAddress: evmKit.address))
     }
 
 }

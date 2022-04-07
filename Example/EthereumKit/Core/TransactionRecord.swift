@@ -4,23 +4,16 @@ import EthereumKit
 struct TransactionRecord {
     let transactionHash: String
     let transactionHashData: Data
-    let transactionIndex: Int
-    let interTransactionIndex: Int
-    let amount: Decimal
     let timestamp: Int
+    let isFailed: Bool
 
-    let from: TransactionAddress
-    let to: TransactionAddress
+    let from: Address?
+    let to: Address?
+    let amount: Decimal?
+    let input: String?
 
     let blockHeight: Int?
-    let isError: Bool
-    let type: String
+    let transactionIndex: Int?
 
-    let mainDecoration: ContractMethodDecoration?
-    let eventsDecorations: [ContractEventDecoration]
-}
-
-struct TransactionAddress {
-    let address: Address?
-    let mine: Bool
+    let decoration: String
 }
