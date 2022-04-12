@@ -12,10 +12,6 @@ public class OutgoingDecoration: TransactionDecoration {
     }
 
     public override func tags() -> [String] {
-        guard sentToSelf || value > 0 else {
-            return []
-        }
-
         var tags = [TransactionTag.evmCoin, "\(TransactionTag.evmCoin)_outgoing", "outgoing"]
 
         if sentToSelf {

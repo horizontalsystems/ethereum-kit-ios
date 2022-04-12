@@ -47,13 +47,7 @@ class DecorationManager {
             }
         }
 
-        let methodId = Data(input.prefix(4))
-        var inputArguments = Data()
-        if input.count > 4 {
-            inputArguments = Data(input.suffix(from: 4))
-        }
-
-        return UnknownMethod(id: methodId, inputArguments: inputArguments)
+        return nil
     }
 
     private func decoration(from: Address?, to: Address?, value: BigUInt?, contractMethod: ContractMethod?, internalTransactions: [InternalTransaction] = [], eventInstances: [ContractEventInstance] = []) -> TransactionDecoration {
@@ -97,9 +91,18 @@ extension DecorationManager {
         transactionDecorators.append(transactionDecorator)
     }
 
-    func decorateTransaction(from: Address, transactionData: TransactionData) -> TransactionDecoration {
-        let contractMethod = contractMethod(input: transactionData.input)
-        return decoration(from: from, to: transactionData.to, value: transactionData.value, contractMethod: contractMethod)
+    func decorateTransaction(from: Address, transactionData: TransactionData) -> TransactionDecoration? {
+        guard let contractMethod = contractMethod(input: transactionData.input) else {
+            return nil
+        }
+
+        for decorator in transactionDecorators {
+            if let decoration = decorator.decoration(from: from, to: transactionData.to, value: transactionData.value, contractMethod: contractMethod, internalTransactions: [], eventInstances: []) {
+                return decoration
+            }
+        }
+
+        return nil
     }
 
     func decorate(transactions: [Transaction]) -> [FullTransaction] {

@@ -218,7 +218,7 @@ extension Kit {
         decorationManager.add(transactionDecorator: transactionDecorator)
     }
 
-    public func decorate(transactionData: TransactionData) -> TransactionDecoration {
+    public func decorate(transactionData: TransactionData) -> TransactionDecoration? {
         decorationManager.decorateTransaction(from: address, transactionData: transactionData)
     }
 
