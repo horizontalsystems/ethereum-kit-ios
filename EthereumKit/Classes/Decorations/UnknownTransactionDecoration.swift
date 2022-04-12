@@ -1,8 +1,9 @@
 import BigInt
 
 public class UnknownTransactionDecoration: TransactionDecoration {
-    public let userAddress: Address
-    public let value: BigUInt?
+    private let userAddress: Address
+    private let value: BigUInt?
+
     public let internalTransactions: [InternalTransaction]
     public let eventInstances: [ContractEventInstance]
 

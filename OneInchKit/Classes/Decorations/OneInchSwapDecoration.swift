@@ -29,7 +29,7 @@ public class OneInchSwapDecoration: OneInchDecoration {
 
         tags.append(contentsOf: self.tags(token: tokenIn, type: "outgoing"))
 
-        if recipient != nil {
+        if recipient == nil {
             tags.append(contentsOf: self.tags(token: tokenOut, type: "incoming"))
         }
 
