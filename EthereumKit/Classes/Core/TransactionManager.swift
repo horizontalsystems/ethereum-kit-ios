@@ -4,14 +4,18 @@ import BigInt
 class TransactionManager {
     private let storage: ITransactionStorage
     private let decorationManager: DecorationManager
+    private let blockchain: IBlockchain
+    private let transactionProvider: ITransactionProvider
     private let disposeBag = DisposeBag()
 
     private let fullTransactionsSubject = PublishSubject<[FullTransaction]>()
     private let fullTransactionsWithTagsSubject = PublishSubject<[(transaction: FullTransaction, tags: [String])]>()
 
-    init(storage: ITransactionStorage, decorationManager: DecorationManager) {
+    init(storage: ITransactionStorage, decorationManager: DecorationManager, blockchain: IBlockchain, transactionProvider: ITransactionProvider) {
         self.storage = storage
         self.decorationManager = decorationManager
+        self.blockchain = blockchain
+        self.transactionProvider = transactionProvider
     }
 
     private func failPendingTransactions() -> [Transaction] {
@@ -54,6 +58,32 @@ extension TransactionManager {
                 value: value,
                 input: Data()
         )
+    }
+
+    func fullTransactionSingle(hash: Data) -> Single<FullTransaction> {
+        blockchain.transactionSingle(transactionHash: hash)
+                .flatMap { [unowned self] rpcTransaction -> Single<FullRpcTransaction> in
+                    if let blockNumber = rpcTransaction.blockNumber {
+                        return Single.zip(
+                                blockchain.transactionReceiptSingle(transactionHash: hash),
+                                blockchain.getBlock(blockNumber: blockNumber),
+                                transactionProvider.internalTransactionsSingle(transactionHash: hash)
+                        )
+                                .map { rpcTransactionReceipt, rpcBlock, providerInternalTransactions in
+                                    FullRpcTransaction(
+                                            rpcTransaction: rpcTransaction,
+                                            rpcTransactionReceipt: rpcTransactionReceipt,
+                                            rpcBlock: rpcBlock,
+                                            providerInternalTransactions: providerInternalTransactions
+                                    )
+                                }
+                    } else {
+                        return Single.just(FullRpcTransaction(rpcTransaction: rpcTransaction))
+                    }
+                }
+                .map { [unowned self] fullRpcTransaction in
+                    try decorationManager.decorate(fullRpcTransaction: fullRpcTransaction)
+                }
     }
 
     func fullTransactionsObservable(tags: [[String]]) -> Observable<[FullTransaction]> {

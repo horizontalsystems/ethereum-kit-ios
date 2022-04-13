@@ -8,17 +8,13 @@ public class TransferEventInstance: ContractEventInstance {
     public let to: Address
     public let value: BigUInt
 
-    public let tokenName: String
-    public let tokenSymbol: String
-    public let tokenDecimal: Int
+    public let tokenInfo: TokenInfo?
 
-    init(contractAddress: Address, from: Address, to: Address, value: BigUInt, tokenName: String, tokenSymbol: String, tokenDecimal: Int) {
+    init(contractAddress: Address, from: Address, to: Address, value: BigUInt, tokenInfo: TokenInfo? = nil) {
         self.from = from
         self.to = to
         self.value = value
-        self.tokenName = tokenName
-        self.tokenSymbol = tokenSymbol
-        self.tokenDecimal = tokenDecimal
+        self.tokenInfo = tokenInfo
 
         super.init(contractAddress: contractAddress)
     }
@@ -37,6 +33,16 @@ public class TransferEventInstance: ContractEventInstance {
         }
 
         return tags
+    }
+
+}
+
+extension TransferEventInstance {
+
+    public struct TokenInfo {
+        public let tokenName: String
+        public let tokenSymbol: String
+        public let tokenDecimal: Int
     }
 
 }

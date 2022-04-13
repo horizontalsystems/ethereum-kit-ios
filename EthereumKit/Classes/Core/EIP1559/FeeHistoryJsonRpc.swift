@@ -16,12 +16,8 @@ class FeeHistoryJsonRpc: JsonRpc<FeeHistory> {
     }
 
 
-    override func parse(result: Any?) throws -> FeeHistory {
-        guard let result = result else {
-            throw JsonRpcResponse.ResponseError.invalidResult(value: result)
-        }
-
-        return try FeeHistory(JSONObject: result)
+    override func parse(result: Any) throws -> FeeHistory {
+        try FeeHistory(JSONObject: result)
     }
 
 }

@@ -129,19 +129,37 @@ extension DecorationManager {
         }
     }
 
-    func decorate(fullRpcTransaction: FullRpcTransaction) -> FullTransaction {
-        let transaction = fullRpcTransaction.transaction
+    func decorate(fullRpcTransaction: FullRpcTransaction) throws -> FullTransaction {
+        let timestamp: Int
+
+        if let rpcBlock = fullRpcTransaction.rpcBlock {
+            timestamp = rpcBlock.timestamp
+        } else if let transaction = storage.transaction(hash: fullRpcTransaction.rpcTransaction.hash) {
+            timestamp = transaction.timestamp
+        } else {
+            throw RpcTransactionError.noTimestamp
+        }
+
+        let transaction = fullRpcTransaction.transaction(timestamp: timestamp)
 
         let decoration = decoration(
                 from: transaction.from,
                 to: transaction.to,
                 value: transaction.value,
                 contractMethod: contractMethod(input: transaction.input),
-                internalTransactions: fullRpcTransaction.internalTransactions,
-                eventInstances: eventInstances(logs: fullRpcTransaction.rpcTransactionReceipt.logs)
+                internalTransactions: fullRpcTransaction.providerInternalTransactions.map { $0.internalTransaction },
+                eventInstances: fullRpcTransaction.rpcTransactionReceipt.map { eventInstances(logs: $0.logs) } ?? []
         )
 
         return FullTransaction(transaction: transaction, decoration: decoration)
+    }
+
+}
+
+extension DecorationManager {
+
+    public enum RpcTransactionError: Error {
+        case noTimestamp
     }
 
 }
