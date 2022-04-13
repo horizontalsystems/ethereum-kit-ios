@@ -2,25 +2,36 @@ import Foundation
 
 public struct FullRpcTransaction {
     public let rpcTransaction: RpcTransaction
-    public let rpcTransactionReceipt: RpcTransactionReceipt
-    public let rpcBlock: RpcBlock
-    public let internalTransactions: [InternalTransaction]
+    public let rpcTransactionReceipt: RpcTransactionReceipt?
+    public let rpcBlock: RpcBlock?
+    public let providerInternalTransactions: [ProviderInternalTransaction]
+
+    public init(rpcTransaction: RpcTransaction, rpcTransactionReceipt: RpcTransactionReceipt? = nil, rpcBlock: RpcBlock? = nil, providerInternalTransactions: [ProviderInternalTransaction] = []) {
+        self.rpcTransaction = rpcTransaction
+        self.rpcTransactionReceipt = rpcTransactionReceipt
+        self.rpcBlock = rpcBlock
+        self.providerInternalTransactions = providerInternalTransactions
+    }
 
     private var failed: Bool {
-        if let status = rpcTransactionReceipt.status {
+        guard let receipt = rpcTransactionReceipt else {
+            return false
+        }
+
+        if let status = receipt.status {
             return status == 0
         } else {
-            return rpcTransaction.gasLimit == rpcTransactionReceipt.gasUsed
+            return rpcTransaction.gasLimit == receipt.gasUsed
         }
     }
 
-    var transaction: Transaction {
+    func transaction(timestamp: Int) -> Transaction {
         Transaction(
                 hash: rpcTransaction.hash,
-                timestamp: rpcBlock.timestamp,
+                timestamp: timestamp,
                 isFailed: failed,
-                blockNumber: rpcBlock.number,
-                transactionIndex: rpcTransactionReceipt.transactionIndex,
+                blockNumber: rpcBlock?.number,
+                transactionIndex: rpcTransactionReceipt?.transactionIndex,
                 from: rpcTransaction.from,
                 to: rpcTransaction.to,
                 value: rpcTransaction.value,
@@ -30,7 +41,7 @@ public struct FullRpcTransaction {
                 maxFeePerGas: rpcTransaction.maxFeePerGas,
                 maxPriorityFeePerGas: rpcTransaction.maxPriorityFeePerGas,
                 gasLimit: rpcTransaction.gasLimit,
-                gasUsed: rpcTransactionReceipt.gasUsed
+                gasUsed: rpcTransactionReceipt?.gasUsed
         )
     }
 

@@ -25,10 +25,7 @@ extension TransactionLog {
                     contractAddress: address,
                     from: firstParam,
                     to: secondParam,
-                    value: BigUInt(data),
-                    tokenName: "",
-                    tokenSymbol: "",
-                    tokenDecimal: 18
+                    value: BigUInt(data)
             )
         }
 

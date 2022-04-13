@@ -87,6 +87,18 @@ class TransactionsController: UITableViewController {
         alert.addAction(UIAlertAction(title: "OK", style: .cancel))
         present(alert, animated: true)
 
+//        currentAdapter.transactionSingle(hash: transaction.transactionHashData)
+//                .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .utility))
+//                .subscribe(
+//                        onSuccess: { fullTransaction in
+//                            print("SUCCESS: \(fullTransaction.transaction.hash.toHexString())")
+//                        },
+//                        onError: { error in
+//                            print("ERROR: \(error)")
+//                        }
+//                )
+//                .disposed(by: disposeBag)
+
         tableView.deselectRow(at: indexPath, animated: true)
     }
 

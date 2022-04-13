@@ -118,6 +118,10 @@ extension Kit {
         transactionSyncManager.sync()
     }
 
+    public func transactionSingle(hash: Data) -> Single<FullTransaction> {
+        transactionManager.fullTransactionSingle(hash: hash)
+    }
+
     public func transactionsObservable(tags: [[String]]) -> Observable<[FullTransaction]> {
         transactionManager.fullTransactionsObservable(tags: tags)
     }
@@ -333,7 +337,7 @@ extension Kit {
         let ethereumTransactionSyncer = EthereumTransactionSyncer(provider: transactionProvider)
         let internalTransactionSyncer = InternalTransactionSyncer(provider: transactionProvider, storage: transactionStorage)
         let decorationManager = DecorationManager(userAddress: address, storage: transactionStorage)
-        let transactionManager = TransactionManager(storage: transactionStorage, decorationManager: decorationManager)
+        let transactionManager = TransactionManager(storage: transactionStorage, decorationManager: decorationManager, blockchain: blockchain, transactionProvider: transactionProvider)
         let transactionSyncManager = TransactionSyncManager(transactionManager: transactionManager)
 
         transactionSyncManager.add(syncer: ethereumTransactionSyncer)

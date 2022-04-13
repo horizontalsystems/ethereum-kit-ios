@@ -135,4 +135,8 @@ class EthereumBaseAdapter: IAdapter {
         return evmKit.estimateGas(to: address, amount: value, gasPrice: gasPrice)
     }
 
+    func transactionSingle(hash: Data) -> Single<FullTransaction> {
+        evmKit.transactionSingle(hash: hash)
+    }
+
 }

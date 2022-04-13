@@ -94,12 +94,12 @@ extension SpvBlockchain: IBlockchain {
         Single.just([])
     }
 
-    func transactionReceiptSingle(transactionHash: Data) -> Single<RpcTransactionReceipt?> {
+    func transactionReceiptSingle(transactionHash: Data) -> Single<RpcTransactionReceipt> {
         fatalError("Not implemented yet")
 //        rpcApiProvider.transactionReceiptStatusSingle(transactionHash: transactionHash)
     }
 
-    func transactionSingle(transactionHash: Data) -> Single<RpcTransaction?> {
+    func transactionSingle(transactionHash: Data) -> Single<RpcTransaction> {
         fatalError("Not implemented yet")
 //        rpcApiProvider.transactionExistSingle(transactionHash: transactionHash)
     }
@@ -118,7 +118,7 @@ extension SpvBlockchain: IBlockchain {
 //        rpcApiProvider.getEstimateGas(to: to, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice, data: data)
     }
 
-    func getBlock(blockNumber: Int) -> Single<RpcBlock?> {
+    func getBlock(blockNumber: Int) -> Single<RpcBlock> {
         fatalError("Not implemented yet")
     }
 

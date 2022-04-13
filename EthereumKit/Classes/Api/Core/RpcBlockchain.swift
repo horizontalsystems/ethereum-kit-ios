@@ -153,11 +153,11 @@ extension RpcBlockchain: IBlockchain {
                 }
     }
 
-    func transactionReceiptSingle(transactionHash: Data) -> Single<RpcTransactionReceipt?> {
+    func transactionReceiptSingle(transactionHash: Data) -> Single<RpcTransactionReceipt> {
         syncer.single(rpc: GetTransactionReceiptJsonRpc(transactionHash: transactionHash))
     }
 
-    func transactionSingle(transactionHash: Data) -> Single<RpcTransaction?> {
+    func transactionSingle(transactionHash: Data) -> Single<RpcTransaction> {
         syncer.single(rpc: GetTransactionByHashJsonRpc(transactionHash: transactionHash))
     }
 
@@ -173,7 +173,7 @@ extension RpcBlockchain: IBlockchain {
         syncer.single(rpc: EstimateGasJsonRpc(from: address, to: to, amount: amount, gasLimit: gasLimit, gasPrice: gasPrice, data: data))
     }
 
-    func getBlock(blockNumber: Int) -> Single<RpcBlock?> {
+    func getBlock(blockNumber: Int) -> Single<RpcBlock> {
         syncer.single(rpc: GetBlockByNumberJsonRpc(number: blockNumber))
     }
 

@@ -139,4 +139,8 @@ class Erc20BaseAdapter: IAdapter {
         return ethereumKit.estimateGas(transactionData: transactionData, gasPrice: gasPrice)
     }
 
+    func transactionSingle(hash: Data) -> Single<FullTransaction> {
+        ethereumKit.transactionSingle(hash: hash)
+    }
+
 }
