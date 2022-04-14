@@ -1,20 +1,20 @@
 import BigInt
 
-public class UnknownTransactionDecoration: TransactionDecoration {
+open class UnknownTransactionDecoration: TransactionDecoration {
     private let userAddress: Address
     private let value: BigUInt?
 
     public let internalTransactions: [InternalTransaction]
     public let eventInstances: [ContractEventInstance]
 
-    init(userAddress: Address, value: BigUInt?, internalTransactions: [InternalTransaction], eventInstances: [ContractEventInstance]) {
+    public init(userAddress: Address, value: BigUInt?, internalTransactions: [InternalTransaction], eventInstances: [ContractEventInstance]) {
         self.userAddress = userAddress
         self.value = value
         self.internalTransactions = internalTransactions
         self.eventInstances = eventInstances
     }
 
-    public override func tags() -> [String] {
+    open override func tags() -> [String] {
         Array(Set(tagsFromInternalTransactions + tagsFromEventInstances))
     }
 
