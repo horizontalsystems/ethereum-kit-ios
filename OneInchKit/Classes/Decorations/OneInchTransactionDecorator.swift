@@ -127,7 +127,13 @@ extension OneInchTransactionDecorator: ITransactionDecorator {
             )
 
         case is OneInchV4Method:
-            return OneInchDecoration(contractAddress: to)
+            return OneInchUnknownSwapDecoration(
+                    contractAddress: to,
+                    userAddress: address,
+                    value: value,
+                    internalTransactions: internalTransactions,
+                    eventInstances: eventInstances
+            )
 
         default: return nil
         }
