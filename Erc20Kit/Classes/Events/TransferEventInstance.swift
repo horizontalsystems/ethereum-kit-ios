@@ -37,12 +37,8 @@ public class TransferEventInstance: ContractEventInstance {
 
 }
 
-extension TransferEventInstance {
-
-    public struct TokenInfo {
-        public let tokenName: String
-        public let tokenSymbol: String
-        public let tokenDecimal: Int
-    }
-
+public struct TokenInfo {
+    public let tokenName: String
+    public let tokenSymbol: String
+    public let tokenDecimal: Int
 }

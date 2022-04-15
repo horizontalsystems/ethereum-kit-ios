@@ -35,6 +35,13 @@ class SwapTransactionDecorator {
         return amount
     }
 
+    private func eip20Token(address: Address, eventInstances: [ContractEventInstance]) -> SwapDecoration.Token {
+        .eip20Coin(
+                address: address,
+                tokenInfo: eventInstances.compactMap { $0 as? TransferEventInstance }.first { $0.contractAddress == address }?.tokenInfo
+        )
+    }
+
 }
 
 extension SwapTransactionDecorator: ITransactionDecorator {
@@ -64,7 +71,7 @@ extension SwapTransactionDecorator: ITransactionDecorator {
                     amountIn: amountIn,
                     amountOut: .exact(value: method.amountOut),
                     tokenIn: .evmCoin,
-                    tokenOut: .eip20Coin(address: lastCoinInPath),
+                    tokenOut: eip20Token(address: lastCoinInPath, eventInstances: eventInstances),
                     recipient: method.to == from ? nil : method.to,
                     deadline: method.deadline
             )
@@ -74,20 +81,15 @@ extension SwapTransactionDecorator: ITransactionDecorator {
                 return nil
             }
 
-            let amountOut: SwapDecoration.Amount
-
-            if eventInstances.isEmpty {
-                amountOut = .extremum(value: method.amountOutMin)
-            } else {
-                amountOut = .exact(value: totalTokenAmount(userAddress: method.to, tokenAddress: lastCoinInPath, eventInstances: eventInstances, collectIncomingAmounts: false))
-            }
+            let totalAmount = totalTokenAmount(userAddress: method.to, tokenAddress: lastCoinInPath, eventInstances: eventInstances, collectIncomingAmounts: false)
+            let amountOut: SwapDecoration.Amount = totalAmount != 0 ? .exact(value: totalAmount) : .extremum(value: method.amountOutMin)
 
             return SwapDecoration(
                     contractAddress: to,
                     amountIn: .exact(value: value),
                     amountOut: amountOut,
                     tokenIn: .evmCoin,
-                    tokenOut: .eip20Coin(address: lastCoinInPath),
+                    tokenOut: eip20Token(address: lastCoinInPath, eventInstances: eventInstances),
                     recipient: method.to == from ? nil : method.to,
                     deadline: method.deadline
             )
@@ -109,7 +111,7 @@ extension SwapTransactionDecorator: ITransactionDecorator {
                     contractAddress: to,
                     amountIn: .exact(value: method.amountIn),
                     amountOut: amountOut,
-                    tokenIn: .eip20Coin(address: firstCoinInPath),
+                    tokenIn: eip20Token(address: firstCoinInPath, eventInstances: eventInstances),
                     tokenOut: .evmCoin,
                     recipient: method.to == from ? nil : method.to,
                     deadline: method.deadline
@@ -120,20 +122,15 @@ extension SwapTransactionDecorator: ITransactionDecorator {
                 return nil
             }
 
-            let amountOut: SwapDecoration.Amount
-
-            if eventInstances.isEmpty {
-                amountOut = .extremum(value: method.amountOutMin)
-            } else {
-                amountOut = .exact(value: totalTokenAmount(userAddress: method.to, tokenAddress: lastCoinInPath, eventInstances: eventInstances, collectIncomingAmounts: false))
-            }
+            let totalAmount = totalTokenAmount(userAddress: method.to, tokenAddress: lastCoinInPath, eventInstances: eventInstances, collectIncomingAmounts: false)
+            let amountOut: SwapDecoration.Amount = totalAmount != 0 ? .exact(value: totalAmount) : .extremum(value: method.amountOutMin)
 
             return SwapDecoration(
                     contractAddress: to,
                     amountIn: .exact(value: method.amountIn),
                     amountOut: amountOut,
-                    tokenIn: .eip20Coin(address: firstCoinInPath),
-                    tokenOut: .eip20Coin(address: lastCoinInPath),
+                    tokenIn: eip20Token(address: firstCoinInPath, eventInstances: eventInstances),
+                    tokenOut: eip20Token(address: lastCoinInPath, eventInstances: eventInstances),
                     recipient: method.to == from ? nil : method.to,
                     deadline: method.deadline
             )
@@ -143,19 +140,14 @@ extension SwapTransactionDecorator: ITransactionDecorator {
                 return nil
             }
 
-            let amountIn: SwapDecoration.Amount
-
-            if eventInstances.isEmpty {
-                amountIn = .extremum(value: method.amountInMax)
-            } else {
-                amountIn = .exact(value: totalTokenAmount(userAddress: method.to, tokenAddress: firstCoinInPath, eventInstances: eventInstances, collectIncomingAmounts: true))
-            }
+            let totalAmount = totalTokenAmount(userAddress: method.to, tokenAddress: firstCoinInPath, eventInstances: eventInstances, collectIncomingAmounts: true)
+            let amountIn: SwapDecoration.Amount = totalAmount != 0 ? .exact(value: totalAmount) : .extremum(value: method.amountInMax)
 
             return SwapDecoration(
                     contractAddress: to,
                     amountIn: amountIn,
                     amountOut: .exact(value: method.amountOut),
-                    tokenIn: .eip20Coin(address: firstCoinInPath),
+                    tokenIn: eip20Token(address: firstCoinInPath, eventInstances: eventInstances),
                     tokenOut: .evmCoin,
                     recipient: method.to == from ? nil : method.to,
                     deadline: method.deadline
@@ -166,20 +158,15 @@ extension SwapTransactionDecorator: ITransactionDecorator {
                 return nil
             }
 
-            let amountIn: SwapDecoration.Amount
-
-            if eventInstances.isEmpty {
-                amountIn = .extremum(value: method.amountInMax)
-            } else {
-                amountIn = .exact(value: totalTokenAmount(userAddress: method.to, tokenAddress: firstCoinInPath, eventInstances: eventInstances, collectIncomingAmounts: true))
-            }
+            let totalAmount = totalTokenAmount(userAddress: method.to, tokenAddress: firstCoinInPath, eventInstances: eventInstances, collectIncomingAmounts: true)
+            let amountIn: SwapDecoration.Amount = totalAmount != 0 ? .exact(value: totalAmount) : .extremum(value: method.amountInMax)
 
             return SwapDecoration(
                     contractAddress: to,
                     amountIn: amountIn,
                     amountOut: .exact(value: method.amountOut),
-                    tokenIn: .eip20Coin(address: firstCoinInPath),
-                    tokenOut: .eip20Coin(address: lastCoinInPath),
+                    tokenIn: eip20Token(address: firstCoinInPath, eventInstances: eventInstances),
+                    tokenOut: eip20Token(address: lastCoinInPath, eventInstances: eventInstances),
                     recipient: method.to == from ? nil : method.to,
                     deadline: method.deadline
             )
