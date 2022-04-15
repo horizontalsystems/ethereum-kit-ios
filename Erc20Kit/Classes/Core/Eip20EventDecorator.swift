@@ -31,7 +31,7 @@ extension Eip20EventDecorator: IEventDecorator {
                     from: event.from,
                     to: event.to,
                     value: event.value,
-                    tokenInfo: TransferEventInstance.TokenInfo(tokenName: event.tokenName, tokenSymbol: event.tokenSymbol, tokenDecimal: event.tokenDecimal)
+                    tokenInfo: TokenInfo(tokenName: event.tokenName, tokenSymbol: event.tokenSymbol, tokenDecimal: event.tokenDecimal)
             )
 
             map[event.hash] = (map[event.hash] ?? []) + [eventInstance]

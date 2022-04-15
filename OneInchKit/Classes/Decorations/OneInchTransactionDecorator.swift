@@ -11,13 +11,32 @@ class OneInchTransactionDecorator {
         self.address = address
     }
 
-    private func totalTokenIncoming(userAddress: Address, tokenAddress: Address, eventInstances: [ContractEventInstance]) -> BigUInt {
+    private func incomingTransfers(userAddress: Address, eventInstances: [ContractEventInstance]) -> [TransferEventInstance] {
+        eventInstances.compactMap {
+            if let transferEventInstance = $0 as? TransferEventInstance, transferEventInstance.to == userAddress {
+                return transferEventInstance
+            } else {
+                return nil
+            }
+        }
+    }
+
+    private func outgoingTransfers(userAddress: Address, eventInstances: [ContractEventInstance]) -> [TransferEventInstance] {
+        eventInstances.compactMap {
+            if let transferEventInstance = $0 as? TransferEventInstance, transferEventInstance.from == userAddress {
+                return transferEventInstance
+            } else {
+                return nil
+            }
+        }
+    }
+
+    private func totalAmount(tokenAddress: Address, transfers: [TransferEventInstance]) -> BigUInt {
         var amount: BigUInt = 0
 
-        for eventInstance in eventInstances {
-            if eventInstance.contractAddress == tokenAddress, let transferEventInstance = eventInstance as? TransferEventInstance,
-               transferEventInstance.to == userAddress, transferEventInstance.value > 0 {
-                amount += transferEventInstance.value
+        for transfer in transfers {
+            if transfer.contractAddress == tokenAddress {
+                amount += transfer.value
             }
         }
 
@@ -36,13 +55,13 @@ class OneInchTransactionDecorator {
         return amount
     }
 
-    private func addressToToken(address: Address) -> OneInchDecoration.Token {
+    private func addressToToken(address: Address, eventInstances: [ContractEventInstance]) -> OneInchDecoration.Token {
         let eip55Address = address.eip55
 
         if OneInchTransactionDecorator.ethTokenAddresses.contains(eip55Address) {
             return .evmCoin
         } else {
-            return .eip20Coin(address: address)
+            return .eip20Coin(address: address, tokenInfo: eventInstances.compactMap { $0 as? TransferEventInstance }.first { $0.contractAddress == address }?.tokenInfo)
         }
     }
 
@@ -58,7 +77,7 @@ extension OneInchTransactionDecorator: ITransactionDecorator {
         switch contractMethod {
         case let method as SwapMethod:
             let swapDescription = method.swapDescription
-            let tokenOut = addressToToken(address: swapDescription.dstToken)
+            let tokenOut = addressToToken(address: swapDescription.dstToken, eventInstances: eventInstances)
 
             var amountOut: OneInchDecoration.Amount = .extremum(value: swapDescription.minReturnAmount)
 
@@ -68,14 +87,15 @@ extension OneInchTransactionDecorator: ITransactionDecorator {
                     amountOut = .exact(value: totalEthIncoming(userAddress: swapDescription.dstReceiver, internalTransactions: internalTransactions))
                 }
             case .eip20Coin:
-                if !eventInstances.isEmpty {
-                    amountOut = .exact(value: totalTokenIncoming(userAddress: swapDescription.dstReceiver, tokenAddress: swapDescription.dstToken, eventInstances: eventInstances))
+                let totalAmount = totalAmount(tokenAddress: swapDescription.dstToken, transfers: incomingTransfers(userAddress: swapDescription.dstReceiver, eventInstances: eventInstances))
+                if totalAmount != 0 {
+                    amountOut = .exact(value: totalAmount)
                 }
             }
 
             return OneInchSwapDecoration(
                     contractAddress: to,
-                    tokenIn: addressToToken(address: swapDescription.srcToken),
+                    tokenIn: addressToToken(address: swapDescription.srcToken, eventInstances: eventInstances),
                     tokenOut: tokenOut,
                     amountIn: swapDescription.amount,
                     amountOut: amountOut,
@@ -98,28 +118,19 @@ extension OneInchTransactionDecorator: ITransactionDecorator {
                 }
             }
 
-            if tokenOut == nil, !eventInstances.isEmpty {
-                let incomingEip20EventInstance = eventInstances.first { eventInstance in
-                    if let transferEventInstance = eventInstance as? TransferEventInstance {
-                        return transferEventInstance.to == address
-                    }
+            let incomingTransfers = incomingTransfers(userAddress: address, eventInstances: eventInstances)
+            if tokenOut == nil, let firstTransfer = incomingTransfers.first {
+                let amount = totalAmount(tokenAddress: firstTransfer.contractAddress, transfers: incomingTransfers)
 
-                    return false
-                }
-
-                if let eventInstance = incomingEip20EventInstance {
-                    let amount = totalTokenIncoming(userAddress: address, tokenAddress: eventInstance.contractAddress, eventInstances: eventInstances)
-
-                    if amount > 0 {
-                        tokenOut = .eip20Coin(address: eventInstance.contractAddress)
-                        amountOut = .exact(value: amount)
-                    }
+                if amount > 0 {
+                    tokenOut = addressToToken(address: firstTransfer.contractAddress, eventInstances: eventInstances)
+                    amountOut = .exact(value: amount)
                 }
             }
 
             return OneInchUnoswapDecoration(
                     contractAddress: to,
-                    tokenIn: addressToToken(address: method.srcToken),
+                    tokenIn: addressToToken(address: method.srcToken, eventInstances: eventInstances),
                     tokenOut: tokenOut,
                     amountIn: method.amount,
                     amountOut: amountOut,
@@ -127,12 +138,37 @@ extension OneInchTransactionDecorator: ITransactionDecorator {
             )
 
         case is OneInchV4Method:
+            var totalInternalValue: BigUInt = 0
+
+            for internalTransaction in internalTransactions {
+                totalInternalValue += internalTransaction.value
+            }
+
+            let outgoingTransfers = outgoingTransfers(userAddress: address, eventInstances: eventInstances)
+            let incomingTransfers = incomingTransfers(userAddress: address, eventInstances: eventInstances)
+
+            var tokenAmountIn: OneInchUnknownSwapDecoration.TokenAmount?
+
+            if value > totalInternalValue {
+                tokenAmountIn = OneInchUnknownSwapDecoration.TokenAmount(token: .evmCoin, value: value - totalInternalValue)
+            } else if let firstTransfer = outgoingTransfers.first {
+                let total = totalAmount(tokenAddress: firstTransfer.contractAddress, transfers: outgoingTransfers)
+                tokenAmountIn = OneInchUnknownSwapDecoration.TokenAmount(token: addressToToken(address: firstTransfer.contractAddress, eventInstances: eventInstances), value: total)
+            }
+
+            var tokenAmountOut: OneInchUnknownSwapDecoration.TokenAmount?
+
+            if value < totalInternalValue {
+                tokenAmountOut = OneInchUnknownSwapDecoration.TokenAmount(token: .evmCoin, value: totalInternalValue - value)
+            } else if let firstTransfer = incomingTransfers.first {
+                let total = totalAmount(tokenAddress: firstTransfer.contractAddress, transfers: incomingTransfers)
+                tokenAmountOut = OneInchUnknownSwapDecoration.TokenAmount(token: addressToToken(address: firstTransfer.contractAddress, eventInstances: eventInstances), value: total)
+            }
+
             return OneInchUnknownSwapDecoration(
                     contractAddress: to,
-                    userAddress: address,
-                    value: value,
-                    internalTransactions: internalTransactions,
-                    eventInstances: eventInstances
+                    tokenAmountIn: tokenAmountIn,
+                    tokenAmountOut: tokenAmountOut
             )
 
         default: return nil

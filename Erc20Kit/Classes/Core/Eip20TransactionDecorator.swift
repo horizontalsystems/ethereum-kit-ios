@@ -23,7 +23,8 @@ extension Eip20TransactionDecorator: ITransactionDecorator {
                         contractAddress: to,
                         to: transferMethod.to,
                         value: transferMethod.value,
-                        sentToSelf: transferMethod.to == userAddress
+                        sentToSelf: transferMethod.to == userAddress,
+                        tokenInfo: eventInstances.compactMap { $0 as? TransferEventInstance }.first { $0.contractAddress == to }?.tokenInfo
                 )
             }
         }

@@ -1,4 +1,5 @@
 import EthereumKit
+import Erc20Kit
 import BigInt
 
 public class SwapDecoration: TransactionDecoration {
@@ -25,7 +26,7 @@ public class SwapDecoration: TransactionDecoration {
     private func tags(token: Token, type: String) -> [String] {
         switch token {
         case .evmCoin: return ["\(TransactionTag.evmCoin)_\(type)", TransactionTag.evmCoin, type]
-        case .eip20Coin(let tokenAddress): return ["\(tokenAddress.hex)_\(type)", tokenAddress.hex, type]
+        case .eip20Coin(let tokenAddress, _): return ["\(tokenAddress.hex)_\(type)", tokenAddress.hex, type]
         }
     }
 
@@ -52,7 +53,7 @@ extension SwapDecoration {
 
     public enum Token {
         case evmCoin
-        case eip20Coin(address: Address)
+        case eip20Coin(address: Address, tokenInfo: TokenInfo?)
     }
 
 }
