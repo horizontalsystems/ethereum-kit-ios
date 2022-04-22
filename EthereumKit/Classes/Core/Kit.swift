@@ -319,7 +319,7 @@ extension Kit {
 
         switch rpcSource {
         case let .http(urls, auth):
-            let apiProvider = NodeApiProvider(networkManager: networkManager, urls: urls, blockTime: chain.blockTime, auth: auth)
+            let apiProvider = NodeApiProvider(networkManager: networkManager, urls: urls, syncInterval: chain.syncInterval, auth: auth)
             syncer = ApiRpcSyncer(rpcApiProvider: apiProvider, reachabilityManager: reachabilityManager)
         case let .webSocket(url, auth):
             let socket = WebSocket(url: url, reachabilityManager: reachabilityManager, auth: auth, logger: logger)
