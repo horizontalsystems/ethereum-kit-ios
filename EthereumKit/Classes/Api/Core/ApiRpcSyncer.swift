@@ -46,7 +46,7 @@ class ApiRpcSyncer {
     }
 
     private func startTimer() {
-        timer = Timer.scheduledTimer(withTimeInterval: rpcApiProvider.blockTime, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: rpcApiProvider.syncInterval, repeats: true) { [weak self] _ in
             self?.onFireTimer()
         }
         timer?.tolerance = 0.5
