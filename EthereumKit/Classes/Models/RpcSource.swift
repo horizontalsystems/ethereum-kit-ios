@@ -1,12 +1,12 @@
 public enum RpcSource {
-    case http(urls: [URL], auth: String?)
+    case http(url: URL, auth: String?)
     case webSocket(url: URL, auth: String?)
 }
 
 extension RpcSource {
 
     private static func infuraHttp(subdomain: String, projectId: String, projectSecret: String? = nil) -> RpcSource {
-        .http(urls: [URL(string: "https://\(subdomain).infura.io/v3/\(projectId)")!], auth: projectSecret)
+        .http(url: URL(string: "https://\(subdomain).infura.io/v3/\(projectId)")!, auth: projectSecret)
     }
 
     private static func infuraWebsocket(subdomain: String, projectId: String, projectSecret: String? = nil) -> RpcSource {
@@ -53,26 +53,12 @@ extension RpcSource {
         infuraWebsocket(subdomain: "goerli", projectId: projectId, projectSecret: projectSecret)
     }
 
+    public static func bscRpcHttp() -> RpcSource {
+        .http(url: URL(string: "https://bscrpc.com")!, auth: nil)
+    }
+
     public static func binanceSmartChainHttp() -> RpcSource {
-        let urlStrings = [
-            "https://bsc-dataseed.binance.org/",
-            "https://bsc-dataseed1.defibit.io/",
-            "https://bsc-dataseed1.ninicoin.io/",
-            "https://bsc-dataseed2.defibit.io/",
-            "https://bsc-dataseed3.defibit.io/",
-            "https://bsc-dataseed4.defibit.io/",
-            "https://bsc-dataseed2.ninicoin.io/",
-            "https://bsc-dataseed3.ninicoin.io/",
-            "https://bsc-dataseed4.ninicoin.io/",
-            "https://bsc-dataseed1.binance.org/",
-            "https://bsc-dataseed2.binance.org/",
-            "https://bsc-dataseed3.binance.org/",
-            "https://bsc-dataseed4.binance.org/"
-        ]
-
-        let urls: [URL] = urlStrings.compactMap { URL(string: $0) }
-
-        return .http(urls: urls, auth: nil)
+        .http(url: URL(string: "https://bsc-dataseed.binance.org/")!, auth: nil)
     }
 
     public static func binanceSmartChainWebSocket() -> RpcSource {
@@ -80,15 +66,15 @@ extension RpcSource {
     }
 
     public static func polygonRpcHttp() -> RpcSource {
-        .http(urls: [URL(string: "https://polygon-rpc.com")!], auth: nil)
+        .http(url: URL(string: "https://polygon-rpc.com")!, auth: nil)
     }
 
     public static func optimismRpcHttp() -> RpcSource {
-        .http(urls: [URL(string: "https://mainnet.optimism.io")!], auth: nil)
+        .http(url: URL(string: "https://mainnet.optimism.io")!, auth: nil)
     }
 
     public static func arbitrumOneRpcHttp() -> RpcSource {
-        .http(urls: [URL(string: "https://arb1.arbitrum.io/rpc")!], auth: nil)
+        .http(url: URL(string: "https://arb1.arbitrum.io/rpc")!, auth: nil)
     }
 
 }
