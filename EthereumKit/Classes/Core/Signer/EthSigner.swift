@@ -10,15 +10,22 @@ class EthSigner {
         self.cryptoUtils = cryptoUtils
     }
 
-    public func sign(message: Data) throws -> Data {
+    private func prefixed(message: Data) -> Data? {
+        guard let string = String(data: message, encoding: .utf8) else {
+            return nil
+        }
+
         let prefix = "\u{0019}Ethereum Signed Message:\n\(message.count)"
 
-        guard let data = prefix.data(using: .utf8) else {
-            throw SignerError.unknownError
+        guard let prefixData = prefix.data(using: .utf8) else {
+            return nil
         }
-        let hashedMessage = cryptoUtils.sha3(data + message)
 
-        return try cryptoUtils.ellipticSign(hashedMessage, privateKey: privateKey)
+        return cryptoUtils.sha3(prefixData + message)
+    }
+
+    public func sign(message: Data) throws -> Data {
+        try cryptoUtils.ellipticSign(prefixed(message: message) ?? message, privateKey: privateKey)
     }
 
     public func parseTypedData(rawJson: Data) throws -> EIP712TypedData {
@@ -31,10 +38,6 @@ class EthSigner {
         let hashedMessage = typedData.signHash
 
         return try cryptoUtils.ellipticSign(hashedMessage, privateKey: privateKey)
-    }
-
-    enum SignerError: Error {
-        case unknownError
     }
 
 }
