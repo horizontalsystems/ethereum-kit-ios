@@ -381,6 +381,22 @@ extension Kit {
 
 extension Kit {
 
+    public static func sign(message: Data, privateKey: Data) throws -> Data {
+        let ethSigner = EthSigner(privateKey: privateKey, cryptoUtils: CryptoUtils.shared)
+
+        return try ethSigner.sign(message: message)
+    }
+
+    public static func sign(message: Data, seed: Data) throws -> Data {
+        let privateKey = try Signer.privateKey(seed: seed, chain: .ethereum)
+
+        return try sign(message: message, privateKey: privateKey.raw)
+    }
+
+}
+
+extension Kit {
+
     public enum SyncError: Error {
         case notStarted
         case noNetworkConnection
