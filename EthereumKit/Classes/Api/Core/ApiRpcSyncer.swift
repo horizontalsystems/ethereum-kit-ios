@@ -7,6 +7,7 @@ class ApiRpcSyncer {
 
     private let rpcApiProvider: IRpcApiProvider
     private let reachabilityManager: IReachabilityManager
+    private let syncInterval: TimeInterval
     private var disposeBag = DisposeBag()
 
     private var isStarted = false
@@ -20,9 +21,10 @@ class ApiRpcSyncer {
         }
     }
 
-    init(rpcApiProvider: IRpcApiProvider, reachabilityManager: IReachabilityManager) {
+    init(rpcApiProvider: IRpcApiProvider, reachabilityManager: IReachabilityManager, syncInterval: TimeInterval) {
         self.rpcApiProvider = rpcApiProvider
         self.reachabilityManager = reachabilityManager
+        self.syncInterval = syncInterval
 
         reachabilityManager.reachabilityObservable
                 .observeOn(ConcurrentDispatchQueueScheduler(qos: .utility))
@@ -46,7 +48,7 @@ class ApiRpcSyncer {
     }
 
     private func startTimer() {
-        timer = Timer.scheduledTimer(withTimeInterval: rpcApiProvider.syncInterval, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: syncInterval, repeats: true) { [weak self] _ in
             self?.onFireTimer()
         }
         timer?.tolerance = 0.5

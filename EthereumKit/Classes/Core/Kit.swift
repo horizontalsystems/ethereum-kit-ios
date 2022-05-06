@@ -1,3 +1,4 @@
+import Foundation
 import RxSwift
 import HdWalletKit
 import BigInt
@@ -297,6 +298,27 @@ extension Kit: IBlockchainDelegate {
 
 extension Kit {
 
+    private static func rpcApiProvider(rpcSource: RpcSource, minLogLevel: Logger.Level = .error) -> IRpcApiProvider {
+        let logger = Logger(minLogLevel: minLogLevel)
+        let networkManager = NetworkManager(logger: logger)
+
+        switch rpcSource {
+        case let .http(url, auth):
+            return NodeApiProvider(networkManager: networkManager, url: url, auth: auth)
+        case .webSocket:
+            fatalError("WebSocket is not support for static RPC calls")
+        }
+    }
+
+    public static func call(contractAddress: Address, data: Data, defaultBlockParameter: DefaultBlockParameter = .latest, rpcSource: RpcSource, minLogLevel: Logger.Level = .error) -> Single<Data> {
+        let rpc = RpcBlockchain.callRpc(contractAddress: contractAddress, data: data, defaultBlockParameter: defaultBlockParameter)
+        return rpcApiProvider(rpcSource: rpcSource, minLogLevel: minLogLevel).single(rpc: rpc)
+    }
+
+}
+
+extension Kit {
+
     public static func clear(exceptFor excludedFiles: [String]) throws {
         let fileManager = FileManager.default
         let fileUrls = try fileManager.contentsOfDirectory(at: dataDirectoryUrl(), includingPropertiesForKeys: nil)
@@ -319,8 +341,8 @@ extension Kit {
 
         switch rpcSource {
         case let .http(url, auth):
-            let apiProvider = NodeApiProvider(networkManager: networkManager, url: url, syncInterval: chain.syncInterval, auth: auth)
-            syncer = ApiRpcSyncer(rpcApiProvider: apiProvider, reachabilityManager: reachabilityManager)
+            let apiProvider = NodeApiProvider(networkManager: networkManager, url: url, auth: auth)
+            syncer = ApiRpcSyncer(rpcApiProvider: apiProvider, reachabilityManager: reachabilityManager, syncInterval: chain.syncInterval)
         case let .webSocket(url, auth):
             let socket = WebSocket(url: url, reachabilityManager: reachabilityManager, auth: auth, logger: logger)
             syncer = WebSocketRpcSyncer.instance(socket: socket, logger: logger)

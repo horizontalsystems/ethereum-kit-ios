@@ -4,7 +4,6 @@ import HsToolKit
 
 protocol IRpcApiProvider {
     var source: String { get }
-    var syncInterval: TimeInterval { get }
     func single<T>(rpc: JsonRpc<T>) -> Single<T>
 }
 
