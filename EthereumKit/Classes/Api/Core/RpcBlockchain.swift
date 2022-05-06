@@ -1,3 +1,4 @@
+import Foundation
 import RxSwift
 import BigInt
 import HsToolKit
@@ -166,7 +167,7 @@ extension RpcBlockchain: IBlockchain {
     }
 
     func call(contractAddress: Address, data: Data, defaultBlockParameter: DefaultBlockParameter) -> Single<Data> {
-        syncer.single(rpc: CallJsonRpc(contractAddress: contractAddress, data: data, defaultBlockParameter: defaultBlockParameter))
+        syncer.single(rpc: Self.callRpc(contractAddress: contractAddress, data: data, defaultBlockParameter: defaultBlockParameter))
     }
 
     func estimateGas(to: Address?, amount: BigUInt?, gasLimit: Int?, gasPrice: GasPrice, data: Data?) -> Single<Int> {
@@ -179,6 +180,14 @@ extension RpcBlockchain: IBlockchain {
 
     func rpcSingle<T>(rpcRequest: JsonRpc<T>) -> Single<T> {
         syncer.single(rpc: rpcRequest)
+    }
+
+}
+
+extension RpcBlockchain {
+
+    static func callRpc(contractAddress: Address, data: Data, defaultBlockParameter: DefaultBlockParameter) -> JsonRpc<Data> {
+        CallJsonRpc(contractAddress: contractAddress, data: data, defaultBlockParameter: defaultBlockParameter)
     }
 
 }

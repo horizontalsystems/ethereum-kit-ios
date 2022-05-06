@@ -6,15 +6,13 @@ import HsToolKit
 class NodeApiProvider {
     private let networkManager: NetworkManager
     private let url: URL
-    let syncInterval: TimeInterval
 
     private let headers: HTTPHeaders
     private var currentRpcId = 0
 
-    init(networkManager: NetworkManager, url: URL, syncInterval: TimeInterval, auth: String?) {
+    init(networkManager: NetworkManager, url: URL, auth: String?) {
         self.networkManager = networkManager
         self.url = url
-        self.syncInterval = syncInterval
 
         var headers = HTTPHeaders()
 
