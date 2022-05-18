@@ -1,3 +1,4 @@
+import Foundation
 import RxSwift
 import BigInt
 import Alamofire
@@ -5,14 +6,14 @@ import HsToolKit
 
 class NodeApiProvider {
     private let networkManager: NetworkManager
-    private let url: URL
+    private let urls: [URL]
 
     private let headers: HTTPHeaders
     private var currentRpcId = 0
 
-    init(networkManager: NetworkManager, url: URL, auth: String?) {
+    init(networkManager: NetworkManager, urls: [URL], auth: String?) {
         self.networkManager = networkManager
-        self.url = url
+        self.urls = urls
 
         var headers = HTTPHeaders()
 
@@ -23,9 +24,9 @@ class NodeApiProvider {
         self.headers = headers
     }
 
-    private func rpcResultSingle(parameters: [String: Any]) -> Single<Any> {
+    private func rpcResultSingle(urlIndex: Int = 0, parameters: [String: Any]) -> Single<Any> {
         networkManager.single(
-                url: url,
+                url: urls[urlIndex],
                 method: .post,
                 parameters: parameters,
                 mapper: self,
@@ -34,6 +35,15 @@ class NodeApiProvider {
                 interceptor: self,
                 responseCacherBehavior: .doNotCache
         )
+                .catchError { [unowned self] error in
+                    let nextIndex = urlIndex + 1
+
+                    if nextIndex < urls.count {
+                        return rpcResultSingle(urlIndex: nextIndex, parameters: parameters)
+                    } else {
+                        return Single.error(error)
+                    }
+                }
     }
 
 }
@@ -81,7 +91,7 @@ extension NodeApiProvider: IApiMapper {
 extension NodeApiProvider: IRpcApiProvider {
 
     var source: String {
-        url.host ?? ""
+        urls.compactMap { $0.host }.joined(separator: ", ")
     }
 
     func single<T>(rpc: JsonRpc<T>) -> Single<T> {

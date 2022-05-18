@@ -72,8 +72,8 @@ extension Eip1155Provider {
         let rpcApiProvider: IRpcApiProvider
 
         switch rpcSource {
-        case let .http(url, auth):
-            rpcApiProvider = NodeApiProvider(networkManager: networkManager, url: url, auth: auth)
+        case let .http(urls, auth):
+            rpcApiProvider = NodeApiProvider(networkManager: networkManager, urls: urls, auth: auth)
         case .webSocket:
             throw RpcSourceError.websocketNotSupported
         }

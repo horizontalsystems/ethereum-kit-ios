@@ -319,8 +319,8 @@ extension Kit {
         let reachabilityManager = ReachabilityManager()
 
         switch rpcSource {
-        case let .http(url, auth):
-            let apiProvider = NodeApiProvider(networkManager: networkManager, url: url, auth: auth)
+        case let .http(urls, auth):
+            let apiProvider = NodeApiProvider(networkManager: networkManager, urls: urls, auth: auth)
             syncer = ApiRpcSyncer(rpcApiProvider: apiProvider, reachabilityManager: reachabilityManager, syncInterval: chain.syncInterval)
         case let .webSocket(url, auth):
             let socket = WebSocket(url: url, reachabilityManager: reachabilityManager, auth: auth, logger: logger)
