@@ -2,18 +2,36 @@ import RxSwift
 import BigInt
 
 class EthereumTransactionSyncer {
-    private let provider: ITransactionProvider
+    private let syncerId = "ethereum-transaction-syncer"
 
-    init(provider: ITransactionProvider) {
+    private let provider: ITransactionProvider
+    private let storage: TransactionSyncerStateStorage
+
+    init(provider: ITransactionProvider, storage: TransactionSyncerStateStorage) {
         self.provider = provider
+        self.storage = storage
+    }
+
+    private func handle(providerTransactions: [ProviderTransaction]) {
+        guard let maxBlockNumber = providerTransactions.map { $0.blockNumber }.max() else {
+            return
+        }
+
+        let syncerState = TransactionSyncerState(syncerId: syncerId, lastBlockNumber: maxBlockNumber)
+        try? storage.save(syncerState: syncerState)
     }
 
 }
 
 extension EthereumTransactionSyncer: ITransactionSyncer {
 
-    func transactionsSingle(lastBlockNumber: Int) -> Single<[Transaction]> {
-        provider.transactionsSingle(startBlock: lastBlockNumber + 1)
+    func transactionsSingle() -> Single<[Transaction]> {
+        let lastBlockNumber = (try? storage.syncerState(syncerId: syncerId))?.lastBlockNumber ?? 0
+
+        return provider.transactionsSingle(startBlock: lastBlockNumber + 1)
+                .do(onSuccess: { [weak self] providerTransactions in
+                    self?.handle(providerTransactions: providerTransactions)
+                })
                 .map { transactions in
                     transactions.map { tx in
                         var isFailed: Bool

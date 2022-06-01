@@ -37,6 +37,16 @@ class Eip20Storage {
             }
         }
 
+        migrator.registerMigration("add blockNumber column to Event") { db in
+            try db.alter(table: Event.databaseTableName) { t in
+                t.add(column: Event.Columns.blockNumber.name, .integer).notNull()
+            }
+        }
+
+        migrator.registerMigration("truncate Event") { db in
+            try Event.deleteAll(db)
+        }
+
         return migrator
     }
 
@@ -53,6 +63,12 @@ extension Eip20Storage {
     func save(balance: BigUInt, contractAddress: Address) {
         _ = try? dbPool.write { db in
             try Eip20Balance(contractAddress: contractAddress.hex, value: balance).insert(db)
+        }
+    }
+
+    func lastEvent() -> Event? {
+        try! dbPool.read { db in
+            try Event.order(Transaction.Columns.blockNumber.desc).fetchOne(db)
         }
     }
 

@@ -132,10 +132,6 @@ extension TransactionManager {
         storage.transaction(hash: hash).flatMap { decorationManager.decorate(transactions: [$0]).first }
     }
 
-    func lastTransaction() -> Transaction? {
-        storage.lastTransaction()
-    }
-
     @discardableResult func handle(transactions: [Transaction]) -> [FullTransaction] {
         guard !transactions.isEmpty else {
             return []

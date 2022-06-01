@@ -76,9 +76,9 @@ extension TransactionSyncManager {
 
         state = .syncing(progress: nil)
 
-        let lastBlockNumber = transactionManager.lastTransaction()?.blockNumber ?? 0
-
-        Single.zip(syncers.map { $0.transactionsSingle(lastBlockNumber: lastBlockNumber) })
+        Single.zip(syncers.map { syncer in
+                    syncer.transactionsSingle().catchErrorJustReturn([])
+                })
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .utility))
                 .subscribe(
                         onSuccess: { [weak self] transactionsArray in

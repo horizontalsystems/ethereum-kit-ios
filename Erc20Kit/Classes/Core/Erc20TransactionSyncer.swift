@@ -19,6 +19,7 @@ class Erc20TransactionSyncer {
         let events = transactions.map { tx in
             Event(
                     hash: tx.hash,
+                    blockNumber: tx.blockNumber,
                     contractAddress: tx.contractAddress,
                     from: tx.from,
                     to: tx.to,
@@ -36,8 +37,10 @@ class Erc20TransactionSyncer {
 
 extension Erc20TransactionSyncer: ITransactionSyncer {
 
-    public func transactionsSingle(lastBlockNumber: Int) -> Single<[Transaction]> {
-        provider.tokenTransactionsSingle(startBlock: lastBlockNumber + 1)
+    public func transactionsSingle() -> Single<[Transaction]> {
+        let lastBlockNumber = evmKit.lastEvent()?.blockNumber ?? 0
+
+        return provider.tokenTransactionsSingle(startBlock: lastBlockNumber + 1)
                 .do(onSuccess: { [weak self] transactions in
                     self?.handle(transactions: transactions)
                 })
