@@ -37,9 +37,9 @@ class Eip20Storage {
             }
         }
 
-        migrator.registerMigration("add blockNumber column to Event") { db in
+        migrator.registerMigration("add blockNumber to Event") { db in
             try db.alter(table: Event.databaseTableName) { t in
-                t.add(column: Event.Columns.blockNumber.name, .integer).notNull()
+                t.add(column: Event.Columns.blockNumber.name, .integer).notNull().defaults(to: 0)
             }
         }
 
