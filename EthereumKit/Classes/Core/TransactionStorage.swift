@@ -71,21 +71,24 @@ class TransactionStorage {
             }
         }
 
+        migrator.registerMigration("add blockNumber column to InternalTransaction") { db in
+            try db.alter(table: InternalTransaction.databaseTableName) { t in
+                t.add(column: InternalTransaction.Columns.blockNumber.name, .integer).notNull().defaults(to: 0)
+            }
+        }
+
+        migrator.registerMigration("truncate Transaction, InternalTransaction, TransactionTag") { db in
+            try Transaction.deleteAll(db)
+            try InternalTransaction.deleteAll(db)
+            try TransactionTag.deleteAll(db)
+        }
+
         return migrator
     }
 
 }
 
 extension TransactionStorage: ITransactionStorage {
-
-    func lastTransaction() -> Transaction? {
-        try! dbPool.read { db in
-            try Transaction
-                    .filter(Transaction.Columns.blockNumber != nil)
-                    .order(Transaction.Columns.blockNumber.desc)
-                    .fetchOne(db)
-        }
-    }
 
     func transaction(hash: Data) -> Transaction? {
         try! dbPool.read { db in
@@ -249,6 +252,15 @@ extension TransactionStorage: ITransactionStorage {
             try Transaction
                     .filter(Transaction.Columns.blockNumber != nil && nonces.contains(Transaction.Columns.nonce))
                     .fetchAll(db)
+        }
+    }
+
+    func lastInternalTransaction() -> InternalTransaction? {
+        try! dbPool.read { db in
+            try InternalTransaction
+                    .filter(InternalTransaction.Columns.blockNumber != nil)
+                    .order(Transaction.Columns.blockNumber.desc)
+                    .fetchOne(db)
         }
     }
 

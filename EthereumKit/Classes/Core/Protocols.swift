@@ -33,7 +33,6 @@ protocol IBlockchainDelegate: AnyObject {
 }
 
 protocol ITransactionStorage {
-    func lastTransaction() -> Transaction?
     func transaction(hash: Data) -> Transaction?
     func transactions(hashes: [Data]) -> [Transaction]
     func transactionsBefore(tags: [[String]], hash: Data?, limit: Int?) -> [Transaction]
@@ -43,6 +42,7 @@ protocol ITransactionStorage {
     func pendingTransactions(tags: [[String]]) -> [Transaction]
     func nonPendingTransactions(nonces: [Int]) -> [Transaction]
 
+    func lastInternalTransaction() -> InternalTransaction?
     func internalTransactions() -> [InternalTransaction]
     func internalTransactions(hashes: [Data]) -> [InternalTransaction]
     func save(internalTransactions: [InternalTransaction])
@@ -51,7 +51,7 @@ protocol ITransactionStorage {
 }
 
 public protocol ITransactionSyncer {
-    func transactionsSingle(lastBlockNumber: Int) -> Single<[Transaction]>
+    func transactionsSingle() -> Single<[Transaction]>
 }
 
 protocol ITransactionManagerDelegate: AnyObject {

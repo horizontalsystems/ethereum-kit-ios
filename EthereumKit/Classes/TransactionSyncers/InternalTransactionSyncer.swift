@@ -18,6 +18,7 @@ class InternalTransactionSyncer {
         let internalTransactions = transactions.map { tx in
             InternalTransaction(
                     hash: tx.hash,
+                    blockNumber: tx.blockNumber,
                     from: tx.from,
                     to: tx.to,
                     value: tx.value,
@@ -32,8 +33,10 @@ class InternalTransactionSyncer {
 
 extension InternalTransactionSyncer: ITransactionSyncer {
 
-    func transactionsSingle(lastBlockNumber: Int) -> Single<[Transaction]> {
-        provider.internalTransactionsSingle(startBlock: lastBlockNumber + 1)
+    func transactionsSingle() -> Single<[Transaction]> {
+        let lastBlockNumber = storage.lastInternalTransaction()?.blockNumber ?? 0
+
+        return provider.internalTransactionsSingle(startBlock: lastBlockNumber + 1)
                 .do(onSuccess: { [weak self] transactions in
                     self?.handle(transactions: transactions)
                 })

@@ -254,6 +254,10 @@ extension Kit {
         eip20Storage.save(balance: balance, contractAddress: contractAddress)
     }
 
+    public func lastEvent() -> Event? {
+        eip20Storage.lastEvent()
+    }
+
     public func events() -> [Event] {
         eip20Storage.events()
     }
@@ -334,8 +338,9 @@ extension Kit {
         let blockchain = RpcBlockchain.instance(address: address, storage: storage, syncer: syncer, transactionBuilder: transactionBuilder, logger: logger)
 
         let transactionStorage: ITransactionStorage = TransactionStorage(databaseDirectoryUrl: try dataDirectoryUrl(), databaseFileName: "transactions-\(uniqueId)")
+        let transactionSyncerStateStorage = TransactionSyncerStateStorage(databaseDirectoryUrl: try dataDirectoryUrl(), databaseFileName: "transaction-syncer-states-\(uniqueId)")
 
-        let ethereumTransactionSyncer = EthereumTransactionSyncer(provider: transactionProvider)
+        let ethereumTransactionSyncer = EthereumTransactionSyncer(provider: transactionProvider, storage: transactionSyncerStateStorage)
         let internalTransactionSyncer = InternalTransactionSyncer(provider: transactionProvider, storage: transactionStorage)
         let decorationManager = DecorationManager(userAddress: address, storage: transactionStorage)
         let transactionManager = TransactionManager(storage: transactionStorage, decorationManager: decorationManager, blockchain: blockchain, transactionProvider: transactionProvider)

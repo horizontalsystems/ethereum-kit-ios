@@ -12,6 +12,7 @@ public struct ProviderInternalTransaction {
     var internalTransaction: InternalTransaction {
         InternalTransaction(
                 hash: hash,
+                blockNumber: blockNumber,
                 from: from,
                 to: to,
                 value: value,

@@ -3,6 +3,7 @@ import BigInt
 
 public class Event: Record {
     public let hash: Data
+    public let blockNumber: Int
     public let contractAddress: Address
     public let from: Address
     public let to: Address
@@ -11,8 +12,9 @@ public class Event: Record {
     public let tokenSymbol: String
     public let tokenDecimal: Int
 
-    public init(hash: Data, contractAddress: Address, from: Address, to: Address, value: BigUInt, tokenName: String, tokenSymbol: String, tokenDecimal: Int) {
+    public init(hash: Data, blockNumber: Int, contractAddress: Address, from: Address, to: Address, value: BigUInt, tokenName: String, tokenSymbol: String, tokenDecimal: Int) {
         self.hash = hash
+        self.blockNumber = blockNumber
         self.contractAddress = contractAddress
         self.from = from
         self.to = to
@@ -30,6 +32,7 @@ public class Event: Record {
 
     enum Columns: String, ColumnExpression {
         case hash
+        case blockNumber
         case contractAddress
         case from
         case to
@@ -41,6 +44,7 @@ public class Event: Record {
 
     required public init(row: Row) {
         hash = row[Columns.hash]
+        blockNumber = row[Columns.blockNumber]
         contractAddress = Address(raw: row[Columns.contractAddress])
         from = Address(raw: row[Columns.from])
         to = Address(raw: row[Columns.to])
@@ -54,6 +58,7 @@ public class Event: Record {
 
     override public func encode(to container: inout PersistenceContainer) {
         container[Columns.hash] = hash
+        container[Columns.blockNumber] = blockNumber
         container[Columns.contractAddress] = contractAddress.raw
         container[Columns.from] = from.raw
         container[Columns.to] = to.raw
