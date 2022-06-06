@@ -7,6 +7,8 @@ class TransactionSyncManager {
 
     private var syncers = [ITransactionSyncer]()
 
+    private let queue = DispatchQueue(label: "io.horizontal-systems.ethereum-kit.transaction-sync-manager", qos: .utility)
+
     private let stateSubject = PublishSubject<SyncState>()
     var state: SyncState = .notSynced(error: Kit.SyncError.notStarted) {
         didSet {
@@ -57,19 +59,20 @@ class TransactionSyncManager {
         )
     }
 
-}
-
-extension TransactionSyncManager {
-
-    var stateObservable: Observable<SyncState> {
-        stateSubject.asObservable()
+    private func handleSuccess(transactionsArray: [[Transaction]]) {
+        queue.async {
+            self.handle(transactionsArray: transactionsArray)
+            self.state = .synced
+        }
     }
 
-    func add(syncer: ITransactionSyncer) {
-        syncers.append(syncer)
+    private func handleError(error: Error) {
+        queue.async {
+            self.state = .notSynced(error: error)
+        }
     }
 
-    func sync() {
+    private func _sync() {
         guard !state.syncing else {
             return
         }
@@ -82,14 +85,33 @@ extension TransactionSyncManager {
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .utility))
                 .subscribe(
                         onSuccess: { [weak self] transactionsArray in
-                            self?.handle(transactionsArray: transactionsArray)
-                            self?.state = .synced
+                            self?.handleSuccess(transactionsArray: transactionsArray)
                         },
                         onError: { [weak self] error in
-                            self?.state = .notSynced(error: error)
+                            self?.handleError(error: error)
                         }
                 )
                 .disposed(by: disposeBag)
+    }
+
+}
+
+extension TransactionSyncManager {
+
+    var stateObservable: Observable<SyncState> {
+        stateSubject.asObservable()
+    }
+
+    func add(syncer: ITransactionSyncer) {
+        queue.async {
+            self.syncers.append(syncer)
+        }
+    }
+
+    func sync() {
+        queue.async {
+            self._sync()
+        }
     }
 
 }
