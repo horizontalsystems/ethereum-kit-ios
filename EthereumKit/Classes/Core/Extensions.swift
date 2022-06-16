@@ -32,6 +32,10 @@ extension Int {
 
 extension String {
 
+    var data: Data {
+        self.data(using: .utf8) ?? Data()
+    }
+
     func removeLeadingZeros() -> String {
         self == "0" ? self : self.replacingOccurrences(of: "^0+", with: "", options: .regularExpression)
     }

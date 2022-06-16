@@ -20,6 +20,8 @@ public class ContractMethodHelper {
             switch argument {
             case let argument as BigUInt:
                 data += pad(data: argument.serialize())
+            case let argument as String:
+                data += pad(data: Data(hex: argument) ?? Data())
             case let argument as Address:
                 data += pad(data: argument.raw)
             case let argument as [Address]:
