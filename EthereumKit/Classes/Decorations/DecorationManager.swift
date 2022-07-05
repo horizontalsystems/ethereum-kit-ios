@@ -59,6 +59,8 @@ class DecorationManager {
 
         return UnknownTransactionDecoration(
                 userAddress: userAddress,
+                fromAddress: from,
+                toAddress: to,
                 value: value,
                 internalTransactions: internalTransactions,
                 eventInstances: eventInstances
