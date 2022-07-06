@@ -5,15 +5,15 @@ class TransactionSyncManager {
     private let transactionManager: TransactionManager
     private let disposeBag = DisposeBag()
 
-    private var syncers = [ITransactionSyncer]()
+    private var _syncers = [ITransactionSyncer]()
 
     private let queue = DispatchQueue(label: "io.horizontal-systems.ethereum-kit.transaction-sync-manager", qos: .utility)
 
     private let stateSubject = PublishSubject<SyncState>()
-    var state: SyncState = .notSynced(error: Kit.SyncError.notStarted) {
+    private var _state: SyncState = .notSynced(error: Kit.SyncError.notStarted) {
         didSet {
-            if state != oldValue {
-                stateSubject.onNext(state)
+            if _state != oldValue {
+                stateSubject.onNext(_state)
             }
         }
     }
@@ -22,14 +22,14 @@ class TransactionSyncManager {
         self.transactionManager = transactionManager
     }
 
-    private func handle(transactionsArray: [[Transaction]]) {
+    private func _handle(transactionsArray: [[Transaction]]) {
         let transactions = Array(transactionsArray.joined())
 
         var dictionary = [Data: Transaction]()
 
         for transaction in transactions {
             if let existingTransaction = dictionary[transaction.hash] {
-                dictionary[transaction.hash] = merge(lhsTransaction: existingTransaction, rhsTransaction: transaction)
+                dictionary[transaction.hash] = _merge(lhsTransaction: existingTransaction, rhsTransaction: transaction)
             } else {
                 dictionary[transaction.hash] = transaction
             }
@@ -38,7 +38,7 @@ class TransactionSyncManager {
         transactionManager.handle(transactions: Array(dictionary.values))
     }
 
-    private func merge(lhsTransaction lhs: Transaction, rhsTransaction rhs: Transaction) -> Transaction {
+    private func _merge(lhsTransaction lhs: Transaction, rhsTransaction rhs: Transaction) -> Transaction {
         Transaction(
                 hash: lhs.hash,
                 timestamp: lhs.timestamp,
@@ -61,25 +61,25 @@ class TransactionSyncManager {
 
     private func handleSuccess(transactionsArray: [[Transaction]]) {
         queue.async {
-            self.handle(transactionsArray: transactionsArray)
-            self.state = .synced
+            self._handle(transactionsArray: transactionsArray)
+            self._state = .synced
         }
     }
 
     private func handleError(error: Error) {
         queue.async {
-            self.state = .notSynced(error: error)
+            self._state = .notSynced(error: error)
         }
     }
 
     private func _sync() {
-        guard !state.syncing else {
+        guard !_state.syncing else {
             return
         }
 
-        state = .syncing(progress: nil)
+        _state = .syncing(progress: nil)
 
-        Single.zip(syncers.map { syncer in
+        Single.zip(_syncers.map { syncer in
                     syncer.transactionsSingle().catchErrorJustReturn([])
                 })
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .utility))
@@ -102,9 +102,15 @@ extension TransactionSyncManager {
         stateSubject.asObservable()
     }
 
+    var state: SyncState {
+        queue.sync {
+            _state
+        }
+    }
+
     func add(syncer: ITransactionSyncer) {
         queue.async {
-            self.syncers.append(syncer)
+            self._syncers.append(syncer)
         }
     }
 
