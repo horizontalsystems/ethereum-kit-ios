@@ -77,6 +77,10 @@ extension RpcSource {
         .http(urls: [URL(string: "https://polygon-rpc.com")!], auth: nil)
     }
 
+    public static func avaxNetworkHttp() -> RpcSource {
+        .http(urls: [URL(string: "https://api.avax.network/ext/bc/C/rpc")!], auth: nil)
+    }
+
     public static func optimismRpcHttp() -> RpcSource {
         .http(urls: [URL(string: "https://mainnet.optimism.io")!], auth: nil)
     }

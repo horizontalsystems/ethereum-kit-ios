@@ -62,6 +62,13 @@ extension TransactionSource {
         )
     }
 
+    public static func snowtrace(apiKey: String) -> TransactionSource {
+        TransactionSource(
+                name: "snowtrace.io",
+                type: .etherscan(apiBaseUrl: "https://api.snowtrace.io", txBaseUrl: "https://snowtrace.io", apiKey: apiKey)
+        )
+    }
+
     public static func optimisticEtherscan(apiKey: String) -> TransactionSource {
         TransactionSource(
                 name: "optimistic.etherscan.io",
