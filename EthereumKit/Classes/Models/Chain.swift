@@ -56,6 +56,15 @@ extension Chain {
         )
     }
 
+    public static var avalanche: Chain {
+        Chain(
+                id: 43114,
+                coinType: 60,
+                syncInterval: 15,
+                isEIP1559Supported: true
+        )
+    }
+
     public static var optimism: Chain {
         Chain(
                 id: 10,
