@@ -4,11 +4,11 @@ import EthereumKit
 
 class Erc20TransactionSyncer {
     private let provider: ITransactionProvider
-    private let evmKit: EthereumKit.Kit
+    private let storage: Eip20Storage
 
-    init(provider: ITransactionProvider, evmKit: EthereumKit.Kit) {
+    init(provider: ITransactionProvider, storage: Eip20Storage) {
         self.provider = provider
-        self.evmKit = evmKit
+        self.storage = storage
     }
 
     private func handle(transactions: [ProviderTokenTransaction]) {
@@ -30,7 +30,7 @@ class Erc20TransactionSyncer {
             )
         }
 
-        evmKit.save(events: events)
+        storage.save(events: events)
     }
 
 }
@@ -38,7 +38,7 @@ class Erc20TransactionSyncer {
 extension Erc20TransactionSyncer: ITransactionSyncer {
 
     public func transactionsSingle() -> Single<[Transaction]> {
-        let lastBlockNumber = evmKit.lastEvent()?.blockNumber ?? 0
+        let lastBlockNumber = storage.lastEvent()?.blockNumber ?? 0
 
         return provider.tokenTransactionsSingle(startBlock: lastBlockNumber + 1)
                 .do(onSuccess: { [weak self] transactions in

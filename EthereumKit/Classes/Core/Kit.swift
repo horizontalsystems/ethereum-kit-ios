@@ -21,7 +21,7 @@ public class Kit {
     private let transactionManager: TransactionManager
     private let transactionSyncManager: TransactionSyncManager
     private let decorationManager: DecorationManager
-    private let eip20Storage: Eip20Storage
+    public let eip20Storage: Eip20Storage
     private let state: EthereumKitState
 
     public let address: Address
@@ -238,36 +238,6 @@ extension Kit {
             ("Blockchain Source", blockchain.source),
             ("Transactions Source", "Infura.io, Etherscan.io")
         ]
-    }
-
-}
-
-// Eip20Kit database helpers
-
-extension Kit {
-
-    public func balance(contractAddress: Address) -> BigUInt? {
-        eip20Storage.balance(contractAddress: contractAddress)
-    }
-
-    public func save(balance: BigUInt, contractAddress: Address) {
-        eip20Storage.save(balance: balance, contractAddress: contractAddress)
-    }
-
-    public func lastEvent() -> Event? {
-        eip20Storage.lastEvent()
-    }
-
-    public func events() -> [Event] {
-        eip20Storage.events()
-    }
-
-    public func events(hashes: [Data]) -> [Event] {
-        eip20Storage.events(hashes: hashes)
-    }
-
-    public func save(events: [Event]) {
-        eip20Storage.save(events: events)
     }
 
 }

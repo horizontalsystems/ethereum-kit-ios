@@ -140,7 +140,7 @@ extension Kit {
 
         let dataProvider: IDataProvider = DataProvider(ethereumKit: ethereumKit)
         let transactionManager = TransactionManager(ethereumKit: ethereumKit, contractAddress: contractAddress, contractMethodFactories: Eip20ContractMethodFactories.shared)
-        let balanceManager = BalanceManager(ethereumKit: ethereumKit, contractAddress: contractAddress, address: address, dataProvider: dataProvider)
+        let balanceManager = BalanceManager(storage: ethereumKit.eip20Storage, contractAddress: contractAddress, address: address, dataProvider: dataProvider)
         let allowanceManager = AllowanceManager(ethereumKit: ethereumKit, contractAddress: contractAddress, address: address)
 
         let erc20Kit = Kit(contractAddress: contractAddress, ethereumKit: ethereumKit, transactionManager: transactionManager, balanceManager: balanceManager, allowanceManager: allowanceManager)
@@ -151,13 +151,13 @@ extension Kit {
     }
 
     public static func addTransactionSyncer(to evmKit: EthereumKit.Kit) {
-        let syncer = Erc20TransactionSyncer(provider: evmKit.transactionProvider, evmKit: evmKit)
+        let syncer = Erc20TransactionSyncer(provider: evmKit.transactionProvider, storage: evmKit.eip20Storage)
         evmKit.add(transactionSyncer: syncer)
     }
 
     public static func addDecorators(to evmKit: EthereumKit.Kit) {
         evmKit.add(methodDecorator: Eip20MethodDecorator(contractMethodFactories: Eip20ContractMethodFactories.shared))
-        evmKit.add(eventDecorator: Eip20EventDecorator(userAddress: evmKit.address, evmKit: evmKit))
+        evmKit.add(eventDecorator: Eip20EventDecorator(userAddress: evmKit.address, storage: evmKit.eip20Storage))
         evmKit.add(transactionDecorator: Eip20TransactionDecorator(userAddress: evmKit.address))
     }
 

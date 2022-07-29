@@ -2,11 +2,11 @@ import EthereumKit
 
 class Eip20EventDecorator {
     private let userAddress: Address
-    private let evmKit: EthereumKit.Kit
+    private let storage: Eip20Storage
 
-    init(userAddress: Address, evmKit: EthereumKit.Kit) {
+    init(userAddress: Address, storage: Eip20Storage) {
         self.userAddress = userAddress
-        self.evmKit = evmKit
+        self.storage = storage
     }
 
 }
@@ -17,10 +17,10 @@ extension Eip20EventDecorator: IEventDecorator {
         let events: [Event]
 
         if transactions.count > 100 {
-            events = evmKit.events()
+            events = storage.events()
         } else {
             let hashes = transactions.map { $0.hash }
-            events = evmKit.events(hashes: hashes)
+            events = storage.events(hashes: hashes)
         }
 
         var map = [Data: [ContractEventInstance]]()
