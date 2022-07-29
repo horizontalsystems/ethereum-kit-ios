@@ -7,20 +7,20 @@ class BalanceManager {
 
     private let disposeBag = DisposeBag()
 
-    private let ethereumKit: EthereumKit.Kit
+    private let storage: Eip20Storage
     private let contractAddress: Address
     private let address: Address
     private let dataProvider: IDataProvider
 
-    init(ethereumKit: EthereumKit.Kit, contractAddress: Address, address: Address, dataProvider: IDataProvider) {
-        self.ethereumKit = ethereumKit
+    init(storage: Eip20Storage, contractAddress: Address, address: Address, dataProvider: IDataProvider) {
+        self.storage = storage
         self.contractAddress = contractAddress
         self.address = address
         self.dataProvider = dataProvider
     }
 
     private func save(balance: BigUInt) {
-        ethereumKit.save(balance: balance, contractAddress: contractAddress)
+        storage.save(balance: balance, contractAddress: contractAddress)
     }
 
 }
@@ -28,7 +28,7 @@ class BalanceManager {
 extension BalanceManager: IBalanceManager {
 
     var balance: BigUInt? {
-        ethereumKit.balance(contractAddress: contractAddress)
+        storage.balance(contractAddress: contractAddress)
     }
 
     func sync() {
