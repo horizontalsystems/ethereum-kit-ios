@@ -54,12 +54,14 @@ extension String {
 
 extension Decimal {
 
-    public func roundedString(decimal: Int) -> String {
+    public func rounded(decimal: Int) -> Decimal {
         let poweredDecimal = self * pow(10, decimal)
         let handler = NSDecimalNumberHandler(roundingMode: .plain, scale: 0, raiseOnExactness: false, raiseOnOverflow: false, raiseOnUnderflow: false, raiseOnDivideByZero: false)
-        let roundedDecimal = NSDecimalNumber(decimal: poweredDecimal).rounding(accordingToBehavior: handler).decimalValue
+        return NSDecimalNumber(decimal: poweredDecimal).rounding(accordingToBehavior: handler).decimalValue
+    }
 
-        return String(describing: roundedDecimal)
+    public func roundedString(decimal: Int) -> String {
+        String(describing: rounded(decimal: decimal))
     }
 
 }
