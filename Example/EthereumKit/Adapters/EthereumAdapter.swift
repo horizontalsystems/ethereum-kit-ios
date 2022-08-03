@@ -20,7 +20,7 @@ class EthereumAdapter: EthereumBaseAdapter {
         return evmKit.rawTransaction(transactionData: transactionData, gasPrice: gasPrice, gasLimit: gasLimit)
                 .flatMap { [weak self] rawTransaction in
                     guard let strongSelf = self else {
-                        throw Signer.SendError.weakReferenceError
+                        throw EthereumKit.Kit.KitError.weakReference
                     }
 
                     let signature = try strongSelf.signer.signature(rawTransaction: rawTransaction)

@@ -404,7 +404,7 @@ class OneInchController: UIViewController {
         ethereumKit.estimateGas(transactionData: transactionData, gasPrice: gasPrice)
                 .flatMap { [weak self] gasLimit -> Single<RawTransaction> in
                     guard let strongSelf = self else {
-                        throw Signer.SendError.weakReferenceError
+                        throw EthereumKit.Kit.KitError.weakReference
                     }
 
                     print("GAS LIMIT SUCCESS: \(gasLimit)")
@@ -412,7 +412,7 @@ class OneInchController: UIViewController {
                 }
                 .flatMap { [weak self] rawTransaction in
                     guard let strongSelf = self else {
-                        throw Signer.SendError.weakReferenceError
+                        throw EthereumKit.Kit.KitError.weakReference
                     }
 
                     let signature = try signer.signature(rawTransaction: rawTransaction)
@@ -437,7 +437,7 @@ class OneInchController: UIViewController {
         return ethereumKit.estimateGas(transactionData: transactionData, gasPrice: gasPrice)
                 .flatMap { [weak self] gasLimit in
                     guard let strongSelf = self else {
-                        throw Signer.SendError.weakReferenceError
+                        throw EthereumKit.Kit.KitError.weakReference
                     }
 
                     print("GAS LIMIT SUCCESS: \(gasLimit)")
@@ -445,7 +445,7 @@ class OneInchController: UIViewController {
                 }
                 .flatMap { [weak self] (rawTransaction: RawTransaction) in
                     guard let strongSelf = self else {
-                        throw Signer.SendError.weakReferenceError
+                        throw EthereumKit.Kit.KitError.weakReference
                     }
 
                     let signature = try signer.signature(rawTransaction: rawTransaction)

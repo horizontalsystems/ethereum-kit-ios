@@ -13,12 +13,16 @@ class Erc20Adapter: Erc20BaseAdapter {
 
     func allowanceSingle(spenderAddress: Address) -> Single<Decimal> {
         erc20Kit.allowanceSingle(spenderAddress: spenderAddress)
-                .map { [unowned self] allowanceString in
-                    if let significand = Decimal(string: allowanceString) {
-                        return Decimal(sign: .plus, exponent: -token.decimal, significand: significand)
+                .flatMap { [weak self] allowanceString in
+                    guard let strongSelf = self else {
+                        throw Kit.KitError.weakReference
                     }
 
-                    return 0
+                    if let significand = Decimal(string: allowanceString) {
+                        return Single.just(Decimal(sign: .plus, exponent: -strongSelf.token.decimal, significand: significand))
+                    }
+
+                    return Single.just(0)
                 }
     }
 
@@ -30,7 +34,7 @@ class Erc20Adapter: Erc20BaseAdapter {
                 .rawTransaction(transactionData: transactionData, gasPrice: gasPrice, gasLimit: gasLimit)
                 .flatMap { [weak self] rawTransaction in
                     guard let strongSelf = self else {
-                        throw Signer.SendError.weakReferenceError
+                        throw EthereumKit.Kit.KitError.weakReference
                     }
 
                     let signature = try strongSelf.signer.signature(rawTransaction: rawTransaction)

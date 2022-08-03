@@ -62,12 +62,16 @@ extension TransactionManager {
 
     func fullTransactionSingle(hash: Data) -> Single<FullTransaction> {
         blockchain.transactionSingle(transactionHash: hash)
-                .flatMap { [unowned self] rpcTransaction -> Single<FullRpcTransaction> in
+                .flatMap { [weak self] rpcTransaction -> Single<FullRpcTransaction> in
+                    guard let strongSelf = self else {
+                        throw Kit.KitError.weakReference
+                    }
+
                     if let blockNumber = rpcTransaction.blockNumber {
                         return Single.zip(
-                                blockchain.transactionReceiptSingle(transactionHash: hash),
-                                blockchain.getBlock(blockNumber: blockNumber),
-                                transactionProvider.internalTransactionsSingle(transactionHash: hash)
+                                        strongSelf.blockchain.transactionReceiptSingle(transactionHash: hash),
+                                        strongSelf.blockchain.getBlock(blockNumber: blockNumber),
+                                        strongSelf.transactionProvider.internalTransactionsSingle(transactionHash: hash)
                         )
                                 .map { rpcTransactionReceipt, rpcBlock, providerInternalTransactions in
                                     FullRpcTransaction(
@@ -81,8 +85,12 @@ extension TransactionManager {
                         return Single.just(FullRpcTransaction(rpcTransaction: rpcTransaction))
                     }
                 }
-                .map { [unowned self] fullRpcTransaction in
-                    try decorationManager.decorate(fullRpcTransaction: fullRpcTransaction)
+                .flatMap { [weak self] fullRpcTransaction in
+                    guard let strongSelf = self else {
+                        throw Kit.KitError.weakReference
+                    }
+
+                    return Single.just(try strongSelf.decorationManager.decorate(fullRpcTransaction: fullRpcTransaction))
                 }
     }
 
@@ -111,9 +119,14 @@ extension TransactionManager {
     }
 
     func fullTransactionsSingle(tags: [[String]], fromHash: Data?, limit: Int?) -> Single<[FullTransaction]> {
-        Single.create { [unowned self] observer in
-            let transactions = storage.transactionsBefore(tags: tags, hash: fromHash, limit: limit)
-            let fullTransactions = decorationManager.decorate(transactions: transactions)
+        Single.create { [weak self] observer in
+            guard let strongSelf = self else {
+                observer(.error(Kit.KitError.weakReference))
+                return Disposables.create()
+            }
+
+            let transactions = strongSelf.storage.transactionsBefore(tags: tags, hash: fromHash, limit: limit)
+            let fullTransactions = strongSelf.decorationManager.decorate(transactions: transactions)
             observer(.success(fullTransactions))
 
             return Disposables.create()

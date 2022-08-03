@@ -161,9 +161,14 @@ extension Kit {
 
     public func sendSingle(rawTransaction: RawTransaction, signature: Signature) -> Single<FullTransaction> {
         blockchain.sendSingle(rawTransaction: rawTransaction, signature: signature)
-                .map { [unowned self] transaction in
-                    let fullTransactions = transactionManager.handle(transactions: [transaction])
-                    return fullTransactions[0]
+                .flatMap { [weak self] transaction in
+                    guard let strongSelf = self else {
+                        throw Kit.KitError.weakReference
+                    }
+
+                    let fullTransactions = strongSelf.transactionManager.handle(transactions: [transaction])
+
+                    return Single.just(fullTransactions[0])
                 }
     }
 
@@ -372,6 +377,10 @@ extension Kit {
 }
 
 extension Kit {
+
+    public enum KitError: Error {
+        case weakReference
+    }
 
     public enum SyncError: Error {
         case notStarted
