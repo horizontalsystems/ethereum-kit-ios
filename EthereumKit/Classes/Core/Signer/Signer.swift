@@ -75,11 +75,3 @@ extension Signer {
     }
 
 }
-
-extension Signer {
-
-    public enum SendError: Error {
-        case weakReferenceError
-    }
-
-}

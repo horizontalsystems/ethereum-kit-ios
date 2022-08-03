@@ -35,11 +35,15 @@ class NodeApiProvider {
                 interceptor: self,
                 responseCacherBehavior: .doNotCache
         )
-                .catchError { [unowned self] error in
+                .catchError { [weak self] error in
+                    guard let strongSelf = self else {
+                        throw Kit.KitError.weakReference
+                    }
+
                     let nextIndex = urlIndex + 1
 
-                    if nextIndex < urls.count {
-                        return rpcResultSingle(urlIndex: nextIndex, parameters: parameters)
+                    if nextIndex < strongSelf.urls.count {
+                        return strongSelf.rpcResultSingle(urlIndex: nextIndex, parameters: parameters)
                     } else {
                         return Single.error(error)
                     }
