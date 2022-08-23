@@ -54,6 +54,13 @@ extension SwapDecoration {
     public enum Token {
         case evmCoin
         case eip20Coin(address: Address, tokenInfo: TokenInfo?)
+
+        public var tokenInfo: TokenInfo? {
+            switch self {
+            case .eip20Coin(_, let tokenInfo): return tokenInfo
+            default: return nil
+            }
+        }
     }
 
 }

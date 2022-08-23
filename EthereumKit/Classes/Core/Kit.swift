@@ -53,7 +53,7 @@ public class Kit {
 
         transactionManager.fullTransactionsObservable
                 .observeOn(ConcurrentDispatchQueueScheduler(qos: .userInitiated))
-                .subscribe(onNext: { [weak self] transactions in
+                .subscribe(onNext: { [weak self] _ in
                     self?.blockchain.syncAccountState()
                 })
                 .disposed(by: disposeBag)
@@ -101,7 +101,7 @@ extension Kit {
         accountStateSubject.asObservable()
     }
 
-    public var allTransactionsObservable: Observable<[FullTransaction]> {
+    public var allTransactionsObservable: Observable<([FullTransaction], Bool)> {
         transactionManager.fullTransactionsObservable
     }
 

@@ -22,8 +22,9 @@ class TransactionSyncManager {
         self.transactionManager = transactionManager
     }
 
-    private func _handle(transactionsArray: [[Transaction]]) {
-        let transactions = Array(transactionsArray.joined())
+    private func _handle(resultArray: [([Transaction], Bool)]) {
+        let transactions = Array(resultArray.map { $0.0 }.joined())
+        let initial = resultArray.map { $0.1 }.allSatisfy { $0 }
 
         var dictionary = [Data: Transaction]()
 
@@ -35,7 +36,7 @@ class TransactionSyncManager {
             }
         }
 
-        transactionManager.handle(transactions: Array(dictionary.values))
+        transactionManager.handle(transactions: Array(dictionary.values), initial: initial)
     }
 
     private func _merge(lhsTransaction lhs: Transaction, rhsTransaction rhs: Transaction) -> Transaction {
@@ -59,9 +60,9 @@ class TransactionSyncManager {
         )
     }
 
-    private func handleSuccess(transactionsArray: [[Transaction]]) {
+    private func handleSuccess(resultArray: [([Transaction], Bool)]) {
         queue.async {
-            self._handle(transactionsArray: transactionsArray)
+            self._handle(resultArray: resultArray)
             self._state = .synced
         }
     }
@@ -79,13 +80,11 @@ class TransactionSyncManager {
 
         _state = .syncing(progress: nil)
 
-        Single.zip(_syncers.map { syncer in
-                    syncer.transactionsSingle().catchErrorJustReturn([])
-                })
+        Single.zip(_syncers.map { $0.transactionsSingle() })
                 .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .utility))
                 .subscribe(
-                        onSuccess: { [weak self] transactionsArray in
-                            self?.handleSuccess(transactionsArray: transactionsArray)
+                        onSuccess: { [weak self] resultArray in
+                            self?.handleSuccess(resultArray: resultArray)
                         },
                         onError: { [weak self] error in
                             self?.handleError(error: error)

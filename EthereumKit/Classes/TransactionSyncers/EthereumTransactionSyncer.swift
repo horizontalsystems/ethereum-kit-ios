@@ -25,15 +25,16 @@ class EthereumTransactionSyncer {
 
 extension EthereumTransactionSyncer: ITransactionSyncer {
 
-    func transactionsSingle() -> Single<[Transaction]> {
+    func transactionsSingle() -> Single<([Transaction], Bool)> {
         let lastBlockNumber = (try? storage.syncerState(syncerId: syncerId))?.lastBlockNumber ?? 0
+        let initial = lastBlockNumber == 0
 
         return provider.transactionsSingle(startBlock: lastBlockNumber + 1)
                 .do(onSuccess: { [weak self] providerTransactions in
                     self?.handle(providerTransactions: providerTransactions)
                 })
                 .map { transactions in
-                    transactions.map { tx in
+                    let array = transactions.map { tx -> Transaction in
                         var isFailed: Bool
 
                         if let status = tx.txReceiptStatus {
@@ -61,7 +62,10 @@ extension EthereumTransactionSyncer: ITransactionSyncer {
                                 gasUsed: tx.gasUsed
                         )
                     }
+
+                    return (array, initial)
                 }
+                .catchErrorJustReturn(([], initial))
     }
 
 }

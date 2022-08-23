@@ -2,10 +2,10 @@ import EthereumKit
 import RxSwift
 import BigInt
 
-class DataProvider {
+public class DataProvider {
     private let ethereumKit: EthereumKit.Kit
 
-    init(ethereumKit: EthereumKit.Kit) {
+    public init(ethereumKit: EthereumKit.Kit) {
         self.ethereumKit = ethereumKit
     }
 
@@ -13,7 +13,7 @@ class DataProvider {
 
 extension DataProvider: IDataProvider {
 
-    func getBalance(contractAddress: Address, address: Address) -> Single<BigUInt> {
+    public func getBalance(contractAddress: Address, address: Address) -> Single<BigUInt> {
         ethereumKit.call(contractAddress: contractAddress, data: BalanceOfMethod(owner: address).encodedABI())
                 .flatMap { data -> Single<BigUInt> in
                     guard let value = BigUInt(data.prefix(32).hex, radix: 16) else {
