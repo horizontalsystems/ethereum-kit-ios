@@ -51,7 +51,7 @@ protocol ITransactionStorage {
 }
 
 public protocol ITransactionSyncer {
-    func transactionsSingle() -> Single<[Transaction]>
+    func transactionsSingle() -> Single<([Transaction], Bool)>
 }
 
 protocol ITransactionManagerDelegate: AnyObject {

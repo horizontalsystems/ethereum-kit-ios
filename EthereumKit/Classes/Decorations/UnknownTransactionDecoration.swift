@@ -3,7 +3,7 @@ import BigInt
 open class UnknownTransactionDecoration: TransactionDecoration {
     private let userAddress: Address
     private let toAddress: Address?
-    private let fromAddress: Address?
+    public let fromAddress: Address?
     private let value: BigUInt?
 
     public let internalTransactions: [InternalTransaction]

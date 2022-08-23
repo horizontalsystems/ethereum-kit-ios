@@ -8,7 +8,7 @@ class TransactionManager {
     private let transactionProvider: ITransactionProvider
     private let disposeBag = DisposeBag()
 
-    private let fullTransactionsSubject = PublishSubject<[FullTransaction]>()
+    private let fullTransactionsSubject = PublishSubject<([FullTransaction], Bool)>()
     private let fullTransactionsWithTagsSubject = PublishSubject<[(transaction: FullTransaction, tags: [String])]>()
 
     init(storage: ITransactionStorage, decorationManager: DecorationManager, blockchain: IBlockchain, transactionProvider: ITransactionProvider) {
@@ -48,7 +48,7 @@ class TransactionManager {
 
 extension TransactionManager {
 
-    var fullTransactionsObservable: Observable<[FullTransaction]> {
+    var fullTransactionsObservable: Observable<([FullTransaction], Bool)> {
         fullTransactionsSubject.asObservable()
     }
 
@@ -145,7 +145,7 @@ extension TransactionManager {
         storage.transaction(hash: hash).flatMap { decorationManager.decorate(transactions: [$0]).first }
     }
 
-    @discardableResult func handle(transactions: [Transaction]) -> [FullTransaction] {
+    @discardableResult func handle(transactions: [Transaction], initial: Bool = false) -> [FullTransaction] {
         guard !transactions.isEmpty else {
             return []
         }
@@ -168,7 +168,7 @@ extension TransactionManager {
 
         storage.save(tags: allTags)
 
-        fullTransactionsSubject.onNext(fullTransactions)
+        fullTransactionsSubject.onNext((fullTransactions, initial))
         fullTransactionsWithTagsSubject.onNext(fullTransactionsWithTags)
 
         return fullTransactions

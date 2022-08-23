@@ -37,15 +37,16 @@ class Erc20TransactionSyncer {
 
 extension Erc20TransactionSyncer: ITransactionSyncer {
 
-    public func transactionsSingle() -> Single<[Transaction]> {
+    public func transactionsSingle() -> Single<([Transaction], Bool)> {
         let lastBlockNumber = storage.lastEvent()?.blockNumber ?? 0
+        let initial = lastBlockNumber == 0
 
         return provider.tokenTransactionsSingle(startBlock: lastBlockNumber + 1)
                 .do(onSuccess: { [weak self] transactions in
                     self?.handle(transactions: transactions)
                 })
                 .map { transactions in
-                    transactions.map { tx in
+                    let array = transactions.map { tx in
                         Transaction(
                                 hash: tx.hash,
                                 timestamp: tx.timestamp,
@@ -58,7 +59,10 @@ extension Erc20TransactionSyncer: ITransactionSyncer {
                                 gasUsed: tx.gasUsed
                         )
                     }
+
+                    return (array, initial)
                 }
+                .catchErrorJustReturn(([], initial))
     }
 
 }
