@@ -4,6 +4,7 @@ use_modular_headers!
 target 'EthereumKitExample' do
   pod 'EthereumKit.swift', :path => '../'
   pod 'Erc20Kit.swift', :path => '../'
+  pod 'NftKit.swift', :path => '../'
   pod 'UniswapKit.swift', :path => '../'
   pod 'OneInchKit.swift', :path => '../'
 

@@ -77,4 +77,6 @@ public protocol ITransactionProvider {
     func internalTransactionsSingle(startBlock: Int) -> Single<[ProviderInternalTransaction]>
     func internalTransactionsSingle(transactionHash: Data) -> Single<[ProviderInternalTransaction]>
     func tokenTransactionsSingle(startBlock: Int) -> Single<[ProviderTokenTransaction]>
+    func eip721TransactionsSingle(startBlock: Int) -> Single<[ProviderEip721Transaction]>
+    func eip1155TransactionsSingle(startBlock: Int) -> Single<[ProviderEip1155Transaction]>
 }

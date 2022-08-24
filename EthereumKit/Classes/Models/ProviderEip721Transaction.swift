@@ -1,7 +1,7 @@
 import BigInt
 import ObjectMapper
 
-public struct ProviderTokenTransaction: ImmutableMappable {
+public struct ProviderEip721Transaction: ImmutableMappable {
     public let blockNumber: Int
     public let timestamp: Int
     public let hash: Data
@@ -10,7 +10,7 @@ public struct ProviderTokenTransaction: ImmutableMappable {
     public let from: Address
     public let contractAddress: Address
     public let to: Address
-    public let value: BigUInt
+    public let tokenId: BigUInt
     public let tokenName: String
     public let tokenSymbol: String
     public let tokenDecimal: Int
@@ -29,7 +29,7 @@ public struct ProviderTokenTransaction: ImmutableMappable {
         from = try map.value("from", using: HexAddressTransform())
         contractAddress = try map.value("contractAddress", using: HexAddressTransform())
         to = try map.value("to", using: HexAddressTransform())
-        value = try map.value("value", using: HexBigUIntTransform())
+        tokenId = try map.value("tokenID", using: HexBigUIntTransform())
         tokenName = try map.value("tokenName")
         tokenSymbol = try map.value("tokenSymbol")
         tokenDecimal = try map.value("tokenDecimal", using: StringIntTransform())

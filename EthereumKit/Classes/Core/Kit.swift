@@ -34,8 +34,9 @@ public class Kit {
 
 
     init(blockchain: IBlockchain, transactionManager: TransactionManager, transactionSyncManager: TransactionSyncManager,
-         state: EthereumKitState = EthereumKitState(),
-         address: Address, chain: Chain, uniqueId: String, transactionProvider: ITransactionProvider, decorationManager: DecorationManager, eip20Storage: Eip20Storage, logger: Logger) {
+         state: EthereumKitState = EthereumKitState(), address: Address, chain: Chain, uniqueId: String,
+         transactionProvider: ITransactionProvider, decorationManager: DecorationManager, eip20Storage: Eip20Storage,
+         logger: Logger) {
         self.blockchain = blockchain
         self.transactionManager = transactionManager
         self.transactionSyncManager = transactionSyncManager
@@ -328,8 +329,8 @@ extension Kit {
 
         let kit = Kit(
                 blockchain: blockchain, transactionManager: transactionManager, transactionSyncManager: transactionSyncManager,
-                address: address, chain: chain,
-                uniqueId: uniqueId, transactionProvider: transactionProvider, decorationManager: decorationManager, eip20Storage: eip20Storage, logger: logger
+                address: address, chain: chain, uniqueId: uniqueId, transactionProvider: transactionProvider, decorationManager: decorationManager,
+                eip20Storage: eip20Storage, logger: logger
         )
 
         blockchain.delegate = kit

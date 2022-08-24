@@ -1,6 +1,7 @@
 import RxSwift
 import EthereumKit
 import Erc20Kit
+import NftKit
 import UniswapKit
 import OneInchKit
 import HdWalletKit
@@ -13,6 +14,7 @@ class Manager {
 
     var signer: EthereumKit.Signer!
     var evmKit: EthereumKit.Kit!
+    var nftKit: NftKit.Kit!
     var uniswapKit: UniswapKit.Kit?
     var oneInchKit: OneInchKit.Kit?
 
@@ -45,6 +47,7 @@ class Manager {
 
         signer = nil
         evmKit = nil
+        nftKit = nil
         uniswapKit = nil
         oneInchKit = nil
         ethereumAdapter = nil
@@ -68,6 +71,8 @@ class Manager {
                 walletId: "walletId",
                 minLogLevel: configuration.minLogLevel
         )
+
+        nftKit = try! NftKit.Kit.instance(evmKit: evmKit)
 
         uniswapKit = try! UniswapKit.Kit.instance(evmKit: evmKit)
         oneInchKit = try! OneInchKit.Kit.instance(evmKit: evmKit)
@@ -107,6 +112,8 @@ class Manager {
                 walletId: "walletId",
                 minLogLevel: configuration.minLogLevel
         )
+
+        nftKit = try! NftKit.Kit.instance(evmKit: evmKit)
 
         uniswapKit = try! UniswapKit.Kit.instance(evmKit: evmKit)
         oneInchKit = try! OneInchKit.Kit.instance(evmKit: evmKit)

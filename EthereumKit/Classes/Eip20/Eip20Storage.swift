@@ -68,7 +68,7 @@ extension Eip20Storage {
 
     public func lastEvent() -> Event? {
         try! dbPool.read { db in
-            try Event.order(Transaction.Columns.blockNumber.desc).fetchOne(db)
+            try Event.order(Event.Columns.blockNumber.desc).fetchOne(db)
         }
     }
 
