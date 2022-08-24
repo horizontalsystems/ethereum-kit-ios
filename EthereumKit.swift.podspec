@@ -39,4 +39,5 @@ EthereumKit.swift implements Ethereum protocol in Swift.
   s.dependency 'BigInt', '~> 5.0'
   s.dependency 'GRDB.swift', '~> 5.0'
   s.dependency 'BlueSocket', '~> 1.0'
+  s.dependency 'ObjectMapper', '~> 4.0'
 end
