@@ -108,3 +108,19 @@ struct StringIntTransform: TransformType {
     }
 
 }
+
+struct StringBigUIntTransform: TransformType {
+
+    func transformFromJSON(_ value: Any?) -> BigUInt? {
+        guard let string = value as? String else {
+            return nil
+        }
+
+        return BigUInt(string)
+    }
+
+    func transformToJSON(_ value: BigUInt?) -> String? {
+        fatalError("transformToJSON(_:) has not been implemented")
+    }
+
+}

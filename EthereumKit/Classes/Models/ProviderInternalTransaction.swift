@@ -16,7 +16,7 @@ public struct ProviderInternalTransaction: ImmutableMappable {
         timestamp = try map.value("timeStamp", using: StringIntTransform())
         from = try map.value("from", using: HexAddressTransform())
         to = try map.value("to", using: HexAddressTransform())
-        value = try map.value("value", using: HexBigUIntTransform())
+        value = try map.value("value", using: StringBigUIntTransform())
         traceId = try map.value("traceId")
     }
 

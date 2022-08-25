@@ -91,11 +91,14 @@ class Manager {
         Erc20Kit.Kit.addDecorators(to: evmKit)
         Erc20Kit.Kit.addTransactionSyncer(to: evmKit)
 
+        NftKit.Kit.addTransactionSyncers(nftKit: nftKit, evmKit: evmKit)
+
         UniswapKit.Kit.addDecorators(to: evmKit)
 
         OneInchKit.Kit.addDecorators(to: evmKit)
 
         evmKit.start()
+        nftKit.start()
 
         for adapter in erc20Adapters {
             adapter.start()
@@ -131,11 +134,14 @@ class Manager {
         Erc20Kit.Kit.addDecorators(to: evmKit)
         Erc20Kit.Kit.addTransactionSyncer(to: evmKit)
 
+        NftKit.Kit.addTransactionSyncers(nftKit: nftKit, evmKit: evmKit)
+
         UniswapKit.Kit.addDecorators(to: evmKit)
 
         OneInchKit.Kit.addDecorators(to: evmKit)
 
         evmKit.start()
+        nftKit.start()
 
         for adapter in erc20Adapters {
             adapter.start()

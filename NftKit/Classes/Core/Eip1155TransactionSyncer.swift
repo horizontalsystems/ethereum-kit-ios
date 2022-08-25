@@ -6,6 +6,8 @@ class Eip1155TransactionSyncer {
     private let provider: ITransactionProvider
     private let storage: Storage
 
+    weak var delegate: ITransactionSyncerDelegate?
+
     init(provider: ITransactionProvider, storage: Storage) {
         self.provider = provider
         self.storage = storage
@@ -30,7 +32,18 @@ class Eip1155TransactionSyncer {
             )
         }
 
-        storage.save(eip1155Events: events)
+        try? storage.save(eip1155Events: events)
+
+        let nfts = Set<Nft>(events.map { event in
+            Nft(
+                    type: .eip1155,
+                    contractAddress: event.contractAddress,
+                    tokenId: event.tokenId,
+                    tokenName: event.tokenName
+            )
+        })
+
+        delegate?.didSync(nfts: Array(nfts), type: .eip1155)
     }
 
 }
@@ -38,7 +51,7 @@ class Eip1155TransactionSyncer {
 extension Eip1155TransactionSyncer: ITransactionSyncer {
 
     func transactionsSingle() -> Single<([Transaction], Bool)> {
-        let lastBlockNumber = storage.lastEip1155Event()?.blockNumber ?? 0
+        let lastBlockNumber = (try? storage.lastEip1155Event()?.blockNumber) ?? 0
         let initial = lastBlockNumber == 0
 
         return provider.eip1155TransactionsSingle(startBlock: lastBlockNumber + 1)

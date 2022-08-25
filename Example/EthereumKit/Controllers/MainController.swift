@@ -10,6 +10,10 @@ class MainController: UITabBarController {
         balanceNavigation.tabBarItem.title = "Balance"
         balanceNavigation.tabBarItem.image = UIImage(named: "Balance Tab Bar Icon")
 
+        let nftNavigation = UINavigationController(rootViewController: NftController())
+        nftNavigation.tabBarItem.title = "NFT"
+        nftNavigation.tabBarItem.image = UIImage(named: "Balance Tab Bar Icon")
+
         let transactionsNavigation = UINavigationController(rootViewController: TransactionsController())
         transactionsNavigation.tabBarItem.title = "Transactions"
         transactionsNavigation.tabBarItem.image = UIImage(named: "Transactions Tab Bar Icon")
@@ -22,7 +26,7 @@ class MainController: UITabBarController {
         receiveNavigation.tabBarItem.title = "Receive"
         receiveNavigation.tabBarItem.image = UIImage(named: "Receive Tab Bar Icon")
 
-        var controllers = [balanceNavigation, transactionsNavigation, sendNavigation, receiveNavigation]
+        var controllers = [balanceNavigation, nftNavigation, transactionsNavigation, sendNavigation, receiveNavigation]
 
 //        if let _ = Manager.shared.uniswapKit {
 //            let swapNavigation = UINavigationController(rootViewController: UniswapController())

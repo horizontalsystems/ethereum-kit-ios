@@ -29,7 +29,7 @@ public struct ProviderEip721Transaction: ImmutableMappable {
         from = try map.value("from", using: HexAddressTransform())
         contractAddress = try map.value("contractAddress", using: HexAddressTransform())
         to = try map.value("to", using: HexAddressTransform())
-        tokenId = try map.value("tokenID", using: HexBigUIntTransform())
+        tokenId = try map.value("tokenID", using: StringBigUIntTransform())
         tokenName = try map.value("tokenName")
         tokenSymbol = try map.value("tokenSymbol")
         tokenDecimal = try map.value("tokenDecimal", using: StringIntTransform())
