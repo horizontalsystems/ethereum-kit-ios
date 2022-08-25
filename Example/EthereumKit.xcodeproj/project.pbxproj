@@ -7,7 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		11B351A4204E1254404CFD6E /* NftController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B357762019CB11EBEFEC22 /* NftController.swift */; };
 		11B353E98743C82520A37744 /* OneInchController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B35D85C5CE8FFFE3497F4B /* OneInchController.swift */; };
+		11B3558899328F227DEA39BA /* NftCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B3541309752E218D0EF5DA /* NftCell.swift */; };
 		1A5641416216333609FE0468 /* EthereumBaseAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A56478DAC6D339E5384AE2A /* EthereumBaseAdapter.swift */; };
 		1A564E922C796409A7C19265 /* Erc20BaseAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A564968B92F4129643397F9 /* Erc20BaseAdapter.swift */; };
 		2FA5D7425FFBE908226E68D0 /* UniswapController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA5D0E2F61472F1A464C5F7 /* UniswapController.swift */; };
@@ -65,6 +67,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		11B3541309752E218D0EF5DA /* NftCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NftCell.swift; sourceTree = "<group>"; };
+		11B357762019CB11EBEFEC22 /* NftController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NftController.swift; sourceTree = "<group>"; };
 		11B35D85C5CE8FFFE3497F4B /* OneInchController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OneInchController.swift; sourceTree = "<group>"; };
 		1A56478DAC6D339E5384AE2A /* EthereumBaseAdapter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EthereumBaseAdapter.swift; sourceTree = "<group>"; };
 		1A564968B92F4129643397F9 /* Erc20BaseAdapter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Erc20BaseAdapter.swift; sourceTree = "<group>"; };
@@ -317,6 +321,7 @@
 				D36AAAC723A237940065B32B /* ReceiveController.xib */,
 				11B35D85C5CE8FFFE3497F4B /* OneInchController.swift */,
 				2FA5D0E2F61472F1A464C5F7 /* UniswapController.swift */,
+				11B357762019CB11EBEFEC22 /* NftController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -328,6 +333,7 @@
 				D36AAABE23A237940065B32B /* TransactionCell.swift */,
 				D36AAABF23A237940065B32B /* BalanceCell.swift */,
 				D36AAAC023A237940065B32B /* BalanceCell.xib */,
+				11B3541309752E218D0EF5DA /* NftCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -631,6 +637,8 @@
 				2FA5D7425FFBE908226E68D0 /* UniswapController.swift in Sources */,
 				1A564E922C796409A7C19265 /* Erc20BaseAdapter.swift in Sources */,
 				1A5641416216333609FE0468 /* EthereumBaseAdapter.swift in Sources */,
+				11B351A4204E1254404CFD6E /* NftController.swift in Sources */,
+				11B3558899328F227DEA39BA /* NftCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
