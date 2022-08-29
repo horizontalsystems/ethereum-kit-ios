@@ -91,7 +91,8 @@ class Manager {
         Erc20Kit.Kit.addDecorators(to: evmKit)
         Erc20Kit.Kit.addTransactionSyncer(to: evmKit)
 
-        NftKit.Kit.addTransactionSyncers(nftKit: nftKit, evmKit: evmKit)
+        NftKit.Kit.addEip721TransactionSyncer(nftKit: nftKit, evmKit: evmKit)
+        NftKit.Kit.addEip1155TransactionSyncer(nftKit: nftKit, evmKit: evmKit)
 
         UniswapKit.Kit.addDecorators(to: evmKit)
 
@@ -134,7 +135,8 @@ class Manager {
         Erc20Kit.Kit.addDecorators(to: evmKit)
         Erc20Kit.Kit.addTransactionSyncer(to: evmKit)
 
-        NftKit.Kit.addTransactionSyncers(nftKit: nftKit, evmKit: evmKit)
+        NftKit.Kit.addEip721TransactionSyncer(nftKit: nftKit, evmKit: evmKit)
+        NftKit.Kit.addEip1155TransactionSyncer(nftKit: nftKit, evmKit: evmKit)
 
         UniswapKit.Kit.addDecorators(to: evmKit)
 

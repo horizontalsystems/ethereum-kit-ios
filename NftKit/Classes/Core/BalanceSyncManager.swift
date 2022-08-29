@@ -37,7 +37,7 @@ class BalanceSyncManager {
             let balance = balances[index]
 
             if let balance = balance {
-//                print("Synced balance for \(nftBalance.nft.contractAddress) - \(nftBalance.nft.tokenId) - \(balance)")
+//                print("Synced balance for \(nftBalance.nft.tokenName) - \(nftBalance.nft.contractAddress) - \(nftBalance.nft.tokenId) - \(balance)")
                 balanceInfos.append((nftBalance.nft, balance))
             } else {
                 print("Failed to sync balance for \(nftBalance.nft.tokenName) - \(nftBalance.nft.contractAddress) - \(nftBalance.nft.tokenId)")

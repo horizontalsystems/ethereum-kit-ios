@@ -38,16 +38,10 @@ public class Kit {
 
 extension Kit {
 
-    public func start() {
+    public func sync() {
         if case .synced = evmKit.syncState {
             balanceSyncManager.sync()
         }
-    }
-
-    public func stop() {
-    }
-
-    public func refresh() {
     }
 
     public var nftBalances: [NftBalance] {
@@ -89,15 +83,16 @@ extension Kit {
         return kit
     }
 
-    public static func addTransactionSyncers(nftKit: Kit, evmKit: EthereumKit.Kit) {
-        let eip721Syncer = Eip721TransactionSyncer(provider: evmKit.transactionProvider, storage: nftKit.storage)
-        let eip1155Syncer = Eip1155TransactionSyncer(provider: evmKit.transactionProvider, storage: nftKit.storage)
+    public static func addEip721TransactionSyncer(nftKit: Kit, evmKit: EthereumKit.Kit) {
+        let syncer = Eip721TransactionSyncer(provider: evmKit.transactionProvider, storage: nftKit.storage)
+        syncer.delegate = nftKit
+        evmKit.add(transactionSyncer: syncer)
+    }
 
-        eip721Syncer.delegate = nftKit
-        eip1155Syncer.delegate = nftKit
-
-        evmKit.add(transactionSyncer: eip721Syncer)
-        evmKit.add(transactionSyncer: eip1155Syncer)
+    public static func addEip1155TransactionSyncer(nftKit: Kit, evmKit: EthereumKit.Kit) {
+        let syncer = Eip1155TransactionSyncer(provider: evmKit.transactionProvider, storage: nftKit.storage)
+        syncer.delegate = nftKit
+        evmKit.add(transactionSyncer: syncer)
     }
 
     private static func dataDirectoryUrl() throws -> URL {
