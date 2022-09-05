@@ -30,6 +30,7 @@ class Manager {
 
     func login(words: [String]) {
         try! EthereumKit.Kit.clear(exceptFor: ["walletId"])
+        try! NftKit.Kit.clear(exceptFor: ["walletId"])
 
         save(words: words)
         initEthereumKit(words: words)
@@ -37,6 +38,7 @@ class Manager {
 
     func watch(address: Address) {
         try! EthereumKit.Kit.clear(exceptFor: ["walletId"])
+        try! NftKit.Kit.clear(exceptFor: ["walletId"])
 
         save(address: address.hex)
         initEthereumKit(address: address)
@@ -99,7 +101,7 @@ class Manager {
         OneInchKit.Kit.addDecorators(to: evmKit)
 
         evmKit.start()
-        nftKit.start()
+        nftKit.sync()
 
         for adapter in erc20Adapters {
             adapter.start()
@@ -143,7 +145,7 @@ class Manager {
         OneInchKit.Kit.addDecorators(to: evmKit)
 
         evmKit.start()
-        nftKit.start()
+        nftKit.sync()
 
         for adapter in erc20Adapters {
             adapter.start()
