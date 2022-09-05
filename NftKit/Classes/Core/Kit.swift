@@ -83,6 +83,17 @@ extension Kit {
         return kit
     }
 
+    public static func clear(exceptFor excludedFiles: [String]) throws {
+        let fileManager = FileManager.default
+        let fileUrls = try fileManager.contentsOfDirectory(at: dataDirectoryUrl(), includingPropertiesForKeys: nil)
+
+        for filename in fileUrls {
+            if !excludedFiles.contains(where: { filename.lastPathComponent.contains($0) }) {
+                try fileManager.removeItem(at: filename)
+            }
+        }
+    }
+
     public static func addEip721TransactionSyncer(nftKit: Kit, evmKit: EthereumKit.Kit) {
         let syncer = Eip721TransactionSyncer(provider: evmKit.transactionProvider, storage: nftKit.storage)
         syncer.delegate = nftKit
