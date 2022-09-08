@@ -12,9 +12,9 @@ PODS:
   - CNIOLinux (2.40.0)
   - CNIOSHA1 (2.40.0)
   - CNIOWindows (2.40.0)
-  - Cuckoo (1.9.0):
-    - Cuckoo/Swift (= 1.9.0)
-  - Cuckoo/Swift (1.9.0)
+  - Cuckoo (1.9.1):
+    - Cuckoo/Swift (= 1.9.1)
+  - Cuckoo/Swift (1.9.1)
   - Erc20Kit.swift (0.16.0):
     - BigInt (~> 5.0)
     - EthereumKit.swift (~> 0.16)
@@ -245,10 +245,10 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   HsToolKit.swift:
-    :commit: d4b2dc9d705251e032ccfee569de385b67ea45ae
+    :commit: fa567318bcdaac2b71822c9d7871684011d366ec
     :git: https://github.com/horizontalsystems/hs-tool-kit-ios
   UIExtensions.swift:
-    :commit: ea5172b5a9bb54c0f2736917acc01b7f93cc0312
+    :commit: 4590b8b5c22fb5fdc654e8e37313eed11d091828
     :git: https://github.com/horizontalsystems/gui-kit/
 
 SPEC CHECKSUMS:
@@ -264,7 +264,7 @@ SPEC CHECKSUMS:
   CNIOLinux: 62e3505f50de558c393dc2f273dde71dcce518da
   CNIOSHA1: 6df39ae8db5922d6fcdd94e15bc57118cbd6b104
   CNIOWindows: 3047f2d8165848a3936a0a755fee27c6b5ee479b
-  Cuckoo: 95d684e0eb8181bcd37827dc0e857abc484a688f
+  Cuckoo: 1b6793fe60fac29af50b0a5915bc309a4a1ac673
   Erc20Kit.swift: 45f76da262a8a8d616ef3b0b09784b2e3db3cf0c
   EthereumKit.swift: 30e0407c0fc2d80c97b7243553f3ec72780bd278
   GRDB.swift: 1395cb3556df6b16ed69dfc74c3886abc75d2825
@@ -291,7 +291,7 @@ SPEC CHECKSUMS:
   SwiftNIOSSL: d153c5a6fc5b2301b0519b4c4d037a9414212da6
   SwiftNIOTLS: 598af547490133e9aac52aed0c23c4a90c31dcfc
   SwiftNIOWebSocket: cb67e4bf1b9f6895d2103b15d8369f8504ea42da
-  UIExtensions.swift: 3ed084c0343ddd0f86c7c558d37759e1fd7d5778
+  UIExtensions.swift: 01a3433bf371558fb6bdcfdff9fc27ec79ce8489
   UniswapKit.swift: adf5315f385f33ecceb0d2bbb8e504a6246f1739
 
 PODFILE CHECKSUM: 66214cebcafe135d1c9d2f171e65bf6ab9ae934b
