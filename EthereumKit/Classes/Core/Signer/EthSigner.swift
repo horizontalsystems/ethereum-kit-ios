@@ -35,7 +35,7 @@ class EthSigner {
 
     func signTypedData(message: Data) throws -> Data {
         let typedData = try parseTypedData(rawJson: message)
-        let hashedMessage = typedData.signHash
+        let hashedMessage = try typedData.signHash()
 
         return try cryptoUtils.ellipticSign(hashedMessage, privateKey: privateKey)
     }
