@@ -22,11 +22,13 @@ extension ContractEvent {
 
     public enum Argument {
         case uint256
+        case uint256Array
         case address
 
         var type: String {
             switch self {
             case .uint256: return "uint256"
+            case .uint256Array: return "uint256[]"
             case .address: return "address"
             }
         }
