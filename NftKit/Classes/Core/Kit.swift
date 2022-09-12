@@ -106,6 +106,14 @@ extension Kit {
         evmKit.add(transactionSyncer: syncer)
     }
 
+    public static func addEip721Decorators(nftKit: Kit, evmKit: EthereumKit.Kit) {
+        evmKit.add(eventDecorator: Eip721EventDecorator(userAddress: evmKit.address, storage: nftKit.storage))
+    }
+
+    public static func addEip1155Decorators(nftKit: Kit, evmKit: EthereumKit.Kit) {
+        evmKit.add(eventDecorator: Eip1155EventDecorator(userAddress: evmKit.address, storage: nftKit.storage))
+    }
+
     private static func dataDirectoryUrl() throws -> URL {
         let fileManager = FileManager.default
 
