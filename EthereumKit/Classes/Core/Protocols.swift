@@ -40,7 +40,7 @@ protocol ITransactionStorage {
 
     func pendingTransactions() -> [Transaction]
     func pendingTransactions(tags: [[String]]) -> [Transaction]
-    func nonPendingTransactions(nonces: [Int]) -> [Transaction]
+    func nonPendingTransactions(from: Address, nonces: [Int]) -> [Transaction]
 
     func lastInternalTransaction() -> InternalTransaction?
     func internalTransactions() -> [InternalTransaction]

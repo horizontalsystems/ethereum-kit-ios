@@ -15,12 +15,22 @@ class TransactionSyncerStateStorage {
     var migrator: DatabaseMigrator {
         var migrator = DatabaseMigrator()
 
-        migrator.registerMigration("create TransactionSyncerState") { db in
-            try db.create(table: TransactionSyncerState.databaseTableName) { t in
-                t.column(TransactionSyncerState.Columns.syncerId.name, .text).notNull().indexed()
-                t.column(TransactionSyncerState.Columns.lastBlockNumber.name, .integer).notNull()
+        migrator.registerMigration("recreate TransactionSyncerState") { db in
+            var oldStates = [TransactionSyncerState]()
 
-                t.uniqueKey([TransactionSyncerState.Columns.syncerId.name, TransactionSyncerState.Columns.lastBlockNumber.name], onConflict: .ignore)
+            if try db.tableExists(TransactionSyncerState.databaseTableName) {
+                oldStates = try TransactionSyncerState.fetchAll(db)
+
+                try db.drop(table: TransactionSyncerState.databaseTableName)
+            }
+
+            try db.create(table: TransactionSyncerState.databaseTableName) { t in
+                t.column(TransactionSyncerState.Columns.syncerId.name, .text).primaryKey(onConflict: .replace)
+                t.column(TransactionSyncerState.Columns.lastBlockNumber.name, .integer).notNull()
+            }
+
+            for oldState in oldStates {
+                try oldState.insert(db)
             }
         }
 
