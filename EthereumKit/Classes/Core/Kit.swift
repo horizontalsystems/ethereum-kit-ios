@@ -319,7 +319,7 @@ extension Kit {
         let ethereumTransactionSyncer = EthereumTransactionSyncer(provider: transactionProvider, storage: transactionSyncerStateStorage)
         let internalTransactionSyncer = InternalTransactionSyncer(provider: transactionProvider, storage: transactionStorage)
         let decorationManager = DecorationManager(userAddress: address, storage: transactionStorage)
-        let transactionManager = TransactionManager(storage: transactionStorage, decorationManager: decorationManager, blockchain: blockchain, transactionProvider: transactionProvider)
+        let transactionManager = TransactionManager(userAddress: address, storage: transactionStorage, decorationManager: decorationManager, blockchain: blockchain, transactionProvider: transactionProvider)
         let transactionSyncManager = TransactionSyncManager(transactionManager: transactionManager)
 
         transactionSyncManager.add(syncer: ethereumTransactionSyncer)

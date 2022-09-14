@@ -247,10 +247,10 @@ extension TransactionStorage: ITransactionStorage {
         }
     }
 
-    func nonPendingTransactions(nonces: [Int]) -> [Transaction] {
+    func nonPendingTransactions(from: Address, nonces: [Int]) -> [Transaction] {
         try! dbPool.read { db in
             try Transaction
-                    .filter(Transaction.Columns.blockNumber != nil && nonces.contains(Transaction.Columns.nonce))
+                    .filter(Transaction.Columns.from == from.raw && Transaction.Columns.blockNumber != nil && nonces.contains(Transaction.Columns.nonce))
                     .fetchAll(db)
         }
     }

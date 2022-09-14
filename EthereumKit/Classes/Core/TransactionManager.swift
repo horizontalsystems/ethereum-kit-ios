@@ -2,6 +2,7 @@ import RxSwift
 import BigInt
 
 class TransactionManager {
+    private let userAddress: Address
     private let storage: ITransactionStorage
     private let decorationManager: DecorationManager
     private let blockchain: IBlockchain
@@ -11,7 +12,8 @@ class TransactionManager {
     private let fullTransactionsSubject = PublishSubject<([FullTransaction], Bool)>()
     private let fullTransactionsWithTagsSubject = PublishSubject<[(transaction: FullTransaction, tags: [String])]>()
 
-    init(storage: ITransactionStorage, decorationManager: DecorationManager, blockchain: IBlockchain, transactionProvider: ITransactionProvider) {
+    init(userAddress: Address, storage: ITransactionStorage, decorationManager: DecorationManager, blockchain: IBlockchain, transactionProvider: ITransactionProvider) {
+        self.userAddress = userAddress
         self.storage = storage
         self.decorationManager = decorationManager
         self.blockchain = blockchain
@@ -27,7 +29,7 @@ class TransactionManager {
 
         let nonces = Array(Set(pendingTransactions.compactMap { $0.nonce }))
 
-        let nonPendingTransactions = storage.nonPendingTransactions(nonces: nonces)
+        let nonPendingTransactions = storage.nonPendingTransactions(from: userAddress, nonces: nonces)
         var processedTransactions = [Transaction]()
 
         for nonPendingTransaction in nonPendingTransactions {
