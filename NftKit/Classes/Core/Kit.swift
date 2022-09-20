@@ -4,15 +4,17 @@ import BigInt
 
 public class Kit {
     private let evmKit: EthereumKit.Kit
-    let balanceManager: BalanceManager
+    private let balanceManager: BalanceManager
     private let balanceSyncManager: BalanceSyncManager
-    let storage: Storage
+    private let transactionManager: TransactionManager
+    private let storage: Storage
     private let disposeBag = DisposeBag()
 
-    init(evmKit: EthereumKit.Kit, balanceManager: BalanceManager, balanceSyncManager: BalanceSyncManager, storage: Storage) {
+    init(evmKit: EthereumKit.Kit, balanceManager: BalanceManager, balanceSyncManager: BalanceSyncManager, transactionManager: TransactionManager, storage: Storage) {
         self.evmKit = evmKit
         self.balanceManager = balanceManager
         self.balanceSyncManager = balanceSyncManager
+        self.transactionManager = transactionManager
         self.storage = storage
 
         evmKit.syncStateObservable
@@ -52,12 +54,48 @@ extension Kit {
         balanceManager.nftBalancesObservable
     }
 
+    public func transferEip721TransactionData(contractAddress: Address, to: Address, tokenId: BigUInt) -> TransactionData {
+        transactionManager.transferEip721TransactionData(contractAddress: contractAddress, to: to, tokenId: tokenId)
+    }
+
+    public func transferEip1155TransactionData(contractAddress: Address, to: Address, tokenId: BigUInt, value: BigUInt) -> TransactionData {
+        transactionManager.transferEip1155TransactionData(contractAddress: contractAddress, to: to, tokenId: tokenId, value: value)
+    }
+
 }
 
 extension Kit: ITransactionSyncerDelegate {
 
     func didSync(nfts: [Nft], type: NftType) {
         balanceManager.didSync(nfts: nfts, type: type)
+    }
+
+}
+
+extension Kit {
+
+    public func addEip721TransactionSyncer() {
+        let syncer = Eip721TransactionSyncer(provider: evmKit.transactionProvider, storage: storage)
+        syncer.delegate = self
+        evmKit.add(transactionSyncer: syncer)
+    }
+
+    public func addEip1155TransactionSyncer() {
+        let syncer = Eip1155TransactionSyncer(provider: evmKit.transactionProvider, storage: storage)
+        syncer.delegate = self
+        evmKit.add(transactionSyncer: syncer)
+    }
+
+    public func addEip721Decorators() {
+        evmKit.add(methodDecorator: Eip721MethodDecorator(contractMethodFactories: Eip721ContractMethodFactories.shared))
+        evmKit.add(eventDecorator: Eip721EventDecorator(userAddress: evmKit.address, storage: storage))
+        evmKit.add(transactionDecorator: Eip721TransactionDecorator(userAddress: evmKit.address))
+    }
+
+    public func addEip1155Decorators() {
+        evmKit.add(methodDecorator: Eip1155MethodDecorator(contractMethodFactories: Eip1155ContractMethodFactories.shared))
+        evmKit.add(eventDecorator: Eip1155EventDecorator(userAddress: evmKit.address, storage: storage))
+        evmKit.add(transactionDecorator: Eip1155TransactionDecorator(userAddress: evmKit.address))
     }
 
 }
@@ -73,10 +111,13 @@ extension Kit {
 
         balanceSyncManager.delegate = balanceManager
 
+        let transactionManager = TransactionManager(evmKit: evmKit)
+
         let kit = Kit(
                 evmKit: evmKit,
                 balanceManager: balanceManager,
                 balanceSyncManager: balanceSyncManager,
+                transactionManager: transactionManager,
                 storage: storage
         )
 
@@ -92,26 +133,6 @@ extension Kit {
                 try fileManager.removeItem(at: filename)
             }
         }
-    }
-
-    public static func addEip721TransactionSyncer(nftKit: Kit, evmKit: EthereumKit.Kit) {
-        let syncer = Eip721TransactionSyncer(provider: evmKit.transactionProvider, storage: nftKit.storage)
-        syncer.delegate = nftKit
-        evmKit.add(transactionSyncer: syncer)
-    }
-
-    public static func addEip1155TransactionSyncer(nftKit: Kit, evmKit: EthereumKit.Kit) {
-        let syncer = Eip1155TransactionSyncer(provider: evmKit.transactionProvider, storage: nftKit.storage)
-        syncer.delegate = nftKit
-        evmKit.add(transactionSyncer: syncer)
-    }
-
-    public static func addEip721Decorators(nftKit: Kit, evmKit: EthereumKit.Kit) {
-        evmKit.add(eventDecorator: Eip721EventDecorator(userAddress: evmKit.address, storage: nftKit.storage))
-    }
-
-    public static func addEip1155Decorators(nftKit: Kit, evmKit: EthereumKit.Kit) {
-        evmKit.add(eventDecorator: Eip1155EventDecorator(userAddress: evmKit.address, storage: nftKit.storage))
     }
 
     private static func dataDirectoryUrl() throws -> URL {
