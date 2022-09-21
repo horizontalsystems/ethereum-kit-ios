@@ -54,6 +54,10 @@ extension Kit {
         balanceManager.nftBalancesObservable
     }
 
+    public func nftBalance(contractAddress: Address, tokenId: BigUInt) -> NftBalance? {
+        balanceManager.nftBalance(contractAddress: contractAddress, tokenId: tokenId)
+    }
+
     public func transferEip721TransactionData(contractAddress: Address, to: Address, tokenId: BigUInt) -> TransactionData {
         transactionManager.transferEip721TransactionData(contractAddress: contractAddress, to: to, tokenId: tokenId)
     }

@@ -1,5 +1,6 @@
 import GRDB
 import BigInt
+import EthereumKit
 
 class Storage {
     private let dbPool: DatabasePool
@@ -87,6 +88,12 @@ extension Storage {
     func nonSyncedNftBalances() throws -> [NftBalance] {
         try dbPool.read { db in
             try NftBalance.filter(NftBalance.Columns.synced == false).fetchAll(db)
+        }
+    }
+
+    func existingNftBalance(contractAddress: Address, tokenId: BigUInt) throws -> NftBalance? {
+        try dbPool.read { db in
+            try NftBalance.filter(NftBalance.Columns.contractAddress == contractAddress.raw && NftBalance.Columns.tokenId == tokenId && NftBalance.Columns.balance > 0).fetchOne(db)
         }
     }
 
