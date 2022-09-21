@@ -48,6 +48,10 @@ extension BalanceManager {
         nftBalancesSubject.asObservable()
     }
 
+    func nftBalance(contractAddress: Address, tokenId: BigUInt) -> NftBalance? {
+        try? storage.existingNftBalance(contractAddress: contractAddress, tokenId: tokenId)
+    }
+
     func didSync(nfts: [Nft], type: NftType) {
         DispatchQueue.global(qos: .utility).async { [weak self] in
             try? self?.handleNftsFromTransactions(type: type, nfts: nfts)
