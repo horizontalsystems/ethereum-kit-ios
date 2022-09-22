@@ -19,13 +19,23 @@ extension Eip1155TransactionDecorator: ITransactionDecorator {
 
         if let transferMethod = contractMethod as? Eip1155SafeTransferFromMethod {
             if from == userAddress {
-                return OutgoingEip1155Decoration(
+                return Eip1155SafeTransferFromDecoration(
                         contractAddress: to,
                         to: transferMethod.to,
                         tokenId: transferMethod.tokenId,
                         value: transferMethod.value,
                         sentToSelf: transferMethod.to == userAddress,
                         tokenInfo: eventInstances.compactMap { $0 as? Eip1155TransferEventInstance }.first { $0.contractAddress == to }?.tokenInfo
+                )
+            }
+        }
+
+        if let method = contractMethod as? Eip1155SetApprovalForAllMethod {
+            if from == userAddress {
+                return Eip1155SetApprovalForAllDecoration(
+                        contractAddress: to,
+                        operator: method.operator,
+                        approved: method.approved
                 )
             }
         }

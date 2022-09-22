@@ -19,12 +19,22 @@ extension Eip721TransactionDecorator: ITransactionDecorator {
 
         if let transferMethod = contractMethod as? Eip721SafeTransferFromMethod {
             if from == userAddress {
-                return OutgoingEip721Decoration(
+                return Eip721SafeTransferFromDecoration(
                         contractAddress: to,
                         to: transferMethod.to,
                         tokenId: transferMethod.tokenId,
                         sentToSelf: transferMethod.to == userAddress,
                         tokenInfo: eventInstances.compactMap { $0 as? Eip721TransferEventInstance }.first { $0.contractAddress == to }?.tokenInfo
+                )
+            }
+        }
+
+        if let method = contractMethod as? Eip721SetApprovalForAllMethod {
+            if from == userAddress {
+                return Eip721SetApprovalForAllDecoration(
+                        contractAddress: to,
+                        operator: method.operator,
+                        approved: method.approved
                 )
             }
         }
