@@ -3,8 +3,8 @@ open class TransactionDecoration {
     public init() {
     }
 
-    open func tags() -> [String] {
+    open func tags() -> [TransactionTag] {
         []
     }
-    
+
 }

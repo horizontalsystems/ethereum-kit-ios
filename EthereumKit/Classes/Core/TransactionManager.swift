@@ -10,7 +10,7 @@ class TransactionManager {
     private let disposeBag = DisposeBag()
 
     private let fullTransactionsSubject = PublishSubject<([FullTransaction], Bool)>()
-    private let fullTransactionsWithTagsSubject = PublishSubject<[(transaction: FullTransaction, tags: [String])]>()
+    private let fullTransactionsWithTagsSubject = PublishSubject<[(transaction: FullTransaction, tags: [TransactionTag])]>()
 
     init(userAddress: Address, storage: ITransactionStorage, decorationManager: DecorationManager, blockchain: IBlockchain, transactionProvider: ITransactionProvider) {
         self.userAddress = userAddress
@@ -96,38 +96,32 @@ extension TransactionManager {
                 }
     }
 
-    func fullTransactionsObservable(tags: [[String]]) -> Observable<[FullTransaction]> {
+    func fullTransactionsObservable(tagQueries: [TransactionTagQuery]) -> Observable<[FullTransaction]> {
         fullTransactionsWithTagsSubject.asObservable()
-            .map { transactions in
-                transactions.compactMap { transactionsWithTags -> FullTransaction? in
-                    for andTags in tags {
-                        var hasTags = false
-
-                        for tag in transactionsWithTags.tags {
-                            if andTags.contains(tag) {
-                                hasTags = true
+            .map { transactionsWithTags in
+                transactionsWithTags.compactMap { (transaction: FullTransaction, tags: [TransactionTag]) -> FullTransaction? in
+                    for tagQuery in tagQueries {
+                        for tag in tags {
+                            if tag.conforms(tagQuery: tagQuery) {
+                                return transaction
                             }
                         }
-                        
-                        if !hasTags {
-                            return nil
-                        }
                     }
-                    
-                    return transactionsWithTags.transaction
+
+                    return nil
                 }
             }
             .filter { transactions in transactions.count > 0 }
     }
 
-    func fullTransactionsSingle(tags: [[String]], fromHash: Data?, limit: Int?) -> Single<[FullTransaction]> {
+    func fullTransactionsSingle(tagQueries: [TransactionTagQuery], fromHash: Data?, limit: Int?) -> Single<[FullTransaction]> {
         Single.create { [weak self] observer in
             guard let strongSelf = self else {
                 observer(.error(Kit.KitError.weakReference))
                 return Disposables.create()
             }
 
-            let transactions = strongSelf.storage.transactionsBefore(tags: tags, hash: fromHash, limit: limit)
+            let transactions = strongSelf.storage.transactionsBefore(tagQueries: tagQueries, hash: fromHash, limit: limit)
             let fullTransactions = strongSelf.decorationManager.decorate(transactions: transactions)
             observer(.success(fullTransactions))
 
@@ -135,8 +129,8 @@ extension TransactionManager {
         }
     }
 
-    func pendingFullTransactions(tags: [[String]]) -> [FullTransaction] {
-        decorationManager.decorate(transactions: storage.pendingTransactions(tags: tags))
+    func pendingFullTransactions(tagQueries: [TransactionTagQuery]) -> [FullTransaction] {
+        decorationManager.decorate(transactions: storage.pendingTransactions(tagQueries: tagQueries))
     }
 
     func fullTransactions(byHashes hashes: [Data]) -> [FullTransaction] {
@@ -159,16 +153,16 @@ extension TransactionManager {
 
         let fullTransactions = decorationManager.decorate(transactions: transactions)
 
-        var fullTransactionsWithTags = [(transaction: FullTransaction, tags: [String])]()
-        var allTags = [TransactionTag]()
+        var fullTransactionsWithTags = [(transaction: FullTransaction, tags: [TransactionTag])]()
+        var tagRecords = [TransactionTagRecord]()
 
         for fullTransaction in fullTransactions {
-            let tags = fullTransaction.decoration.tags().map { TransactionTag(name: $0, transactionHash: fullTransaction.transaction.hash) }
-            allTags.append(contentsOf: tags)
-            fullTransactionsWithTags.append((transaction: fullTransaction, tags: tags.map { $0.name }))
+            let tags = fullTransaction.decoration.tags()
+            tagRecords.append(contentsOf: tags.map { TransactionTagRecord(transactionHash: fullTransaction.transaction.hash, tag: $0) })
+            fullTransactionsWithTags.append((transaction: fullTransaction, tags: tags))
         }
 
-        storage.save(tags: allTags)
+        storage.save(tags: tagRecords)
 
         fullTransactionsSubject.onNext((fullTransactions, initial))
         fullTransactionsWithTagsSubject.onNext(fullTransactionsWithTags)

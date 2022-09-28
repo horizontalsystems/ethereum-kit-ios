@@ -11,11 +11,13 @@ public class OutgoingDecoration: TransactionDecoration {
         self.sentToSelf = sentToSelf
     }
 
-    public override func tags() -> [String] {
-        var tags = [TransactionTag.evmCoin, "\(TransactionTag.evmCoin)_outgoing", "outgoing"]
+    public override func tags() -> [TransactionTag] {
+        var tags = [
+            TransactionTag(type: .outgoing, protocol: .native)
+        ]
 
         if sentToSelf {
-            tags += ["\(TransactionTag.evmCoin)_incoming", "incoming"]
+            tags.append(TransactionTag(type: .incoming, protocol: .native))
         }
 
         return tags

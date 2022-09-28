@@ -23,20 +23,22 @@ public class SwapDecoration: TransactionDecoration {
         super.init()
     }
 
-    private func tags(token: Token, type: String) -> [String] {
+    private func tag(token: Token, type: TransactionTag.TagType) -> TransactionTag {
         switch token {
-        case .evmCoin: return ["\(TransactionTag.evmCoin)_\(type)", TransactionTag.evmCoin, type]
-        case .eip20Coin(let tokenAddress, _): return ["\(tokenAddress.hex)_\(type)", tokenAddress.hex, type]
+        case .evmCoin: return TransactionTag(type: type, protocol: .native)
+        case .eip20Coin(let tokenAddress, _): return TransactionTag(type: type, protocol: .eip20, contractAddress: tokenAddress)
         }
     }
 
-    public override func tags() -> [String] {
-        var tags: [String] = [contractAddress.hex, "swap"]
-
-        tags.append(contentsOf: self.tags(token: tokenIn, type: "outgoing"))
+    public override func tags() -> [TransactionTag] {
+        var tags = [
+            tag(token: tokenIn, type: .swap),
+            tag(token: tokenOut, type: .swap),
+            tag(token: tokenIn, type: .outgoing)
+        ]
 
         if recipient == nil {
-            tags.append(contentsOf: self.tags(token: tokenOut, type: "incoming"))
+            tags.append(tag(token: tokenOut, type: .incoming))
         }
 
         return tags

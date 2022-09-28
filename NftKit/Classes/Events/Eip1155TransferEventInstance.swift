@@ -22,17 +22,15 @@ public class Eip1155TransferEventInstance: ContractEventInstance {
         super.init(contractAddress: contractAddress)
     }
 
-    public override func tags(userAddress: Address) -> [String] {
-        var tags: [String] = [contractAddress.hex]
+    public override func tags(userAddress: Address) -> [TransactionTag] {
+        var tags = [TransactionTag]()
 
         if from == userAddress {
-            tags.append("\(contractAddress.hex)_outgoing")
-            tags.append("outgoing")
+            tags.append(TransactionTag(type: .outgoing, protocol: .eip1155, contractAddress: contractAddress))
         }
 
         if to == userAddress {
-            tags.append("\(contractAddress.hex)_incoming")
-            tags.append("incoming")
+            tags.append(TransactionTag(type: .incoming, protocol: .eip1155, contractAddress: contractAddress))
         }
 
         return tags

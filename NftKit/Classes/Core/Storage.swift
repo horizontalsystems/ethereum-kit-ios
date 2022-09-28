@@ -57,6 +57,11 @@ class Storage {
             }
         }
 
+        migrator.registerMigration("truncate Eip721Event, Eip1155Event") { db in
+            try Eip721Event.deleteAll(db)
+            try Eip1155Event.deleteAll(db)
+        }
+
         return migrator
     }
 

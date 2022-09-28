@@ -9,7 +9,7 @@ class TransactionManager {
     private let contractAddress: Address
     private let contractMethodFactories: Eip20ContractMethodFactories
     private let address: Address
-    private let tags: [[String]]
+    private let tagQueries: [TransactionTagQuery]
 
     private let transactionsSubject = PublishSubject<[FullTransaction]>()
 
@@ -23,9 +23,9 @@ class TransactionManager {
         self.contractMethodFactories = contractMethodFactories
 
         address = ethereumKit.receiveAddress
-        tags = [[contractAddress.hex]]
+        tagQueries = [TransactionTagQuery(contractAddress: contractAddress)]
 
-        ethereumKit.transactionsObservable(tags: [[contractAddress.hex]])
+        ethereumKit.transactionsObservable(tagQueries: [TransactionTagQuery(contractAddress: contractAddress)])
                 .subscribe { [weak self] in
                     self?.processTransactions(erc20Transactions: $0)
                 }
@@ -45,11 +45,11 @@ class TransactionManager {
 extension TransactionManager: ITransactionManager {
 
     func transactionsSingle(from hash: Data?, limit: Int?) -> Single<[FullTransaction]> {
-        ethereumKit.transactionsSingle(tags: tags, fromHash: hash, limit: limit)
+        ethereumKit.transactionsSingle(tagQueries: tagQueries, fromHash: hash, limit: limit)
     }
 
     func pendingTransactions() -> [FullTransaction] {
-        ethereumKit.pendingTransactions(tags: tags)
+        ethereumKit.pendingTransactions(tagQueries: tagQueries)
     }
 
     func transferTransactionData(to: Address, value: BigUInt) -> TransactionData {

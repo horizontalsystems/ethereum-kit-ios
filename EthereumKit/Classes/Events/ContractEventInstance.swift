@@ -5,7 +5,7 @@ open class ContractEventInstance {
         self.contractAddress = contractAddress
     }
 
-    open func tags(userAddress: Address) -> [String] {
+    open func tags(userAddress: Address) -> [TransactionTag] {
         []
     }
 

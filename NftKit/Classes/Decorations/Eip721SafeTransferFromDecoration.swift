@@ -18,8 +18,16 @@ public class Eip721SafeTransferFromDecoration: TransactionDecoration {
         super.init()
     }
 
-    public override func tags() -> [String] {
-        ["eip721Transfer", contractAddress.hex, "\(contractAddress.hex)_outgoing", "outgoing"]
+    public override func tags() -> [TransactionTag] {
+        var tags = [
+            TransactionTag(type: .outgoing, protocol: .eip721, contractAddress: contractAddress)
+        ]
+
+        if sentToSelf {
+            tags.append(TransactionTag(type: .incoming, protocol: .eip721, contractAddress: contractAddress))
+        }
+
+        return tags
     }
 
 }

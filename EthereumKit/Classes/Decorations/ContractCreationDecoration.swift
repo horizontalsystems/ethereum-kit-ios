@@ -1,7 +1,9 @@
 public class ContractCreationDecoration: TransactionDecoration {
 
-    public override func tags() -> [String] {
-        ["contractCreation"]
+    public override func tags() -> [TransactionTag] {
+        [
+            TransactionTag(type: .contractCreation)
+        ]
     }
 
 }

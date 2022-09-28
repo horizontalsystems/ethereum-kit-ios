@@ -14,8 +14,10 @@ public class Eip1155SetApprovalForAllDecoration: TransactionDecoration {
         super.init()
     }
 
-    public override func tags() -> [String] {
-        ["eip1155Approve", contractAddress.hex]
+    public override func tags() -> [TransactionTag] {
+        [
+            TransactionTag(type: .approve, protocol: .eip1155, contractAddress: contractAddress)
+        ]
     }
 
 }

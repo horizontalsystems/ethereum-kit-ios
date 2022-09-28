@@ -1,37 +1,30 @@
 import GRDB
 
-public class TransactionTag: Record {
-    public static let evmCoin = "ETH"
+public class TransactionTag {
+    public let type: TagType
+    public let `protocol`: TagProtocol?
+    public let contractAddress: Address?
 
-    let name: String
-    let transactionHash: Data
-
-    init(name: String, transactionHash: Data) {
-        self.name = name
-        self.transactionHash = transactionHash
-
-        super.init()
+    public init(type: TagType, `protocol`: TagProtocol? = nil, contractAddress: Address? = nil) {
+        self.type = type
+        self.protocol = `protocol`
+        self.contractAddress = contractAddress
     }
 
-    public override class var databaseTableName: String {
-        "transactionTags"
-    }
+    public func conforms(tagQuery: TransactionTagQuery) -> Bool {
+        if let type = tagQuery.type, self.type != type {
+            return false
+        }
 
-    enum Columns: String, ColumnExpression, CaseIterable {
-        case name
-        case transactionHash
-    }
+        if let `protocol` = tagQuery.protocol, self.protocol != `protocol` {
+            return false
+        }
 
-    required init(row: Row) {
-        name = row[Columns.name]
-        transactionHash = row[Columns.transactionHash]
+        if let contractAddress = tagQuery.contractAddress, self.contractAddress != contractAddress {
+            return false
+        }
 
-        super.init(row: row)
-    }
-
-    public override func encode(to container: inout PersistenceContainer) {
-        container[Columns.name] = name
-        container[Columns.transactionHash] = transactionHash
+        return true
     }
 
 }
@@ -39,11 +32,58 @@ public class TransactionTag: Record {
 extension TransactionTag: Hashable {
 
     public func hash(into hasher: inout Hasher) {
-        hasher.combine("\(name)\(transactionHash.hex)")
+        hasher.combine(type)
+        hasher.combine(`protocol`)
+        hasher.combine(contractAddress)
     }
 
     public static func ==(lhs: TransactionTag, rhs: TransactionTag) -> Bool {
-        lhs.name == rhs.name && lhs.transactionHash == rhs.transactionHash
+        lhs.type == rhs.type && lhs.protocol == rhs.protocol && lhs.contractAddress == rhs.contractAddress
+    }
+
+}
+
+extension TransactionTag {
+
+    public enum TagProtocol: String, DatabaseValueConvertible {
+        case native
+        case eip20
+        case eip721
+        case eip1155
+
+        public var databaseValue: DatabaseValue {
+            rawValue.databaseValue
+        }
+
+        public static func fromDatabaseValue(_ dbValue: DatabaseValue) -> TagProtocol? {
+            switch dbValue.storage {
+            case .string(let string):
+                return TagProtocol(rawValue: string)
+            default:
+                return nil
+            }
+        }
+    }
+
+    public enum TagType: String, DatabaseValueConvertible {
+        case incoming
+        case outgoing
+        case approve
+        case swap
+        case contractCreation
+
+        public var databaseValue: DatabaseValue {
+            rawValue.databaseValue
+        }
+
+        public static func fromDatabaseValue(_ dbValue: DatabaseValue) -> TagType? {
+            switch dbValue.storage {
+            case .string(let string):
+                return TagType(rawValue: string)
+            default:
+                return nil
+            }
+        }
     }
 
 }

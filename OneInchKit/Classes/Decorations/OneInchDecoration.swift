@@ -9,14 +9,10 @@ open class OneInchDecoration: TransactionDecoration {
         self.contractAddress = contractAddress
     }
 
-    public override func tags() -> [String] {
-        [contractAddress.hex, "swap"]
-    }
-
-    func tags(token: Token, type: String) -> [String] {
+    func tag(token: Token, type: TransactionTag.TagType) -> TransactionTag {
         switch token {
-        case .evmCoin: return ["\(TransactionTag.evmCoin)_\(type)", TransactionTag.evmCoin, type]
-        case .eip20Coin(let tokenAddress, _): return ["\(tokenAddress.hex)_\(type)", tokenAddress.hex, type]
+        case .evmCoin: return TransactionTag(type: type, protocol: .native)
+        case .eip20Coin(let tokenAddress, _): return TransactionTag(type: type, protocol: .eip20, contractAddress: tokenAddress)
         }
     }
 
