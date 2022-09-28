@@ -9,8 +9,10 @@ public class IncomingDecoration: TransactionDecoration {
         self.value = value
     }
 
-    public override func tags() -> [String] {
-        [TransactionTag.evmCoin, "\(TransactionTag.evmCoin)_incoming", "incoming"]
+    public override func tags() -> [TransactionTag] {
+        [
+            TransactionTag(type: .incoming, protocol: .native)
+        ]
     }
 
 }

@@ -105,7 +105,7 @@ class EthereumBaseAdapter: IAdapter {
     }
 
     var transactionsObservable: Observable<Void> {
-        evmKit.transactionsObservable(tags: [[]]).map { _ in () }
+        evmKit.transactionsObservable(tagQueries: []).map { _ in () }
     }
 
     func sendSingle(to address: Address, amount: Decimal, gasLimit: Int, gasPrice: GasPrice) -> Single<Void> {
@@ -117,7 +117,7 @@ class EthereumBaseAdapter: IAdapter {
     }
 
     func transactionsSingle(from hash: Data?, limit: Int?) -> Single<[TransactionRecord]> {
-        evmKit.transactionsSingle(tags: [], fromHash: hash, limit: limit)
+        evmKit.transactionsSingle(tagQueries: [], fromHash: hash, limit: limit)
                 .map { [weak self] in
                     $0.compactMap {
                         self?.transactionRecord(fullTransaction: $0)

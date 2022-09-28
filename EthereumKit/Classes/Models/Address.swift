@@ -1,4 +1,5 @@
 import OpenSslKit
+import GRDB
 
 public struct Address {
     public let raw: Data
@@ -83,10 +84,31 @@ extension Address: CustomStringConvertible {
 
 }
 
-extension Address: Equatable {
+extension Address: Hashable {
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(raw)
+    }
 
     public static func ==(lhs: Address, rhs: Address) -> Bool {
         lhs.raw == rhs.raw
+    }
+
+}
+
+extension Address: DatabaseValueConvertible {
+
+    public var databaseValue: DatabaseValue {
+        raw.databaseValue
+    }
+
+    public static func fromDatabaseValue(_ dbValue: DatabaseValue) -> Address? {
+        switch dbValue.storage {
+        case .blob(let data):
+            return Address(raw: data)
+        default:
+            return nil
+        }
     }
 
 }

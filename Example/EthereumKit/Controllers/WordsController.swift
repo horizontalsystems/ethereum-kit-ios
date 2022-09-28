@@ -110,7 +110,7 @@ class WordsController: UIViewController {
         let words = textView.text.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
 
         do {
-            try Mnemonic.validate(words: words)
+            try Mnemonic.validate(words: words, strength: .veryHigh)
 
             Manager.shared.login(words: words)
 

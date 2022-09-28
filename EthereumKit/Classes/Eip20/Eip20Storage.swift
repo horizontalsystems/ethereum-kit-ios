@@ -43,7 +43,7 @@ public class Eip20Storage {
             }
         }
 
-        migrator.registerMigration("truncate Event") { db in
+        migrator.registerMigration("truncate Event 2") { db in
             try Event.deleteAll(db)
         }
 

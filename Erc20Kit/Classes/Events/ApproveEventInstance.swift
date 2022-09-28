@@ -16,4 +16,10 @@ public class ApproveEventInstance: ContractEventInstance {
         super.init(contractAddress: contractAddress)
     }
 
+    public override func tags(userAddress: Address) -> [TransactionTag] {
+        [
+            TransactionTag(type: .approve, protocol: .eip20, contractAddress: contractAddress)
+        ]
+    }
+
 }

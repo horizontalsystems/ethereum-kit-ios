@@ -18,13 +18,15 @@ public class OneInchUnoswapDecoration: OneInchDecoration {
         super.init(contractAddress: contractAddress)
     }
 
-    public override func tags() -> [String] {
-        var tags = super.tags()
+    public override func tags() -> [TransactionTag] {
+        var tags = [TransactionTag]()
 
-        tags.append(contentsOf: self.tags(token: tokenIn, type: "outgoing"))
+        tags.append(tag(token: tokenIn, type: .swap))
+        tags.append(tag(token: tokenIn, type: .outgoing))
 
         if let tokenOut = tokenOut {
-            tags.append(contentsOf: self.tags(token: tokenOut, type: "incoming"))
+            tags.append(tag(token: tokenOut, type: .swap))
+            tags.append(tag(token: tokenOut, type: .incoming))
         }
 
         return tags

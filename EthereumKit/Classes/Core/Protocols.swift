@@ -35,11 +35,11 @@ protocol IBlockchainDelegate: AnyObject {
 protocol ITransactionStorage {
     func transaction(hash: Data) -> Transaction?
     func transactions(hashes: [Data]) -> [Transaction]
-    func transactionsBefore(tags: [[String]], hash: Data?, limit: Int?) -> [Transaction]
+    func transactionsBefore(tagQueries: [TransactionTagQuery], hash: Data?, limit: Int?) -> [Transaction]
     func save(transactions: [Transaction])
 
     func pendingTransactions() -> [Transaction]
-    func pendingTransactions(tags: [[String]]) -> [Transaction]
+    func pendingTransactions(tagQueries: [TransactionTagQuery]) -> [Transaction]
     func nonPendingTransactions(from: Address, nonces: [Int]) -> [Transaction]
 
     func lastInternalTransaction() -> InternalTransaction?
@@ -47,7 +47,7 @@ protocol ITransactionStorage {
     func internalTransactions(hashes: [Data]) -> [InternalTransaction]
     func save(internalTransactions: [InternalTransaction])
 
-    func save(tags: [TransactionTag])
+    func save(tags: [TransactionTagRecord])
 }
 
 public protocol ITransactionSyncer {

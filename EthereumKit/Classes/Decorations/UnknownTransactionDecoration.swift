@@ -18,11 +18,11 @@ open class UnknownTransactionDecoration: TransactionDecoration {
         self.eventInstances = eventInstances
     }
 
-    open override func tags() -> [String] {
+    public override func tags() -> [TransactionTag] {
         Array(Set(tagsFromInternalTransactions + tagsFromEventInstances))
     }
 
-    private var tagsFromInternalTransactions: [String] {
+    private var tagsFromInternalTransactions: [TransactionTag] {
         let value = value ?? 0
         let incomingInternalTransactions = internalTransactions.filter { $0.to == userAddress }
 
@@ -42,20 +42,20 @@ open class UnknownTransactionDecoration: TransactionDecoration {
         if outgoingValue == 0 && incomingValue == 0 {
             return []
         }
-        var tags = [TransactionTag.evmCoin]
+
+        var tags = [TransactionTag]()
 
         if incomingValue > outgoingValue {
-            tags.append(contentsOf: ["\(TransactionTag.evmCoin)_incoming", "incoming"] )
-        }
-        if outgoingValue > incomingValue {
-            tags.append(contentsOf: ["\(TransactionTag.evmCoin)_outgoing", "outgoing"])
+            tags.append(TransactionTag(type: .incoming, protocol: .native))
+        } else if outgoingValue > incomingValue {
+            tags.append(TransactionTag(type: .outgoing, protocol: .native))
         }
 
         return tags
     }
 
-    private var tagsFromEventInstances: [String] {
-        var tags = [String]()
+    private var tagsFromEventInstances: [TransactionTag] {
+        var tags = [TransactionTag]()
 
         for eventInstance in eventInstances {
             tags.append(contentsOf: eventInstance.tags(userAddress: userAddress))

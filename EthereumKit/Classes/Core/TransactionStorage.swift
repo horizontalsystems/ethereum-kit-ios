@@ -62,15 +62,6 @@ class TransactionStorage {
             }
         }
 
-        migrator.registerMigration("create TransactionTag") { db in
-            try db.create(table: TransactionTag.databaseTableName) { t in
-                t.column(TransactionTag.Columns.name.name, .text).notNull().indexed()
-                t.column(TransactionTag.Columns.transactionHash.name, .text).notNull()
-
-                t.uniqueKey([TransactionTag.Columns.name.name, TransactionTag.Columns.transactionHash.name], onConflict: .ignore)
-            }
-        }
-
         migrator.registerMigration("add blockNumber column to InternalTransaction") { db in
             try db.alter(table: InternalTransaction.databaseTableName) { t in
                 t.add(column: InternalTransaction.Columns.blockNumber.name, .integer).notNull().defaults(to: 0)
@@ -80,7 +71,22 @@ class TransactionStorage {
         migrator.registerMigration("truncate Transaction, InternalTransaction, TransactionTag") { db in
             try Transaction.deleteAll(db)
             try InternalTransaction.deleteAll(db)
-            try TransactionTag.deleteAll(db)
+        }
+
+        migrator.registerMigration("create TransactionTagRecord") { db in
+            if try db.tableExists("transactionTags") {
+                try db.drop(table: "transactionTags")
+            }
+
+            try Transaction.deleteAll(db)
+            try InternalTransaction.deleteAll(db)
+
+            try db.create(table: TransactionTagRecord.databaseTableName) { t in
+                t.column(TransactionTagRecord.Columns.transactionHash.name, .blob).notNull()
+                t.column(TransactionTagRecord.Columns.type.name, .text).notNull()
+                t.column(TransactionTagRecord.Columns.protocol.name, .text)
+                t.column(TransactionTagRecord.Columns.contractAddress.name, .blob)
+            }
         }
 
         return migrator
@@ -106,21 +112,37 @@ extension TransactionStorage: ITransactionStorage {
         }
     }
 
-    func transactionsBefore(tags: [[String]], hash: Data?, limit: Int?) -> [Transaction] {
+    func transactionsBefore(tagQueries: [TransactionTagQuery], hash: Data?, limit: Int?) -> [Transaction] {
         try! dbPool.read { db in
             var arguments = [DatabaseValueConvertible]()
             var whereConditions = [String]()
+            let queries = tagQueries.filter { !$0.isEmpty }
+            var joinClause = ""
 
-            if tags.count > 0 {
-                let tagConditions = tags.enumerated()
-                        .map { index, andTags -> String in
-                            arguments.append(contentsOf: andTags)
-                            let inStatement = andTags.map({ _ in "?" }).joined(separator: ", ")
-                            return "\(TransactionTag.databaseTableName)_\(index).'\(TransactionTag.Columns.name.name)' IN (\(inStatement))"
+            if !queries.isEmpty {
+                let tagConditions = queries
+                        .map { (tagQuery: TransactionTagQuery) -> String in
+                            var statements = [String]()
+
+                            if let type = tagQuery.type {
+                                statements.append("\(TransactionTagRecord.databaseTableName).'\(TransactionTagRecord.Columns.type.name)' = ?")
+                                arguments.append(type)
+                            }
+                            if let `protocol` = tagQuery.protocol {
+                                statements.append("\(TransactionTagRecord.databaseTableName).'\(TransactionTagRecord.Columns.protocol.name)' = ?")
+                                arguments.append(`protocol`)
+                            }
+                            if let contractAddress = tagQuery.contractAddress {
+                                statements.append("\(TransactionTagRecord.databaseTableName).'\(TransactionTagRecord.Columns.contractAddress.name)' = ?")
+                                arguments.append(contractAddress)
+                            }
+
+                            return "(\(statements.joined(separator: " AND ")))"
                         }
-                        .joined(separator: " AND ")
+                        .joined(separator: " OR ")
 
                 whereConditions.append(tagConditions)
+                joinClause = "INNER JOIN \(TransactionTagRecord.databaseTableName) ON \(Transaction.databaseTableName).\(Transaction.Columns.hash.name) = \(TransactionTagRecord.databaseTableName).\(TransactionTagRecord.Columns.transactionHash.name)"
             }
 
             if let fromHash = hash,
@@ -152,13 +174,6 @@ extension TransactionStorage: ITransactionStorage {
                 whereConditions.append(fromCondition)
             }
 
-            let transactionTagJoinStatements = tags
-                    .enumerated()
-                    .map { (index, _) -> String in
-                        "INNER JOIN \(TransactionTag.databaseTableName) AS \(TransactionTag.databaseTableName)_\(index) ON \(Transaction.databaseTableName).\(Transaction.Columns.hash.name) = \(TransactionTag.databaseTableName)_\(index).\(TransactionTag.Columns.transactionHash.name)"
-                    }
-                    .joined(separator: "\n")
-
             var limitClause = ""
             if let limit = limit {
                 limitClause += "LIMIT \(limit)"
@@ -173,9 +188,9 @@ extension TransactionStorage: ITransactionStorage {
             let whereClause = whereConditions.count > 0 ? "WHERE \(whereConditions.joined(separator: " AND "))" : ""
 
             let sql = """
-                      SELECT \(Transaction.databaseTableName).*
+                      SELECT DISTINCT \(Transaction.databaseTableName).*
                       FROM \(Transaction.databaseTableName)
-                      \(transactionTagJoinStatements)
+                      \(joinClause)
                       \(whereClause)
                       \(orderClause)
                       \(limitClause)
@@ -204,29 +219,37 @@ extension TransactionStorage: ITransactionStorage {
         }
     }
 
-    func pendingTransactions(tags: [[String]]) -> [Transaction] {
+    func pendingTransactions(tagQueries: [TransactionTagQuery]) -> [Transaction] {
         try! dbPool.read { db in
             var arguments = [DatabaseValueConvertible]()
             var whereConditions = [String]()
-            var transactionTagJoinStatements = ""
+            let queries = tagQueries.filter { !$0.isEmpty }
+            var joinClause = ""
 
-            if tags.count > 0 {
-                let tagConditions = tags.enumerated()
-                        .map { (index, andTags) -> String in
-                            arguments.append(contentsOf: andTags)
-                            let inStatement = andTags.map({ _ in "?" }).joined(separator: ", ")
-                            return "\(TransactionTag.databaseTableName)_\(index).'\(TransactionTag.Columns.name.name)' IN (\(inStatement))"
+            if !queries.isEmpty {
+                let tagConditions = queries
+                        .map { (tagQuery: TransactionTagQuery) -> String in
+                            var statements = [String]()
+
+                            if let type = tagQuery.type {
+                                statements.append("\(TransactionTagRecord.databaseTableName).'\(TransactionTagRecord.Columns.type.name)' = ?")
+                                arguments.append(type)
+                            }
+                            if let `protocol` = tagQuery.protocol {
+                                statements.append("\(TransactionTagRecord.databaseTableName).'\(TransactionTagRecord.Columns.protocol.name)' = ?")
+                                arguments.append(`protocol`)
+                            }
+                            if let contractAddress = tagQuery.contractAddress {
+                                statements.append("\(TransactionTagRecord.databaseTableName).'\(TransactionTagRecord.Columns.contractAddress.name)' = ?")
+                                arguments.append(contractAddress)
+                            }
+
+                            return "(\(statements.joined(separator: " AND ")))"
                         }
-                        .joined(separator: " AND ")
+                        .joined(separator: " OR ")
 
                 whereConditions.append(tagConditions)
-
-                transactionTagJoinStatements += tags
-                        .enumerated()
-                        .map { (index, _) -> String in
-                            "INNER JOIN \(TransactionTag.databaseTableName) AS \(TransactionTag.databaseTableName)_\(index) ON \(Transaction.databaseTableName).\(Transaction.Columns.hash.name) = \(TransactionTag.databaseTableName)_\(index).\(TransactionTag.Columns.transactionHash.name)"
-                        }
-                        .joined(separator: "\n")
+                joinClause = "INNER JOIN \(TransactionTagRecord.databaseTableName) ON \(Transaction.databaseTableName).\(Transaction.Columns.hash.name) = \(TransactionTagRecord.databaseTableName).\(TransactionTagRecord.Columns.transactionHash.name)"
             }
 
             whereConditions.append("\(Transaction.databaseTableName).\(Transaction.Columns.blockNumber.name) IS NULL")
@@ -236,7 +259,7 @@ extension TransactionStorage: ITransactionStorage {
             let sql = """
                       SELECT \(Transaction.databaseTableName).*
                       FROM \(Transaction.databaseTableName)
-                      \(transactionTagJoinStatements)
+                      \(joinClause)
                       \(whereClause)
                       """
 
@@ -286,7 +309,7 @@ extension TransactionStorage: ITransactionStorage {
         }
     }
 
-    func save(tags: [TransactionTag]) {
+    func save(tags: [TransactionTagRecord]) {
         try! dbPool.write { db in
             for tag in tags {
                 try tag.save(db)

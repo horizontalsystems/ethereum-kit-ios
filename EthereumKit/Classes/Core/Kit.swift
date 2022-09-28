@@ -124,16 +124,16 @@ extension Kit {
         transactionManager.fullTransactionSingle(hash: hash)
     }
 
-    public func transactionsObservable(tags: [[String]]) -> Observable<[FullTransaction]> {
-        transactionManager.fullTransactionsObservable(tags: tags)
+    public func transactionsObservable(tagQueries: [TransactionTagQuery]) -> Observable<[FullTransaction]> {
+        transactionManager.fullTransactionsObservable(tagQueries: tagQueries)
     }
 
-    public func transactionsSingle(tags: [[String]], fromHash: Data? = nil, limit: Int? = nil) -> Single<[FullTransaction]> {
-        transactionManager.fullTransactionsSingle(tags: tags, fromHash: fromHash, limit: limit)
+    public func transactionsSingle(tagQueries: [TransactionTagQuery], fromHash: Data? = nil, limit: Int? = nil) -> Single<[FullTransaction]> {
+        transactionManager.fullTransactionsSingle(tagQueries: tagQueries, fromHash: fromHash, limit: limit)
     }
 
-    public func pendingTransactions(tags: [[String]]) -> [FullTransaction] {
-        transactionManager.pendingFullTransactions(tags: tags)
+    public func pendingTransactions(tagQueries: [TransactionTagQuery]) -> [FullTransaction] {
+        transactionManager.pendingFullTransactions(tagQueries: tagQueries)
     }
 
     public func transaction(hash: Data) -> FullTransaction? {

@@ -34,6 +34,10 @@ class TransactionSyncerStateStorage {
             }
         }
 
+        migrator.registerMigration("truncate TransactionSyncerState") { db in
+            try TransactionSyncerState.deleteAll(db)
+        }
+
         return migrator
     }
 
