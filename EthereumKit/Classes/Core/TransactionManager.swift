@@ -3,7 +3,7 @@ import BigInt
 
 class TransactionManager {
     private let userAddress: Address
-    private let storage: ITransactionStorage
+    private let storage: TransactionStorage
     private let decorationManager: DecorationManager
     private let blockchain: IBlockchain
     private let transactionProvider: ITransactionProvider
@@ -12,7 +12,7 @@ class TransactionManager {
     private let fullTransactionsSubject = PublishSubject<([FullTransaction], Bool)>()
     private let fullTransactionsWithTagsSubject = PublishSubject<[(transaction: FullTransaction, tags: [TransactionTag])]>()
 
-    init(userAddress: Address, storage: ITransactionStorage, decorationManager: DecorationManager, blockchain: IBlockchain, transactionProvider: ITransactionProvider) {
+    init(userAddress: Address, storage: TransactionStorage, decorationManager: DecorationManager, blockchain: IBlockchain, transactionProvider: ITransactionProvider) {
         self.userAddress = userAddress
         self.storage = storage
         self.decorationManager = decorationManager
@@ -168,6 +168,15 @@ extension TransactionManager {
         fullTransactionsWithTagsSubject.onNext(fullTransactionsWithTags)
 
         return fullTransactions
+    }
+
+    func tagTokens() -> [TagToken] {
+        do {
+            return try storage.tagTokens()
+        } catch {
+            print("Failed to fetch tag tokens: \(error)")
+            return []
+        }
     }
 
 }

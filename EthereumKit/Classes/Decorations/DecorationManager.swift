@@ -3,12 +3,12 @@ import BigInt
 
 class DecorationManager {
     private let userAddress: Address
-    private let storage: ITransactionStorage
+    private let storage: TransactionStorage
     private var methodDecorators = [IMethodDecorator]()
     private var eventDecorators = [IEventDecorator]()
     private var transactionDecorators = [ITransactionDecorator]()
 
-    init(userAddress: Address, storage: ITransactionStorage) {
+    init(userAddress: Address, storage: TransactionStorage) {
         self.userAddress = userAddress
         self.storage = storage
     }

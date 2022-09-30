@@ -32,24 +32,6 @@ protocol IBlockchainDelegate: AnyObject {
     func onUpdate(accountState: AccountState)
 }
 
-protocol ITransactionStorage {
-    func transaction(hash: Data) -> Transaction?
-    func transactions(hashes: [Data]) -> [Transaction]
-    func transactionsBefore(tagQueries: [TransactionTagQuery], hash: Data?, limit: Int?) -> [Transaction]
-    func save(transactions: [Transaction])
-
-    func pendingTransactions() -> [Transaction]
-    func pendingTransactions(tagQueries: [TransactionTagQuery]) -> [Transaction]
-    func nonPendingTransactions(from: Address, nonces: [Int]) -> [Transaction]
-
-    func lastInternalTransaction() -> InternalTransaction?
-    func internalTransactions() -> [InternalTransaction]
-    func internalTransactions(hashes: [Data]) -> [InternalTransaction]
-    func save(internalTransactions: [InternalTransaction])
-
-    func save(tags: [TransactionTagRecord])
-}
-
 public protocol ITransactionSyncer {
     func transactionsSingle() -> Single<([Transaction], Bool)>
 }

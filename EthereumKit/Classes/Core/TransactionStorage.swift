@@ -94,7 +94,7 @@ class TransactionStorage {
 
 }
 
-extension TransactionStorage: ITransactionStorage {
+extension TransactionStorage {
 
     func transaction(hash: Data) -> Transaction? {
         try! dbPool.read { db in
@@ -305,6 +305,20 @@ extension TransactionStorage: ITransactionStorage {
         try! dbPool.write { db in
             for internalTransaction in internalTransactions {
                 try internalTransaction.save(db)
+            }
+        }
+    }
+
+    func tagTokens() throws -> [TagToken] {
+        try dbPool.write { db in
+            let request = TransactionTagRecord
+                    .filter(TransactionTagRecord.Columns.protocol != nil)
+                    .select(TransactionTagRecord.Columns.protocol, TransactionTagRecord.Columns.contractAddress)
+                    .distinct()
+            let rows = try Row.fetchAll(db, request)
+
+            return rows.compactMap { row in
+                TagToken(protocol: row[0], contractAddress: row[1])
             }
         }
     }
