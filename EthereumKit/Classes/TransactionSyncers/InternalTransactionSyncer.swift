@@ -3,9 +3,9 @@ import BigInt
 
 class InternalTransactionSyncer {
     private let provider: ITransactionProvider
-    private let storage: ITransactionStorage
+    private let storage: TransactionStorage
 
-    init(provider: ITransactionProvider, storage: ITransactionStorage) {
+    init(provider: ITransactionProvider, storage: TransactionStorage) {
         self.provider = provider
         self.storage = storage
     }

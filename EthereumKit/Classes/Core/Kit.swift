@@ -160,6 +160,10 @@ extension Kit {
         }
     }
 
+    public func tagTokens() -> [TagToken] {
+        transactionManager.tagTokens()
+    }
+
     public func sendSingle(rawTransaction: RawTransaction, signature: Signature) -> Single<FullTransaction> {
         blockchain.sendSingle(rawTransaction: rawTransaction, signature: signature)
                 .flatMap { [weak self] transaction in
@@ -313,7 +317,7 @@ extension Kit {
         let storage: IApiStorage = try ApiStorage(databaseDirectoryUrl: dataDirectoryUrl(), databaseFileName: "api-\(uniqueId)")
         let blockchain = RpcBlockchain.instance(address: address, storage: storage, syncer: syncer, transactionBuilder: transactionBuilder, logger: logger)
 
-        let transactionStorage: ITransactionStorage = TransactionStorage(databaseDirectoryUrl: try dataDirectoryUrl(), databaseFileName: "transactions-\(uniqueId)")
+        let transactionStorage = TransactionStorage(databaseDirectoryUrl: try dataDirectoryUrl(), databaseFileName: "transactions-\(uniqueId)")
         let transactionSyncerStateStorage = TransactionSyncerStateStorage(databaseDirectoryUrl: try dataDirectoryUrl(), databaseFileName: "transaction-syncer-states-\(uniqueId)")
 
         let ethereumTransactionSyncer = EthereumTransactionSyncer(provider: transactionProvider, storage: transactionSyncerStateStorage)
